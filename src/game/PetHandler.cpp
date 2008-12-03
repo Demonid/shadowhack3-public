@@ -97,6 +97,13 @@ void WorldSession::HandlePetAction( WorldPacket & recv_data )
                     break;
                 case COMMAND_ATTACK:                        //spellid=1792  //ATTACK
                 {
+                    // Can't attack if owner is pacified
+                    if (_player->HasAuraType(SPELL_AURA_MOD_PACIFY))
+                    {
+                        //pet->SendPetCastFail(spellid, SPELL_FAILED_PACIFIED);
+                        //TODO: Send proper error message to client
+                        return;
+                    }
                     // only place where pet can be player
                     pet->clearUnitState(UNIT_STAT_FOLLOW);
                     uint64 selguid = _player->GetSelection();
@@ -105,7 +112,10 @@ void WorldSession::HandlePetAction( WorldPacket & recv_data )
                         return;
 
                     // not let attack friendly units.
-                    if( GetPlayer()->IsFriendlyTo(TargetUnit))
+                    if(GetPlayer()->IsFriendlyTo(TargetUnit))
+                        return;
+                    // Not let attack through obstructions
+                    if(!pet->IsWithinLOSInMap(TargetUnit))
                         return;
 
                     if(pet->GetTypeId() != TYPEID_PLAYER)

@@ -29,6 +29,8 @@
 #include "Database/DatabaseEnv.h"
 #include "Cell.h"
 
+#include <list>
+
 struct SpellEntry;
 
 class CreatureAI;
@@ -426,6 +428,8 @@ class TRINITY_DLL_SPEC Creature : public Unit
         bool canWalk() const { return GetCreatureInfo()->InhabitType & INHABIT_GROUND; }
         bool canSwim() const { return GetCreatureInfo()->InhabitType & INHABIT_WATER; }
         bool canFly()  const { return GetCreatureInfo()->InhabitType & INHABIT_AIR; }
+        bool isAggressive() const { return m_isAggressive; }
+        void SetAggressive(bool agg) { m_isAggressive = agg; }
         ///// TODO RENAME THIS!!!!!
         bool isCanTrainingOf(Player* player, bool msg) const;
         bool isCanIneractWithBattleMaster(Player* player, bool msg) const;
@@ -458,7 +462,7 @@ class TRINITY_DLL_SPEC Creature : public Unit
 
         bool AIM_Initialize();
         void InitPossessedAI();
-        void DeletePossessedAI();
+        void DisablePossessedAI();
 
         void AI_SendMoveToPacket(float x, float y, float z, uint32 time, uint32 MovementFlags, uint8 type);
         CreatureAI* AI() { return isPossessed() && i_AI_possessed ? i_AI_possessed : i_AI; }
@@ -555,10 +559,13 @@ class TRINITY_DLL_SPEC Creature : public Unit
 
         bool canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList) const;
         bool IsWithinSightDist(Unit const* u) const;
+        bool canStartAttack(Unit const* u) const;
         float GetAttackDistance(Unit const* pl) const;
 
-        void CallAssistence();
-        void SetNoCallAssistence(bool val) { m_AlreadyCallAssistence = val; }
+        Unit* SelectNearestTarget(float dist = 0) const;
+        void CallAssistance();
+        void SetNoCallAssistance(bool val) { m_AlreadyCallAssistance = val; }
+        bool CanAssistTo(const Unit* u, const Unit* enemy) const;
         void DoFleeToGetAssistance(float radius = 50);
 
         MovementGeneratorType GetDefaultMovementType() const { return m_defaultMovementType; }
@@ -607,7 +614,6 @@ class TRINITY_DLL_SPEC Creature : public Unit
         void GetCombatStartPosition(float &x, float &y, float &z) { x = CombatStartX; y = CombatStartY; z = CombatStartZ; }
 
         uint32 GetGlobalCooldown() const { return m_GlobalCooldown; }
-
     protected:
         bool CreateFromProto(uint32 guidlow,uint32 Entry,uint32 team, const CreatureData *data = NULL);
         bool InitEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=NULL);
@@ -636,6 +642,7 @@ class TRINITY_DLL_SPEC Creature : public Unit
         uint8 m_emoteState;
         bool m_isPet;                                       // set only in Pet::Pet
         bool m_isTotem;                                     // set only in Totem::Totem
+        bool m_isAggressive;
         void RegenerateMana();
         void RegenerateHealth();
         uint32 m_regenTimer;
@@ -644,7 +651,7 @@ class TRINITY_DLL_SPEC Creature : public Unit
         uint32 m_DBTableGuid;                               ///< For new or temporary creatures is 0 for saved it is lowguid
         uint32 m_equipmentId;
 
-        bool m_AlreadyCallAssistence;
+        bool m_AlreadyCallAssistance;
         bool m_regenHealth;
         bool m_AI_locked;
         bool m_isDeadByDefault;
@@ -655,8 +662,25 @@ class TRINITY_DLL_SPEC Creature : public Unit
         float CombatStartX;
         float CombatStartY;
         float CombatStartZ;
+
     private:
         GridReference<Creature> m_gridRef;
         CreatureInfo const* m_creatureInfo;                 // in heroic mode can different from ObjMgr::GetCreatureTemplate(GetEntry())
 };
+
+class AssistDelayEvent : public BasicEvent
+{
+    public:
+        AssistDelayEvent(const uint64& victim, Unit& owner) : BasicEvent(), m_victim(victim), m_owner(owner) { }
+
+        bool Execute(uint64 e_time, uint32 p_time);
+        void AddAssistant(const uint64& guid) { m_assistants.push_back(guid); }
+    private:
+        AssistDelayEvent();
+
+        uint64            m_victim;
+        std::list<uint64> m_assistants;
+        Unit&             m_owner;
+};
+
 #endif

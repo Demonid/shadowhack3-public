@@ -117,14 +117,36 @@ uint32 CreatureInfo::GetFirstValidModelId() const
     return 0;
 }
 
+bool AssistDelayEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
+{
+    Unit* victim = Unit::GetUnit(m_owner, m_victim);
+    if (victim)
+    {
+        while (!m_assistants.empty())
+        {
+            Creature* assistant = (Creature*)Unit::GetUnit(m_owner, *m_assistants.begin());
+            m_assistants.pop_front();
+
+            if (assistant && assistant->CanAssistTo(&m_owner, victim))
+            {
+                assistant->SetNoCallAssistance(true);
+                assistant->CombatStart(victim);
+                if(assistant->AI())
+                    assistant->AI()->AttackStart(victim);
+            }
+        }
+    }
+    return true;
+}
+
 Creature::Creature() :
 Unit(), i_AI(NULL), i_AI_possessed(NULL),
 lootForPickPocketed(false), lootForBody(false), m_groupLootTimer(0), lootingGroupLeaderGUID(0),
 m_lootMoney(0), m_lootRecipient(0),
 m_deathTimer(0), m_respawnTime(0), m_respawnDelay(25), m_corpseDelay(60), m_respawnradius(0.0f),
-m_gossipOptionLoaded(false), m_emoteState(0), m_isPet(false), m_isTotem(false),
+m_gossipOptionLoaded(false), m_emoteState(0), m_isPet(false), m_isTotem(false), m_isAggressive(true),
 m_regenTimer(2000), m_defaultMovementType(IDLE_MOTION_TYPE), m_equipmentId(0),
-m_AlreadyCallAssistence(false), m_regenHealth(true), m_AI_locked(false), m_isDeadByDefault(false),
+m_AlreadyCallAssistance(false), m_regenHealth(true), m_AI_locked(false), m_isDeadByDefault(false),
 m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_DBTableGuid(0)
 {
     m_valuesCount = UNIT_END;
@@ -147,7 +169,11 @@ Creature::~Creature()
     delete i_AI;
     i_AI = NULL;
 
-    DeletePossessedAI();
+    if (i_AI_possessed)
+    {
+        delete i_AI_possessed;
+        i_AI_possessed = NULL;
+    }
 }
 
 void Creature::AddToWorld()
@@ -293,6 +319,7 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData *data )
     SetUInt32Value(UNIT_FIELD_FLAGS,GetCreatureInfo()->unit_flags);
     SetUInt32Value(UNIT_DYNAMIC_FLAGS,GetCreatureInfo()->dynamicflags);
 
+    SetMeleeDamageSchool(SpellSchools(GetCreatureInfo()->dmgschool));
     SetModifierValue(UNIT_MOD_ARMOR,             BASE_VALUE, float(GetCreatureInfo()->armor));
     SetModifierValue(UNIT_MOD_RESISTANCE_HOLY,   BASE_VALUE, float(GetCreatureInfo()->resistance1));
     SetModifierValue(UNIT_MOD_RESISTANCE_FIRE,   BASE_VALUE, float(GetCreatureInfo()->resistance2));
@@ -322,6 +349,12 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData *data )
     // HACK: trigger creature is always not selectable
     if(GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER)
         SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+
+    if(isTotem() || isCivilian() || GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER
+        || GetCreatureType() == CREATURE_TYPE_CRITTER)
+        m_isAggressive = false;
+    else
+        m_isAggressive = true;
 
     return true;
 }
@@ -555,12 +588,9 @@ void Creature::InitPossessedAI()
     i_AI->OnPossess(true);
 }
 
-void Creature::DeletePossessedAI()
+void Creature::DisablePossessedAI()
 {
     if (!i_AI_possessed) return;
-
-    delete i_AI_possessed;
-    i_AI_possessed = NULL;
 
     // Signal the old AI that it's been re-enabled
     i_AI->OnPossess(false);
@@ -570,6 +600,7 @@ bool Creature::Create (uint32 guidlow, Map *map, uint32 Entry, uint32 team, cons
 {
     SetMapId(map->GetId());
     SetInstanceId(map->GetInstanceId());
+    //m_DBTableGuid = guidlow;
 
     //oX = x;     oY = y;    dX = x;    dY = y;    m_moveTime = 0;    m_startMove = 0;
     const bool bResult = CreateFromProto(guidlow, Entry, team, data);
@@ -596,7 +627,6 @@ bool Creature::Create (uint32 guidlow, Map *map, uint32 Entry, uint32 team, cons
         }
         LoadCreaturesAddon();
     }
-
     return bResult;
 }
 
@@ -1271,8 +1301,11 @@ void Creature::SelectLevel(const CreatureInfo *cinfo)
     SetBaseWeaponDamage(RANGED_ATTACK, MINDAMAGE, cinfo->minrangedmg * damagemod);
     SetBaseWeaponDamage(RANGED_ATTACK, MAXDAMAGE, cinfo->maxrangedmg * damagemod);
 
-    SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, cinfo->attackpower * damagemod);
-    SetModifierValue(UNIT_MOD_ATTACK_POWER_RANGED, BASE_VALUE, cinfo->rangedattackpower * damagemod);
+    // this value is not accurate, but should be close to the real value
+    SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, level * 5);
+    SetModifierValue(UNIT_MOD_ATTACK_POWER_RANGED, BASE_VALUE, level * 5);
+    //SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, cinfo->attackpower * damagemod);
+    //SetModifierValue(UNIT_MOD_ATTACK_POWER_RANGED, BASE_VALUE, cinfo->rangedattackpower * damagemod);
 }
 
 float Creature::_GetHealthMod(int32 Rank)
@@ -1410,8 +1443,6 @@ bool Creature::LoadFromDB(uint32 guid, Map *map)
     SetHealth(m_deathState == ALIVE ? curhealth : 0);
     SetPower(POWER_MANA,data->curmana);
 
-    SetMeleeDamageSchool(SpellSchools(GetCreatureInfo()->dmgschool));
-
     // checked at creature_template loading
     m_defaultMovementType = MovementGeneratorType(data->movementType);
 
@@ -1536,6 +1567,19 @@ bool Creature::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList) co
 bool Creature::IsWithinSightDist(Unit const* u) const
 {
     return IsWithinDistInMap(u, sWorld.getConfig(CONFIG_SIGHT_MONSTER));
+}
+
+bool Creature::canStartAttack(Unit const* who) const
+{
+    if(!who->isInAccessiblePlaceFor(this)
+        || !canFly() && GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE
+        || !IsWithinDistInMap(who, GetAttackDistance(who)))
+        return false;
+
+    if(!canAttack(who, false))
+        return false;
+
+    return IsWithinLOSInMap(who);
 }
 
 float Creature::GetAttackDistance(Unit const* pl) const
@@ -1817,13 +1861,37 @@ void Creature::DoFleeToGetAssistance(float radius) // Optional parameter
     }
 }
 
-void Creature::CallAssistence()
+Unit* Creature::SelectNearestTarget(float dist) const
 {
-    if( !m_AlreadyCallAssistence && getVictim() && !isPet() && !isCharmed())
-    {
-        SetNoCallAssistence(true);
+    CellPair p(Trinity::ComputeCellPair(GetPositionX(), GetPositionY()));
+    Cell cell(p);
+    cell.data.Part.reserved = ALL_DISTRICT;
+    cell.SetNoCreate();
 
-        float radius = sWorld.getConfig(CONFIG_CREATURE_FAMILY_ASSISTEMCE_RADIUS);
+    Unit *target = NULL;
+
+    {
+        Trinity::NearestHostileUnitInAttackDistanceCheck u_check(this, dist);
+        Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAttackDistanceCheck> searcher(target, u_check);
+
+        TypeContainerVisitor<Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAttackDistanceCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
+        TypeContainerVisitor<Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAttackDistanceCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
+
+        CellLock<GridReadGuard> cell_lock(cell, p);
+        cell_lock->Visit(cell_lock, world_unit_searcher, *GetMap());
+        cell_lock->Visit(cell_lock, grid_unit_searcher, *GetMap());
+    }
+
+    return target;
+}
+
+void Creature::CallAssistance()
+{
+    if( !m_AlreadyCallAssistance && getVictim() && !isPet() && !isCharmed())
+    {
+        SetNoCallAssistance(true);
+
+        float radius = sWorld.getConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS);
         if(radius > 0)
         {
             std::list<Creature*> assistList;
@@ -1843,14 +1911,47 @@ void Creature::CallAssistence()
                 cell_lock->Visit(cell_lock, grid_creature_searcher, *MapManager::Instance().GetMap(GetMapId(), this));
             }
 
-            for(std::list<Creature*>::iterator iter = assistList.begin(); iter != assistList.end(); ++iter)
+            if (!assistList.empty())
             {
-                (*iter)->SetNoCallAssistence(true);
-                if((*iter)->AI())
-                    (*iter)->AI()->AttackStart(getVictim());
+                AssistDelayEvent *e = new AssistDelayEvent(getVictim()->GetGUID(), *this);
+                while (!assistList.empty())
+                {
+                    // Pushing guids because in delay can happen some creature gets despawned => invalid pointer
+                    e->AddAssistant((*assistList.begin())->GetGUID());
+                    assistList.pop_front();
+                }
+                m_Events.AddEvent(e, m_Events.CalculateTime(sWorld.getConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_DELAY)));
             }
         }
     }
+}
+
+bool Creature::CanAssistTo(const Unit* u, const Unit* enemy) const
+{
+    if(!isAggressive())
+        return false;
+
+    // we don't need help from zombies :)
+    if( !isAlive() )
+        return false;
+
+    // skip fighting creature
+    if( isInCombat() )
+        return false;
+
+    // only from same creature faction
+    if(getFaction() != u->getFaction() )
+        return false;
+
+    // only free creature
+    if( GetCharmerOrOwnerGUID() )
+        return false;
+
+    // skip non hostile to caster enemy creatures
+    if( !IsHostileTo(enemy) )
+        return false;
+
+    return true;
 }
 
 void Creature::SaveRespawnTime()
@@ -1878,7 +1979,7 @@ bool Creature::IsOutOfThreatArea(Unit* pVictim) const
     if(!pVictim->isInAccessiblePlaceFor(this))
         return true;
 
-    if(sMapStore.LookupEntry(GetMapId())->Instanceable())
+    if(sMapStore.LookupEntry(GetMapId())->IsDungeon())
         return false;
 
     float length = pVictim->GetDistance(CombatStartX,CombatStartY,CombatStartZ);

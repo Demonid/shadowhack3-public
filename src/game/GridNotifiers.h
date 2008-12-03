@@ -10,12 +10,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 #ifndef TRINITY_GRIDNOTIFIERS_H
@@ -476,7 +476,7 @@ namespace Trinity
 
                 return false;
             }
-            template<class NOT_INTERESTED> bool operator()(NOT_INTERESTED* u) { return false; }
+            template<class NOT_INTERESTED> bool operator()(NOT_INTERESTED*) { return false; }
         private:
             Unit* const i_funit;
             float i_range;
@@ -698,19 +698,40 @@ namespace Trinity
 
     // Creature checks
 
-    class InAttackDistanceFromAnyHostileCreatureCheck
+    class NearestHostileUnitInAttackDistanceCheck
     {
         public:
-            explicit InAttackDistanceFromAnyHostileCreatureCheck(Unit* funit) : i_funit(funit) {}
-            bool operator()(Creature* u)
+            explicit NearestHostileUnitInAttackDistanceCheck(Creature const* creature, float dist = 0) : m_creature(creature) 
             {
-                if(u->isAlive() && u->IsHostileTo(i_funit) && i_funit->IsWithinDistInMap(u, u->GetAttackDistance(i_funit)))
-                    return true;
-
-                return false;
+                m_range = (dist == 0 ? 9999 : dist);
+                m_force = (dist == 0 ? false : true);
             }
+            bool operator()(Unit* u)
+            {
+                // TODO: addthreat for every enemy in range?
+                if(!m_creature->IsWithinDistInMap(u, m_range))
+                    return false;
+
+                if(m_force)
+                {
+                    if(!m_creature->canAttack(u))
+                        return false;
+                }
+                else
+                {
+                    if(!m_creature->canStartAttack(u))
+                        return false;
+                }
+
+                m_range = m_creature->GetDistance(u);
+                return true;
+            }
+            float GetLastRange() const { return m_range; }
         private:
-            Unit* const i_funit;
+            Creature const *m_creature;
+            float m_range;
+            bool m_force;
+            NearestHostileUnitInAttackDistanceCheck(NearestHostileUnitInAttackDistanceCheck const&);
     };
 
     class NearestAssistCreatureInCreatureRangeCheck
@@ -750,32 +771,15 @@ namespace Trinity
                 if(u == i_funit)
                     return false;
 
-                // we don't need help from zombies :)
-                if( !u->isAlive() )
-                    return false;
-
-                // skip fighting creature
-                if( u->isInCombat() )
-                    return false;
-
-                // only from same creature faction
-                if(u->getFaction() != i_funit->getFaction() )
-                    return false;
-
-                // only free creature
-                if( u->GetCharmerOrOwnerGUID() )
+                if ( !u->CanAssistTo(i_funit, i_enemy) )
                     return false;
 
                 // too far
                 if( !i_funit->IsWithinDistInMap(u, i_range) )
                     return false;
 
-                // skip non hostile to caster enemy creatures
-                if( !u->IsHostileTo(i_enemy) )
-                    return false;
-
                 // only if see assisted creature
-                if(!u->IsWithinLOSInMap(i_funit) )
+                if( !i_funit->IsWithinLOSInMap(u) )
                     return false;
 
                 return true;
@@ -873,7 +877,7 @@ namespace Trinity
         FriendlyMissingBuffInRange(Unit const* obj, float range, uint32 spellid) : i_obj(obj), i_range(range), i_spell(spellid) {}
         bool operator()(Unit* u)
         {
-            if(u->isAlive() && u->isInCombat() && !i_obj->IsHostileTo(u) && i_obj->IsWithinDistInMap(u, i_range) && 
+            if(u->isAlive() && u->isInCombat() && /*!i_obj->IsHostileTo(u)*/ i_obj->IsFriendlyTo(u) && i_obj->IsWithinDistInMap(u, i_range) && 
                 !(u->HasAura(i_spell, 0) || u->HasAura(i_spell, 1) || u->HasAura(i_spell, 2)))
             {
                 return true;

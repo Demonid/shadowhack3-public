@@ -487,22 +487,10 @@ ObjectAccessor::ConvertCorpseForPlayer(uint64 player_guid)
 }
 
 void
-ObjectAccessor::AddActiveObject( WorldObject * obj )
-{
-    i_activeobjects.insert(obj);
-}
-
-void
-ObjectAccessor::RemoveActiveObject( WorldObject * obj )
-{
-    i_activeobjects.erase(obj);
-}
-
-void
 ObjectAccessor::Update(uint32 diff)
 {
-
-    {
+/*    {
+        //Player update now in MapManager -> UpdatePlayers
         // player update might remove the player from grid, and that causes crashes. We HAVE to update players first, and then the active objects.
         HashMapHolder<Player>::MapType& playerMap = HashMapHolder<Player>::GetContainer();
         for(HashMapHolder<Player>::MapType::iterator iter = playerMap.begin(); iter != playerMap.end(); ++iter)
@@ -513,6 +501,7 @@ ObjectAccessor::Update(uint32 diff)
             }
         }
 
+        // TODO: move this to Map::Update
         // clone the active object list, because update might remove from it
         std::set<WorldObject *> activeobjects(i_activeobjects);
 
@@ -571,6 +560,28 @@ ObjectAccessor::Update(uint32 diff)
                 }
             }
         }
+    }*/
+
+    UpdateDataMapType update_players;
+    {
+        Guard guard(i_updateGuard);
+        while(!i_objects.empty())
+        {
+            Object* obj = *i_objects.begin();
+            i_objects.erase(i_objects.begin());
+            if (!obj || !obj->IsInWorld())
+                continue;
+            _buildUpdateObject(obj, update_players);
+            obj->ClearUpdateMask(false);
+        }
+    }
+
+    WorldPacket packet;                                     // here we allocate a std::vector with a size of 0x10000
+    for(UpdateDataMapType::iterator iter = update_players.begin(); iter != update_players.end(); ++iter)
+    {
+        iter->second.BuildPacket(&packet);
+        iter->first->GetSession()->SendPacket(&packet);
+        packet.clear();                                     // clean the string
     }
 }
 
@@ -581,30 +592,6 @@ ObjectAccessor::UpdatePlayers(uint32 diff)
     for(HashMapHolder<Player>::MapType::iterator iter = playerMap.begin(); iter != playerMap.end(); ++iter)
         if(iter->second->IsInWorld())
             iter->second->Update(diff);
-}
-
-bool
-ObjectAccessor::ActiveObjectsNearGrid(uint32 x, uint32 y, uint32 m_id, uint32 i_id) const
-{
-    CellPair cell_min(x*MAX_NUMBER_OF_CELLS, y*MAX_NUMBER_OF_CELLS);
-    CellPair cell_max(cell_min.x_coord + MAX_NUMBER_OF_CELLS, cell_min.y_coord+MAX_NUMBER_OF_CELLS);
-    cell_min << 2;
-    cell_min -= 2;
-    cell_max >> 2;
-    cell_max += 2;
-
-    for(std::set<WorldObject*>::const_iterator itr = i_activeobjects.begin(); itr != i_activeobjects.end(); ++itr)
-    {
-        if( m_id != (*itr)->GetMapId() || i_id != (*itr)->GetInstanceId() )
-            continue;
-
-        CellPair p = Trinity::ComputeCellPair((*itr)->GetPositionX(), (*itr)->GetPositionY());
-        if( (cell_min.x_coord <= p.x_coord && p.x_coord <= cell_max.x_coord) &&
-            (cell_min.y_coord <= p.y_coord && p.y_coord <= cell_max.y_coord) )
-            return true;
-    }
-
-    return false;
 }
 
 void

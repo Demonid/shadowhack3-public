@@ -207,7 +207,7 @@ struct TRINITY_DLL_DECL boss_grand_warlock_nethekurseAI : public ScriptedAI
             float attackRadius = m_creature->GetAttackDistance(who);
             if (m_creature->IsWithinDistInMap(who, attackRadius) && m_creature->IsWithinLOSInMap(who) )
             {
-                who->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
+                //who->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
                 AttackStart(who);
             }
         }
@@ -328,7 +328,7 @@ struct TRINITY_DLL_DECL mob_fel_orc_convertAI : public ScriptedAI
 
     void Reset()
     {
-        m_creature->SetNoCallAssistence(true);              //we don't want any assistance (WE R HEROZ!)
+        m_creature->SetNoCallAssistance(true);              //we don't want any assistance (WE R HEROZ!)
         Hemorrhage_Timer = 3000;
     }
 

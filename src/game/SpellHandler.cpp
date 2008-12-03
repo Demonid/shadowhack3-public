@@ -33,6 +33,7 @@
 #include "MapManager.h"
 #include "ScriptCalls.h"
 #include "Totem.h"
+#include "TemporarySummon.h"
 
 void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
 {
@@ -357,40 +358,49 @@ void WorldSession::HandleCancelAuraOpcode( WorldPacket& recvPacket)
     if (!spellInfo)
         return;
 
-    // Remove possess/charm/sight aura from the possessed/charmed as well
-    // TODO: Remove this once the ability to cancel aura sets at once is implemented
-    if(_player->GetCharm() || _player->GetFarsightTarget())
-    {
-        for (int i = 0; i < 3; ++i)
-        {
-            if (spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_POSSESS ||
-                spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_POSSESS_PET ||
-                spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_CHARM ||
-                spellInfo->EffectApplyAuraName[i] == SPELL_AURA_BIND_SIGHT)
-            {
-                _player->RemoveAurasDueToSpellByCancel(spellId);
-                if (_player->GetCharm())
-                    _player->GetCharm()->RemoveAurasDueToSpellByCancel(spellId);
-                else if (_player->GetFarsightTarget()->GetTypeId() != TYPEID_DYNAMICOBJECT)
-                    ((Unit*)_player->GetFarsightTarget())->RemoveAurasDueToSpellByCancel(spellId);
-                return;
-            }
-        }
-    }
-
     // not allow remove non positive spells and spells with attr SPELL_ATTR_CANT_CANCEL
     if(!IsPositiveSpell(spellId) || (spellInfo->Attributes & SPELL_ATTR_CANT_CANCEL))
         return;
 
-    _player->RemoveAurasDueToSpellByCancel(spellId);
+	// lifebloom must delete final heal effect
+	if (spellInfo->SpellFamilyName == SPELLFAMILY_DRUID && (spellInfo->SpellFamilyFlags & 0x1000000000LL) )
+	{
+		Unit::AuraMap::iterator iter;
+		while((iter = _player->m_Auras.find(Unit::spellEffectPair(spellId, 1))) != _player->m_Auras.end())
+		{
+			_player->m_modAuras[SPELL_AURA_DUMMY].remove(iter->second);
 
-    if (spellId == 2584)                                    // Waiting to resurrect spell cancel, we must remove player from resurrect queue
+			Aura* Aur = iter->second;
+			_player->m_Auras.erase(iter);
+			++_player->m_removedAuras; // internal count used by unit update
+
+			delete Aur;
+
+			if( _player->m_Auras.empty() )
+				iter = _player->m_Auras.end();
+			else
+				iter = _player->m_Auras.begin();
+
+		}
+	}
+		
+    // channeled spell case (it currently casted then)
+    if(IsChanneledSpell(spellInfo))
     {
-        BattleGround *bg = _player->GetBattleGround();
-        if(!bg)
-            return;
-        bg->RemovePlayerFromResurrectQueue(_player->GetGUID());
+        if(Spell* spell = _player->m_currentSpells[CURRENT_CHANNELED_SPELL])
+        {
+            if(spell->m_spellInfo->Id==spellId)
+            {
+                spell->cancel();
+                spell->SetReferencedFromCurrent(false);
+                _player->m_currentSpells[CURRENT_CHANNELED_SPELL] = NULL;
+            }
+        }
+        return;
     }
+
+    // non channeled case
+    _player->RemoveAurasDueToSpellByCancel(spellId);
 }
 
 void WorldSession::HandlePetCancelAuraOpcode( WorldPacket& recvPacket)
