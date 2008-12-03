@@ -44,6 +44,8 @@
 #include "InstanceSaveMgr.h"
 #include "SpellAuras.h"
 #include "Util.h"
+#include "WaypointManager.h"
+#include "InstanceData.h" //for condition_instance_data
 
 INSTANTIATE_SINGLETON_1(ObjectMgr);
 
@@ -400,7 +402,7 @@ void ObjectMgr::SendAuctionWonMail( AuctionEntry *auction )
 
             uint32 owner_accid = GetPlayerAccountIdByGUID(auction->owner);
 
-            sLog.outCommand("GM %s (Account: %u) won item in auction: %s (Entry: %u Count: %u) and pay money: %u. Original owner %s (Account: %u)",
+            sLog.outCommand(bidder_accId,"GM %s (Account: %u) won item in auction: %s (Entry: %u Count: %u) and pay money: %u. Original owner %s (Account: %u)",
                 bidder_name.c_str(),bidder_accId,pItem->GetProto()->Name1,pItem->GetEntry(),pItem->GetCount(),auction->bid,owner_name.c_str(),owner_accid);
         }
     }
@@ -2182,8 +2184,7 @@ void ObjectMgr::LoadPlayerInfo()
             barGoLink bar( 1 );
 
             sLog.outString();
-            sLog.outString( ">> Loaded %u player create items", count );
-            sLog.outErrorDb( "Error loading `playercreateinfo_item` table or empty table.");
+            sLog.outString( ">> Loaded %u custom player create items", count );
         }
         else
         {
@@ -2235,7 +2236,7 @@ void ObjectMgr::LoadPlayerInfo()
             delete result;
 
             sLog.outString();
-            sLog.outString( ">> Loaded %u player create items", count );
+            sLog.outString( ">> Loaded %u custom player create items", count );
         }
     }
 
@@ -6463,7 +6464,7 @@ bool ObjectMgr::LoadTrinityStrings(DatabaseType& db, char const* table, int32 mi
         bar.step();
 
         sLog.outString("");
-        if(min_value > 0)                                   // error only in case internal strings
+        if(min_value == MIN_TRINITY_STRING_ID)               // error only in case internal strings
             sLog.outErrorDb(">> Loaded 0 trinity strings. DB table `%s` is empty. Cannot continue.",table);
         else
             sLog.outString(">> Loaded 0 string templates. DB table `%s` is empty.",table);
@@ -6529,7 +6530,7 @@ bool ObjectMgr::LoadTrinityStrings(DatabaseType& db, char const* table, int32 mi
     delete result;
 
     sLog.outString();
-    if(min_value > 0)                                       // internal Trinity strings
+    if(min_value == MIN_TRINITY_STRING_ID)               // internal Trinity strings
         sLog.outString( ">> Loaded %u Trinity strings from table %s", count,table);
     else
         sLog.outString( ">> Loaded %u string templates from %s", count,table);
@@ -6737,6 +6738,12 @@ bool PlayerCondition::Meets(Player const * player) const
             return !player->HasAura(value1, value2);
         case CONDITION_ACTIVE_EVENT:
             return gameeventmgr.IsActiveEvent(value1);
+        case CONDITION_INSTANCE_DATA:
+        {
+            Map *map = player->GetMap();
+            if(map && map->IsDungeon() && ((InstanceMap*)map)->GetInstanceData())
+                return ((InstanceMap*)map)->GetInstanceData()->GetData(value1) == value2;
+        }
         default:
             return false;
     }
@@ -6881,6 +6888,9 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
             }
             break;
         }
+        case CONDITION_INSTANCE_DATA:
+            //TODO: need some check
+            break;
     }
     return true;
 }
@@ -7433,7 +7443,7 @@ uint32 ObjectMgr::GetScriptId(const char *name)
     if(!name) return 0;
     ScriptNameMap::const_iterator itr =
         std::lower_bound(m_scriptNames.begin(), m_scriptNames.end(), name);
-    if(itr == m_scriptNames.end()) return 0;
+    if(itr == m_scriptNames.end() || *itr != name) return 0;
     return itr - m_scriptNames.begin();
 }
 
@@ -7446,7 +7456,7 @@ void ObjectMgr::CheckScripts(ScriptMapMap const& scripts,std::set<int32>& ids)
             if(itrM->second.dataint)
             {
                 if(!GetTrinityStringLocale (itrM->second.dataint))
-                    sLog.outErrorDb( "Table `db_script_string` has not existed string id  %u", *itrM);
+                    sLog.outErrorDb( "Table `db_script_string` has not existed string id  %u", itrM->first);
 
                 if(ids.count(itrM->second.dataint))
                     ids.erase(itrM->second.dataint);
@@ -7470,6 +7480,8 @@ void ObjectMgr::LoadDbScriptStrings()
     CheckScripts(sSpellScripts,ids);
     CheckScripts(sGameObjectScripts,ids);
     CheckScripts(sEventScripts,ids);
+
+    WaypointMgr.CheckTextsExistance(ids);
 
     for(std::set<int32>::const_iterator itr = ids.begin(); itr != ids.end(); ++itr)
         sLog.outErrorDb( "Table `db_script_string` has unused string id  %u", *itr);

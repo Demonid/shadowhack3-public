@@ -155,7 +155,7 @@ void Player::UpdateArmor()
     {
         Modifier* mod = (*i)->GetModifier();
         if(mod->m_miscvalue & SPELL_SCHOOL_MASK_NORMAL)
-            value += int32(GetStat(Stats((*i)->GetMiscBValue())) * mod->m_amount / 100.0f);
+            value += int32(GetStat(Stats((*i)->GetMiscBValue())) * (*i)->GetModifierValue() / 100.0f);
     }
 
     value *= GetModifierValue(unitMod, TOTAL_PCT);
@@ -313,7 +313,7 @@ void Player::UpdateAttackPowerAndDamage(bool ranged )
     {
         AuraList const& mRAPbyIntellect = GetAurasByType(SPELL_AURA_MOD_RANGED_ATTACK_POWER_OF_STAT_PERCENT);
         for(AuraList::const_iterator i = mRAPbyIntellect.begin();i != mRAPbyIntellect.end(); ++i)
-            attPowerMod += int32(GetStat(Stats((*i)->GetModifier()->m_miscvalue)) * (*i)->GetModifier()->m_amount / 100.0f);
+            attPowerMod += int32(GetStat(Stats((*i)->GetModifier()->m_miscvalue)) * (*i)->GetModifierValue() / 100.0f);
     }
 
     float attPowerMultiplier = GetModifierValue(unitMod, TOTAL_PCT) - 1.0f;
@@ -572,10 +572,10 @@ void Player::UpdateExpertise(WeaponAttackType attack)
     {
         // item neutral spell
         if((*itr)->GetSpellProto()->EquippedItemClass == -1)
-            expertise += (*itr)->GetModifier()->m_amount;
+            expertise += (*itr)->GetModifierValue();
         // item dependent spell
         else if(weapon && weapon->IsFitToSpellRequirements((*itr)->GetSpellProto()))
-            expertise += (*itr)->GetModifier()->m_amount;
+            expertise += (*itr)->GetModifierValue();
     }
 
     if(expertise < 0)
@@ -605,7 +605,7 @@ void Player::UpdateManaRegen()
     for(AuraList::const_iterator i = regenAura.begin();i != regenAura.end(); ++i)
     {
         Modifier* mod = (*i)->GetModifier();
-        power_regen_mp5 += GetStat(Stats(mod->m_miscvalue)) * mod->m_amount / 500.0f;
+        power_regen_mp5 += GetStat(Stats(mod->m_miscvalue)) * (*i)->GetModifierValue() / 500.0f;
     }
 
     // Bonus from some dummy auras
@@ -737,15 +737,27 @@ void Creature::UpdateDamagePhysical(WeaponAttackType attType)
             break;
     }
 
-    float att_speed = float(GetAttackTime(attType))/1000.0f;
+    //float att_speed = float(GetAttackTime(attType))/1000.0f;
 
-    float base_value  = GetModifierValue(unitMod, BASE_VALUE) + GetTotalAttackPowerValue(attType)/ 14.0f * att_speed;
+    float weapon_mindamage = GetWeaponDamageRange(attType, MINDAMAGE);
+    float weapon_maxdamage = GetWeaponDamageRange(attType, MAXDAMAGE);
+
+    //This formula is not correct
+    //The correct one is (Damage_from_AttackPower + Base_Weapon_Damage) * Multiplier
+    //We do not know the multiplier, so we assume attack power is about 25% damage
+    //float base_value  = GetModifierValue(unitMod, BASE_VALUE) + GetTotalAttackPowerValue(attType)/ 14.0f * att_speed;
+    float base_value  = GetModifierValue(unitMod, BASE_VALUE)
+        + (weapon_mindamage + weapon_maxdamage) / 6
+        * GetTotalAttackPowerValue(attType) / (getLevel() * 5);
     float base_pct    = GetModifierValue(unitMod, BASE_PCT);
     float total_value = GetModifierValue(unitMod, TOTAL_VALUE);
     float total_pct   = GetModifierValue(unitMod, TOTAL_PCT);
 
-    float weapon_mindamage = GetWeaponDamageRange(attType, MINDAMAGE);
-    float weapon_maxdamage = GetWeaponDamageRange(attType, MAXDAMAGE);
+    if(attType == BASE_ATTACK && HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISARMED))
+    {
+        weapon_mindamage = 0;
+        weapon_maxdamage = 0;
+    }
 
     float mindamage = ((base_value + weapon_mindamage) * base_pct + total_value) * total_pct ;
     float maxdamage = ((base_value + weapon_maxdamage) * base_pct + total_value) * total_pct ;

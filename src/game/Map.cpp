@@ -466,7 +466,8 @@ bool Map::Add(Player *player)
     UpdatePlayerVisibility(player,cell,p);
     UpdateObjectsVisibilityFor(player,cell,p);
 
-    AddNotifier(player,cell,p);
+    //AddNotifier(player,cell,p);
+    AddUnitToNotify(player);
     return true;
 }
 
@@ -496,7 +497,9 @@ Map::Add(T *obj)
 
     UpdateObjectVisibility(obj,cell,p);
 
-    AddNotifier(obj,cell,p);
+    //AddNotifier(obj,cell,p);
+    if(obj->GetTypeId() == TYPEID_UNIT || obj->GetTypeId() == TYPEID_PLAYER)
+        AddUnitToNotify((Unit*)obj);
 }
 
 void Map::MessageBroadcast(Player *player, WorldPacket *msg, bool to_self, bool to_possessor)
@@ -594,9 +597,90 @@ bool Map::loaded(const GridPair &p) const
     return ( getNGrid(p.x_coord, p.y_coord) && isGridObjectDataLoaded(p.x_coord, p.y_coord) );
 }
 
+/*void Map::UpdateActiveCells(const float &x, const float &y, const uint32 &t_diff)
+{
+    CellPair standing_cell(Trinity::ComputeCellPair(x, y));
+
+    // Check for correctness of standing_cell, it also avoids problems with update_cell
+    if (standing_cell.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || standing_cell.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP)
+        return;
+
+    // will this reduce the speed?
+    Trinity::ObjectUpdater updater(t_diff);
+    // for creature
+    TypeContainerVisitor<Trinity::ObjectUpdater, GridTypeMapContainer  > grid_object_update(updater);
+    // for pets
+    TypeContainerVisitor<Trinity::ObjectUpdater, WorldTypeMapContainer > world_object_update(updater);
+
+    // the overloaded operators handle range checking
+    // so ther's no need for range checking inside the loop
+    CellPair begin_cell(standing_cell), end_cell(standing_cell);
+    begin_cell << 1; begin_cell -= 1;               // upper left
+    end_cell >> 1; end_cell += 1;                   // lower right
+
+    for(uint32 x = begin_cell.x_coord; x <= end_cell.x_coord; ++x)
+    {
+        for(uint32 y = begin_cell.y_coord; y <= end_cell.y_coord; ++y)
+        {
+            // marked cells are those that have been visited
+            // don't visit the same cell twice
+            uint32 cell_id = (y * TOTAL_NUMBER_OF_CELLS_PER_MAP) + x;
+            if(!isCellMarked(cell_id))
+            {
+                markCell(cell_id);
+                CellPair pair(x,y);
+                Cell cell(pair);
+                cell.data.Part.reserved = CENTER_DISTRICT;
+                cell.SetNoCreate();
+                CellLock<NullGuard> cell_lock(cell, pair);
+                cell_lock->Visit(cell_lock, grid_object_update,  *this);
+                cell_lock->Visit(cell_lock, world_object_update, *this);
+            }
+        }
+    }
+}*/
+
 void Map::Update(const uint32 &t_diff)
 {
+    for(std::vector<uint64>::iterator iter = i_unitsToNotify.begin(); iter != i_unitsToNotify.end(); ++iter)
+    {
+        Unit *unit = ObjectAccessor::GetObjectInWorld(*iter, (Unit*)NULL);
+        if(!unit) continue;
+        unit->m_Notified = true;
+        if(!unit->IsInWorld())
+            continue;
+        CellPair val = Trinity::ComputeCellPair(unit->GetPositionX(), unit->GetPositionY());
+        Cell cell(val);
+        if(unit->GetTypeId() == TYPEID_PLAYER)
+            PlayerRelocationNotify((Player*)unit, cell, val);
+        else
+            CreatureRelocationNotify((Creature*)unit, cell, val);
+    }
+    for(std::vector<uint64>::iterator iter = i_unitsToNotify.begin(); iter != i_unitsToNotify.end(); ++iter)
+    {
+        if(Unit *unit = ObjectAccessor::GetObjectInWorld(*iter, (Unit*)NULL))
+        {
+            unit->m_IsInNotifyList = false;
+            unit->m_Notified = false;
+        }
+    }
+    i_unitsToNotify.clear();
+
     resetMarkedCells();
+
+    //TODO: is there a better way to update activeobjects?
+    std::vector<WorldObject*> activeObjects;
+    for(MapRefManager::iterator iter = m_mapRefManager.begin(); iter != m_mapRefManager.end(); ++iter)
+    {
+        Player* plr = iter->getSource();
+        if(plr->IsInWorld())
+            activeObjects.push_back(plr);
+    }
+    for(std::set<WorldObject *>::iterator iter = i_activeObjects.begin(); iter != i_activeObjects.end(); ++iter)
+    {
+        if((*iter)->IsInWorld())
+            activeObjects.push_back(*iter);
+    }
 
     Trinity::ObjectUpdater updater(t_diff);
     // for creature
@@ -604,13 +688,9 @@ void Map::Update(const uint32 &t_diff)
     // for pets
     TypeContainerVisitor<Trinity::ObjectUpdater, WorldTypeMapContainer > world_object_update(updater);
 
-    for(MapRefManager::iterator iter = m_mapRefManager.begin(); iter != m_mapRefManager.end(); ++iter)
+    for(std::vector<WorldObject*>::iterator iter = activeObjects.begin(); iter != activeObjects.end(); ++iter)
     {
-        Player* plr = iter->getSource();
-        if(!plr->IsInWorld())
-            continue;
-
-        CellPair standing_cell(Trinity::ComputeCellPair(plr->GetPositionX(), plr->GetPositionY()));
+        CellPair standing_cell(Trinity::ComputeCellPair((*iter)->GetPositionX(), (*iter)->GetPositionY()));
 
         // Check for correctness of standing_cell, it also avoids problems with update_cell
         if (standing_cell.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || standing_cell.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP)
@@ -642,8 +722,9 @@ void Map::Update(const uint32 &t_diff)
                 }
             }
         }
-    }
 
+        //   UpdateActiveCells((*iter)->GetPositionX(), (*iter)->GetPositionY(), t_diff);
+    }
 
     // Don't unload grids if it's battleground, since we may have manually added GOs,creatures, those doesn't load from DB at grid re-load !
     // This isn't really bother us, since as soon as we have instanced BG-s, the whole map unloads as the BG gets ended
@@ -662,6 +743,13 @@ void Map::Update(const uint32 &t_diff)
 
 void Map::Remove(Player *player, bool remove)
 {
+    // this may be called during Map::Update
+    // after decrement+unlink, ++m_mapRefIter will continue correctly
+    // when the first element of the list is being removed
+    // nocheck_prev will return the padding element of the RefManager
+    // instead of NULL in the case of prev
+    if(m_mapRefIter == player->GetMapRef())
+        m_mapRefIter = m_mapRefIter->nocheck_prev();
     player->GetMapRef().unlink();
     CellPair p = Trinity::ComputeCellPair(player->GetPositionX(), player->GetPositionY());
     if(p.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || p.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP)
@@ -784,7 +872,8 @@ Map::PlayerRelocation(Player *player, float x, float y, float z, float orientati
     if(player->isPossessedByPlayer())
         UpdateObjectsVisibilityFor((Player*)player->GetCharmer(), new_cell, new_val);
 
-    PlayerRelocationNotify(player,new_cell,new_val);
+    //PlayerRelocationNotify(player,new_cell,new_val);
+    AddUnitToNotify(player);
     NGridType* newGrid = getNGrid(new_cell.GridX(), new_cell.GridY());
     if( !same_cell && newGrid->GetGridState()!= GRID_STATE_ACTIVE )
     {
@@ -812,8 +901,13 @@ Map::CreatureRelocation(Creature *creature, float x, float y, float z, float ang
         #endif
         AddCreatureToMoveList(creature,x,y,z,ang);
         // in diffcell/diffgrid case notifiers called at finishing move creature in Map::MoveAllCreaturesInMoveList
-        if(creature->isPossessedByPlayer())
-            EnsureGridLoadedForPlayer(new_cell, (Player*)creature->GetCharmer(), false);
+        if(creature->isActive())
+        {
+            if(creature->isPossessedByPlayer())
+                EnsureGridLoadedForPlayer(new_cell, (Player*)creature->GetCharmer(), false);
+            else
+                EnsureGridLoadedForPlayer(new_cell, NULL, false);
+        }
     }
     else
     {
@@ -822,7 +916,8 @@ Map::CreatureRelocation(Creature *creature, float x, float y, float z, float ang
         if(creature->isPossessedByPlayer())
             UpdateObjectsVisibilityFor((Player*)creature->GetCharmer(), new_cell, new_val);
 
-        CreatureRelocationNotify(creature,new_cell,new_val);
+        //CreatureRelocationNotify(creature,new_cell,new_val);
+        AddUnitToNotify(creature);
     }
     assert(CheckGridIntegrity(creature,true));
 }
@@ -854,7 +949,8 @@ void Map::MoveAllCreaturesInMoveList()
         {
             // update pos
             c->Relocate(cm.x, cm.y, cm.z, cm.ang);
-            CreatureRelocationNotify(c,new_cell,new_cell.cellPair());
+            //CreatureRelocationNotify(c,new_cell,new_cell.cellPair());
+            AddUnitToNotify(c);
         }
         else
         {
@@ -949,7 +1045,8 @@ bool Map::CreatureRespawnRelocation(Creature *c)
     {
         c->Relocate(resp_x, resp_y, resp_z, resp_o);
         c->GetMotionMaster()->Initialize();                 // prevent possible problems with default move generators
-        CreatureRelocationNotify(c,resp_cell,resp_cell.cellPair());
+        //CreatureRelocationNotify(c,resp_cell,resp_cell.cellPair());
+        AddUnitToNotify(c);
         return true;
     }
     else
@@ -1508,6 +1605,36 @@ bool Map::PlayersNearGrid(uint32 x, uint32 y) const
     return false;
 }
 
+bool Map::ActiveObjectsNearGrid(uint32 x, uint32 y) const
+{
+    CellPair cell_min(x*MAX_NUMBER_OF_CELLS, y*MAX_NUMBER_OF_CELLS);
+    CellPair cell_max(cell_min.x_coord + MAX_NUMBER_OF_CELLS, cell_min.y_coord+MAX_NUMBER_OF_CELLS);
+    cell_min << 2;
+    cell_min -= 2;
+    cell_max >> 2;
+    cell_max += 2;
+
+    for(MapRefManager::const_iterator iter = m_mapRefManager.begin(); iter != m_mapRefManager.end(); ++iter)
+    {
+        Player* plr = iter->getSource();
+
+        CellPair p = Trinity::ComputeCellPair(plr->GetPositionX(), plr->GetPositionY());
+        if( (cell_min.x_coord <= p.x_coord && p.x_coord <= cell_max.x_coord) &&
+            (cell_min.y_coord <= p.y_coord && p.y_coord <= cell_max.y_coord) )
+            return true;
+    }
+
+    for(std::set<WorldObject*>::const_iterator itr = i_activeObjects.begin(); itr != i_activeObjects.end(); ++itr)
+    {
+        CellPair p = Trinity::ComputeCellPair((*itr)->GetPositionX(), (*itr)->GetPositionY());
+        if( (cell_min.x_coord <= p.x_coord && p.x_coord <= cell_max.x_coord) &&
+            (cell_min.y_coord <= p.y_coord && p.y_coord <= cell_max.y_coord) )
+            return true;
+    }
+
+    return false;
+}
+
 template void Map::Add(Corpse *);
 template void Map::Add(Creature *);
 template void Map::Add(GameObject *);
@@ -1658,6 +1785,8 @@ bool InstanceMap::Add(Player *player)
         }
 
         if(i_data) i_data->OnPlayerEnter(player);
+        // for normal instances cancel the reset schedule when the
+        // first player enters (no players yet)
         SetResetSchedule(false);
 
         player->SendInitWorldStates();
@@ -1684,11 +1813,12 @@ void InstanceMap::Update(const uint32& t_diff)
 void InstanceMap::Remove(Player *player, bool remove)
 {
     sLog.outDetail("MAP: Removing player '%s' from instance '%u' of map '%s' before relocating to other map", player->GetName(), GetInstanceId(), GetMapName());
-    SetResetSchedule(true);
     //if last player set unload timer
     if(!m_unloadTimer && m_mapRefManager.getSize() == 1)
         m_unloadTimer = m_unloadWhenEmpty ? MIN_UNLOAD_DELAY : std::max(sWorld.getConfig(CONFIG_INSTANCE_UNLOAD_DELAY), (uint32)MIN_UNLOAD_DELAY);
     Map::Remove(player, remove);
+    // for normal instances schedule the reset after all players have left
+    SetResetSchedule(true);
 }
 
 Creature * Map::GetCreatureInMap(uint64 guid)
@@ -1922,4 +2052,15 @@ void BattleGroundMap::UnloadAll(bool pForce)
     }
 
     Map::UnloadAll(pForce);
+}
+
+/*--------------------------TRINITY-------------------------*/
+
+void Map::AddUnitToNotify(Unit* u)
+{
+    if(!u->m_IsInNotifyList)
+    {
+        i_unitsToNotify.push_back(u->GetGUID());
+        u->m_IsInNotifyList = true;
+    }
 }

@@ -86,6 +86,21 @@ struct BattlemasterListEntry
                                                             // 32 unused
 };
 
+#define MAX_OUTFIT_ITEMS 12
+// #define MAX_OUTFIT_ITEMS 24                              // 12->24 in 3.0.x
+
+struct CharStartOutfitEntry
+{
+    //uint32 Id;                                            // 0
+    uint32 RaceClassGender;                                 // 1 (UNIT_FIELD_BYTES_0 & 0x00FFFFFF) comparable (0 byte = race, 1 byte = class, 2 byte = gender)
+    int32 ItemId[MAX_OUTFIT_ITEMS];                         // 2-13
+    //int32 ItemDisplayId[MAX_OUTFIT_ITEMS];                // 14-25 not required at server side
+    //int32 ItemInventorySlot[MAX_OUTFIT_ITEMS];            // 26-37 not required at server side
+    //uint32 Unknown1;                                      // 38, unique values (index-like with gaps ordered in other way as ids)
+    //uint32 Unknown2;                                      // 39
+    //uint32 Unknown3;                                      // 40
+};
+
 struct CharTitlesEntry
 {
     uint32      ID;                                         // 0, title ids, for example in Quest::GetCharTitleId()
@@ -229,6 +244,8 @@ struct FactionTemplateEntry
     // helpers
     bool IsFriendlyTo(FactionTemplateEntry const& entry) const
     {
+        if(ID == entry.ID)
+            return true;
         if(enemyFaction1  == entry.faction || enemyFaction2  == entry.faction || enemyFaction3 == entry.faction || enemyFaction4 == entry.faction )
             return false;
         if(friendFaction1 == entry.faction || friendFaction2 == entry.faction || friendFaction3 == entry.faction || friendFaction4 == entry.faction )
@@ -237,6 +254,8 @@ struct FactionTemplateEntry
     }
     bool IsHostileTo(FactionTemplateEntry const& entry) const
     {
+        if(ID == entry.ID)
+            return false;
         if(enemyFaction1  == entry.faction || enemyFaction2  == entry.faction || enemyFaction3 == entry.faction || enemyFaction4 == entry.faction )
             return true;
         if(friendFaction1 == entry.faction || friendFaction2 == entry.faction || friendFaction3 == entry.faction || friendFaction4 == entry.faction )
@@ -667,6 +686,7 @@ struct SpellRangeEntry
     uint32    ID;
     float     minRange;
     float     maxRange;
+    uint32    flags;
 };
 
 struct SpellShapeshiftEntry

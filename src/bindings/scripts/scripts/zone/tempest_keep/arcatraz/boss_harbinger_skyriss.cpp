@@ -94,7 +94,7 @@ struct TRINITY_DLL_DECL boss_harbinger_skyrissAI : public ScriptedAI
 
     void Reset()
     {
-        m_creature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_UNKNOWN2);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NOT_ATTACKABLE_2);
 
         if( Intro )
             Intro = true;
@@ -114,47 +114,19 @@ struct TRINITY_DLL_DECL boss_harbinger_skyrissAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit *who)
     {
-        if( !Intro )
-            return;
-
-        if( !m_creature->getVictim() && who->isTargetableForAttack() && ( m_creature->IsHostileTo( who )) && who->isInAccessiblePlaceFor(m_creature) )
-        {
-            if (!m_creature->canFly() && m_creature->GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE)
-                return;
-
-            float attackRadius = m_creature->GetAttackDistance(who);
-            if( m_creature->IsWithinDistInMap(who, attackRadius) && m_creature->IsWithinLOSInMap(who) )
-            {
-                who->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
-                AttackStart(who);
-            }
-        }
+        if(Intro)
+            ScriptedAI::MoveInLineOfSight(who);
     }
 
     void AttackStart(Unit* who)
     {
-        if( !Intro )
-            return;
-
-        if (m_creature->Attack(who, true))
-        {
-            m_creature->AddThreat(who, 0.0f);
-            m_creature->SetInCombatWith(who);
-            who->SetInCombatWith(m_creature);
-
-            if (!InCombat)
-            {
-                InCombat = true;
-                Aggro(who);
-            }
-
-            DoStartMovement(who);
-        }
+        if(!Intro)
+            ScriptedAI::AttackStart(who);
     }
 
     void Aggro(Unit *who)
     {
-        m_creature->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_UNKNOWN2);
+        m_creature->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NOT_ATTACKABLE_2);
     }
 
     void JustDied(Unit* Killer)
@@ -227,6 +199,7 @@ struct TRINITY_DLL_DECL boss_harbinger_skyrissAI : public ScriptedAI
                             //should have a better way to do this. possibly spell exist.
                             mellic->setDeathState(JUST_DIED);
                             mellic->SetHealth(0);
+							pInstance->SetData(TYPE_SHIELD_OPEN,IN_PROGRESS);
                         }
                         ++Intro_Phase;
                         Intro_Timer = 3000;

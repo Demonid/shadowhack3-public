@@ -194,6 +194,19 @@ enum ItemQualities
 
 #define MAX_ITEM_QUALITY                 7
 
+enum SpellCategory
+{
+    SPELL_CATEGORY_FOOD             = 11,
+    SPELL_CATEGORY_DRINK            = 59,
+};
+
+enum SpellRangeFlag
+{
+    SPELL_RANGE_DEFAULT             = 0,
+    SPELL_RANGE_MEELE               = 1,     //unused
+    SPELL_RANGE_RANGED              = 2,     //hunters' shoots, auto shoot, shoot, deadly throw, throw
+};
+
 // ***********************************
 // Spell Attributes definitions
 // ***********************************
@@ -280,8 +293,8 @@ enum ItemQualities
 #define SPELL_ATTR_EX2_UNK13                      0x00002000            // 13
 #define SPELL_ATTR_EX2_UNK14                      0x00004000            // 14
 #define SPELL_ATTR_EX2_UNK15                      0x00008000            // 15 not set in 2.4.2
-#define SPELL_ATTR_EX2_UNK16                      0x00010000            // 16
-#define SPELL_ATTR_EX2_UNK17                      0x00020000            // 17 Hunters Shot and Stings only have this flag
+#define SPELL_ATTR_EX2_TAME_BEAST                 0x00010000            // 16
+#define SPELL_ATTR_EX2_NOT_RESET_AUTOSHOT         0x00020000            // 17 Hunters Shot and Stings only have this flag
 #define SPELL_ATTR_EX2_UNK18                      0x00040000            // 18 Only Revive pet - possible req dead pet
 #define SPELL_ATTR_EX2_NOT_NEED_SHAPESHIFT        0x00080000            // 19 does not necessarly need shapeshift
 #define SPELL_ATTR_EX2_UNK20                      0x00100000            // 20
@@ -295,7 +308,7 @@ enum ItemQualities
 #define SPELL_ATTR_EX2_UNK28                      0x10000000            // 28
 #define SPELL_ATTR_EX2_CANT_CRIT                  0x20000000            // 29 Spell can't crit
 #define SPELL_ATTR_EX2_UNK30                      0x40000000            // 30
-#define SPELL_ATTR_EX2_UNK31                      0x80000000            // 31
+#define SPELL_ATTR_EX2_FOOD                       0x80000000            // 31 food, well-fed, and a few others
 
 #define SPELL_ATTR_EX3_UNK0                       0x00000001            // 0
 #define SPELL_ATTR_EX3_UNK1                       0x00000002            // 1
@@ -2069,7 +2082,7 @@ enum SummonType
     SUMMON_TYPE_CRITTER2    = 407,
     SUMMON_TYPE_CRITTER3    = 307,
     SUMMON_TYPE_UNKNOWN5    = 409,
-    SUMMON_TYPE_UNKNOWN2    = 427,
+    SUMMON_TYPE_POSESSED3   = 427,
     SUMMON_TYPE_POSESSED2   = 428
 };
 

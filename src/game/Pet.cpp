@@ -628,7 +628,7 @@ void Pet::RegenerateFocus()
     AuraList const& ModPowerRegenPCTAuras = GetAurasByType(SPELL_AURA_MOD_POWER_REGEN_PERCENT);
     for(AuraList::const_iterator i = ModPowerRegenPCTAuras.begin(); i != ModPowerRegenPCTAuras.end(); ++i)
         if ((*i)->GetModifier()->m_miscvalue == POWER_FOCUS)
-            addvalue *= ((*i)->GetModifier()->m_amount + 100) / 100.0f;
+            addvalue *= ((*i)->GetModifierValue() + 100) / 100.0f;
 
     ModifyPower(POWER_FOCUS, (int32)addvalue);
 }
@@ -1015,7 +1015,7 @@ bool Pet::InitStatsForLevel(uint32 petlevel)
     SetFloatValue(UNIT_MOD_CAST_SPEED, 1.0);
 
     CreatureFamilyEntry const* cFamily = sCreatureFamilyStore.LookupEntry(cinfo->family);
-    if(cFamily && cFamily->minScale > 0.0f)
+    if(cFamily && cFamily->minScale > 0.0f && getPetType()==HUNTER_PET)
     {
         float scale;
         if (getLevel() >= cFamily->maxScaleLevel)
@@ -1430,7 +1430,7 @@ void Pet::_SaveAuras()
                     {
                         CharacterDatabase.PExecute("INSERT INTO pet_aura (guid,caster_guid,spell,effect_index,stackcount,amount,maxduration,remaintime,remaincharges) "
                             "VALUES ('%u', '" I64FMTD "', '%u', '%u', '%u', '%d', '%d', '%d', '%d')",
-                            m_charmInfo->GetPetNumber(), itr2->second->GetCasterGUID(),(uint32)itr2->second->GetId(), (uint32)itr2->second->GetEffIndex(), stackCounter, itr2->second->GetModifier()->m_amount,int(itr2->second->GetAuraMaxDuration()),int(itr2->second->GetAuraDuration()),int(itr2->second->m_procCharges));
+                            m_charmInfo->GetPetNumber(), itr2->second->GetCasterGUID(),(uint32)itr2->second->GetId(), (uint32)itr2->second->GetEffIndex(), (uint32)itr2->second->GetStackAmount(), itr2->second->GetModifier()->m_amount,int(itr2->second->GetAuraMaxDuration()),int(itr2->second->GetAuraDuration()),int(itr2->second->m_procCharges));
                     }
                 }
             }
@@ -1466,7 +1466,8 @@ bool Pet::addSpell(uint16 spell_id, uint16 active, PetSpellState state, uint16 s
     }
 
     // same spells don't have autocast option
-    if (spellInfo->AttributesEx & SPELL_ATTR_EX_UNAUTOCASTABLE_BY_PET) active = ACT_CAST;
+    if (spellInfo->AttributesEx & SPELL_ATTR_EX_UNAUTOCASTABLE_BY_PET)
+        active = ACT_CAST;
 
     PetSpellMap::iterator itr = m_spells.find(spell_id);
     if (itr != m_spells.end())
@@ -1542,7 +1543,7 @@ bool Pet::addSpell(uint16 spell_id, uint16 active, PetSpellState state, uint16 s
     if (IsPassiveSpell(spell_id))
         CastSpell(this, spell_id, true);
     else if(state == PETSPELL_NEW)
-        m_charmInfo->AddSpellToAB(oldspell_id, spell_id, active);
+        m_charmInfo->AddSpellToAB(oldspell_id, spell_id, (ActiveStates)active);
 
     if(newspell->active == ACT_ENABLED)
         ToggleAutocast(spell_id, true);

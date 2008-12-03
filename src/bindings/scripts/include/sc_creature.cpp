@@ -73,17 +73,7 @@ bool ScriptedAI::IsVisible(Unit* who) const
 
 void ScriptedAI::MoveInLineOfSight(Unit *who)
 {
-    if(m_creature->getVictim() || !m_creature->IsHostileTo(who) || !who->isInAccessiblePlaceFor(m_creature))
-        return;
-
-    if(!m_creature->canFly() && m_creature->GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE)
-        return;
-
-    if(!m_creature->IsWithinDistInMap(who, m_creature->GetAttackDistance(who)) || !m_creature->IsWithinLOSInMap(who))
-        return;
-    
-    if(m_creature->canAttack(who))
-        //who->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
+    if(!m_creature->getVictim() && m_creature->canStartAttack(who))
         AttackStart(who);
 }
 
@@ -151,16 +141,23 @@ void ScriptedAI::UpdateAI(const uint32 diff)
 
 void ScriptedAI::EnterEvadeMode()
 {
-    m_creature->InterruptNonMeleeSpells(true);
+    //m_creature->InterruptNonMeleeSpells(true);
     m_creature->RemoveAllAuras();
     m_creature->DeleteThreatList();
     m_creature->CombatStop();
     m_creature->LoadCreaturesAddon();
-
-    if (m_creature->isAlive())
-        m_creature->GetMotionMaster()->MoveTargetedHome();
-
     m_creature->SetLootRecipient(NULL);
+
+    if(m_creature->isAlive())
+    {
+        if(Unit* owner = m_creature->GetOwner())
+        {
+            if(owner->isAlive())
+                m_creature->GetMotionMaster()->MoveFollow(owner,PET_FOLLOW_DIST,PET_FOLLOW_ANGLE);
+        } 
+        else
+            m_creature->GetMotionMaster()->MoveTargetedHome();
+    }
 
     InCombat = false;
     Reset();
@@ -193,7 +190,7 @@ void ScriptedAI::DoStartNoMovement(Unit* victim)
 void ScriptedAI::DoMeleeAttackIfReady()
 {
     //Make sure our attack is ready and we aren't currently casting before checking distance
-    if (m_creature->isAttackReady() && !m_creature->IsNonMeleeSpellCasted(false))
+    if (m_creature->isAttackReady() && !m_creature->hasUnitState(UNIT_STAT_CASTING))
     {
         //If we are within range melee the target
         if (m_creature->IsWithinCombatDist(m_creature->getVictim(), ATTACK_DISTANCE))
@@ -202,7 +199,7 @@ void ScriptedAI::DoMeleeAttackIfReady()
             m_creature->resetAttackTimer();
         }
     }
-    if (m_creature->haveOffhandWeapon() && m_creature->isAttackReady(OFF_ATTACK) && !m_creature->IsNonMeleeSpellCasted(false))
+    if (m_creature->haveOffhandWeapon() && m_creature->isAttackReady(OFF_ATTACK) && !m_creature->hasUnitState(UNIT_STAT_CASTING))
     {
         //If we are within range melee the target
         if (m_creature->IsWithinCombatDist(m_creature->getVictim(), ATTACK_DISTANCE))
@@ -681,9 +678,15 @@ void ScriptedAI::DoZoneInCombat(Unit* pUnit)
 
     Map::PlayerList const &PlayerList = map->GetPlayers();
     for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+    {
         if (Player* i_pl = i->getSource())
             if (!i_pl->isAlive())
+            {
+                pUnit->SetInCombatWith(i_pl);
+                i_pl->SetInCombatWith(pUnit);
                 pUnit->AddThreat(i_pl, 0.0f);
+            }
+    }
 }
 
 void ScriptedAI::DoResetThreat()
@@ -796,7 +799,7 @@ std::list<Creature*> ScriptedAI::DoFindFriendlyMissingBuff(float range, uint32 s
     return pList;
 }
 
-void Scripted_NoMovementAI::MoveInLineOfSight(Unit *who)
+/*void Scripted_NoMovementAI::MoveInLineOfSight(Unit *who)
 {
     if( !m_creature->getVictim() && m_creature->canAttack(who) && ( m_creature->IsHostileTo( who )) && who->isInAccessiblePlaceFor(m_creature) )
     {
@@ -810,7 +813,7 @@ void Scripted_NoMovementAI::MoveInLineOfSight(Unit *who)
             AttackStart(who);
         }
     }
-}
+}*/
 
 void Scripted_NoMovementAI::AttackStart(Unit* who)
 {

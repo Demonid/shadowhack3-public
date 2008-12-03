@@ -54,6 +54,7 @@
 #include "Transports.h"
 #include "Weather.h"
 #include "BattleGround.h"
+#include "BattleGroundAV.h"
 #include "BattleGroundMgr.h"
 #include "OutdoorPvP.h"
 #include "OutdoorPvPMgr.h"
@@ -545,7 +546,7 @@ bool Player::Create( uint32 guidlow, std::string name, uint8 race, uint8 class_,
     }
 
     SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, DEFAULT_WORLD_OBJECT_SIZE );
-    SetFloatValue(UNIT_FIELD_COMBATREACH, 1.5f   );
+    SetFloatValue(UNIT_FIELD_COMBATREACH, DEFAULT_WORLD_OBJECT_SIZE );
 
     switch(gender)
     {
@@ -565,7 +566,9 @@ bool Player::Create( uint32 guidlow, std::string name, uint8 race, uint8 class_,
 
     setFactionForRace(m_race);
 
-    SetUInt32Value(UNIT_FIELD_BYTES_0, ( ( race ) | ( class_ << 8 ) | ( gender << 16 ) | ( powertype << 24 ) ) );
+    uint32 RaceClassGender = ( race ) | ( class_ << 8 ) | ( gender << 16 );
+
+    SetUInt32Value(UNIT_FIELD_BYTES_0, ( RaceClassGender | ( powertype << 24 ) ) );
     SetUInt32Value(UNIT_FIELD_BYTES_1, unitfield);
     SetByteValue(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_UNK3 | UNIT_BYTE2_FLAG_UNK5 );
     SetUInt32Value(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE );
@@ -590,18 +593,14 @@ bool Player::Create( uint32 guidlow, std::string name, uint8 race, uint8 class_,
     SetUInt32Value( PLAYER_FIELD_YESTERDAY_CONTRIBUTION, 0 );
 
     // set starting level
-    if(GetSession()->GetSecurity() >= SEC_MODERATOR)
-        SetUInt32Value( UNIT_FIELD_LEVEL, sWorld.getConfig(CONFIG_GM_START_LEVEL) );
+    if (GetSession()->GetSecurity() >= SEC_MODERATOR)
+        SetUInt32Value (UNIT_FIELD_LEVEL, sWorld.getConfig(CONFIG_START_GM_LEVEL));
     else
-        SetUInt32Value( UNIT_FIELD_LEVEL, sWorld.getConfig(CONFIG_START_PLAYER_LEVEL) );
-    // set starting gold
-    SetUInt32Value( PLAYER_FIELD_COINAGE, sWorld.getConfig(CONFIG_PLAYER_START_GOLD) );
+        SetUInt32Value (UNIT_FIELD_LEVEL, sWorld.getConfig(CONFIG_START_PLAYER_LEVEL));
 
-    // set starting honor
-    SetUInt32Value( PLAYER_FIELD_HONOR_CURRENCY, sWorld.getConfig(CONFIG_PLAYER_START_HONOR) );
-
-    // set starting arena pts
-    SetUInt32Value( PLAYER_FIELD_ARENA_CURRENCY, sWorld.getConfig(CONFIG_PLAYER_START_ARENAPTS) );
+    SetUInt32Value (PLAYER_FIELD_COINAGE, sWorld.getConfig(CONFIG_START_PLAYER_MONEY));
+    SetUInt32Value (PLAYER_FIELD_HONOR_CURRENCY, sWorld.getConfig(CONFIG_START_HONOR_POINTS));
+    SetUInt32Value (PLAYER_FIELD_ARENA_CURRENCY, sWorld.getConfig(CONFIG_START_ARENA_POINTS));
 
     // start with every map explored
     if(sWorld.getConfig(CONFIG_START_ALL_EXPLORED))
@@ -673,8 +672,10 @@ bool Player::Create( uint32 guidlow, std::string name, uint8 race, uint8 class_,
         SetPower(POWER_MANA,GetMaxPower(POWER_MANA));
     }
 
+    // original spells
     learnDefaultSpells(true);
 
+    // original action bar
     std::list<uint16>::const_iterator action_itr[4];
     for(int i=0; i<4; i++)
         action_itr[i] = info->action[i].begin();
@@ -691,36 +692,58 @@ bool Player::Create( uint32 guidlow, std::string name, uint8 race, uint8 class_,
             ++action_itr[i];
     }
 
-    for (PlayerCreateInfoItems::const_iterator item_id_itr = info->item.begin(); item_id_itr!=info->item.end(); ++item_id_itr++)
+    // original items
+    CharStartOutfitEntry const* oEntry = NULL;
+    for (uint32 i = 1; i < sCharStartOutfitStore.GetNumRows(); ++i)
     {
-        uint32 titem_id     = item_id_itr->item_id;
-        uint32 titem_amount = item_id_itr->item_amount;
-
-        sLog.outDebug("STORAGE: Creating initial item, itemId = %u, count = %u",titem_id, titem_amount);
-
-        // attempt equip
-        uint16 eDest;
-        uint8 msg = CanEquipNewItem( NULL_SLOT, eDest, titem_id, titem_amount, false );
-        if( msg == EQUIP_ERR_OK )
+        if(CharStartOutfitEntry const* entry = sCharStartOutfitStore.LookupEntry(i))
         {
-            EquipNewItem( eDest, titem_id, titem_amount, true);
-            AutoUnequipOffhandIfNeed();
-            continue;                                       // equipped, to next
+            if(entry->RaceClassGender == RaceClassGender)
+            {
+                oEntry = entry;
+                break;
+            }
         }
-
-        // attempt store
-        ItemPosCountVec sDest;
-        // store in main bag to simplify second pass (special bags can be not equipped yet at this moment)
-        msg = CanStoreNewItem( INVENTORY_SLOT_BAG_0, NULL_SLOT, sDest, titem_id, titem_amount );
-        if( msg == EQUIP_ERR_OK )
-        {
-            StoreNewItem( sDest, titem_id, true, Item::GenerateItemRandomPropertyId(titem_id) );
-            continue;                                       // stored, to next
-        }
-
-        // item can't be added
-        sLog.outError("STORAGE: Can't equip or store initial item %u for race %u class %u , error msg = %u",titem_id,race,class_,msg);
     }
+
+    if(oEntry)
+    {
+        for(int j = 0; j < MAX_OUTFIT_ITEMS; ++j)
+        {
+            if(oEntry->ItemId[j] <= 0)
+                continue;
+
+            uint32 item_id = oEntry->ItemId[j];
+
+            ItemPrototype const* iProto = objmgr.GetItemPrototype(item_id);
+            if(!iProto)
+            {
+                sLog.outErrorDb("Initial item id %u (race %u class %u) from CharStartOutfit.dbc not listed in `item_template`, ignoring.",item_id,getRace(),getClass());
+                continue;
+            }
+
+            uint32 count = iProto->Stackable;               // max stack by default (mostly 1)
+            if(iProto->Class==ITEM_CLASS_CONSUMABLE && iProto->SubClass==ITEM_SUBCLASS_FOOD)
+            {
+                switch(iProto->Spells[0].SpellCategory)
+                {
+                    case 11:                                // food
+                        if(iProto->Stackable > 4)
+                            count = 4;
+                        break;
+                    case 59:                                // drink
+                        if(iProto->Stackable > 2)
+                            count = 2;
+                        break;
+                }
+            }
+
+            StoreNewItemInBestSlot(item_id, count);
+        }
+    }
+
+    for (PlayerCreateInfoItems::const_iterator item_id_itr = info->item.begin(); item_id_itr!=info->item.end(); ++item_id_itr++)
+        StoreNewItemInBestSlot(item_id_itr->item_id, item_id_itr->item_amount);
 
     // bags and main-hand weapon must equipped at this moment
     // now second pass for not equipped (offhand weapon/shield if it attempt equipped before main-hand weapon)
@@ -758,6 +781,35 @@ bool Player::Create( uint32 guidlow, std::string name, uint8 race, uint8 class_,
     // all item positions resolved
 
     return true;
+}
+
+bool Player::StoreNewItemInBestSlot(uint32 titem_id, uint32 titem_amount)
+{
+    sLog.outDebug("STORAGE: Creating initial item, itemId = %u, count = %u",titem_id, titem_amount);
+
+    // attempt equip
+    uint16 eDest;
+    uint8 msg = CanEquipNewItem( NULL_SLOT, eDest, titem_id, titem_amount, false );
+    if( msg == EQUIP_ERR_OK )
+    {
+        EquipNewItem( eDest, titem_id, titem_amount, true);
+        AutoUnequipOffhandIfNeed();
+        return true;                                        // equipped
+    }
+
+    // attempt store
+    ItemPosCountVec sDest;
+    // store in main bag to simplify second pass (special bags can be not equipped yet at this moment)
+    msg = CanStoreNewItem( INVENTORY_SLOT_BAG_0, NULL_SLOT, sDest, titem_id, titem_amount );
+    if( msg == EQUIP_ERR_OK )
+    {
+        StoreNewItem( sDest, titem_id, true, Item::GenerateItemRandomPropertyId(titem_id) );
+        return true;                                        // stored
+    }
+
+    // item can't be added
+    sLog.outError("STORAGE: Can't equip or store initial item %u for race %u class %u , error msg = %u",titem_id,getRace(),getClass(),msg);
+    return false;
 }
 
 void Player::StartMirrorTimer(MirrorTimerType Type, uint32 MaxValue)
@@ -827,8 +879,8 @@ void Player::HandleDrowning()
     if(!m_isunderwater)
         return;
 
-    //if players is GM, have waterbreath, dead or breathing is disabled
-    if(sWorld.getConfig(CONFIG_DISABLE_BREATHING) || waterbreath || isGameMaster() || !isAlive())
+    //if player is GM, have waterbreath, is dead or if breathing is disabled then return
+    if(waterbreath || isGameMaster() || !isAlive() || GetSession()->GetSecurity() >= sWorld.getConfig(CONFIG_DISABLE_BREATHING))
     {
         StopMirrorTimer(BREATH_TIMER);
         m_isunderwater = 0;
@@ -839,7 +891,7 @@ void Player::HandleDrowning()
 
     AuraList const& mModWaterBreathing = GetAurasByType(SPELL_AURA_MOD_WATER_BREATHING);
     for(AuraList::const_iterator i = mModWaterBreathing.begin(); i != mModWaterBreathing.end(); ++i)
-        UnderWaterTime = uint32(UnderWaterTime * (100.0f + (*i)->GetModifier()->m_amount) / 100.0f);
+        UnderWaterTime = uint32(UnderWaterTime * (100.0f + (*i)->GetModifierValue()) / 100.0f);
 
     if ((m_isunderwater & 0x01) && !(m_isunderwater & 0x80) && isAlive())
     {
@@ -1015,6 +1067,13 @@ void Player::Update( uint32 p_time )
 
     CheckExploreSystem();
 
+    if(isCharmed())
+    {
+        if(Unit *charmer = GetCharmer())
+            if(charmer->GetTypeId() == TYPEID_UNIT && charmer->isAlive())
+                UpdateCharmedAI();
+    }
+
     // Update items that have just a limited lifetime
     if (now>m_Last_tick)
         UpdateItemDuration(uint32(now- m_Last_tick));
@@ -1040,10 +1099,9 @@ void Player::Update( uint32 p_time )
         }
     }
 
-    if (hasUnitState(UNIT_STAT_MELEE_ATTACKING))
+    if (hasUnitState(UNIT_STAT_MELEE_ATTACKING) && !hasUnitState(UNIT_STAT_CASTING))
     {
-        Unit *pVictim = getVictim();
-        if( !IsNonMeleeSpellCasted(false) && pVictim)
+        if(Unit *pVictim = getVictim())
         {
             // default combat reach 10
             // TODO add weapon,skill check
@@ -1353,7 +1411,7 @@ void Player::BuildEnumData( QueryResult * result, WorldPacket * p_data )
     *p_data << GetPositionY();
     *p_data << GetPositionZ();
 
-    *p_data << GetUInt32Value(PLAYER_GUILDID);              // guild id
+    *p_data << (result ? result->Fetch()[13].GetUInt32() : 0);
 
     uint32 char_flags = 0;
     if(HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_HELM))
@@ -1366,7 +1424,7 @@ void Player::BuildEnumData( QueryResult * result, WorldPacket * p_data )
         char_flags |= CHARACTER_FLAG_RENAME;
     // always send the flag if declined names aren't used
     // to let the client select a default method of declining the name
-    if(!sWorld.getConfig(CONFIG_DECLINED_NAMES_USED) || (result && result->Fetch()[13].GetCppString() != ""))
+    if(!sWorld.getConfig(CONFIG_DECLINED_NAMES_USED) || (result && result->Fetch()[14].GetCppString() != ""))
         char_flags |= CHARACTER_FLAG_DECLINED;
 
     *p_data << (uint32)char_flags;                          // character flags
@@ -1885,7 +1943,7 @@ void Player::Regenerate(Powers power)
         AuraList const& ModPowerRegenPCTAuras = GetAurasByType(SPELL_AURA_MOD_POWER_REGEN_PERCENT);
         for(AuraList::const_iterator i = ModPowerRegenPCTAuras.begin(); i != ModPowerRegenPCTAuras.end(); ++i)
             if ((*i)->GetModifier()->m_miscvalue == power)
-                addvalue *= ((*i)->GetModifier()->m_amount + 100) / 100.0f;
+                addvalue *= ((*i)->GetModifierValue() + 100) / 100.0f;
     }
 
     if (power != POWER_RAGE)
@@ -1926,7 +1984,7 @@ void Player::RegenerateHealth()
         {
             AuraList const& mModHealthRegenPct = GetAurasByType(SPELL_AURA_MOD_HEALTH_REGEN_PERCENT);
             for(AuraList::const_iterator i = mModHealthRegenPct.begin(); i != mModHealthRegenPct.end(); ++i)
-                addvalue *= (100.0f + (*i)->GetModifier()->m_amount) / 100.0f;
+                addvalue *= (100.0f + (*i)->GetModifierValue()) / 100.0f;
         }
         else if(HasAuraType(SPELL_AURA_MOD_REGEN_DURING_COMBAT))
             addvalue *= GetTotalAuraModifier(SPELL_AURA_MOD_REGEN_DURING_COMBAT) / 100.0f;
@@ -2123,7 +2181,7 @@ void Player::GiveXP(uint32 xp, Unit* victim)
     // handle SPELL_AURA_MOD_XP_PCT auras
     Unit::AuraList const& ModXPPctAuras = GetAurasByType(SPELL_AURA_MOD_XP_PCT);
     for(Unit::AuraList::const_iterator i = ModXPPctAuras.begin();i != ModXPPctAuras.end(); ++i)
-        xp = uint32(xp*(1.0f + (*i)->GetModifier()->m_amount / 100.0f));
+        xp = uint32(xp*(1.0f + (*i)->GetModifierValue() / 100.0f));
 
     // XP resting bonus for kill
     uint32 rested_bonus_xp = victim ? GetXPRestBonus(xp) : 0;
@@ -2183,7 +2241,7 @@ void Player::GiveLevel(uint32 level)
     if(getLevel()!= level)
         m_Played_time[1] = 0;                               // Level Played Time reset
     SetLevel(level);
-    UpdateMaxSkills();
+    UpdateSkillsForLevel ();
 
     // save base values (bonuses already included in stored stats
     for(int i = STAT_STRENGTH; i < MAX_STATS; ++i)
@@ -2259,7 +2317,7 @@ void Player::InitStatsForLevel(bool reapplyMods)
     SetUInt32Value(PLAYER_FIELD_MAX_LEVEL, sWorld.getConfig(CONFIG_MAX_PLAYER_LEVEL) );
     SetUInt32Value(PLAYER_NEXT_LEVEL_XP, Trinity::XP::xp_to_level(getLevel()));
 
-    UpdateMaxSkills ();
+    UpdateSkillsForLevel ();
 
     // set default cast time multiplier
     SetFloatValue(UNIT_MOD_CAST_SPEED, 1.0f);
@@ -3789,7 +3847,7 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
     // some items limited to specific map
     DestroyZoneLimitedItem( true, GetZoneId());
 
-    if(!applySickness || getLevel() <= 10)
+    if(!applySickness)
         return;
 
     //Characters from level 1-10 are not affected by resurrection sickness.
@@ -4160,7 +4218,7 @@ void Player::RepopAtGraveyard()
     // Special handle for battleground maps
     BattleGround *bg = sBattleGroundMgr.GetBattleGround(GetBattleGroundId());
 
-    if(bg && (bg->GetTypeID() == BATTLEGROUND_AB || bg->GetTypeID() == BATTLEGROUND_EY))
+    if(bg && (bg->GetTypeID() == BATTLEGROUND_AB || bg->GetTypeID() == BATTLEGROUND_EY || bg->GetTypeID() == BATTLEGROUND_AV))
         ClosestGrave = bg->GetClosestGraveYard(GetPositionX(), GetPositionY(), GetPositionZ(), GetTeam());
     else
         ClosestGrave = objmgr.GetClosestGraveYard( GetPositionX(), GetPositionY(), GetPositionZ(), GetMapId(), GetTeam() );
@@ -4842,6 +4900,7 @@ void Player::UpdateWeaponSkill (WeaponAttackType attType)
 
 void Player::UpdateCombatSkills(Unit *pVictim, WeaponAttackType attType, MeleeHitOutcome outcome, bool defence)
 {
+/* Not need, this checked on call this func from trigger system
     switch(outcome)
     {
         case MELEE_HIT_CRIT:
@@ -4854,7 +4913,7 @@ void Player::UpdateCombatSkills(Unit *pVictim, WeaponAttackType attType, MeleeHi
         default:
             break;
     }
-
+*/
     uint32 plevel = getLevel();                             // if defense than pVictim == attacker
     uint32 greylevel = Trinity::XP::GetGrayLevel(plevel);
     uint32 moblevel = pVictim->getLevelForTarget(this);
@@ -4909,9 +4968,12 @@ void Player::ModifySkillBonus(uint32 skillid,int32 val, bool talent)
     }
 }
 
-void Player::UpdateMaxSkills()
+void Player::UpdateSkillsForLevel()
 {
     uint16 maxconfskill = sWorld.GetConfigMaxSkillValue();
+    uint32 maxSkill = GetMaxSkillValueForLevel();
+
+    bool alwaysMaxSkill = sWorld.getConfig(CONFIG_ALWAYS_MAX_SKILL_FOR_LEVEL);
 
     for (uint16 i=0; i < PLAYER_MAX_SKILLS; i++)
         if (GetUInt32Value(PLAYER_SKILL_INDEX(i)))
@@ -4929,11 +4991,15 @@ void Player::UpdateMaxSkills()
         uint32 max = SKILL_MAX(data);
         uint32 val = SKILL_VALUE(data);
 
-        // update only level dependent max skill values
-        if(max!=1 && max != maxconfskill)
+        /// update only level dependent max skill values
+        if(max!=1)
         {
-            uint32 max_Skill = GetMaxSkillValueForLevel();
-            SetUInt32Value(PLAYER_SKILL_VALUE_INDEX(i),MAKE_SKILL_VALUE(val,max_Skill));
+            /// miximize skill always
+            if(alwaysMaxSkill)
+                SetUInt32Value(PLAYER_SKILL_VALUE_INDEX(i),MAKE_SKILL_VALUE(maxSkill,maxSkill));
+            /// update max skill value if current max skill not maximized
+            else if(max != maxconfskill)
+                SetUInt32Value(PLAYER_SKILL_VALUE_INDEX(i),MAKE_SKILL_VALUE(val,maxSkill));
         }
     }
 }
@@ -5265,16 +5331,16 @@ bool Player::SetPosition(float x, float y, float z, float orientation, bool tele
         x = GetPositionX();
         y = GetPositionY();
         z = GetPositionZ();
+
+        // group update
+        if(GetGroup() && (old_x != x || old_y != y))
+            SetGroupUpdateFlag(GROUP_UPDATE_FLAG_POSITION);
     }
 
     // code block for underwater state update
     UpdateUnderwaterState(m, x, y, z);
 
     CheckExploreSystem();
-
-    // group update
-    if(GetGroup())
-        SetGroupUpdateFlag(GROUP_UPDATE_FLAG_POSITION);
 
     return true;
 }
@@ -5956,6 +6022,18 @@ void Player::UpdateHonorFields()
 ///An exact honor value can also be given (overriding the calcs)
 bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvptoken)
 {
+    // do not reward honor in arenas, but enable onkill spellproc
+    if(InArena())
+    {
+        if(!uVictim || uVictim == this || uVictim->GetTypeId() != TYPEID_PLAYER)
+            return false;
+
+        if( GetBGTeam() == ((Player*)uVictim)->GetBGTeam() )
+            return false;
+
+        return true;
+    }
+
     // 'Inactive' this aura prevents the player from gaining honor points and battleground tokens
     if(GetDummyAura(SPELL_AURA_PLAYER_INACTIVE))
         return false;
@@ -6758,7 +6836,7 @@ void Player::_ApplyWeaponDependentAuraCritMod(Item *item, WeaponAttackType attac
 
     if (item->IsFitToSpellRequirements(aura->GetSpellProto()))
     {
-        HandleBaseModValue(mod, FLAT_MOD, float (aura->GetModifier()->m_amount), apply);
+        HandleBaseModValue(mod, FLAT_MOD, float (aura->GetModifierValue()), apply);
     }
 }
 
@@ -6792,7 +6870,7 @@ void Player::_ApplyWeaponDependentAuraDamageMod(Item *item, WeaponAttackType att
 
     if (item->IsFitToSpellRequirements(aura->GetSpellProto()))
     {
-        HandleStatModifier(unitMod, unitModType, float(modifier->m_amount),apply);
+        HandleStatModifier(unitMod, unitModType, float(aura->GetModifierValue()),apply);
     }
 }
 
@@ -7215,6 +7293,16 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
         {
             uint32 lootid =  go->GetLootId();
 
+            //TODO: fix this big hack
+            if((go->GetEntry() == BG_AV_OBJECTID_MINE_N || go->GetEntry() == BG_AV_OBJECTID_MINE_S))
+                if( BattleGround *bg = GetBattleGround())
+                    if(bg->GetTypeID() == BATTLEGROUND_AV)
+                        if(!(((BattleGroundAV*)bg)->PlayerCanDoMineQuest(go->GetEntry(),GetTeam())))
+                        {
+                            SendLootRelease(guid);
+                            return;
+                        }
+
             if(lootid)
             {
                 sLog.outDebug("       if(lootid)");
@@ -7291,6 +7379,8 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             bones->lootForBody = true;
             uint32 pLevel = bones->loot.gold;
             bones->loot.clear();
+            if(GetBattleGround()->GetTypeID() == BATTLEGROUND_AV)
+                loot->FillLoot(1, LootTemplates_Creature, this);
             // It may need a better formula
             // Now it works like this: lvl10: ~6copper, lvl70: ~9silver
             bones->loot.gold = (uint32)( urand(50, 150) * 0.016f * pow( ((float)pLevel)/5.76f, 2.5f) * sWorld.getRate(RATE_DROP_MONEY) );
@@ -7664,81 +7754,86 @@ void Player::SendInitWorldStates(bool forceZone, uint32 forceZoneId)
             }
             break;
         case 2597:                                          // AV
-            data << uint32(0x7ae) << uint32(0x1);           // 7
-            data << uint32(0x532) << uint32(0x1);           // 8
-            data << uint32(0x531) << uint32(0x0);           // 9
-            data << uint32(0x52e) << uint32(0x0);           // 10
-            data << uint32(0x571) << uint32(0x0);           // 11
-            data << uint32(0x570) << uint32(0x0);           // 12
-            data << uint32(0x567) << uint32(0x1);           // 13
-            data << uint32(0x566) << uint32(0x1);           // 14
-            data << uint32(0x550) << uint32(0x1);           // 15
-            data << uint32(0x544) << uint32(0x0);           // 16
-            data << uint32(0x536) << uint32(0x0);           // 17
-            data << uint32(0x535) << uint32(0x1);           // 18
-            data << uint32(0x518) << uint32(0x0);           // 19
-            data << uint32(0x517) << uint32(0x0);           // 20
-            data << uint32(0x574) << uint32(0x0);           // 21
-            data << uint32(0x573) << uint32(0x0);           // 22
-            data << uint32(0x572) << uint32(0x0);           // 23
-            data << uint32(0x56f) << uint32(0x0);           // 24
-            data << uint32(0x56e) << uint32(0x0);           // 25
-            data << uint32(0x56d) << uint32(0x0);           // 26
-            data << uint32(0x56c) << uint32(0x0);           // 27
-            data << uint32(0x56b) << uint32(0x0);           // 28
-            data << uint32(0x56a) << uint32(0x1);           // 29
-            data << uint32(0x569) << uint32(0x1);           // 30
-            data << uint32(0x568) << uint32(0x1);           // 13
-            data << uint32(0x565) << uint32(0x0);           // 32
-            data << uint32(0x564) << uint32(0x0);           // 33
-            data << uint32(0x563) << uint32(0x0);           // 34
-            data << uint32(0x562) << uint32(0x0);           // 35
-            data << uint32(0x561) << uint32(0x0);           // 36
-            data << uint32(0x560) << uint32(0x0);           // 37
-            data << uint32(0x55f) << uint32(0x0);           // 38
-            data << uint32(0x55e) << uint32(0x0);           // 39
-            data << uint32(0x55d) << uint32(0x0);           // 40
-            data << uint32(0x3c6) << uint32(0x4);           // 41
-            data << uint32(0x3c4) << uint32(0x6);           // 42
-            data << uint32(0x3c2) << uint32(0x4);           // 43
-            data << uint32(0x516) << uint32(0x1);           // 44
-            data << uint32(0x515) << uint32(0x0);           // 45
-            data << uint32(0x3b6) << uint32(0x6);           // 46
-            data << uint32(0x55c) << uint32(0x0);           // 47
-            data << uint32(0x55b) << uint32(0x0);           // 48
-            data << uint32(0x55a) << uint32(0x0);           // 49
-            data << uint32(0x559) << uint32(0x0);           // 50
-            data << uint32(0x558) << uint32(0x0);           // 51
-            data << uint32(0x557) << uint32(0x0);           // 52
-            data << uint32(0x556) << uint32(0x0);           // 53
-            data << uint32(0x555) << uint32(0x0);           // 54
-            data << uint32(0x554) << uint32(0x1);           // 55
-            data << uint32(0x553) << uint32(0x1);           // 56
-            data << uint32(0x552) << uint32(0x1);           // 57
-            data << uint32(0x551) << uint32(0x1);           // 58
-            data << uint32(0x54f) << uint32(0x0);           // 59
-            data << uint32(0x54e) << uint32(0x0);           // 60
-            data << uint32(0x54d) << uint32(0x1);           // 61
-            data << uint32(0x54c) << uint32(0x0);           // 62
-            data << uint32(0x54b) << uint32(0x0);           // 63
-            data << uint32(0x545) << uint32(0x0);           // 64
-            data << uint32(0x543) << uint32(0x1);           // 65
-            data << uint32(0x542) << uint32(0x0);           // 66
-            data << uint32(0x540) << uint32(0x0);           // 67
-            data << uint32(0x53f) << uint32(0x0);           // 68
-            data << uint32(0x53e) << uint32(0x0);           // 69
-            data << uint32(0x53d) << uint32(0x0);           // 70
-            data << uint32(0x53c) << uint32(0x0);           // 71
-            data << uint32(0x53b) << uint32(0x0);           // 72
-            data << uint32(0x53a) << uint32(0x1);           // 73
-            data << uint32(0x539) << uint32(0x0);           // 74
-            data << uint32(0x538) << uint32(0x0);           // 75
-            data << uint32(0x537) << uint32(0x0);           // 76
-            data << uint32(0x534) << uint32(0x0);           // 77
-            data << uint32(0x533) << uint32(0x0);           // 78
-            data << uint32(0x530) << uint32(0x0);           // 79
-            data << uint32(0x52f) << uint32(0x0);           // 80
-            data << uint32(0x52d) << uint32(0x1);           // 81
+            if (bg && bg->GetTypeID() == BATTLEGROUND_AV)
+                bg->FillInitialWorldStates(data);
+            else
+            {
+                data << uint32(0x7ae) << uint32(0x1);           // 7 snowfall n
+                data << uint32(0x532) << uint32(0x1);           // 8 frostwolfhut hc
+                data << uint32(0x531) << uint32(0x0);           // 9 frostwolfhut ac
+                data << uint32(0x52e) << uint32(0x0);           // 10 stormpike firstaid a_a
+                data << uint32(0x571) << uint32(0x0);           // 11 east frostwolf tower horde assaulted -unused
+                data << uint32(0x570) << uint32(0x0);           // 12 west frostwolf tower horde assaulted - unused
+                data << uint32(0x567) << uint32(0x1);           // 13 frostwolfe c
+                data << uint32(0x566) << uint32(0x1);           // 14 frostwolfw c
+                data << uint32(0x550) << uint32(0x1);           // 15 irondeep (N) ally
+                data << uint32(0x544) << uint32(0x0);           // 16 ice grave a_a
+                data << uint32(0x536) << uint32(0x0);           // 17 stormpike grave h_c
+                data << uint32(0x535) << uint32(0x1);           // 18 stormpike grave a_c
+                data << uint32(0x518) << uint32(0x0);           // 19 stoneheart grave a_a
+                data << uint32(0x517) << uint32(0x0);           // 20 stoneheart grave h_a
+                data << uint32(0x574) << uint32(0x0);           // 21 1396 unk
+                data << uint32(0x573) << uint32(0x0);           // 22 iceblood tower horde assaulted -unused
+                data << uint32(0x572) << uint32(0x0);           // 23 towerpoint horde assaulted - unused
+                data << uint32(0x56f) << uint32(0x0);           // 24 1391 unk
+                data << uint32(0x56e) << uint32(0x0);           // 25 iceblood a
+                data << uint32(0x56d) << uint32(0x0);           // 26 towerp a
+                data << uint32(0x56c) << uint32(0x0);           // 27 frostwolfe a
+                data << uint32(0x56b) << uint32(0x0);           // 28 froswolfw a
+                data << uint32(0x56a) << uint32(0x1);           // 29 1386 unk
+                data << uint32(0x569) << uint32(0x1);           // 30 iceblood c
+                data << uint32(0x568) << uint32(0x1);           // 31 towerp c
+                data << uint32(0x565) << uint32(0x0);           // 32 stoneh tower a
+                data << uint32(0x564) << uint32(0x0);           // 33 icewing tower a
+                data << uint32(0x563) << uint32(0x0);           // 34 dunn a
+                data << uint32(0x562) << uint32(0x0);           // 35 duns a
+                data << uint32(0x561) << uint32(0x0);           // 36 stoneheart bunker alliance assaulted - unused
+                data << uint32(0x560) << uint32(0x0);           // 37 icewing bunker alliance assaulted - unused
+                data << uint32(0x55f) << uint32(0x0);           // 38 dunbaldar south alliance assaulted - unused
+                data << uint32(0x55e) << uint32(0x0);           // 39 dunbaldar north alliance assaulted - unused
+                data << uint32(0x55d) << uint32(0x0);           // 40 stone tower d
+                data << uint32(0x3c6) << uint32(0x0);           // 41 966 unk
+                data << uint32(0x3c4) << uint32(0x0);           // 42 964 unk
+                data << uint32(0x3c2) << uint32(0x0);           // 43 962 unk
+                data << uint32(0x516) << uint32(0x1);           // 44 stoneheart grave a_c
+                data << uint32(0x515) << uint32(0x0);           // 45 stonheart grave h_c
+                data << uint32(0x3b6) << uint32(0x0);           // 46 950 unk
+                data << uint32(0x55c) << uint32(0x0);           // 47 icewing tower d
+                data << uint32(0x55b) << uint32(0x0);           // 48 dunn d
+                data << uint32(0x55a) << uint32(0x0);           // 49 duns d
+                data << uint32(0x559) << uint32(0x0);           // 50 1369 unk
+                data << uint32(0x558) << uint32(0x0);           // 51 iceblood d
+                data << uint32(0x557) << uint32(0x0);           // 52 towerp d
+                data << uint32(0x556) << uint32(0x0);           // 53 frostwolfe d
+                data << uint32(0x555) << uint32(0x0);           // 54 frostwolfw d
+                data << uint32(0x554) << uint32(0x1);           // 55 stoneh tower c
+                data << uint32(0x553) << uint32(0x1);           // 56 icewing tower c
+                data << uint32(0x552) << uint32(0x1);           // 57 dunn c
+                data << uint32(0x551) << uint32(0x1);           // 58 duns c
+                data << uint32(0x54f) << uint32(0x0);           // 59 irondeep (N) horde
+                data << uint32(0x54e) << uint32(0x0);           // 60 irondeep (N) ally
+                data << uint32(0x54d) << uint32(0x1);           // 61 mine (S) neutral
+                data << uint32(0x54c) << uint32(0x0);           // 62 mine (S) horde
+                data << uint32(0x54b) << uint32(0x0);           // 63 mine (S) ally
+                data << uint32(0x545) << uint32(0x0);           // 64 iceblood h_a
+                data << uint32(0x543) << uint32(0x1);           // 65 iceblod h_c
+                data << uint32(0x542) << uint32(0x0);           // 66 iceblood a_c
+                data << uint32(0x540) << uint32(0x0);           // 67 snowfall h_a
+                data << uint32(0x53f) << uint32(0x0);           // 68 snowfall a_a
+                data << uint32(0x53e) << uint32(0x0);           // 69 snowfall h_c
+                data << uint32(0x53d) << uint32(0x0);           // 70 snowfall a_c
+                data << uint32(0x53c) << uint32(0x0);           // 71 frostwolf g h_a
+                data << uint32(0x53b) << uint32(0x0);           // 72 frostwolf g a_a
+                data << uint32(0x53a) << uint32(0x1);           // 73 frostwolf g h_c
+                data << uint32(0x539) << uint32(0x0);           // 74 frostwolf g a_c
+                data << uint32(0x538) << uint32(0x0);           // 75 stormpike grave h_a
+                data << uint32(0x537) << uint32(0x0);           // 76 stormpike grave a_a
+                data << uint32(0x534) << uint32(0x0);           // 77 frostwolf hut h_a
+                data << uint32(0x533) << uint32(0x0);           // 78 frostwolf hut a_a
+                data << uint32(0x530) << uint32(0x0);           // 79 stormpike first aid h_a
+                data << uint32(0x52f) << uint32(0x0);           // 80 stormpike first aid h_c
+                data << uint32(0x52d) << uint32(0x1);           // 81 stormpike first aid a_c
+            }
             break;
         case 3277:                                          // WS
             if (bg && bg->GetTypeID() == BATTLEGROUND_WS)
@@ -11911,7 +12006,7 @@ void Player::SendPreparedQuest( uint64 guid )
             else if( status == DIALOG_STATUS_INCOMPLETE )
                 PlayerTalkClass->SendQuestGiverRequestItems( pQuest, guid, false, true );
             // Send completable on repeatable quest if player don't have quest
-            else if( pQuest->IsRepeatable() )
+            else if( pQuest->IsRepeatable() && !pQuest->IsDaily() )
                 PlayerTalkClass->SendQuestGiverRequestItems( pQuest, guid, CanCompleteRepeatableQuest(pQuest), true );
             else
                 PlayerTalkClass->SendQuestGiverQuestDetails( pQuest, guid, true );
@@ -12153,7 +12248,7 @@ bool Player::CanRewardQuest( Quest const *pQuest, bool msg )
     if(!pQuest->IsAutoComplete() && GetQuestStatus(pQuest->GetQuestId()) != QUEST_STATUS_COMPLETE)
         return false;
 
-    // daily quest can't be rewarded (10 daily quest already completed)
+    // daily quest can't be rewarded (25 daily quest already completed)
     if(!SatisfyQuestDay(pQuest,true))
         return false;
 
@@ -12754,6 +12849,15 @@ bool Player::SatisfyQuestExclusiveGroup( Quest const* qInfo, bool msg )
         if(exclude_Id == qInfo->GetQuestId())
             continue;
 
+        // not allow have daily quest if daily quest from exclusive group already recently completed
+        Quest const* Nquest = objmgr.GetQuestTemplate(exclude_Id);
+        if( !SatisfyQuestDay(Nquest, false) )
+        {
+            if( msg )
+                SendCanTakeQuestResponse( INVALIDREASON_DONT_HAVE_REQ );
+            return false;
+        }
+
         QuestStatusMap::iterator i_exstatus = mQuestStatus.find( exclude_Id );
 
         // alternative quest already started or completed
@@ -13350,7 +13454,8 @@ bool Player::HasQuestForItem( uint32 itemid ) const
 
             // hide quest if player is in raid-group and quest is no raid quest
             if(GetGroup() && GetGroup()->isRaidGroup() && qinfo->GetType() != QUEST_TYPE_RAID)
-                continue;
+                if(!InBattleGround()) //there are two ways.. we can make every bg-quest a raidquest, or add this code here.. i don't know if this can be exploited by other quests, but i think all other quests depend on a specific area.. but keep this in mind, if something strange happens later
+                    continue;
 
             // There should be no mixed ReqItem/ReqSource drop
             // This part for ReqItem drop
@@ -14266,7 +14371,7 @@ void Player::_LoadAuras(QueryResult *result, uint32 timediff)
                     damage = aura->GetModifier()->m_amount;
                 aura->SetLoadedState(caster_guid,damage,maxduration,remaintime,remaincharges);
                 AddAura(aura);
-                sLog.outString("Added aura spellid %u, effect %u", spellproto->Id, effindex);
+                sLog.outDetail("Added aura spellid %u, effect %u", spellproto->Id, effindex);
             }
         }
         while( result->NextRow() );
@@ -14632,7 +14737,8 @@ void Player::_LoadQuestStatus(QueryResult *result)
                 // add to quest log
                 if( slot < MAX_QUEST_LOG_SIZE &&
                     ( questStatusData.m_status==QUEST_STATUS_INCOMPLETE ||
-                    questStatusData.m_status==QUEST_STATUS_COMPLETE && !questStatusData.m_rewarded ) )
+                    questStatusData.m_status==QUEST_STATUS_COMPLETE &&
+                    (!questStatusData.m_rewarded || pQuest->IsDaily()) ) )
                 {
                     SetQuestSlot(slot,quest_id,quest_time);
 
@@ -15289,7 +15395,8 @@ void Player::SaveToDB()
 void Player::SaveInventoryAndGoldToDB()
 {
     _SaveInventory();
-    SetUInt32ValueInDB(PLAYER_FIELD_COINAGE,GetMoney(),GetGUID());
+    //money is in data field
+    SaveDataFieldToDB();
 }
 
 void Player::_SaveActions()
@@ -15359,7 +15466,7 @@ void Player::_SaveAuras()
                     {
                         CharacterDatabase.PExecute("INSERT INTO character_aura (guid,caster_guid,spell,effect_index,stackcount,amount,maxduration,remaintime,remaincharges) "
                             "VALUES ('%u', '" I64FMTD "' ,'%u', '%u', '%u', '%d', '%d', '%d', '%d')",
-                            GetGUIDLow(), itr2->second->GetCasterGUID(), (uint32)itr2->second->GetId(), (uint32)itr2->second->GetEffIndex(), stackCounter, itr2->second->GetModifier()->m_amount,int(itr2->second->GetAuraMaxDuration()),int(itr2->second->GetAuraDuration()),int(itr2->second->m_procCharges));
+                            GetGUIDLow(), itr2->second->GetCasterGUID(), (uint32)itr2->second->GetId(), (uint32)itr2->second->GetEffIndex(), (uint32)itr2->second->GetStackAmount(), itr2->second->GetModifier()->m_amount,int(itr2->second->GetAuraMaxDuration()),int(itr2->second->GetAuraDuration()),int(itr2->second->m_procCharges));
                     }
                 }
             }
@@ -15368,6 +15475,7 @@ void Player::_SaveAuras()
                 break;
         }
 
+        //TODO: if need delete this
         if (lastEffectPair == itr->first)
             stackCounter++;
         else
@@ -15677,6 +15785,20 @@ void Player::SavePositionInDB(uint32 mapid, float x,float y,float z,float o,uint
         << "',zone='"<<zone<<"',trans_x='0',trans_y='0',trans_z='0',"
         << "transguid='0',taxi_path='' WHERE guid='"<< GUID_LOPART(guid) <<"'";
     sLog.outDebug(ss.str().c_str());
+    CharacterDatabase.Execute(ss.str().c_str());
+}
+
+void Player::SaveDataFieldToDB()
+{
+    std::ostringstream ss;
+    ss<<"UPDATE characters SET data='";
+
+    for(uint16 i = 0; i < m_valuesCount; i++ )
+    {
+        ss << GetUInt32Value(i) << " ";
+    }
+    ss<<"' WHERE guid='"<< GUID_LOPART(GetGUIDLow()) <<"'";
+
     CharacterDatabase.Execute(ss.str().c_str());
 }
 
@@ -17376,17 +17498,18 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList) cons
             return false;
     }
 
-    // GMs see any players, not higher GMs and all units
-    if(isGameMaster())
-    {
-        if(u->GetTypeId() == TYPEID_PLAYER)
-            return ((Player *)u)->GetSession()->GetSecurity() <= GetSession()->GetSecurity();
-        else
-            return true;
-    }
-
     if(u->GetVisibility() == VISIBILITY_OFF)
+    {
+        // GMs see any players, not higher GMs and all units
+        if(isGameMaster())
+        {
+            if(u->GetTypeId() == TYPEID_PLAYER)
+                return ((Player *)u)->GetSession()->GetSecurity() <= GetSession()->GetSecurity();
+            else
+                return true;
+        }
         return false;
+    }
 
     // player see other player with stealth/invisibility only if he in same group or raid or same team (raid/team case dependent from conf setting)
     if((m_invisibilityMask || u->m_invisibilityMask) && !canDetectInvisibilityOf(u))
@@ -18045,6 +18168,7 @@ uint32 Player::GetMaxLevelForBattleGroundQueueId(uint32 queue_id)
     return 10*(queue_id+2)-1;
 }
 
+//TODO make this more generic - current implementation is wrong
 uint32 Player::GetBattleGroundQueueIdFromLevel() const
 {
     uint32 level = getLevel();
@@ -18936,8 +19060,8 @@ void Player::RemovePossess(bool attack)
             if(attack)
                 target->AddThreat(this, 1000000.0f);
         }
-        // Delete the assigned possessed AI
-        ((Creature*)target)->DeletePossessedAI();
+        // Disable the assigned possessed AI
+        ((Creature*)target)->DisablePossessedAI();
     }
 }
 
@@ -19023,4 +19147,36 @@ bool Player::isTotalImmunity()
         }
     }
     return false;
+}
+
+void Player::UpdateCharmedAI()
+{
+    //This should only called in Player::Update
+    Creature *charmer = (Creature*)GetCharmer();
+
+    //kill self if charm aura has infinite duration
+    if(charmer->IsInEvadeMode())
+    {
+        AuraList const& auras = GetAurasByType(SPELL_AURA_MOD_CHARM);
+        for(AuraList::const_iterator iter = auras.begin(); iter != auras.end(); ++iter)
+            if((*iter)->GetCasterGUID() == charmer->GetGUID() && (*iter)->IsPermanent())
+            {
+                charmer->DealDamage(this, GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                return;
+            }
+    }
+
+    if(!charmer->isInCombat())
+        GetMotionMaster()->MoveFollow(charmer, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+
+    Unit *target = getVictim();
+    if(!target || !charmer->canAttack(target))
+    {
+        target = charmer->SelectNearestTarget();
+        if(!target)
+            return;
+
+        GetMotionMaster()->MoveChase(target);
+        Attack(target, true);
+    }
 }
