@@ -155,8 +155,8 @@ void MotionMaster::MoveIdle(MovementSlot slot)
 void
 MotionMaster::MoveTargetedHome()
 {
-    if(i_owner->hasUnitState(UNIT_STAT_FLEEING))
-        return;
+    //if(i_owner->hasUnitState(UNIT_STAT_FLEEING))
+    //    return;
 
     Clear(false);
 
@@ -392,7 +392,10 @@ void MotionMaster::propagateSpeedChange()
         (*it)->unitSpeedChanged();
     }*/
     for(int i = 0; i <= i_top; ++i)
-        Impl[i]->unitSpeedChanged();
+    {
+        if(Impl[i])
+            Impl[i]->unitSpeedChanged();
+    }
 }
 
 MovementGeneratorType MotionMaster::GetCurrentMovementGeneratorType() const
