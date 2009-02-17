@@ -501,7 +501,7 @@ bool ChatHandler::HandleReloadAllScriptsCommand(const char*)
     SendGlobalGMSysMessage("DB tables `*_scripts` reloaded.");
     HandleReloadDbScriptStringCommand("a");
     HandleReloadWpScriptsCommand("a");
-	return true;
+    return true;
 }
 
 bool ChatHandler::HandleReloadAllSpellCommand(const char*)
@@ -951,9 +951,9 @@ bool ChatHandler::HandleReloadWpScriptsCommand(const char* arg)
     if(*arg!='a')
         sLog.outString( "Re-Loading Scripts from `waypoint_scripts`...");
 
-	objmgr.LoadWaypointScripts();
+    objmgr.LoadWaypointScripts();
 
-	if(*arg!='a')
+    if(*arg!='a')
         SendGlobalGMSysMessage("DB table `waypoint_scripts` reloaded.");
 
     return true;
@@ -7346,19 +7346,19 @@ bool ChatHandler::HandlePossessCommand(const char* args)
     if(!pUnit)
         return false;
 
-    // Don't allow unlimited possession of players
-    if (pUnit->GetTypeId() == TYPEID_PLAYER)
-        return false;
-
-    pUnit->SetCharmedOrPossessedBy(m_session->GetPlayer(), true);
-
+    m_session->GetPlayer()->CastSpell(pUnit, 530, true);
     return true;
 }
 
 bool ChatHandler::HandleUnPossessCommand(const char* args)
 {
-    // Use this command to also unpossess ourselves
-    m_session->GetPlayer()->RemoveCharmedOrPossessedBy(NULL);
+    Unit* pUnit = getSelectedUnit();
+    if(!pUnit) pUnit = m_session->GetPlayer();
+
+    pUnit->RemoveSpellsCausingAura(SPELL_AURA_MOD_CHARM);
+    pUnit->RemoveSpellsCausingAura(SPELL_AURA_MOD_POSSESS_PET);
+    pUnit->RemoveSpellsCausingAura(SPELL_AURA_MOD_POSSESS);
+
     return true;
 }
 
@@ -7368,11 +7368,7 @@ bool ChatHandler::HandleBindSightCommand(const char* args)
     if (!pUnit)
         return false;
 
-    if (m_session->GetPlayer()->isPossessing())
-        return false;
-
-    pUnit->AddPlayerToVision(m_session->GetPlayer());
-
+    m_session->GetPlayer()->CastSpell(pUnit, 6277, true);
     return true;
 }
 
@@ -7381,6 +7377,6 @@ bool ChatHandler::HandleUnbindSightCommand(const char* args)
     if (m_session->GetPlayer()->isPossessing())
         return false;
 
-    m_session->GetPlayer()->RemoveFarsightTarget();
+    m_session->GetPlayer()->StopCastingBindSight();
     return true;
 }

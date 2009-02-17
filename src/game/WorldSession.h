@@ -101,6 +101,7 @@ class TRINITY_DLL_SPEC WorldSession
         void SendLfgResult(uint32 type, uint32 entry, uint8 lfg_type);
         void SendPartyResult(PartyOperation operation, const std::string& member, PartyResult res);
         void SendAreaTriggerMessage(const char* Text, ...) ATTR_PRINTF(2,3);
+        void SendSetPhaseShift(uint32 phaseShift);
 
         uint32 GetSecurity() const { return _security; }
         uint32 GetAccountId() const { return _accountId; }
@@ -182,7 +183,6 @@ class TRINITY_DLL_SPEC WorldSession
         void SendAuctionCommandResult( uint32 auctionId, uint32 Action, uint32 ErrorCode, uint32 bidError = 0);
         void SendAuctionBidderNotification( uint32 location, uint32 auctionId, uint64 bidder, uint32 bidSum, uint32 diff, uint32 item_template);
         void SendAuctionOwnerNotification( AuctionEntry * auction );
-        bool SendAuctionInfo(WorldPacket & data, AuctionEntry* auction);
         void SendAuctionOutbiddedMail( AuctionEntry * auction, uint32 newPrice );
         void SendAuctionCancelledToBidderMail( AuctionEntry* auction );
 
@@ -219,8 +219,8 @@ class TRINITY_DLL_SPEC WorldSession
 
         // Locales
         LocaleConstant GetSessionDbcLocale() const { return m_sessionDbcLocale; }
-		int GetSessionDbLocaleIndex() const { return m_sessionDbLocaleIndex; }
-		const char *GetTrinityString(int32 entry) const;
+        int GetSessionDbLocaleIndex() const { return m_sessionDbLocaleIndex; }
+        const char *GetTrinityString(int32 entry) const;
 
         uint32 GetLatency() const { return m_latency; }
         void SetLatency(uint32 latency) { m_latency = latency; }
@@ -287,12 +287,12 @@ class TRINITY_DLL_SPEC WorldSession
         void HandlePlayerLogoutOpcode(WorldPacket& recvPacket);
         void HandleLogoutCancelOpcode(WorldPacket& recvPacket);
 
-		// GM Ticket opcodes
-		 void HandleGMTicketCreateOpcode(WorldPacket& recvPacket);
-		 void HandleGMTicketUpdateOpcode(WorldPacket& recvPacket);
-		 void HandleGMTicketDeleteOpcode(WorldPacket& recvPacket);
-		 void HandleGMTicketGetTicketOpcode(WorldPacket& recvPacket);
-		 void HandleGMTicketSystemStatusOpcode(WorldPacket& recvPacket);
+        // GM Ticket opcodes
+         void HandleGMTicketCreateOpcode(WorldPacket& recvPacket);
+         void HandleGMTicketUpdateOpcode(WorldPacket& recvPacket);
+         void HandleGMTicketDeleteOpcode(WorldPacket& recvPacket);
+         void HandleGMTicketGetTicketOpcode(WorldPacket& recvPacket);
+         void HandleGMTicketSystemStatusOpcode(WorldPacket& recvPacket);
 
         //void HandleGMSurveySubmit(WorldPacket& recvPacket);
 
@@ -544,7 +544,7 @@ class TRINITY_DLL_SPEC WorldSession
         void HandleChannelRosterQuery(WorldPacket& recvPacket);
         void HandleChannelInfoQuery(WorldPacket& recvPacket);
         void HandleChannelJoinNotify(WorldPacket& recvPacket);
-		void HandleChannelDeclineInvite(WorldPacket& recvPacket);
+        void HandleChannelDeclineInvite(WorldPacket& recvPacket);
 
         void HandleCompleteCinema(WorldPacket& recvPacket);
         void HandleNextCinematicCamera(WorldPacket& recvPacket);

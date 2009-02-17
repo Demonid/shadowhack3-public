@@ -339,9 +339,17 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
 
                 switch(m_spellInfo->Id)                     // better way to check unknown
                 {
-                    case 35354://hand of death
+                    case 35354: //Hand of Death
                     {
-                        if(unitTarget && unitTarget->HasAura(38528,0))//protection of elune
+                        if(unitTarget && unitTarget->HasAura(38528,0)) //Protection of Elune
+                        {
+                            damage = 0;
+                        }
+                        break;
+                    }
+                    case 43648: //Electrical Storm
+                    {
+                        if(unitTarget && unitTarget->HasAura(44007, 0)) // Immune Aura
                         {
                             damage = 0;
                         }
@@ -377,7 +385,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                         if(unitTarget->GetGUID() == m_caster->GetGUID() || unitTarget->GetTypeId() != TYPEID_PLAYER)
                             return;
 
-                        float radius = GetSpellRadius(sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[0]));
+                        float radius = GetSpellRadiusForHostile(sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[0]));
                         if(!radius) return;
                         float distance = m_caster->GetDistance2d(unitTarget);
                         damage = (distance > radius ) ? 0 : (int32)(m_spellInfo->EffectBasePoints[0]*((radius - distance)/radius));
@@ -682,6 +690,28 @@ void Spell::EffectDummy(uint32 i)
         {
             switch(m_spellInfo->Id )
             {
+                // Wrath of the Astromancer
+                case 42784:
+                {
+                    uint32 count = 0;
+                    for(std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin();ihit != m_UniqueTargetInfo.end();++ihit)
+                        if(ihit->effectMask & (1<<i))
+                            ++count;
+
+                    damage = 12000; // maybe wrong value
+                    damage /= count;
+
+                    SpellEntry const *spellInfo = sSpellStore.LookupEntry(42784);
+
+                     // now deal the damage
+                    for(std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin();ihit != m_UniqueTargetInfo.end();++ihit)
+                        if(ihit->effectMask & (1<<i))
+                            {
+                                Unit* casttarget = Unit::GetUnit((*unitTarget), ihit->targetGUID);
+                                if(casttarget) 
+                                    m_caster->DealDamage(casttarget, damage, NULL, SPELL_DIRECT_DAMAGE, SPELL_SCHOOL_MASK_ARCANE, spellInfo, false);
+                            }
+                }
                 // Encapsulate Voidwalker
                 case 29364:
                 {
@@ -1123,36 +1153,6 @@ void Spell::EffectDummy(uint32 i)
 
                     //cast spell Raptor Capture Credit
                     m_caster->CastSpell(m_caster,42337,true,NULL);
-                    return;
-                }
-                case 37573:                                 //Temporal Phase Modulator
-                {
-                    if(!unitTarget)
-                        return;
-
-                    TemporarySummon* tempSummon = dynamic_cast<TemporarySummon*>(unitTarget);
-                    if(!tempSummon)
-                        return;
-
-                    uint32 health = tempSummon->GetHealth();
-                    const uint32 entry_list[6] = {21821, 21820, 21817};
-
-                    float x = tempSummon->GetPositionX();
-                    float y = tempSummon->GetPositionY();
-                    float z = tempSummon->GetPositionZ();
-                    float o = tempSummon->GetOrientation();
-
-                    tempSummon->UnSummon();
-
-                    Creature* pCreature = m_caster->SummonCreature(entry_list[urand(0, 2)], x, y, z, o,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,180000);
-                    if (!pCreature)
-                        return;
-
-                    pCreature->SetHealth(health);
-
-                    if(pCreature->AI())
-                        pCreature->AI()->AttackStart(m_caster);
-
                     return;
                 }
                 case 34665:                                 //Administer Antidote
@@ -2768,7 +2768,7 @@ void Spell::EffectCreateItem2(uint32 i)
 
 void Spell::EffectPersistentAA(uint32 i)
 {
-    float radius = GetSpellRadius(sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[i]));
+    float radius = GetSpellRadiusForFriend(sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[i]));
     if(Player* modOwner = m_originalCaster->GetSpellModOwner())
         modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_RADIUS, radius);
 
@@ -3107,8 +3107,7 @@ void Spell::EffectOpenLock(uint32 /*i*/)
         }
 
         // update skill if really known
-        uint32 SkillValue = player->GetPureSkillValue(SkillId);
-        if(SkillValue)                                      // non only item base skill
+        if(uint32 SkillValue = player->GetPureSkillValue(SkillId))
         {
             if(gameObjTarget)
             {
@@ -3120,7 +3119,6 @@ void Spell::EffectOpenLock(uint32 /*i*/)
             else if(itemTarget)
             {
                 // Do one skill-up
-                uint32 SkillValue = player->GetPureSkillValue(SkillId);
                 player->UpdateGatherSkill(SkillId, SkillValue, reqSkillValue);
             }
         }
@@ -3517,8 +3515,8 @@ void Spell::EffectDispel(uint32 i)
                 SpellEntry const* spellInfo = sSpellStore.LookupEntry(j->first);
                 data << uint32(spellInfo->Id);              // Spell Id
                 data << uint8(0);                           // 0 - dispelled !=0 cleansed
-				//Why are Aura's Removed by EffIndex? Auras should be removed as a whole.....
-				unitTarget->RemoveAurasDueToSpellByDispel(spellInfo->Id, j->second, m_caster);
+                //Why are Aura's Removed by EffIndex? Auras should be removed as a whole.....
+                unitTarget->RemoveAurasDueToSpellByDispel(spellInfo->Id, j->second, m_caster);
              }
             m_caster->SendMessageToSet(&data, true);
 
@@ -3635,7 +3633,7 @@ void Spell::EffectAddFarsight(uint32 i)
     if (m_caster->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    float radius = GetSpellRadius(sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[i]));
+    float radius = GetSpellRadiusForFriend(sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[i]));
     int32 duration = GetSpellDuration(m_spellInfo);
     DynamicObject* dynObj = new DynamicObject;
     if(!dynObj->Create(objmgr.GenerateLowGuid(HIGHGUID_DYNAMICOBJECT), m_caster, m_spellInfo->Id, i, m_targets.m_destX, m_targets.m_destY, m_targets.m_destZ, duration, radius))
@@ -3685,7 +3683,7 @@ void Spell::EffectSummonWild(uint32 i)
     float center_y = m_targets.m_destY;
     float center_z = m_targets.m_destZ;
 
-    float radius = GetSpellRadius(sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[i]));
+    float radius = GetSpellRadiusForHostile(sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[i]));
 
     int32 amount = damage > 0 ? damage : 1;
 
@@ -3774,7 +3772,7 @@ void Spell::EffectSummonGuardian(uint32 i)
     float center_y = m_targets.m_destY;
     float center_z = m_targets.m_destZ;
 
-    float radius = GetSpellRadius(sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[i]));
+    float radius = GetSpellRadiusForFriend(sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[i]));
 
     int32 amount = damage > 0 ? damage : 1;
 
@@ -3878,7 +3876,7 @@ void Spell::EffectTeleUnitsFaceCaster(uint32 i)
         return;
 
     uint32 mapid = m_caster->GetMapId();
-    float dis = GetSpellRadius(sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[i]));
+    float dis = m_caster->GetSpellRadiusForTarget(unitTarget, sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[i]));
 
     float fx,fy,fz;
     m_caster->GetClosePoint(fx,fy,fz,unitTarget->GetObjectSize(),dis);
@@ -5005,6 +5003,37 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                     unitTarget->CastSpell(m_caster, 40903, true);
                     break;
                 }
+                case 48025:                                     // Headless Horseman's Mount
+                {
+                    if(!unitTarget)
+                        return;
+                
+                    switch(((Player*)unitTarget)->GetBaseSkillValue(762))
+                    {
+                    case 75: unitTarget->CastSpell(unitTarget, 51621, true); break;;
+                    case 150: unitTarget->CastSpell(unitTarget, 48024, true); break;
+                    case 225: unitTarget->CastSpell(unitTarget, 51617, true); break;                
+                    case 300: unitTarget->CastSpell(unitTarget, 48023, true); break;
+                    default: break;
+                    }
+                    break;
+                }
+                case 47977:                                     // Magic Broom
+                {
+                    if(!unitTarget)                  
+                        return;
+
+                    if(unitTarget)
+                    {
+                        switch(((Player*)unitTarget)->GetBaseSkillValue(762))
+                        {
+                        case 75: unitTarget->CastSpell(unitTarget, 42680, true); break;;
+                        case 150: case 225: case 300: unitTarget->CastSpell(unitTarget, 42683, true); break;
+                        default: break;
+                        }
+                    }
+                    break;
+                }
                 case 41931:
                 {
                     if(m_caster->GetTypeId() != TYPEID_PLAYER)
@@ -5957,7 +5986,7 @@ void Spell::EffectMomentMove(uint32 i)
         return;
 
     uint32 mapid = m_caster->GetMapId();
-    float dis = GetSpellRadius(sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[i]));
+    float dis = m_caster->GetSpellRadiusForTarget(unitTarget, sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[i]));
 
     // src point
     float *fx = new float[11], *fy = new float[11], *fz = new float[11];
@@ -6235,8 +6264,8 @@ void Spell::EffectKnockBack(uint32 i)
     float dy = unitTarget->GetPositionY() - y;
     float dist = sqrt((dx*dx) + (dy*dy));
 
-    float vsin = dx / dist;
-    float vcos = dy / dist;
+    float vcos = dx / dist;
+    float vsin = dy / dist;
     float speedxy = float(m_spellInfo->EffectMiscValue[i])/10;
     float speedz = float(damage/-10);   
 
@@ -6475,13 +6504,14 @@ void Spell::EffectTransmitted(uint32 effIndex)
     //FIXME: this can be better check for most objects but still hack
     else if(m_spellInfo->EffectRadiusIndex[effIndex] && m_spellInfo->speed==0)
     {
-        float dis = GetSpellRadius(sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[effIndex]));
+        float dis = GetSpellRadiusForFriend(sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[effIndex]));
         m_caster->GetClosePoint(fx,fy,fz,DEFAULT_WORLD_OBJECT_SIZE, dis);
     }
     else
     {
-        float min_dis = GetSpellMinRange(sSpellRangeStore.LookupEntry(m_spellInfo->rangeIndex));
-        float max_dis = GetSpellMaxRange(sSpellRangeStore.LookupEntry(m_spellInfo->rangeIndex));
+        //GO is always friendly to it's creator, get range for friends
+        float min_dis = GetSpellMinRangeForFriend(sSpellRangeStore.LookupEntry(m_spellInfo->rangeIndex));
+        float max_dis = GetSpellMaxRangeForFriend(sSpellRangeStore.LookupEntry(m_spellInfo->rangeIndex));
         float dis = rand_norm() * (max_dis - min_dis) + min_dis;
 
         m_caster->GetClosePoint(fx,fy,fz,DEFAULT_WORLD_OBJECT_SIZE, dis);

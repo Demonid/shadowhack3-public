@@ -484,6 +484,9 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 23333:                                         // BG spell
         case 23335:                                         // BG spell
         case 34976:                                         // BG spell
+        case 31579:                                         // Arcane Empowerment Rank1 talent aura with one positive and one negative (check not needed in wotlk)
+        case 31582:                                         // Arcane Empowerment Rank2
+        case 31583:                                         // Arcane Empowerment Rank3
             return true;
         case 28441:                                         // not positive dummy spell
         case 37675:                                         // Chaos Blast
@@ -2259,34 +2262,35 @@ void SpellMgr::LoadSpellCustomAttr()
         case 41635: // Prayer of Mending
         case 44869: // Spectral Blast
         case 45027: // Revitalize
-        case 45976: // Muru Portal Channel        
+        case 45976: // Muru Portal Channel
+        case 39365: // Thundering Storm
             spellInfo->MaxAffectedTargets = 1;
             break;
         case 41376: // Spite
         case 39992: // Needle Spine
-		case 29576: //Multi-Shot
-		case 40816: //Saber Lash
-		case 37790: //Spread Shot
-		case 46771: //Flame Sear
-		case 45248: //Shadow Blades
+        case 29576: //Multi-Shot
+        case 40816: //Saber Lash
+        case 37790: //Spread Shot
+        case 46771: //Flame Sear
+        case 45248: //Shadow Blades
         case 41303: // Soul Drain
             spellInfo->MaxAffectedTargets = 3;
             break;
-		case 38310: //Multi-Shot
-			spellInfo->MaxAffectedTargets = 4;
-			break;
+        case 38310: //Multi-Shot
+            spellInfo->MaxAffectedTargets = 4;
+            break;
         case 42005: // Bloodboil
-		case 38296: //Spitfire Totem
-		case 37676: //Insidious Whisper
-		case 46009: //Negative Energy
+        case 38296: //Spitfire Totem
+        case 37676: //Insidious Whisper
+        case 46009: //Negative Energy
             spellInfo->MaxAffectedTargets = 5;
             break;
-		case 40827: //Sinful Beam
-		case 40859: //Sinister Beam
-		case 40860: //Vile Beam
-		case 40861: //Wicked Beam
-			spellInfo->MaxAffectedTargets = 10;
-			break;
+        case 40827: //Sinful Beam
+        case 40859: //Sinister Beam
+        case 40860: //Vile Beam
+        case 40861: //Wicked Beam
+            spellInfo->MaxAffectedTargets = 10;
+            break;
         case 8122: case 8124: case 10888: case 10890: // Psychic Scream
         case 12494: // Frostbite
             spellInfo->Attributes |= SPELL_ATTR_BREAKABLE_BY_DAMAGE;

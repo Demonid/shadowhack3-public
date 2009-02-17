@@ -118,15 +118,16 @@ struct TRINITY_DLL_DECL boss_moroesAI : public ScriptedAI
 
         DoScriptText(SAY_AGGRO, m_creature);
         AddsAttack();
+        DoZoneInCombat();
     }
 
     void KilledUnit(Unit* victim)
     {
         switch (rand()%3)
         {
-		case 0: DoScriptText(SAY_KILL_1, m_creature); break;
-		case 1: DoScriptText(SAY_KILL_2, m_creature); break;
-		case 2: DoScriptText(SAY_KILL_3, m_creature); break;
+        case 0: DoScriptText(SAY_KILL_1, m_creature); break;
+        case 1: DoScriptText(SAY_KILL_2, m_creature); break;
+        case 2: DoScriptText(SAY_KILL_3, m_creature); break;
         }
     }
 
@@ -139,22 +140,22 @@ struct TRINITY_DLL_DECL boss_moroesAI : public ScriptedAI
 
         DeSpawnAdds();
 
-		//remove aura from spell Garrote when Moroes dies
-		Map *map = m_creature->GetMap();
-		if (map->IsDungeon())
-		{
-			Map::PlayerList const &PlayerList = map->GetPlayers();
+        //remove aura from spell Garrote when Moroes dies
+        Map *map = m_creature->GetMap();
+        if (map->IsDungeon())
+        {
+            Map::PlayerList const &PlayerList = map->GetPlayers();
 
-			if (PlayerList.isEmpty())
-				return;
+            if (PlayerList.isEmpty())
+                return;
 
-			for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-			{
-				if (i->getSource()->isAlive() && i->getSource()->HasAura(SPELL_GARROTE,0))
-					i->getSource()->RemoveAurasDueToSpell(SPELL_GARROTE);
-			}
-		}
-	}
+            for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+            {
+                if (i->getSource()->isAlive() && i->getSource()->HasAura(SPELL_GARROTE,0))
+                    i->getSource()->RemoveAurasDueToSpell(SPELL_GARROTE);
+            }
+        }
+    }
 
     uint8 CheckAdd(uint64 guid)
     {
@@ -251,8 +252,10 @@ struct TRINITY_DLL_DECL boss_moroesAI : public ScriptedAI
             {
                 Temp = Unit::GetUnit((*m_creature),AddGUID[i]);
                 if (Temp && Temp->isAlive())
+                {
                     ((Creature*)Temp)->AI()->AttackStart(m_creature->getVictim());
-                else
+                    DoZoneInCombat(Temp);
+                }else
                     EnterEvadeMode();
             }
         }
@@ -308,8 +311,8 @@ struct TRINITY_DLL_DECL boss_moroesAI : public ScriptedAI
                 {
                     switch(rand()%2)
                     {
-					case 0: DoScriptText(SAY_SPECIAL_1, m_creature); break;
-					case 1: DoScriptText(SAY_SPECIAL_2, m_creature); break;
+                    case 0: DoScriptText(SAY_SPECIAL_1, m_creature); break;
+                    case 1: DoScriptText(SAY_SPECIAL_2, m_creature); break;
                     }
 
                      if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))

@@ -11,7 +11,7 @@
 #include "CreatureAI.h"
 #include "Creature.h"
 
-float GetSpellMaxRange(uint32 id);
+float GetSpellMaxRangeForHostile(uint32 id);
 
 class SummonList : std::list<uint64>
 {
@@ -121,6 +121,7 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
 
     //Cast spell by Id
     void DoCast(Unit* victim, uint32 spellId, bool triggered = false);
+    void DoCastAOE(uint32 spellId, bool triggered = false);
 
     //Cast spell by spell info
     void DoCastSpell(Unit* who,SpellEntry const *spellInfo, bool triggered = false);

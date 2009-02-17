@@ -326,18 +326,18 @@ void GameObject::Update(uint32 /*p_time*/)
                 // search unfriendly creature
                 if(owner && NeedDespawn)                    // hunter trap
                 {
-                    MaNGOS::AnyUnfriendlyUnitInObjectRangeCheck u_check(this, owner, radius);
-                    MaNGOS::UnitSearcher<MaNGOS::AnyUnfriendlyUnitInObjectRangeCheck> checker(this,ok, u_check);
+                    Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck u_check(this, owner, radius);
+                    Trinity::UnitSearcher<Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck> checker(this, ok, u_check);
 
                     CellLock<GridReadGuard> cell_lock(cell, p);
 
-                    TypeContainerVisitor<Trinity::UnitSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck>, GridTypeMapContainer > grid_object_checker(checker);
+                    TypeContainerVisitor<Trinity::UnitSearcher<Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck>, GridTypeMapContainer > grid_object_checker(checker);
                     cell_lock->Visit(cell_lock, grid_object_checker, *MapManager::Instance().GetMap(GetMapId(), this));
 
                     // or unfriendly player/pet
                     if(!ok)
                     {
-                        TypeContainerVisitor<Trinity::UnitSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck>, WorldTypeMapContainer > world_object_checker(checker);
+                        TypeContainerVisitor<Trinity::UnitSearcher<Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck>, WorldTypeMapContainer > world_object_checker(checker);
                         cell_lock->Visit(cell_lock, world_object_checker, *MapManager::Instance().GetMap(GetMapId(), this));
                     }
                 }
@@ -826,7 +826,20 @@ void GameObject::TriggeringLinkedGameObject( uint32 trapEntry, Unit* target)
     if(!trapSpell)                                          // checked at load already
         return;
 
-    float range = GetSpellMaxRange(sSpellRangeStore.LookupEntry(trapSpell->rangeIndex));
+    float range;
+    SpellRangeEntry const * srentry = sSpellRangeStore.LookupEntry(trapSpell->rangeIndex);
+    //get owner to check hostility of GameObject
+    if (GetSpellMaxRangeForHostile(srentry) == GetSpellMaxRangeForHostile(srentry))
+        range = GetSpellMaxRangeForHostile(srentry);
+    else
+    {
+        Unit * owner=GetOwner();
+        if (owner)
+            range = owner->GetSpellMaxRangeForTarget(target, srentry);
+        else
+            //if no owner assume that object is hostile to target
+            range = GetSpellMaxRangeForHostile(srentry);
+    }
 
     // search nearest linked GO
     GameObject* trapGO = NULL;

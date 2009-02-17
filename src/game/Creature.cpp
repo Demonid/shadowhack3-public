@@ -51,18 +51,11 @@
 // apply implementation of the singletons
 #include "Policies/SingletonImp.h"
 
-void TrainerSpellData::Clear()
-{
-    for (TrainerSpellList::iterator itr = spellList.begin(); itr != spellList.end(); ++itr)
-        delete (*itr);
-    spellList.clear();
-}
-
 TrainerSpell const* TrainerSpellData::Find(uint32 spell_id) const
 {
-    for(TrainerSpellList::const_iterator itr = spellList.begin(); itr != spellList.end(); ++itr)
-        if((*itr)->spell == spell_id)
-            return *itr;
+    TrainerSpellMap::const_iterator itr = spellList.find(spell_id);
+    if (itr != spellList.end())
+        return &itr->second;
 
     return NULL;
 }
@@ -153,7 +146,7 @@ m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_DBTabl
     m_regenTimer = 200;
     m_valuesCount = UNIT_END;
 
-    for(int i =0; i<4; ++i)
+    for(int i =0; i<CREATURE_MAX_SPELLS; ++i)
         m_spells[i] = 0;
 
     m_CreatureSpellCooldowns.clear();
@@ -183,28 +176,28 @@ void Creature::AddToWorld()
     ///- Register the creature for guid lookup
     if(!IsInWorld()) ObjectAccessor::Instance().AddObject(this);
     Unit::AddToWorld();
-	SearchFormation();
+    SearchFormation();
 }
 
 void Creature::RemoveFromWorld()
 {
     if(m_formationID)
-		formation_mgr.DestroyGroup(m_formationID, GetGUID());
+        formation_mgr.DestroyGroup(m_formationID, GetGUID());
 
-	///- Remove the creature from the accessor
+    ///- Remove the creature from the accessor
     if(IsInWorld()) ObjectAccessor::Instance().RemoveObject(this);
     Unit::RemoveFromWorld();
 }
 
 void Creature::SearchFormation()
 {
-	uint32 lowguid = GetDBTableGUIDLow();
+    uint32 lowguid = GetDBTableGUIDLow();
 
-	if(CreatureGroupMap.find(lowguid) != CreatureGroupMap.end())
-	{
-		m_formationID = CreatureGroupMap[lowguid]->leaderGUID;
-		formation_mgr.UpdateCreatureGroup(m_formationID, this);
-	}
+    if(CreatureGroupMap.find(lowguid) != CreatureGroupMap.end())
+    {
+        m_formationID = CreatureGroupMap[lowguid]->leaderGUID;
+        formation_mgr.UpdateCreatureGroup(m_formationID, this);
+    }
 }
 
 void Creature::RemoveCorpse()
@@ -220,8 +213,8 @@ void Creature::RemoveCorpse()
 
     float x,y,z,o;
     GetRespawnCoord(x, y, z, &o);
-	SetHomePosition(x,y,z,o);
-	GetMap()->CreatureRelocation(this,x,y,z,o);
+    SetHomePosition(x,y,z,o);
+    GetMap()->CreatureRelocation(this,x,y,z,o);
 }
 
 /**
@@ -414,7 +407,7 @@ void Creature::Update(uint32 diff)
                     UpdateEntry(m_originalEntry);
 
                 CreatureInfo const *cinfo = GetCreatureInfo();
-				SelectLevel(cinfo);
+                SelectLevel(cinfo);
 
                 if (m_isDeadByDefault)
                 {
@@ -510,14 +503,14 @@ void Creature::Update(uint32 diff)
             if (m_regenTimer != 0)
                 break;
 
-			if (!isInCombat())
-			{
-				if(HasFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_OTHER_TAGGER))
-					SetUInt32Value(UNIT_DYNAMIC_FLAGS, GetCreatureInfo()->dynamicflags);
-				RegenerateHealth();
-			}
-			else if(IsPolymorphed())
-					RegenerateHealth();
+            if (!isInCombat())
+            {
+                if(HasFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_OTHER_TAGGER))
+                    SetUInt32Value(UNIT_DYNAMIC_FLAGS, GetCreatureInfo()->dynamicflags);
+                RegenerateHealth();
+            }
+            else if(IsPolymorphed())
+                    RegenerateHealth();
 
             RegenerateMana();
 
@@ -796,6 +789,11 @@ bool Creature::isCanTrainingAndResetTalentsOf(Player* pPlayer) const
 
 void Creature::prepareGossipMenu( Player *pPlayer,uint32 gossipid )
 {
+    //Prevent gossip from NPCs that are possessed.
+    Unit* Charmed = Unit::GetCharmer();
+    if (Charmed)
+        return;
+
     PlayerMenu* pm=pPlayer->PlayerTalkClass;
     pm->ClearMenus();
 
@@ -811,7 +809,7 @@ void Creature::prepareGossipMenu( Player *pPlayer,uint32 gossipid )
             if(gso->Id==1)
             {
                 uint32 textid=GetNpcTextId();
-                GossipText * gossiptext=objmgr.GetGossipText(textid);
+                GossipText const* gossiptext=objmgr.GetGossipText(textid);
                 if(!gossiptext)
                     cantalking=false;
             }
@@ -925,8 +923,8 @@ void Creature::sendPreparedGossip(Player* player)
     if(GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_WORLDEVENT) // if world event npc then
         gameeventmgr.HandleWorldEventGossip(player, this);      // update world state with progress
 
-    // in case empty gossip menu open quest menu if any
-    if (player->PlayerTalkClass->GetGossipMenu().Empty() && !player->PlayerTalkClass->GetQuestMenu().Empty())
+    // in case no gossip flag and quest menu not empty, open quest menu (client expect gossip menu with this flag)
+    if (!HasFlag(UNIT_NPC_FLAGS,UNIT_NPC_FLAG_GOSSIP) && !player->PlayerTalkClass->GetQuestMenu().Empty())
     {
         player->SendPreparedQuest(GetGUID());
         return;
@@ -968,7 +966,7 @@ void Creature::OnGossipSelect(Player* player, uint32 option)
             player->PlayerTalkClass->CloseGossip();
             player->PlayerTalkClass->SendTalking(textid);
             break;
-		}
+        }
         case GOSSIP_OPTION_OUTDOORPVP:
             sOutdoorPvPMgr.HandleGossipOption(player, GetGUID(), option);
             break;
@@ -1423,10 +1421,10 @@ bool Creature::LoadFromDB(uint32 guid, Map *map)
         sLog.outError("ERROR: Creature (guidlow %d, entry %d) not loaded. Suggested coordinates isn't valid (X: %f Y: %f)",GetGUIDLow(),GetEntry(),GetPositionX(),GetPositionY());
         return false;
     }
-	//We should set first home position, because then AI calls home movement
-	SetHomePosition(data->posX,data->posY,data->posZ,data->orientation);
+    //We should set first home position, because then AI calls home movement
+    SetHomePosition(data->posX,data->posY,data->posZ,data->orientation);
 
-	m_respawnradius = data->spawndist;
+    m_respawnradius = data->spawndist;
 
     m_respawnDelay = data->spawntimesecs;
     m_isDeadByDefault = data->is_dead;
@@ -1671,11 +1669,11 @@ void Creature::setDeathState(DeathState s)
         SetLootRecipient(NULL);
         Unit::setDeathState(ALIVE);
         CreatureInfo const *cinfo = GetCreatureInfo();
-		RemoveFlag (UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
+        RemoveFlag (UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
         AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
         SetUInt32Value(UNIT_NPC_FLAGS, cinfo->npcflag);
         clearUnitState(UNIT_STAT_ALL_STATE);
-		i_motionMaster.Initialize();
+        i_motionMaster.Initialize();
         SetMeleeDamageSchool(SpellSchools(cinfo->dmgschool));
         LoadCreaturesAddon(true);
     }
@@ -1687,9 +1685,9 @@ bool Creature::FallGround()
     if (getDeathState() == DEAD_FALLING)
         return false;
 
-	float x, y, z;
-	GetPosition(x, y, z);
-	float ground_Z = GetMap()->GetVmapHeight(x, y, z, true);
+    float x, y, z;
+    GetPosition(x, y, z);
+    float ground_Z = GetMap()->GetVmapHeight(x, y, z, true);
     if (fabs(ground_Z - z) < 0.1f)
         return false;
 
@@ -1771,8 +1769,8 @@ SpellEntry const *Creature::reachWithSpellAttack(Unit *pVictim)
         if(spellInfo->manaCost > GetPower(POWER_MANA))
             continue;
         SpellRangeEntry const* srange = sSpellRangeStore.LookupEntry(spellInfo->rangeIndex);
-        float range = GetSpellMaxRange(srange);
-        float minrange = GetSpellMinRange(srange);
+        float range = GetSpellMaxRangeForHostile(srange);
+        float minrange = GetSpellMinRangeForHostile(srange);
         float dist = GetDistance(pVictim);
         //if(!isInFront( pVictim, range ) && spellInfo->AttributesEx )
         //    continue;
@@ -1817,8 +1815,8 @@ SpellEntry const *Creature::reachWithSpellCure(Unit *pVictim)
         if(spellInfo->manaCost > GetPower(POWER_MANA))
             continue;
         SpellRangeEntry const* srange = sSpellRangeStore.LookupEntry(spellInfo->rangeIndex);
-        float range = GetSpellMaxRange(srange);
-        float minrange = GetSpellMinRange(srange);
+        float range = GetSpellMaxRangeForFriend(srange);
+        float minrange = GetSpellMinRangeForFriend( srange);
         float dist = GetDistance(pVictim);
         //if(!isInFront( pVictim, range ) && spellInfo->AttributesEx )
         //    continue;
@@ -2051,8 +2049,8 @@ bool Creature::LoadCreaturesAddon(bool reload)
         SetUnitMovementFlags(cainfo->move_flags);
 
     //Load Path
-	if (cainfo->path_id != 0)
-		m_path_id = cainfo->path_id;
+    if (cainfo->path_id != 0)
+        m_path_id = cainfo->path_id;
 
     if(cainfo->auras)
     {

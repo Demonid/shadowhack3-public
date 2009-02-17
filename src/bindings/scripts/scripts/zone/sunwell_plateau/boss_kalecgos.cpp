@@ -16,8 +16,9 @@
 
 /* ScriptData
 SDName: Boss_Kalecgos
-SD%Complete: 0
-SDComment: VERIFY SCRIPT
+SD%Complete: 95
+SDComment:
+SDCategory: Sunwell_Plateau
 EndScriptData */
 
 #include "precompiled.h"
@@ -119,8 +120,8 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
     {
         if(pInstance)
         {
-            uint64 SathGUID = pInstance->GetData64(DATA_SATHROVARR);
-            uint64 DoorGUID = pInstance->GetData64(DATA_GO_FORCEFIELD);
+            SathGUID = pInstance->GetData64(DATA_SATHROVARR);
+            DoorGUID = pInstance->GetData64(DATA_GO_FORCEFIELD);
         }
 
         Unit *Sath = Unit::GetUnit(*m_creature,SathGUID);
@@ -146,8 +147,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
         TalkSequence = 0;
         isFriendly = false;
         isEnraged = false;
-        isBanished = false;
-        //m_creature->CastSpell(m_creature, AURA_SUNWELL_RADIANCE, true);
+        isBanished = false;        
     }
 
     void DamageTaken(Unit *done_by, uint32 &damage)
@@ -169,8 +169,8 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
     {
         switch(rand()%2)
         {
-		case 0: DoScriptText(SAY_EVIL_SLAY1, m_creature); break;
-		case 1: DoScriptText(SAY_EVIL_SLAY2, m_creature); break;
+        case 0: DoScriptText(SAY_EVIL_SLAY1, m_creature); break;
+        case 1: DoScriptText(SAY_EVIL_SLAY2, m_creature); break;
         }
     }
 
@@ -191,8 +191,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
         switch(TalkSequence)
         {
         case 1:
-            m_creature->setFaction(35);
-            DoCast(m_creature, SPELL_TRANSFORM_KALEC);
+            m_creature->setFaction(35);            
             TalkTimer = 1000;
             break;
         case 2:
@@ -215,7 +214,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
         switch(TalkSequence)
         {
         case 1:
-			DoScriptText(SAY_EVIL_ENRAGE, m_creature);
+            DoScriptText(SAY_EVIL_ENRAGE, m_creature);
             TalkTimer = 3000;
             break;
         case 2:
@@ -251,6 +250,7 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
     uint32 AgonyCurseTimer;
     uint32 ShadowBoltTimer;
     uint32 CheckTimer;
+    uint32 ResetThreat;
 
     uint64 KalecGUID;
     uint64 KalecgosGUID;
@@ -274,11 +274,9 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
         AgonyCurseTimer = 20000;
         CorruptionStrikeTimer = 13000;
         CheckTimer = 1000;
+        ResetThreat = 1000;
         isEnraged = false;
-        isBanished = false;
-        //m_creature->CastSpell(m_creature, AURA_SPECTRAL_INVISIBILITY, true);
-        //m_creature->CastSpell(m_creature, AURA_SUNWELL_RADIANCE, true);
-        //m_creature->CastSpell(m_creature, AURA_DEMONIC_VISUAL, true);
+        isBanished = false;        
     }
 
     void Aggro(Unit* who)
@@ -321,7 +319,7 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
 
     void JustDied(Unit *killer)
     {
-		DoScriptText(SAY_SATH_DEATH, m_creature);
+        DoScriptText(SAY_SATH_DEATH, m_creature);
         m_creature->Relocate(m_creature->GetPositionX(), m_creature->GetPositionY(), DRAGON_REALM_Z, m_creature->GetOrientation());
         TeleportAllPlayersBack();
         if(Unit *Kalecgos = Unit::GetUnit(*m_creature, KalecgosGUID))
@@ -341,9 +339,7 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
             if(Player* i_pl = i->getSource())
                 if(i_pl->HasAura(AURA_SPECTRAL_REALM,0))
                     i_pl->RemoveAurasDueToSpell(AURA_SPECTRAL_REALM);
-    }
-
-    void Enrage(); // demon and dragon should enrage at the same time
+    }    
 
     void UpdateAI(const uint32 diff)
     {
@@ -352,8 +348,17 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
 
         if(CheckTimer < diff)
         {
-            if(!isEnraged && (m_creature->GetHealth()*100)/m_creature->GetMaxHealth() < 10)
-                Enrage();
+            if (((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 10) && !isEnraged)
+            {
+                Unit* Kalecgos = Unit::GetUnit(*m_creature, KalecgosGUID);
+                if(Kalecgos)
+                {
+                    Kalecgos->CastSpell(Kalecgos, SPELL_ENRAGE, true);
+                    ((boss_kalecgosAI*)((Creature*)Kalecgos)->AI())->isEnraged = true;
+                }
+                DoCast(m_creature, SPELL_ENRAGE, true);
+                isEnraged = true;
+            }
 
             if(!isBanished && (m_creature->GetHealth()*100)/m_creature->GetMaxHealth() < 1)
             {
@@ -366,7 +371,7 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
                     }
                     else
                     {
-                        m_creature->CastSpell(m_creature, SPELL_BANISH, true);
+                        DoCast(m_creature, SPELL_BANISH);
                         isBanished = true;
                     }
                 }
@@ -379,9 +384,25 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
             CheckTimer = 1000;
         }else CheckTimer -= diff;
 
+        if(ResetThreat < diff)
+        {
+            if ( ( m_creature->getVictim()->HasAura(AURA_SPECTRAL_EXHAUSTION,0)) && (m_creature->getVictim()->GetTypeId() == TYPEID_PLAYER) )
+            {
+                for(std::list<HostilReference*>::iterator itr = m_creature->getThreatManager().getThreatList().begin(); itr != m_creature->getThreatManager().getThreatList().end(); ++itr)
+                {
+                    if(((*itr)->getUnitGuid()) ==  (m_creature->getVictim()->GetGUID()))
+                    {
+                        (*itr)->removeReference();
+                        break;
+                    }
+                }
+            }
+            ResetThreat = 1000;
+        }else ResetThreat -= diff;
+
         if(ShadowBoltTimer < diff)
         {
-			DoScriptText(SAY_SATH_SPELL1, m_creature);
+            DoScriptText(SAY_SATH_SPELL1, m_creature);
             DoCast(m_creature, SPELL_SHADOW_BOLT);
             ShadowBoltTimer = 7000+(rand()%3000);
         }else ShadowBoltTimer -= diff;
@@ -396,7 +417,7 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
 
         if(CorruptionStrikeTimer < diff)
         {
-			DoScriptText(SAY_SATH_SPELL2, m_creature);
+            DoScriptText(SAY_SATH_SPELL2, m_creature);
             DoCast(m_creature->getVictim(), SPELL_CORRUPTION_STRIKE);
             CorruptionStrikeTimer = 13000;
         }else CorruptionStrikeTimer -= diff;
@@ -435,9 +456,6 @@ struct TRINITY_DLL_DECL boss_kalecAI : public ScriptedAI
         YellSequence = 0;
 
         isEnraged = false;
-
-        //m_creature->CastSpell(m_creature, AURA_SPECTRAL_INVISIBILITY, true);
-        //m_creature->CastSpell(m_creature, AURA_SUNWELL_RADIANCE, true);
     }
 
     void Aggro(Unit* who) {}
@@ -452,11 +470,8 @@ struct TRINITY_DLL_DECL boss_kalecAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(!m_creature->getVictim()) // only victim is Sath
-        {
-            EnterEvadeMode();
-            return;
-        }
+        if (!UpdateVictim())
+            return; 
 
         if(YellTimer < diff)
         {
@@ -532,91 +547,84 @@ void boss_kalecgosAI::UpdateAI(const uint32 diff)
             return;
 
         if(CheckTimer < diff)
-        {
-            if(!isEnraged && (m_creature->GetHealth()*100)/m_creature->GetMaxHealth() < 10)
-            {
-                if(Unit *Sath = Unit::GetUnit(*m_creature, SathGUID))
-                    ((boss_sathrovarrAI*)((Creature*)Sath)->AI())->Enrage();
-            }
-
-            if(!isBanished && (m_creature->GetHealth()*100)/m_creature->GetMaxHealth() < 1)
-            {
-                if(Unit *Sath = Unit::GetUnit(*m_creature, SathGUID))
-                {
-                    if(((boss_sathrovarrAI*)((Creature*)Sath)->AI())->isBanished)
-                    {
-                        Sath->DealDamage(Sath, Sath->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-                        return;
-                    }
-                    else
-                    {
-                        m_creature->CastSpell(m_creature, SPELL_BANISH, true);
-                        isBanished = true;
-                    }
-                }
-                else
-                {
-                    DoTextEmote("is unable to find Sath", NULL);
-                    EnterEvadeMode();
-                }
-            }
-            CheckTimer = 1000; //every 1 sec we check this
+         {
+             if (((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 10) && !isEnraged)
+             {
+                 Unit* Sath = Unit::GetUnit(*m_creature, SathGUID);
+                 if(Sath)
+                 {
+                     Sath->CastSpell(Sath, SPELL_ENRAGE, true);
+                     ((boss_sathrovarrAI*)((Creature*)Sath)->AI())->isEnraged = true;
+                 }
+                 DoCast(m_creature, SPELL_ENRAGE, true);
+                 isEnraged = true;
+             }
+ 
+             if(!isBanished && (m_creature->GetHealth()*100)/m_creature->GetMaxHealth() < 1)
+             {
+                 if(Unit *Sath = Unit::GetUnit(*m_creature, SathGUID))
+                 {
+                     if(((boss_sathrovarrAI*)((Creature*)Sath)->AI())->isBanished)
+                     {
+                         Sath->DealDamage(Sath, Sath->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                         return;
+                     }
+                     else
+                     {
+                         DoCast(m_creature, SPELL_BANISH);
+                         isBanished = true;
+                     }
+                 }
+                 else
+                 {
+                     error_log("TSCR: Didn't find Shathrowar. Kalecgos event reseted.");
+                     EnterEvadeMode();
+                 }
+             }
+             CheckTimer = 1000;
         }else CheckTimer -= diff;
 
         if(ArcaneBuffetTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_ARCANE_BUFFET);
+            DoCastAOE(SPELL_ARCANE_BUFFET);
             ArcaneBuffetTimer = 8000;
         }else ArcaneBuffetTimer -= diff;
 
         if(FrostBreathTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_FROST_BREATH);
+            DoCastAOE(SPELL_FROST_BREATH);
             FrostBreathTimer = 15000;
         }else FrostBreathTimer -= diff;
 
         if(TailLashTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_TAIL_LASH);
+            DoCastAOE(SPELL_TAIL_LASH);
             TailLashTimer = 15000;
         }else TailLashTimer -= diff;
 
         if(WildMagicTimer < diff)
         {
-            DoCast(m_creature, WildMagic[rand()%6]);
+            DoCastAOE(WildMagic[rand()%6]);
             WildMagicTimer = 20000;
         }else WildMagicTimer -= diff;
 
         if(SpectralBlastTimer < diff)
         {
-            m_creature->CastSpell(m_creature, SPELL_SPECTRAL_BLAST, true);
-            SpectralBlastTimer = 20000+(rand()%5000);
+            //this is a hack. we need to find a victim without aura in core
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
+            if( ( target != m_creature->getVictim() ) && target->isAlive() && !(target->HasAura(AURA_SPECTRAL_EXHAUSTION, 0)) )
+            {
+                DoCast(target, SPELL_SPECTRAL_BLAST);
+                SpectralBlastTimer = 20000+(rand()%5000);
+            }
+            else
+            {
+                SpectralBlastTimer = 1000;
+            }
         }else SpectralBlastTimer -= diff;
 
         DoMeleeAttackIfReady();
     }
-}
-
-void boss_sathrovarrAI::Enrage()
-{
-    Unit *Kalecgos = Unit::GetUnit(*m_creature, KalecgosGUID);
-    Unit *Kalec = Unit::GetUnit(*m_creature, KalecGUID);
-    if(!Kalecgos)
-    {
-        error_log("SD2 ERROR: unable to find Kalecgos");
-        return;
-    }
-    if(!Kalec)
-    {
-        error_log("SD2 ERROR: unable to find Kalec");
-        return;
-    }
-	DoScriptText(SAY_SATH_ENRAGE, m_creature);
-    m_creature->CastSpell(m_creature, SPELL_ENRAGE, true);
-    Kalecgos->CastSpell(Kalecgos, SPELL_ENRAGE, true);
-    isEnraged = true;
-    ((boss_kalecgosAI*)((Creature*)Kalecgos)->AI())->isEnraged = true;
-    ((boss_kalecAI*)((Creature*)Kalec)->AI())->isEnraged = true;
 }
 
 bool GOkalocegos_teleporter(Player *player, GameObject* _GO)

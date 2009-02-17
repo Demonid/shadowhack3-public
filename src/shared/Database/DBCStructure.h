@@ -514,6 +514,16 @@ struct AreaTriggerEntry
     float   box_orientation;                                // 9        m_box_yaw
 };
 
+struct AuctionHouseEntry
+{
+    uint32    houseId;                                      // 0 index
+    uint32    faction;                                      // 1 id of faction.dbc for player factions associated with city
+    uint32    depositPercent;                               // 2 1/3 from real
+    uint32    cutPercent;                                   // 3
+    //char*     name[16];                                   // 4-19
+                                                            // 20 string flag, unused
+};
+
 struct BankBagSlotPricesEntry
 {
     uint32  ID;
@@ -867,6 +877,15 @@ struct ItemExtendedCostEntry
     uint32      reqpersonalarenarating;                     // 13 required personal arena rating
 };
 
+struct ItemLimitCategoryEntry
+{
+    uint32      ID;                                         // 0 Id
+    //char*     name[16]                                    // 1-16     m_name_lang
+                                                            // 17 name flags
+    uint32      maxCount;                                  // max allowed equipped as item or in gem slot
+    //uint32      unk;                                        // 1 for prismatic gems only...
+};
+
 struct ItemRandomPropertiesEntry
 {
     uint32    ID;                                           // 0        m_ID
@@ -1218,16 +1237,23 @@ struct SpellThreatEntry
 struct SpellRadiusEntry
 {
     uint32    ID;
-    float     Radius;
-    float     Radius2;
+    float     radiusHostile;
+    //uint32    Unk    //always 0
+    float     radiusFriend;
 };
 
 struct SpellRangeEntry
 {
     uint32    ID;
-    float     minRange;
-    float     maxRange;
+    float     minRangeHostile;
+    float     minRangeFriend;
+    float     maxRangeHostile;
+    float     maxRangeFriend;                               //friend means unattackable unit here
     uint32    type;
+    //char*     Name[16];                                   // 7-23 unused
+                                                            // 24 string flags, unused
+    //char*     Name2[16];                                  // 25-40 unused
+                                                            // 41 string flags, unused
 };
 
 struct SpellRuneCostEntry

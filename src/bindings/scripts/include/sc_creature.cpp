@@ -203,11 +203,19 @@ void ScriptedAI::DoStopAttack()
 
 void ScriptedAI::DoCast(Unit* victim, uint32 spellId, bool triggered)
 {
-    if (!victim || m_creature->hasUnitState(UNIT_STAT_CASTING))
+    if (!victim || m_creature->hasUnitState(UNIT_STAT_CASTING) && !triggered)
         return;
 
     //m_creature->StopMoving();
     m_creature->CastSpell(victim, spellId, triggered);
+}
+
+void ScriptedAI::DoCastAOE(uint32 spellId, bool triggered)
+{
+    if(!triggered && m_creature->hasUnitState(UNIT_STAT_CASTING))
+        return;
+
+    m_creature->CastSpell((Unit*)NULL, spellId, triggered);
 }
 
 void ScriptedAI::DoCastSpell(Unit* who,SpellEntry const *spellInfo, bool triggered)
@@ -221,12 +229,12 @@ void ScriptedAI::DoCastSpell(Unit* who,SpellEntry const *spellInfo, bool trigger
 
 void ScriptedAI::DoSay(const char* text, uint32 language, Unit* target, bool SayEmote)
 {
-	if (target)
-	{
-		m_creature->Say(text, language, target->GetGUID());
-		if(SayEmote)
-			m_creature->HandleEmoteCommand(EMOTE_ONESHOT_TALK);
-	}
+    if (target)
+    {
+        m_creature->Say(text, language, target->GetGUID());
+        if(SayEmote)
+            m_creature->HandleEmoteCommand(EMOTE_ONESHOT_TALK);
+    }
     else m_creature->Say(text, language, 0);
 }
 
@@ -454,11 +462,9 @@ SpellEntry const* ScriptedAI::SelectSpell(Unit* Target, int32 School, int32 Mech
         return false;
 
     //Using the extended script system we first create a list of viable spells
-    SpellEntry const* Spell[4];
-    Spell[0] = 0;
-    Spell[1] = 0;
-    Spell[2] = 0;
-    Spell[3] = 0;
+    SpellEntry const* Spell[CREATURE_MAX_SPELLS];
+    for (uint8 i=0;i<CREATURE_MAX_SPELLS;i++)
+        Spell[i] = 0;
 
     uint32 SpellCount = 0;
 
@@ -466,7 +472,7 @@ SpellEntry const* ScriptedAI::SelectSpell(Unit* Target, int32 School, int32 Mech
     SpellRangeEntry const* TempRange;
 
     //Check if each spell is viable(set it to null if not)
-    for (uint32 i = 0; i < 4; i++)
+    for (uint32 i = 0; i < CREATURE_MAX_SPELLS; i++)
     {
         TempSpell = GetSpellStore()->LookupEntry(m_creature->m_spells[i]);
 
@@ -510,13 +516,13 @@ SpellEntry const* ScriptedAI::SelectSpell(Unit* Target, int32 School, int32 Mech
             continue;
 
         //Check if the spell meets our range requirements
-        if (RangeMin && TempRange->maxRange < RangeMin)
+        if (RangeMin && m_creature->GetSpellMinRangeForTarget(Target, TempRange) < RangeMin)
             continue;
-        if (RangeMax && TempRange->maxRange > RangeMax)
+        if (RangeMax && m_creature->GetSpellMaxRangeForTarget(Target, TempRange) > RangeMax)
             continue;
 
         //Check if our target is in range
-        if (m_creature->IsWithinDistInMap(Target, TempRange->minRange) || !m_creature->IsWithinDistInMap(Target, TempRange->maxRange))
+        if (m_creature->IsWithinDistInMap(Target, m_creature->GetSpellMinRangeForTarget(Target, TempRange)) || !m_creature->IsWithinDistInMap(Target, m_creature->GetSpellMaxRangeForTarget(Target, TempRange)))
             continue;
 
         //All good so lets add it to the spell list
@@ -554,20 +560,20 @@ bool ScriptedAI::CanCast(Unit* Target, SpellEntry const *Spell, bool Triggered)
         return false;
 
     //Unit is out of range of this spell
-    if (m_creature->GetDistance(Target) > TempRange->maxRange || m_creature->GetDistance(Target) < TempRange->minRange)
+    if (m_creature->GetDistance(Target) > m_creature->GetSpellMaxRangeForTarget(Target, TempRange) || m_creature->GetDistance(Target) < m_creature->GetSpellMinRangeForTarget(Target, TempRange))
         return false;
 
     return true;
 }
 
 
-float GetSpellMaxRange(uint32 id)
+float GetSpellMaxRangeForHostile(uint32 id)
 {
     SpellEntry const *spellInfo = GetSpellStore()->LookupEntry(id);
     if(!spellInfo) return 0;
     SpellRangeEntry const *range = GetSpellRangeStore()->LookupEntry(spellInfo->rangeIndex);
     if(!range) return 0;
-    return range->maxRange;
+    return range->maxRangeHostile;
 }
 
 void FillSpellSummary()
@@ -751,7 +757,7 @@ Unit* FindCreature(uint32 entry, float range, Unit* Finder)
     if(!Finder)
         return NULL;
     Creature* target = NULL;
-	Trinity::AllCreaturesOfEntryInRange check(Finder, entry, range);
+    Trinity::AllCreaturesOfEntryInRange check(Finder, entry, range);
 	Trinity::CreatureSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(Finder, target, check);
     Finder->VisitNearbyObject(range, searcher);
     return target;
@@ -762,7 +768,7 @@ GameObject* FindGameObject(uint32 entry, float range, Unit* Finder)
     if(!Finder)
         return NULL;
     GameObject* target = NULL;
-	Trinity::AllGameObjectsWithEntryInGrid go_check(entry);
+    Trinity::AllGameObjectsWithEntryInGrid go_check(entry);
     Trinity::GameObjectSearcher<Trinity::AllGameObjectsWithEntryInGrid> searcher(Finder, target, go_check);
     Finder->VisitNearbyGridObject(range, searcher);
     return target;
@@ -837,7 +843,7 @@ void LoadOverridenSQLData()
     // Sunwell Plateau : Kalecgos : Spectral Rift
     goInfo = const_cast<GameObjectInfo*>(GetGameObjectInfo(187055));
     if(goInfo && goInfo->type == GAMEOBJECT_TYPE_GOOBER)
-        goInfo->goober.lockId = 1714; // need LOCKTYPE_QUICK_OPEN
+        goInfo->type = GAMEOBJECT_TYPE_SPELLCASTER;
 }
 
 void LoadOverridenDBCData()

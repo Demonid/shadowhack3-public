@@ -46,7 +46,7 @@ float HordeBase[4][3]=
 float AttackArea[2][3]=
 {
     {5042.9189, -1776.2562, 1323.0621}, // Alliance
-	{5510.4815, -2676.7112, 1480.4314} // Horde
+    {5510.4815, -2676.7112, 1480.4314} // Horde
 };
 
 hyjalAI::hyjalAI(Creature *c) : ScriptedAI(c)
@@ -78,9 +78,9 @@ void hyjalAI::Reset()
             DoCast(m_creature, SPELL_BRILLIANCE_AURA, true);
             break;
 
-		case 17852:
-			Faction = 1;
-			break;
+        case 17852:
+            Faction = 1;
+            break;
     }
 
     //Bools
@@ -89,7 +89,7 @@ void hyjalAI::Reset()
     SecondBossDead = false;
     Summon = false;
     bRetreat = false;
-	Debug = false;
+    Debug = false;
 
     //Flags
     m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
@@ -108,7 +108,17 @@ void hyjalAI::Reset()
     else error_log(ERROR_INST_DATA);
 
     //Visibility
-    m_creature->SetVisibility(VISIBILITY_ON);
+    switch(m_creature->GetEntry())
+    {
+    case 17772: if(pInstance->GetData(DATA_ANETHERONEVENT) == DONE)
+                    m_creature->SetVisibility(VISIBILITY_OFF);
+                else m_creature->SetVisibility(VISIBILITY_ON);
+        break;
+    case 17852: if(pInstance->GetData(DATA_AZGALOREVENT) == DONE)
+                    m_creature->SetVisibility(VISIBILITY_OFF);
+                else m_creature->SetVisibility(VISIBILITY_ON);
+        break;
+    }
 
     //If Jaina evades, reset the visibility of all other creatures in the grid.
     if(CreatureList.empty())
@@ -132,7 +142,7 @@ void hyjalAI::EnterEvadeMode()
     if(m_creature->isAlive())
         m_creature->GetMotionMaster()->MoveTargetedHome();
 
-	m_creature->SetLootRecipient(NULL);
+    m_creature->SetLootRecipient(NULL);
 
     InCombat = false;
 }
@@ -158,15 +168,16 @@ void hyjalAI::SummonCreature(uint32 entry, float Base[4][3])
         AttackLoc[i] = AttackArea[Faction][i];
     }
 
-    Creature* pCreature = m_creature->SummonCreature(entry, SpawnLoc[0], SpawnLoc[1], SpawnLoc[2], 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 120000);
+    Creature* pCreature = m_creature->SummonCreature(entry, SpawnLoc[0], SpawnLoc[1], SpawnLoc[2], 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 120000);
     if(pCreature)
     {
-		// Increment Enemy Count to be used in World States and instance script
-		++EnemyCount;
+        // Increment Enemy Count to be used in World States and instance script
+        ++EnemyCount;
 
         pCreature->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
         pCreature->GetMotionMaster()->MovePoint(0, AttackLoc[0],AttackLoc[1],AttackLoc[2]);
-		pCreature->AddThreat(m_creature, 0.0f);
+        pCreature->AddThreat(m_creature, 0.0f);
+        pCreature->setActive(true);
         DoZoneInCombat(pCreature);
 
         // Check if creature is a boss.
@@ -181,9 +192,9 @@ void hyjalAI::SummonCreature(uint32 entry, float Base[4][3])
 
 void hyjalAI::SummonNextWave(Wave wave[18], uint32 Count, float Base[4][3])
 {
-	// 1 in 4 chance we give a rally yell. Not sure if the chance is offilike.
-	if (rand()%4 == 0)
-		Talk(RALLY);
+    // 1 in 4 chance we give a rally yell. Not sure if the chance is offilike.
+    if (rand()%4 == 0)
+        Talk(RALLY);
 
     if(!pInstance)
     {
@@ -278,18 +289,18 @@ void hyjalAI::Talk(uint32 id)
 
     uint8 ind = *(index.begin()) + rand()%index.size();
 
-	int32 YellId = 0;
+    int32 YellId = 0;
     if(Faction == 0)                                        // Alliance
     {
-		YellId = JainaQuotes[ind].textid;
+        YellId = JainaQuotes[ind].textid;
     }
     else if(Faction == 1)                                   // Horde
     {
-		YellId = ThrallQuotes[ind].textid;
+        YellId = ThrallQuotes[ind].textid;
     }
 
     if (YellId)
-		DoScriptText(YellId, m_creature);
+        DoScriptText(YellId, m_creature);
 }
 
 void hyjalAI::UpdateWorldState(uint32 id, uint32 state)
@@ -366,20 +377,20 @@ void hyjalAI::Retreat()
 void hyjalAI::UpdateAI(const uint32 diff)
 {
     if(bRetreat)
-	{
+    {
         if(RetreatTimer < diff)
-		{
-			bRetreat = false;
-			if(CreatureList.empty())
-				return;
+        {
+            bRetreat = false;
+            if(CreatureList.empty())
+                return;
 
-			for(std::list<uint64>::iterator itr = CreatureList.begin(); itr != CreatureList.end(); ++itr)
-				if(Unit* pUnit = Unit::GetUnit(*m_creature, *itr))
-					pUnit->SetVisibility(VISIBILITY_OFF);
+            for(std::list<uint64>::iterator itr = CreatureList.begin(); itr != CreatureList.end(); ++itr)
+                if(Unit* pUnit = Unit::GetUnit(*m_creature, *itr))
+                    pUnit->SetVisibility(VISIBILITY_OFF);
 
-			m_creature->SetVisibility(VISIBILITY_OFF);
-		}else RetreatTimer -= diff;
-	}
+            m_creature->SetVisibility(VISIBILITY_OFF);
+        }else RetreatTimer -= diff;
+    }
 
     if(!EventBegun)
         return;

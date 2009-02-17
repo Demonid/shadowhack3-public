@@ -20,6 +20,7 @@
 
 #include "HomeMovementGenerator.h"
 #include "Creature.h"
+#include "CreatureAI.h"
 #include "Traveller.h"
 #include "MapManager.h"
 #include "ObjectAccessor.h"
@@ -70,11 +71,13 @@ HomeMovementGenerator<Creature>::Update(Creature &owner, const uint32& time_diff
         // restore orientation of not moving creature at returning to home
         if(owner.GetDefaultMovementType()==IDLE_MOTION_TYPE)
         {
-			owner.SetOrientation(ori);
-			WorldPacket packet;
-			owner.BuildHeartBeatMsg(&packet);
-			owner.SendMessageToSet(&packet, false);
+            owner.SetOrientation(ori);
+            WorldPacket packet;
+            owner.BuildHeartBeatMsg(&packet);
+            owner.SendMessageToSet(&packet, false);
         }
+
+        owner.AI()->JustReachedHome();
         return false;
     }
 
