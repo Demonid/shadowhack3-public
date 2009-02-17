@@ -219,7 +219,7 @@ enum UnitRename
     UNIT_RENAME_ALLOWED     = 0x03
 };
 
-#define CREATURE_MAX_SPELLS     4
+#define CREATURE_MAX_SPELLS     8
 
 enum Swing
 {
@@ -844,6 +844,11 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         void ApplyDiminishingAura(DiminishingGroup  group, bool apply);
         void ClearDiminishings() { m_Diminishing.clear(); }
 
+        //target dependent range checks
+        uint32 GetSpellMaxRangeForTarget(Unit* target,const SpellRangeEntry * rangeEntry);
+        uint32 GetSpellMinRangeForTarget(Unit* target,const SpellRangeEntry * rangeEntry);
+        uint32 GetSpellRadiusForTarget(Unit* target,const SpellRadiusEntry * radiusEntry);
+
         virtual void Update( uint32 time );
 
         void setAttackTimer(WeaponAttackType type, uint32 time) { m_attackTimer[type] = time; }
@@ -1187,10 +1192,10 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         CharmInfo* GetCharmInfo() { return m_charmInfo; }
         CharmInfo* InitCharmInfo(Unit* charm);
         SharedVisionList const& GetSharedVisionList() { return m_sharedVision; }
+        void RemoveBindSightAuras();
+        void RemoveCharmAuras();
         void AddPlayerToVision(Player* plr);
         void RemovePlayerFromVision(Player* plr);
-        void RemoveAllFromVision();
-        void UncharmSelf();
 
         Pet* CreateTamedPetFrom(Creature* creatureTarget,uint32 spell_id = 0);
 
@@ -1342,7 +1347,6 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         HostilRefManager& getHostilRefManager() { return m_HostilRefManager; }
 
         VisibleAuraMap const *GetVisibleAuras() { return &m_visibleAuras; }
-        uint8 GetVisibleAurasCount() { return m_visibleAuras.size(); }
         AuraSlotEntry * GetVisibleAura(uint8 slot)
         {
             VisibleAuraMap::iterator itr = m_visibleAuras.find(slot);
@@ -1476,10 +1480,6 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         void SetUnitMovementFlags(uint32 f) { m_unit_movement_flags = f; }
 
         void SetControlled(bool apply, UnitState state);
-        void SetFeared(bool apply/*, uint64 casterGUID = 0, uint32 spellID = 0*/);
-        void SetConfused(bool apply/*, uint64 casterGUID = 0, uint32 spellID = 0*/);
-        void SetStunned(bool apply);
-        void SetRooted(bool apply);
 
         void AddComboPointHolder(uint32 lowguid) { m_ComboPointHolders.insert(lowguid); }
         void RemoveComboPointHolder(uint32 lowguid) { m_ComboPointHolders.erase(lowguid); }
@@ -1585,6 +1585,11 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         bool HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggredByAura, SpellEntry const *procSpell, uint32 procFlag, uint32 procEx, uint32 cooldown);
         bool HandleOverrideClassScriptAuraProc(Unit *pVictim, uint32 damage, Aura* triggredByAura, SpellEntry const *procSpell, uint32 cooldown);
         bool HandleMeandingAuraProc(Aura* triggeredByAura);
+
+        void SetFeared(bool apply);
+        void SetConfused(bool apply);
+        void SetStunned(bool apply);
+        void SetRooted(bool apply);
 
         uint32 m_state;                                     // Even derived shouldn't modify
         uint32 m_CombatTimer;

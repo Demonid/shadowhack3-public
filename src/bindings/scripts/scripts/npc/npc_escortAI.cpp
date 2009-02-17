@@ -40,19 +40,19 @@ void npc_escortAI::AttackStart(Unit *who)
         {
             InCombat = true;
 
-			if (IsBeingEscorted)
-			{
+            if (IsBeingEscorted)
+            {
             //Store last position
             m_creature->GetPosition(LastPos.x, LastPos.y, LastPos.z);
 
              debug_log("SD2: EscortAI has entered combat and stored last location.");
-			}
+            }
 
             Aggro(who);
         }
 
-		m_creature->GetMotionMaster()->MovementExpired();
-		m_creature->GetMotionMaster()->MoveChase(who);
+        m_creature->GetMotionMaster()->MovementExpired();
+        m_creature->GetMotionMaster()->MoveChase(who);
     }
 }
 
@@ -64,7 +64,7 @@ void npc_escortAI::MoveInLineOfSight(Unit *who)
     if(m_creature->getVictim() || !m_creature->canStartAttack(who))
         return;
 
-	AttackStart(who);
+    AttackStart(who);
 }
 
 void npc_escortAI::JustRespawned()
@@ -73,8 +73,7 @@ void npc_escortAI::JustRespawned()
     IsBeingEscorted = false;
     IsOnHold = false;
 
-    //Re-Enable gossip
-    m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+    //Re-Enable questgiver flag
     m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
 
     Reset();
@@ -109,7 +108,7 @@ void npc_escortAI::UpdateAI(const uint32 diff)
 {
     //Waypoint Updating
     if (IsBeingEscorted && !InCombat && WaitTimer && !Returning)
-	{
+    {
         if (WaitTimer <= diff)
     {
         if (ReconnectWP)
@@ -157,11 +156,11 @@ void npc_escortAI::UpdateAI(const uint32 diff)
             WaitTimer = 0;
         }
     }else WaitTimer -= diff;
-	}
+    }
 
     //Check if player is within range
     if (IsBeingEscorted && !InCombat && PlayerGUID)
-	{
+    {
         if (PlayerTimer < diff)
     {
         Unit* p = Unit::GetUnit(*m_creature, PlayerGUID);
@@ -186,7 +185,7 @@ void npc_escortAI::UpdateAI(const uint32 diff)
 
         PlayerTimer = 1000;
     }else PlayerTimer -= diff;
-	}
+    }
 
     //Check if we have a current target
     if( m_creature->isAlive() && UpdateVictim())
@@ -298,7 +297,6 @@ void npc_escortAI::Start(bool bAttack, bool bDefend, bool bRun, uint64 pGUID)
     Returning = false;
     IsOnHold = false;
 
-    //Disable gossip
-    m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+    //Disable questgiver flag
     m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
 }

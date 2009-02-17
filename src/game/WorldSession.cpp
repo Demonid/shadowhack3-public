@@ -249,14 +249,6 @@ void WorldSession::LogoutPlayer(bool Save)
 
     if (_player)
     {
-        // Unpossess the current possessed unit of player
-        _player->StopCharmOrPossess();
-
-        // Remove any possession of this player on logout
-        _player->RemoveCharmedOrPossessedBy(NULL);
-
-        //_player->DestroyForNearbyPlayers();
-
         if (uint64 lguid = GetPlayer()->GetLootGUID())
             DoLootRelease(lguid);
 
@@ -322,10 +314,10 @@ void WorldSession::LogoutPlayer(bool Save)
 
         for (int i=0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; i++)
         {
-            if(int32 bgTypeId = _player->GetBattleGroundQueueId(i))
+            if(BattleGroundQueueTypeId bgQueueTypeId = _player->GetBattleGroundQueueTypeId(i))
             {
-                _player->RemoveBattleGroundQueueId(bgTypeId);
-                sBattleGroundMgr.m_BattleGroundQueues[ bgTypeId ].RemovePlayer(_player->GetGUID(), true);
+                _player->RemoveBattleGroundQueueId(bgQueueTypeId);
+                sBattleGroundMgr.m_BattleGroundQueues[ bgQueueTypeId ].RemovePlayer(_player->GetGUID(), true);
             }
         }
 
@@ -475,6 +467,13 @@ void WorldSession::SendNotification(int32 string_id,...)
         data << szStr;
         SendPacket(&data);
     }
+}
+
+void WorldSession::SendSetPhaseShift(uint32 PhaseShift)
+{
+    WorldPacket data(SMSG_SET_PHASE_SHIFT, 4);
+    data << uint32(PhaseShift);
+    SendPacket(&data);
 }
 
 const char * WorldSession::GetTrinityString( int32 entry ) const
