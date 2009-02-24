@@ -362,10 +362,41 @@ void Unit::SendMonsterMoveWithSpeed(float x, float y, float z, uint32 MovementFl
         transitTime = static_cast<uint32>(dist / speed + 0.5);
     }
     //float orientation = (float)atan2((double)dy, (double)dx);
-    SendMonsterMove(x, y, z, 0, MovementFlags, transitTime, player);
+    SendMonsterMove(x, y, z, transitTime, player);
 }
 
-void Unit::SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint8 type, uint32 MovementFlags, uint32 Time, Player* player)
+void Unit::SendMonsterStop()
+{
+    WorldPacket data( SMSG_MONSTER_MOVE, (17 + GetPackGUID().size()) );
+    data.append(GetPackGUID());
+    data << GetPositionX() << GetPositionY() << GetPositionZ();
+    data << getMSTime();
+    data << uint8(1);
+    SendMessageToSet(&data, true);
+}
+
+void Unit::SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 Time, Player* player)
+{
+    WorldPacket data( SMSG_MONSTER_MOVE, (41 + GetPackGUID().size()) );
+    data.append(GetPackGUID());
+
+    data << GetPositionX() << GetPositionY() << GetPositionZ();
+    data << getMSTime();
+
+    data << uint8(0);
+    data << uint32((GetUnitMovementFlags() & MOVEMENTFLAG_LEVITATING) ? MOVEFLAG_FLY : MOVEFLAG_WALK);
+
+    data << Time;                                           // Time in between points
+    data << uint32(1);                                      // 1 single waypoint
+    data << NewPosX << NewPosY << NewPosZ;                  // the single waypoint Point B
+
+    if(player)
+        player->GetSession()->SendPacket(&data);
+    else
+        SendMessageToSet( &data, true );
+}
+
+/*void Unit::SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint8 type, uint32 MovementFlags, uint32 Time, Player* player)
 {
     WorldPacket data( SMSG_MONSTER_MOVE, (41 + GetPackGUID().size()) );
     data.append(GetPackGUID());
@@ -394,7 +425,7 @@ void Unit::SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint8 ty
     }
 
     //Movement Flags (0x0 = walk, 0x100 = run, 0x200 = fly/swim)
-    data << uint32(GetTypeId() == TYPEID_PLAYER ? MOVEMENTFLAG_WALK_MODE : MovementFlags);
+    data << uint32((MovementFlags & MOVEMENTFLAG_LEVITATING) ? MOVEFLAG_FLY : MOVEFLAG_WALK);
 
     data << Time;                                           // Time in between points
     data << uint32(1);                                      // 1 single waypoint
@@ -404,9 +435,9 @@ void Unit::SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint8 ty
         player->GetSession()->SendPacket(&data);
     else
         SendMessageToSet( &data, true );
-}
+}*/
 
-void Unit::SendMonsterMoveByPath(Path const& path, uint32 start, uint32 end, uint32 MovementFlags)
+void Unit::SendMonsterMoveByPath(Path const& path, uint32 start, uint32 end)
 {
     uint32 traveltime = uint32(path.GetTotalLength(start, end) * 32);
 
@@ -418,13 +449,10 @@ void Unit::SendMonsterMoveByPath(Path const& path, uint32 start, uint32 end, uin
     data << GetPositionY();
     data << GetPositionZ();
 
-    // unknown field - unrelated to orientation
-    // seems to increment about 1000 for every 1.7 seconds
-    // for now, we'll just use mstime
     data << getMSTime();
 
     data << uint8( 0 );
-    data << uint32( MovementFlags );
+    data << uint32(((GetUnitMovementFlags() & MOVEMENTFLAG_LEVITATING) || isInFlight())? MOVEFLAG_FLY : MOVEFLAG_WALK);
     data << uint32( traveltime );
     data << uint32( pathSize );
     data.append( (char*)path.GetNodes(start), pathSize * 4 * 3 );
@@ -4241,7 +4269,8 @@ bool Unit::AddAura(Aura *Aur)
             m_interruptableAuras.push_back(Aur);
             AddInterruptMask(Aur->GetSpellProto()->AuraInterruptFlags);
         }
-        if(Aur->GetSpellProto()->Attributes & SPELL_ATTR_BREAKABLE_BY_DAMAGE)
+        if((Aur->GetSpellProto()->Attributes & SPELL_ATTR_BREAKABLE_BY_DAMAGE)
+            && (Aur->GetModifier()->m_auraname != SPELL_AURA_MOD_POSSESS)) //only dummy aura is breakable
         {
             m_ccAuras.push_back(Aur);
         }
@@ -4659,8 +4688,11 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
             UpdateInterruptMask();
         }
 
-        if(Aur->GetSpellProto()->Attributes & SPELL_ATTR_BREAKABLE_BY_DAMAGE)
+        if((Aur->GetSpellProto()->Attributes & SPELL_ATTR_BREAKABLE_BY_DAMAGE)
+            && (Aur->GetModifier()->m_auraname != SPELL_AURA_MOD_POSSESS)) //only dummy aura is breakable
+        {
             m_ccAuras.remove(Aur);
+        }
     }
 
     // Set remove mode
@@ -4669,7 +4701,7 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
     // Statue unsummoned at aura remove
     Totem* statue = NULL;
     bool channeled = false;
-    if(IsChanneledSpell(AurSpellInfo))
+    if(Aur->GetAuraDuration() && IsChanneledSpell(AurSpellInfo))
     {
         if(!caster)                                         // can be already located for IsSingleTargetSpell case
             caster = Aur->GetCaster();
@@ -4693,6 +4725,22 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
                         //don't stop channeling of scripted spells (this is actually a hack)
                     {
                         caster->m_currentSpells[CURRENT_CHANNELED_SPELL]->cancel();
+                    }
+                }
+            }
+
+            // Unsummon summon as possessed creatures on spell cancel
+            if(caster->GetTypeId() == TYPEID_PLAYER)
+            {
+                for(int i = 0; i < 3; ++i)
+                {
+                    if(AurSpellInfo->Effect[i] == SPELL_EFFECT_SUMMON &&
+                        (AurSpellInfo->EffectMiscValueB[i] == SUMMON_TYPE_POSESSED ||
+                         AurSpellInfo->EffectMiscValueB[i] == SUMMON_TYPE_POSESSED2 ||
+                         AurSpellInfo->EffectMiscValueB[i] == SUMMON_TYPE_POSESSED3))
+                    {
+                        ((Player*)caster)->StopCastingCharm();
+                        break;
                     }
                 }
             }
@@ -11972,7 +12020,7 @@ void Unit::StopMoving()
     //    Relocate(GetPositionX(), GetPositionY(), z);
     Relocate(GetPositionX(), GetPositionY(),GetPositionZ());
 
-    SendMonsterMove(GetPositionX(), GetPositionY(), GetPositionZ(), 0, true, 0);
+    SendMonsterStop();
 
     // update position and orientation;
     WorldPacket data;
