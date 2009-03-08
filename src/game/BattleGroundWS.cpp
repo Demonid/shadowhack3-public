@@ -25,7 +25,6 @@
 #include "Creature.h"
 #include "GameObject.h"
 #include "Chat.h"
-#include "MapManager.h"
 #include "ObjectMgr.h"
 #include "WorldPacket.h"
 #include "Language.h"
@@ -668,6 +667,29 @@ void BattleGroundWS::UpdatePlayerScore(Player *Source, uint32 type, uint32 value
         default:
             BattleGround::UpdatePlayerScore(Source, type, value);
             break;
+    }
+}
+
+WorldSafeLocsEntry const* BattleGroundWS::GetClosestGraveYard(Player* player)
+{
+    //if status in progress, it returns main graveyards with spiritguides
+    //else it will return the graveyard in the flagroom - this is especially good
+    //if a player dies in preparation phase - then the player can't cheat
+    //and teleport to the graveyard outside the flagroom
+    //and start running around, while the doors are still closed
+    if(player->GetTeam() == ALLIANCE)
+    {
+        if(GetStatus() == STATUS_IN_PROGRESS)
+            return sWorldSafeLocsStore.LookupEntry(WS_GRAVEYARD_MAIN_ALLIANCE);
+        else
+            return sWorldSafeLocsStore.LookupEntry(WS_GRAVEYARD_FLAGROOM_ALLIANCE);
+    }
+    else
+    {
+        if(GetStatus() == STATUS_IN_PROGRESS)
+            return sWorldSafeLocsStore.LookupEntry(WS_GRAVEYARD_MAIN_HORDE);
+        else
+            return sWorldSafeLocsStore.LookupEntry(WS_GRAVEYARD_FLAGROOM_HORDE);
     }
 }
 
