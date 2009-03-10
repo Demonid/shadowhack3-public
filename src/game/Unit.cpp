@@ -1127,7 +1127,7 @@ void Unit::CastCustomSpell(Unit* Victim,uint32 spellId, int32 const* bp0, int32 
 
     if(!spellInfo)
     {
-        sLog.outError("CastCustomSpell: unknown spell id %i\n", spellId);
+        sLog.outError("CastCustomSpell: unknown spell id %i", spellId);
         return;
     }
 
@@ -6717,7 +6717,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                 //else if (auraSpellInfo->Id==47300)        // Dark Flame Aura
                 else if (auraSpellInfo->Id==57345)          // Darkmoon Card: Greatness
                 {
-                    uint32 stat = 0;
+                    float stat = 0.0f;
                     // strength
                     if (GetStat(STAT_STRENGTH) > stat) { trigger_spell_id = 60229;stat = GetStat(STAT_STRENGTH); }
                     // agility
