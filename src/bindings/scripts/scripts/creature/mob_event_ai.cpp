@@ -684,7 +684,6 @@ struct TRINITY_DLL_DECL Mob_EventAI : public ScriptedAI
                                 AttackDistance = 0;
                                 AttackAngle = 0;
 
-                                m_creature->GetMotionMaster()->Clear(false);
                                 m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim(), AttackDistance, AttackAngle);
                             }
 
@@ -799,19 +798,12 @@ struct TRINITY_DLL_DECL Mob_EventAI : public ScriptedAI
                 //Allow movement (create new targeted movement gen if none exist already)
                 if (CombatMovementEnabled)
                 {
-                    if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() != TARGETED_MOTION_TYPE)
-                    {
-                        m_creature->GetMotionMaster()->Clear(false);
-                        m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim(), AttackDistance, AttackAngle);
-                    }
+                    m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim(), AttackDistance, AttackAngle);
                 }
                 else
-                    if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == TARGETED_MOTION_TYPE)
-                    {
-                        m_creature->GetMotionMaster()->Clear(false);
-                        m_creature->GetMotionMaster()->MoveIdle();
-                        m_creature->StopMoving();
-                    }
+                {
+                    m_creature->GetMotionMaster()->MoveIdle();
+                }
             }
             break;
         case ACTION_T_SET_PHASE:
@@ -881,8 +873,6 @@ struct TRINITY_DLL_DECL Mob_EventAI : public ScriptedAI
 
                 if (CombatMovementEnabled)
                 {
-                    //Drop current movement gen
-                    m_creature->GetMotionMaster()->Clear(false);
                     m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim(), AttackDistance, AttackAngle);
                 }
             }
@@ -1218,7 +1208,6 @@ struct TRINITY_DLL_DECL Mob_EventAI : public ScriptedAI
             else
             {
                 m_creature->GetMotionMaster()->MoveIdle();
-                m_creature->StopMoving();
             }
         }
     }
