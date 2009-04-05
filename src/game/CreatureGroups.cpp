@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2009 Trinity <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -87,7 +87,7 @@ void CreatureGroupManager::LoadCreatureFormations()
         return;
     }
 
-    uint32 total_records = result->GetRowCount(), lastLeaderGUID = 0;
+    uint32 total_records = result->GetRowCount();
     barGoLink bar( total_records);
     Field *fields;
 
@@ -110,10 +110,24 @@ void CreatureGroupManager::LoadCreatureFormations()
             group_member->follow_angle          = fields[3].GetUInt32();
         }
 
-        CreatureGroupMap[group_member->memberGUID] = group_member;
+        // check data correctness
+        {
+            QueryResult* result = WorldDatabase.PQuery("SELECT guid FROM creature WHERE guid = %u", group_member->leaderGUID);
+            if(!result)
+            {
+                sLog.outErrorDb("creature_formations table leader guid %u incorrect (not exist)", group_member->leaderGUID);
+                continue;
+            }
 
-        if(lastLeaderGUID != group_member->leaderGUID)
-            lastLeaderGUID = group_member->leaderGUID;
+            result = WorldDatabase.PQuery("SELECT guid FROM creature WHERE guid = %u", group_member->memberGUID);
+            if(!result)
+            {
+                sLog.outErrorDb("creature_formations table member guid %u incorrect (not exist)", group_member->memberGUID);
+                continue;
+            }
+        }
+
+        CreatureGroupMap[group_member->memberGUID] = group_member;
     }
     while(result->NextRow()) ;
 
