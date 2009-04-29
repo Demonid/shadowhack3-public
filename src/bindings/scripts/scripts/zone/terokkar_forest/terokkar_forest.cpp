@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2008 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -60,17 +60,17 @@ struct TRINITY_DLL_DECL mob_unkor_the_ruthlessAI : public ScriptedAI
         CanDoQuest = false;
         UnkorUnfriendly_Timer = 0;
         Pulverize_Timer = 3000;
-        m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_NONE);
+        m_creature->SetStandState(UNIT_STAND_STATE_STAND);
         m_creature->setFaction(FACTION_HOSTILE);
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void DoNice()
     {
         DoScriptText(SAY_SUBMIT, m_creature);
         m_creature->setFaction(FACTION_FRIENDLY);
-        m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_SIT);
+        m_creature->SetStandState(UNIT_STAND_STATE_SIT);
         m_creature->RemoveAllAuras();
         m_creature->DeleteThreatList();
         m_creature->CombatStop();
@@ -151,7 +151,7 @@ struct TRINITY_DLL_DECL mob_infested_root_walkerAI : public ScriptedAI
     mob_infested_root_walkerAI(Creature *c) : ScriptedAI(c) {}
 
     void Reset() { }
-    void Aggro(Unit *who) { }
+    void EnterCombat(Unit *who) { }
 
     void DamageTaken(Unit *done_by, uint32 &damage)
     {
@@ -176,7 +176,7 @@ struct TRINITY_DLL_DECL mob_rotting_forest_ragerAI : public ScriptedAI
     mob_rotting_forest_ragerAI(Creature *c) : ScriptedAI(c) {}
 
     void Reset() { }
-    void Aggro(Unit *who) { }
+    void EnterCombat(Unit *who) { }
 
     void DamageTaken(Unit *done_by, uint32 &damage)
     {
@@ -208,7 +208,7 @@ struct TRINITY_DLL_DECL mob_netherweb_victimAI : public ScriptedAI
     mob_netherweb_victimAI(Creature *c) : ScriptedAI(c) {}
 
     void Reset() { }
-    void Aggro(Unit *who) { }
+    void EnterCombat(Unit *who) { }
     void MoveInLineOfSight(Unit *who) { }
 
     void JustDied(Unit* Killer)
@@ -268,7 +268,7 @@ struct TRINITY_DLL_DECL npc_floonAI : public ScriptedAI
         m_creature->setFaction(FACTION_FRIENDLY_FL);
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void UpdateAI(const uint32 diff)
     {
@@ -389,7 +389,7 @@ struct TRINITY_DLL_DECL npc_isla_starmaneAI : public npc_escortAI
             {
             GameObject* Cage = FindGameObject(GO_CAGE, 10, m_creature);
             if(Cage)
-                Cage->SetGoState(0);
+                Cage->SetGoState(GO_STATE_ACTIVE);
             }break;
         case 2: DoScriptText(SAY_PROGRESS_1, m_creature, player); break;
         case 5: DoScriptText(SAY_PROGRESS_2, m_creature, player); break;
@@ -415,7 +415,7 @@ struct TRINITY_DLL_DECL npc_isla_starmaneAI : public npc_escortAI
         m_creature->setFaction(1660);
     }
 
-    void Aggro(Unit* who){}
+    void EnterCombat(Unit* who){}
 
     void JustDied(Unit* killer)
     {
