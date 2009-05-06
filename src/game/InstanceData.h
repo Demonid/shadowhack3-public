@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2009 Trinity <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,8 @@
 #define TRINITY_INSTANCE_DATA_H
 
 #include "Common.h"
-#include "GameObject.h"
-#include "Map.h"
+//#include "GameObject.h"
+//#include "Map.h"
 
 class Map;
 class Unit;
@@ -80,13 +80,15 @@ class TRINITY_DLL_SPEC InstanceData
         virtual void OnPlayerEnter(Player *) {}
 
         //Called when a gameobject is created
-        virtual void OnObjectCreate(GameObject *) {}
+        virtual void OnObjectCreate(GameObject *, bool add = true) {}
 
         //called on creature creation
-        virtual void OnCreatureCreate(Creature * /*creature*/, uint32 /*creature_entry*/) {}
+        virtual void OnCreatureCreate(Creature *, bool add = true);
+        virtual void OnCreatureCreate(Creature *, uint32 entry, bool add = true) {}
 
-        virtual void OnCreatureRemove(Creature*) {}
-        virtual void OnObjectRemove(GameObject*) {}
+        //All-purpose data storage 64 bit
+        virtual uint64 GetData64(uint32 /*Data*/) { return 0; }
+        virtual void SetData64(uint32 /*Data*/, uint64 /*Value*/) { }
 
         //All-purpose data storage 32 bit
         virtual uint32 GetData(uint32) { return 0; }
@@ -97,13 +99,11 @@ class TRINITY_DLL_SPEC InstanceData
         //use HandleGameObject(GUID,boolen,NULL); in any other script
         void HandleGameObject(uint64 GUID, bool open, GameObject *go = NULL);
 
-    protected:
-        void AddBossRoomDoor(uint32 id, GameObject *door);
-        void AddBossPassageDoor(uint32 id, GameObject *door);
-        void RemoveBossRoomDoor(uint32 id, GameObject *door);
-        void RemoveBossPassageDoor(uint32 id, GameObject *door);
-
         void SetBossState(uint32 id, EncounterState state);
+    protected:
+        void SetBossNumber(uint32 number) { bosses.resize(number); }
+        void SetBossRoomDoor(uint32 id, GameObject *door, bool add);
+        void SetBossPassageDoor(uint32 id, GameObject *door, bool add);
 
         std::string GetBossSave()
         {
