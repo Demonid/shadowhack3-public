@@ -2767,7 +2767,9 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
 {
     WeaponAttackType attType = BASE_ATTACK;
 
-    if (spell->DmgClass == SPELL_DAMAGE_CLASS_RANGED && IsRangedWeaponSpell(spell))
+    // Check damage class instead of attack type to correctly handle judgements 
+    // - they are meele, but can't be dodged/parried/deflected because of ranged dmg class
+    if (spell->DmgClass == SPELL_DAMAGE_CLASS_RANGED)
         attType = RANGED_ATTACK;
 
     // bonus from skills is 0.04% per skill Diff
@@ -2809,9 +2811,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
         return SPELL_MISS_NONE;
 
     // Ranged attack cannot be parry/dodge only deflect
-    // Check damage class instead of attack type to correctly handle judgements 
-    // - they are meele, but can't be dodged/parried/deflected because of ranged dmg class
-    if (spell->DmgClass == SPELL_DAMAGE_CLASS_RANGED)
+    if (attType == RANGED_ATTACK)
     {
         // only if in front
         if (pVictim->HasInArc(M_PI,this))
@@ -5612,8 +5612,26 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                 // Glyph of Prayer of Healing
                 case 55680:
                 {
-                    basepoints0 = int32(damage * 20 / 100 / 2);   // divided in two ticks
                     triggered_spell_id = 56161;
+
+                    SpellEntry const* GoPoH = sSpellStore.LookupEntry(triggered_spell_id);
+                    if(!GoPoH)
+                        return false;
+
+                    int EffIndex = 0;
+                    for(int i = 0; i < MAX_SPELL_EFFECTS; i++)
+                    {
+                        if(GoPoH->Effect[i] == SPELL_EFFECT_APPLY_AURA)
+                        {
+                            EffIndex = i;
+                            break;
+                        }
+                    }
+                    int32 tickcount = GetSpellMaxDuration(GoPoH) / GoPoH->EffectAmplitude[EffIndex];
+                    if(!tickcount)
+                        return false;
+
+                    basepoints0 = damage * triggerAmount / tickcount / 100;
                     break;
                 }
                 // Improved Shadowform
