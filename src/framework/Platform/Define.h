@@ -64,10 +64,18 @@
 #  endif //__APPLE_CC__ && BIG_ENDIAN
 #  if defined(__APPLE_CC__)
 #    define TRINITY_SCRIPT_EXT ".dylib"
-#    define TRINITY_SCRIPT_NAME "../lib/libtrinityscript"
+#    if defined(DO_SCRIPTS)
+#      define TRINITY_SCRIPT_NAME "../lib/libtrinityscript"
+#    else
+#      define TRINITY_SCRIPT_NAME "../lib/libtrinityinterface"
+#    endif // DO_SCRIPTS
 #  else
 #    define TRINITY_SCRIPT_EXT ".so"
-#    define TRINITY_SCRIPT_NAME "libtrinityscript"
+#    if defined(DO_SCRIPTS)
+#      define TRINITY_SCRIPT_NAME "libtrinityscript"
+#    else
+#      define TRINITY_SCRIPT_NAME "libtrinityinterface"
+#    endif // DO_SCRIPTS
 #  endif //__APPLE_CC__
 #  define TRINITY_PATH_MAX PATH_MAX
 #endif //PLATFORM
@@ -128,6 +136,8 @@ typedef uint32      DWORD;
 #endif //COMPILER
 
 typedef uint64 OBJECT_HANDLE;
+
+#define MAP_BASED_RAND_GEN
 
 #define MaNGOS              Trinity
 #define MANGOS_DLL_DECL     TRINITY_DLL_DECL
