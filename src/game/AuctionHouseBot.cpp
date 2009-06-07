@@ -1,21 +1,23 @@
-#include "AuctionHouseBot.h"
-#include "Bag.h"
-#include "Config/ConfigEnv.h"
-#include "Database/DatabaseEnv.h"
-#include "Item.h"
-#include "Log.h"
-#include "AuctionHouseMgr.h"
-#include "ObjectMgr.h"
-#include "Player.h"
-#include "World.h"
-#include "WorldSession.h"
-#include "time.h"
 #include <vector>
 #include <iostream>
+#include "time.h"
+
+#include "ObjectMgr.h"
+#include "World.h"
+#include "WorldSession.h"
+#include "Config/ConfigEnv.h"
+#include "Database/DatabaseEnv.h"
+
+#include "AuctionHouseBot.h"
+#include "AuctionHouseMgr.h"
+#include "Bag.h"
+#include "Item.h"
+#include "Log.h"
+#include "Player.h"
 
 using namespace std;
 
-static bool debug_Out = sConfig.GetIntDefault("AuctionHouseBot.DEBUG", 0);
+static bool debug_Out = sConfig.GetBoolDefault("AuctionHouseBot.DEBUG", false);
 
 static vector<uint32> npcItems;
 static vector<uint32> lootItems;
@@ -450,6 +452,40 @@ static void addNewAuctions(Player *AHBplayer, AHBConfig *config)
             break;
         }
 
+        if(auctionmgr.GetAItem(GUID_LOPART(item->GetGUID())))
+        {
+            sLog.outError("Item %u not found", item->GetEntry());
+            break;
+        }
+        if(!item->CanBeTraded())
+        {
+            sLog.outError("Item %u can't be traded", item->GetEntry());
+            break;
+        }
+
+        if (item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_CONJURED) || item->GetUInt32Value(ITEM_FIELD_DURATION))
+        {
+            sLog.outError("Item %u is conjured or has a duration", item->GetEntry());
+            break;
+        }
+        uint32 etime = urand(1,3);
+        switch(etime)
+        {
+            case 1:
+                etime = 43200;
+                break;
+            case 2:
+                etime = 86400;
+                break;
+            case 3:
+                etime = 172800;
+                break;
+            default:
+                etime = 86400;
+                break;
+        }
+        uint32 dep = auctionmgr.GetAuctionDeposit( ahEntry, etime, item );
+
         item->SetCount(stackCount);
 
         AuctionEntry* auctionEntry = new AuctionEntry;
@@ -462,8 +498,8 @@ static void addNewAuctions(Player *AHBplayer, AHBConfig *config)
         auctionEntry->buyout = buyoutPrice;
         auctionEntry->bidder = 0;
         auctionEntry->bid = 0;
-        auctionEntry->deposit = 0;
-        auctionEntry->expire_time = (time_t) (urand(config->GetMinTime(), config->GetMaxTime()) * 60 * 60 + time(NULL));
+        auctionEntry->deposit = dep;
+        auctionEntry->expire_time = (time_t) etime + time(NULL);
         auctionEntry->auctionHouseEntry = ahEntry;
         item->SaveToDB();
         item->RemoveFromUpdateQueueOf(AHBplayer);
@@ -752,7 +788,7 @@ void AuctionHouseBot()
     if ((!AHBSeller) && (!AHBBuyer))
       return;
 
-    WorldSession _session(AHBplayerAccount, NULL, 0, true, 0, LOCALE_enUS);
+    WorldSession _session(AHBplayerAccount, NULL, SEC_PLAYER, true, 0, LOCALE_enUS);
     Player _AHBplayer(&_session);
     _AHBplayer.MinimalLoadFromDB(NULL, AHBplayerGUID);
     ObjectAccessor::Instance().AddObject(&_AHBplayer);
@@ -785,13 +821,13 @@ void AuctionHouseBot()
 ///////////////////////////////////////////////////////////////////////////////
 void AuctionHouseBotInit()
 {
-    AHBSeller = sConfig.GetBoolDefault("AuctionHouseBot.EnableSeller", 0);
-    AHBBuyer = sConfig.GetBoolDefault("AuctionHouseBot.EnableBuyer", 0);
-    No_Bind = sConfig.GetBoolDefault("AuctionHouseBot.No_Bind", 1);
-    Bind_When_Picked_Up = sConfig.GetBoolDefault("AuctionHouseBot.Bind_When_Picked_Up", 0);
-    Bind_When_Equipped = sConfig.GetBoolDefault("AuctionHouseBot.Bind_When_Equipped", 1);
-    Bind_When_Use = sConfig.GetBoolDefault("AuctionHouseBot.Bind_When_Use", 1);
-    Bind_Quest_Item = sConfig.GetBoolDefault("AuctionHouseBot.Bind_Quest_Item", 0);
+    AHBSeller = sConfig.GetBoolDefault("AuctionHouseBot.EnableSeller", false);
+    AHBBuyer = sConfig.GetBoolDefault("AuctionHouseBot.EnableBuyer", false);
+    No_Bind = sConfig.GetBoolDefault("AuctionHouseBot.No_Bind", true);
+    Bind_When_Picked_Up = sConfig.GetBoolDefault("AuctionHouseBot.Bind_When_Picked_Up", false);
+    Bind_When_Equipped = sConfig.GetBoolDefault("AuctionHouseBot.Bind_When_Equipped", true);
+    Bind_When_Use = sConfig.GetBoolDefault("AuctionHouseBot.Bind_When_Use", true);
+    Bind_Quest_Item = sConfig.GetBoolDefault("AuctionHouseBot.Bind_Quest_Item", false);
 
     if(!sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_AUCTION))
     {
@@ -802,9 +838,9 @@ void AuctionHouseBotInit()
 
     if (AHBSeller)
     {
-        Vendor_Items = sConfig.GetBoolDefault("AuctionHouseBot.VendorItems", 0);
-        Loot_Items = sConfig.GetBoolDefault("AuctionHouseBot.LootItems", 1);
-        Other_Items = sConfig.GetBoolDefault("AuctionHouseBot.OtherItems", 0);
+        Vendor_Items = sConfig.GetBoolDefault("AuctionHouseBot.VendorItems", false);
+        Loot_Items = sConfig.GetBoolDefault("AuctionHouseBot.LootItems", true);
+        Other_Items = sConfig.GetBoolDefault("AuctionHouseBot.OtherItems", false);
 
         QueryResult* results = (QueryResult*) NULL;
         char npcQuery[] = "SELECT distinct `item` FROM `npc_vendor`";
@@ -1025,20 +1061,20 @@ void AuctionHouseBotInit()
         }
 
         sLog.outString("AuctionHouseBot:");
-        sLog.outString("loaded %d grey trade goods", greyTradeGoodsBin.size());
-        sLog.outString("loaded %d white trade goods", whiteTradeGoodsBin.size());
-        sLog.outString("loaded %d green trade goods", greenTradeGoodsBin.size());
-        sLog.outString("loaded %d blue trade goods", blueTradeGoodsBin.size());
-        sLog.outString("loaded %d purple trade goods", purpleTradeGoodsBin.size());
-        sLog.outString("loaded %d orange trade goods", orangeTradeGoodsBin.size());
-        sLog.outString("loaded %d yellow trade goods", yellowTradeGoodsBin.size());
-        sLog.outString("loaded %d grey items", greyItemsBin.size());
-        sLog.outString("loaded %d white items", whiteItemsBin.size());
-        sLog.outString("loaded %d green items", greenItemsBin.size());
-        sLog.outString("loaded %d blue items", blueItemsBin.size());
-        sLog.outString("loaded %d purple items", purpleItemsBin.size());
-        sLog.outString("loaded %d orange items", orangeItemsBin.size());
-        sLog.outString("loaded %d yellow items", yellowItemsBin.size());
+        sLog.outString("loaded %u grey trade goods", greyTradeGoodsBin.size());
+        sLog.outString("loaded %u white trade goods", whiteTradeGoodsBin.size());
+        sLog.outString("loaded %u green trade goods", greenTradeGoodsBin.size());
+        sLog.outString("loaded %u blue trade goods", blueTradeGoodsBin.size());
+        sLog.outString("loaded %u purple trade goods", purpleTradeGoodsBin.size());
+        sLog.outString("loaded %u orange trade goods", orangeTradeGoodsBin.size());
+        sLog.outString("loaded %u yellow trade goods", yellowTradeGoodsBin.size());
+        sLog.outString("loaded %u grey items", greyItemsBin.size());
+        sLog.outString("loaded %u white items", whiteItemsBin.size());
+        sLog.outString("loaded %u green items", greenItemsBin.size());
+        sLog.outString("loaded %u blue items", blueItemsBin.size());
+        sLog.outString("loaded %u purple items", purpleItemsBin.size());
+        sLog.outString("loaded %u orange items", orangeItemsBin.size());
+        sLog.outString("loaded %u yellow items", yellowItemsBin.size());
     }
     sLog.outString("AuctionHouseBot by Paradox (original by ChrisK) has been loaded.");
     sLog.outString("AuctionHouseBot now includes AHBuyer by Kerbe and Paradox");
@@ -1117,19 +1153,11 @@ void AuctionHouseBotCommands(uint32 command, uint32 ahMapID, uint32 col, char* a
             CharacterDatabase.PExecute("UPDATE auctionhousebot SET maxitems = '%u' WHERE auctionhouse = '%u'", maxItems, ahMapID);
             config->SetMaxItems(maxItems);
         }break;
-    case 3:     //min time
+    case 3:     //min time Deprecated (Place holder for future commands)
         {
-            char * param1 = strtok(args, " ");
-            uint32 minTime = (uint32) strtoul(param1, NULL, 0);
-            CharacterDatabase.PExecute("UPDATE auctionhousebot SET mintime = '%u' WHERE auctionhouse = '%u'", minTime, ahMapID);
-            config->SetMinTime(minTime);
         }break;
-    case 4:     //max time
+    case 4:     //max time Deprecated (Place holder for future commands)
         {
-            char * param1 = strtok(args, " ");
-            uint32 maxTime = (uint32) strtoul(param1, NULL, 0);
-            CharacterDatabase.PExecute("UPDATE auctionhousebot SET maxtime = '%u' WHERE auctionhouse = '%u'", maxTime, ahMapID);
-            config->SetMaxTime(maxTime);
         }break;
     case 5:     //percentages
         {
@@ -1250,12 +1278,6 @@ void AuctionHouseBotLoadValues(AHBConfig *config)
         if(debug_Out)
         {sLog.outError("minItems = %u", config->GetMinItems());
         sLog.outError("maxItems = %u", config->GetMaxItems());}
-        //load min and max auction times
-        config->SetMinTime(CharacterDatabase.PQuery("SELECT mintime FROM auctionhousebot WHERE auctionhouse = %u",config->GetAHID())->Fetch()->GetUInt32());
-        config->SetMaxTime(CharacterDatabase.PQuery("SELECT maxtime FROM auctionhousebot WHERE auctionhouse = %u",config->GetAHID())->Fetch()->GetUInt32());
-        if(debug_Out)
-        {sLog.outError("minTime = %u", config->GetMinTime());
-        sLog.outError("maxTime = %u", config->GetMaxTime());}
         //load percentages
         uint32 greytg = CharacterDatabase.PQuery("SELECT percentgreytradegoods FROM auctionhousebot WHERE auctionhouse = %u",config->GetAHID())->Fetch()->GetUInt32();
         uint32 whitetg = CharacterDatabase.PQuery("SELECT percentwhitetradegoods FROM auctionhousebot WHERE auctionhouse = %u",config->GetAHID())->Fetch()->GetUInt32();
