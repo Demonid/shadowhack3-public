@@ -9320,21 +9320,29 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
         DoneAdvertisedBenefit += ((Guardian*)this)->GetBonusDamage();
 
     // Check for table values
-    float coeff;
+    float coeff = 0;
     SpellBonusEntry const* bonus = spellmgr.GetSpellBonusData(spellProto->Id);
     if (bonus)
     {
         if (damagetype == DOT)
+        {
             coeff = bonus->dot_damage;
+            if (bonus->ap_dot_bonus > 0)
+                DoneTotal+=bonus->ap_dot_bonus * stack * ApCoeffMod * GetTotalAttackPowerValue(
+                (IsRangedWeaponSpell(spellProto) && spellProto->DmgClass !=SPELL_DAMAGE_CLASS_MELEE) ? RANGED_ATTACK : BASE_ATTACK);
+        }
         else
+        {
             coeff = bonus->direct_damage;
-        if (bonus->ap_bonus)
-            DoneTotal+=bonus->ap_bonus * GetTotalAttackPowerValue(BASE_ATTACK) * stack * ApCoeffMod;
+            if (bonus->ap_bonus > 0)
+                DoneTotal+=bonus->ap_dot_bonus * stack * ApCoeffMod * GetTotalAttackPowerValue(
+                (IsRangedWeaponSpell(spellProto) && spellProto->DmgClass !=SPELL_DAMAGE_CLASS_MELEE)? RANGED_ATTACK : BASE_ATTACK);
+        }
     }
     // Default calculation
     if (DoneAdvertisedBenefit || TakenAdvertisedBenefit)
     {
-        if(!bonus)
+        if(!bonus || coeff < 0)
         {
         // Damage Done from spell damage bonus
         int32 CastingTime = !IsChanneledSpell(spellProto) ? GetSpellCastTime(spellProto) : GetSpellDuration(spellProto);
@@ -9787,16 +9795,24 @@ uint32 Unit::SpellHealingBonus(Unit *pVictim, SpellEntry const *spellProto, uint
 
     // Check for table values
     SpellBonusEntry const* bonus = !scripted ? spellmgr.GetSpellBonusData(spellProto->Id) : NULL;
-    float coeff;
+    float coeff = 0;
     float factorMod = 1.0f;
     if (bonus)
     {
         if (damagetype == DOT)
+        {
             coeff = bonus->dot_damage;
+            if (bonus->ap_dot_bonus > 0)
+                DoneTotal+=bonus->ap_dot_bonus * stack * GetTotalAttackPowerValue(
+                (IsRangedWeaponSpell(spellProto) && spellProto->DmgClass !=SPELL_DAMAGE_CLASS_MELEE)? RANGED_ATTACK : BASE_ATTACK);
+        }
         else
+        {
             coeff = bonus->direct_damage;
-        if (bonus->ap_bonus)
-            DoneTotal+=bonus->ap_bonus * GetTotalAttackPowerValue(BASE_ATTACK) * stack;
+            if (bonus->ap_bonus > 0)
+                DoneTotal+=bonus->ap_dot_bonus * stack * GetTotalAttackPowerValue(
+                (IsRangedWeaponSpell(spellProto) && spellProto->DmgClass !=SPELL_DAMAGE_CLASS_MELEE)? RANGED_ATTACK : BASE_ATTACK);
+        }
     }
     else // scripted bonus
     {
@@ -9830,7 +9846,7 @@ uint32 Unit::SpellHealingBonus(Unit *pVictim, SpellEntry const *spellProto, uint
     // Default calculation
     if (DoneAdvertisedBenefit || TakenAdvertisedBenefit)
     {
-        if(!bonus && !scripted)
+        if((!bonus && !scripted) || coeff < 0)
         {
             // Damage Done from spell damage bonus
             int32 CastingTime = !IsChanneledSpell(spellProto) ? GetSpellCastTime(spellProto) : GetSpellDuration(spellProto);
