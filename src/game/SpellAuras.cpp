@@ -4606,7 +4606,7 @@ void AuraEffect::HandlePeriodicEnergize(bool apply, bool Real, bool changeAmount
         if (m_spellProto->SpellIconID == 3184 && m_spellProto->SpellVisual[0] == 12495)
             m_amount = m_target->GetMaxPower(POWER_MANA) * 25 / 10000;
         else if (m_spellProto->Id == 29166) // Innervate
-            m_amount = m_target->GetCreatePowers(POWER_MANA) * m_amount / ((GetParentAura()->GetAuraMaxDuration() / 10.0f) * (m_amplitude / IN_MILISECONDS));
+            m_amount = m_target->GetCreatePowers(POWER_MANA) * m_amount / (GetTotalTicks() * 100.0f);
     }
 }
 
@@ -4702,17 +4702,6 @@ void AuraEffect::HandlePeriodicDamage(bool apply, bool Real, bool changeAmount)
 
     switch (m_spellProto->SpellFamilyName)
     {
-        case SPELLFAMILY_GENERIC:
-        {
-            // Pounce Bleed
-            if ( m_spellProto->SpellIconID == 147 && m_spellProto->SpellVisual[0] == 0 )
-            {
-                // $AP*0.18/6 bonus per tick
-                m_amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * 3 / 100);
-                return;
-            }
-            break;
-        }
         case SPELLFAMILY_WARRIOR:
         {
             // Rend
@@ -4741,20 +4730,6 @@ void AuraEffect::HandlePeriodicDamage(bool apply, bool Real, bool changeAmount)
         }
         case SPELLFAMILY_DRUID:
         {
-            // Rake
-            if (m_spellProto->SpellFamilyFlags[0] & 0x1000)
-            {
-                // $AP*0.18 bonus per tick
-                m_amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * 18 / 100);
-                return;
-            }
-            // Lacerate
-            if (m_spellProto->SpellFamilyFlags[1] & 0x0000000100)
-            {
-                // $AP*0.05/5 bonus per tick
-                m_amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) / 100);
-                return;
-            }
             // Rip
             if (m_spellProto->SpellVisual[0] == 3941)
             {
@@ -4777,13 +4752,6 @@ void AuraEffect::HandlePeriodicDamage(bool apply, bool Real, bool changeAmount)
                 m_amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * cp / 100);
                 return;
             }
-            // Lock Jaw
-            if (m_spellProto->SpellFamilyFlags[1] & 0x10000000)
-            {
-                // 0.15*$AP
-                m_amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * 15 / 100);
-                return;
-            }
             break;
         }
         case SPELLFAMILY_ROGUE:
@@ -4802,38 +4770,6 @@ void AuraEffect::HandlePeriodicDamage(bool apply, bool Real, bool changeAmount)
                 uint8 cp = ((Player*)caster)->GetComboPoints();
                 if (cp > 5) cp = 5;
                 m_amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * AP_per_combo[cp]);
-                return;
-            }
-            // Garrote
-            if (m_spellProto->SpellFamilyFlags[0] & 0x100)
-            {
-                // $AP*0.07 bonus per tick
-                m_amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * 7 / 100);
-                return;
-            }
-            // Deadly Poison
-            if (m_spellProto->SpellFamilyFlags[0] & 0x10000)
-            {
-                // 0.08*$AP / 4 * amount of stack
-                m_amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * 2 * GetParentAura()->GetStackAmount() / 100);
-                return;
-            }
-            break;
-        }
-        case SPELLFAMILY_HUNTER:
-        {
-            // Serpent Sting
-            if (m_spellProto->SpellFamilyFlags[0] & 0x4000)
-            {
-                // $RAP*0.1/5 bonus per tick
-                m_amount += int32(caster->GetTotalAttackPowerValue(RANGED_ATTACK) * 10 / 500);
-                return;
-            }
-            // Immolation Trap
-            if (m_spellProto->SpellFamilyFlags[0] & 0x4 && m_spellProto->SpellIconID == 678)
-            {
-                // $RAP*0.1/5 bonus per tick
-                m_amount += int32(caster->GetTotalAttackPowerValue(RANGED_ATTACK) * 10 / 500);
                 return;
             }
             break;
