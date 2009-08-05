@@ -868,6 +868,8 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
                 // only lootable if it has loot or can drop gold
                 if(cVictim->GetCreatureInfo()->lootid || cVictim->GetCreatureInfo()->maxgold > 0)
                     cVictim->SetUInt32Value(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+                else
+                    cVictim->lootForBody = true;            // needed for skinning
             }
             // Call creature just died function
             if (cVictim->AI())
@@ -3776,8 +3778,10 @@ bool Unit::AddAura(Aura *Aur, bool handleEffects)
         return false;
     }
 
+    SpellEntry const* aurSpellInfo = Aur->GetSpellProto();
+
     // ghost spell check, allow apply any auras at player loading in ghost mode (will be cleanup after load)
-    if( !isAlive() && Aur->GetId() != 20584 && Aur->GetId() != 8326 && Aur->GetId() != 2584 &&
+    if( !isAlive() && !IsDeathPersistentSpell(aurSpellInfo) &&
         (GetTypeId()!=TYPEID_PLAYER || !((Player*)this)->GetSession()->PlayerLoading()) )
     {
         delete Aur;
@@ -3793,7 +3797,6 @@ bool Unit::AddAura(Aura *Aur, bool handleEffects)
         return false;
     }
 
-    SpellEntry const* aurSpellInfo = Aur->GetSpellProto();
     uint32 aurId = aurSpellInfo->Id;
 
     // passive and persistent and Incanter's Absorption auras can stack with themselves any number of times
@@ -4174,13 +4177,24 @@ void Unit::RemoveAurasByTypeWithDispel(AuraType auraType, Spell * spell)
     }
 }
 
-void Unit::RemoveNotOwnSingleTargetAuras()
+void Unit::RemoveNotOwnSingleTargetAuras(uint32 newPhase)
 {
     // single target auras from other casters
     for (AuraMap::iterator iter = m_Auras.begin(); iter != m_Auras.end(); )
     {
         if (iter->second->GetCasterGUID()!=GetGUID() && IsSingleTargetSpell(iter->second->GetSpellProto()))
-            RemoveAura(iter);
+        {
+            if(!newPhase)
+                RemoveAura(iter);
+            else
+            {
+                Unit* caster = iter->second->GetCaster();
+                if(!caster || !caster->InSamePhase(newPhase))
+                    RemoveAura(iter);
+                else
+                    ++iter;
+            }
+        }
         else
             ++iter;
     }
@@ -4189,12 +4203,12 @@ void Unit::RemoveNotOwnSingleTargetAuras()
     AuraList& scAuras = GetSingleCastAuras();
     for (AuraList::iterator iter = scAuras.begin(); iter != scAuras.end();)
     {
-        Aura * aur=*iter;
+        Aura * aura=*iter;
         ++iter;
-        if (aur->GetTarget()!=this)
+        if (aura->GetTarget() != this && !aura->GetTarget()->InSamePhase(newPhase))
         {
             uint32 removedAuras = m_removedAurasCount;
-            aur->GetTarget()->RemoveAura(aur->GetId(),aur->GetCasterGUID());
+            aura->GetTarget()->RemoveAura(aura->GetId(),aura->GetCasterGUID());
             if (removedAuras+1<m_removedAurasCount)
                 iter=scAuras.begin();
         }
@@ -6395,8 +6409,8 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                         triggered_spell_id = 40471;
                         chance = 15.0f;
                     }
-                    // Judgement
-                    else if( procSpell->SpellFamilyFlags[0] & 0x800000 )
+                    // Judgement (any)
+                    else if (GetSpellSpecific(procSpell->Id)==SPELL_JUDGEMENT)
                     {
                         triggered_spell_id = 40472;
                         chance = 50.0f;
@@ -14837,6 +14851,12 @@ float Unit::MeleeSpellMissChance(const Unit *pVictim, WeaponAttackType attType, 
 
 void Unit::SetPhaseMask(uint32 newPhaseMask, bool update)
 {
+    if(newPhaseMask==GetPhaseMask())
+        return;
+
+    if(IsInWorld())
+        RemoveNotOwnSingleTargetAuras(newPhaseMask);        // we can lost access to caster or target
+
     WorldObject::SetPhaseMask(newPhaseMask,update);
 
     if(!IsInWorld())
