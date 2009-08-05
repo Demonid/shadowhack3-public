@@ -44,7 +44,8 @@ struct SpellModifier;
 enum SpellCategories
 {
     SPELLCATEGORY_HEALTH_MANA_POTIONS = 4,
-    SPELLCATEGORY_DEVOUR_MAGIC        = 12
+    SPELLCATEGORY_DEVOUR_MAGIC        = 12,
+    SPELLCATEGORY_JUDGEMENT           = 1210,               // Judgement (seal trigger)
 };
 
 enum SpellDisableTypes
@@ -121,6 +122,7 @@ enum SpellSpecific
     SPELL_MAGE_ARCANE_BRILLANCE = 24,
     SPELL_WARRIOR_ENRAGE    = 25,
     SPELL_PRIEST_DIVINE_SPIRIT = 26,
+    SPELL_HAND              = 27,
 };
 
 #define SPELL_LINKED_MAX_SPELLS  200000
