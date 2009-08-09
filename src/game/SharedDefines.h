@@ -249,8 +249,9 @@ enum SpellCategory
 #define SPELL_ATTR_CASTABLE_WHILE_SITTING         0x08000000            // 27 castable while sitting
 #define SPELL_ATTR_CANT_USED_IN_COMBAT            0x10000000            // 28 Cannot be used in combat
 #define SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY  0x20000000            // 29 unaffected by invulnerability (hmm possible not...)
-#define SPELL_ATTR_BREAKABLE_BY_DAMAGE            0x40000000            // 30 breakable by damage?
+#define SPELL_ATTR_BREAKABLE_BY_DAMAGE            0x40000000            // 30
 #define SPELL_ATTR_CANT_CANCEL                    0x80000000            // 31 positive aura can't be canceled
+
 #define SPELL_ATTR_EX_DISMISS_PET                 0x00000001            // 0 dismiss pet and not allow to summon new one?
 #define SPELL_ATTR_EX_DRAIN_ALL_POWER             0x00000002            // 1 use all power (Only paladin Lay of Hands and Bunyanize)
 #define SPELL_ATTR_EX_CHANNELED_1                 0x00000004            // 2 channeled target
@@ -270,7 +271,7 @@ enum SpellCategory
 #define SPELL_ATTR_EX_UNK16                       0x00010000            // 16 on immuniy
 #define SPELL_ATTR_EX_UNAUTOCASTABLE_BY_PET       0x00020000            // 17
 #define SPELL_ATTR_EX_UNK18                       0x00040000            // 18
-#define SPELL_ATTR_EX_UNK19                       0x00080000            // 19
+#define SPELL_ATTR_EX_CANT_TARGET_SELF            0x00080000            // 19 Applies only to unit target - for example Divine Intervention (19752)
 #define SPELL_ATTR_EX_REQ_COMBO_POINTS1           0x00100000            // 20 Req combo points on target
 #define SPELL_ATTR_EX_UNK21                       0x00200000            // 21
 #define SPELL_ATTR_EX_REQ_COMBO_POINTS2           0x00400000            // 22 Req combo points on target
@@ -320,11 +321,11 @@ enum SpellCategory
 #define SPELL_ATTR_EX3_UNK0                       0x00000001            // 0
 #define SPELL_ATTR_EX3_UNK1                       0x00000002            // 1
 #define SPELL_ATTR_EX3_UNK2                       0x00000004            // 2
-#define SPELL_ATTR_EX3_UNK3                       0x00000008            // 3
+#define SPELL_ATTR_EX3_BLOCKABLE_SPELL            0x00000008            // 3 Only dmg class melee in 3.1.3
 #define SPELL_ATTR_EX3_UNK4                       0x00000010            // 4 Druid Rebirth only this spell have this flag
 #define SPELL_ATTR_EX3_UNK5                       0x00000020            // 5
 #define SPELL_ATTR_EX3_UNK6                       0x00000040            // 6
-#define SPELL_ATTR_EX3_UNK7                       0x00000080            // 7 separate stack for every caster
+#define SPELL_ATTR_EX3_STACKS_FOR_DIFFERENT_CASTERS 0x00000080            // 7 separate stack for every caster
 #define SPELL_ATTR_EX3_PLAYERS_ONLY               0x00000100            // 8 Player only?
 #define SPELL_ATTR_EX3_TRIGGERED_CAN_TRIGGER_2    0x00000200            // 9 triggered from effect?
 #define SPELL_ATTR_EX3_MAIN_HAND                  0x00000400            // 10 Main hand weapon required
@@ -336,7 +337,7 @@ enum SpellCategory
 #define SPELL_ATTR_EX3_UNK16                      0x00010000            // 16 no triggers effects that trigger on casting a spell??
 #define SPELL_ATTR_EX3_NO_INITIAL_AGGRO           0x00020000            // 17 Soothe Animal, 39758, Mind Soothe
 #define SPELL_ATTR_EX3_UNK18                      0x00040000            // 18
-#define SPELL_ATTR_EX3_UNK19                      0x00080000            // 19 spells triggered by spell with this flag can't proc caster auras and can proc from triggered (swings too - 20178)
+#define SPELL_ATTR_EX3_DISABLE_PROC               0x00080000            // 19 during aura proc no spells can trigger (20178, 20375)
 #define SPELL_ATTR_EX3_DEATH_PERSISTENT           0x00100000            // 20 Death persistent spells
 #define SPELL_ATTR_EX3_UNK21                      0x00200000            // 21
 #define SPELL_ATTR_EX3_REQ_WAND                   0x00400000            // 22 Req wand
@@ -358,7 +359,7 @@ enum SpellCategory
 #define SPELL_ATTR_EX4_UNK5                       0x00000020            // 5
 #define SPELL_ATTR_EX4_NOT_STEALABLE              0x00000040            // 6 although such auras might be dispellable, they cannot be stolen
 #define SPELL_ATTR_EX4_UNK7                       0x00000080            // 7
-#define SPELL_ATTR_EX4_UNK8                       0x00000100            // 8
+#define SPELL_ATTR_EX4_FIXED_DAMAGE               0x00000100            // 8 decimate, share damage?
 #define SPELL_ATTR_EX4_UNK9                       0x00000200            // 9
 #define SPELL_ATTR_EX4_SPELL_VS_EXTEND_COST       0x00000400            // 10 Rogue Shiv have this flag
 #define SPELL_ATTR_EX4_UNK11                      0x00000800            // 11
@@ -593,7 +594,7 @@ enum SpellEffects
     SPELL_EFFECT_SUMMON_PET                = 56,
     SPELL_EFFECT_LEARN_PET_SPELL           = 57,
     SPELL_EFFECT_WEAPON_DAMAGE             = 58,
-    SPELL_EFFECT_OPEN_LOCK_ITEM            = 59,
+    SPELL_EFFECT_CREATE_RANDOM_ITEM        = 59,
     SPELL_EFFECT_PROFICIENCY               = 60,
     SPELL_EFFECT_SEND_EVENT                = 61,
     SPELL_EFFECT_POWER_BURN                = 62,
@@ -666,10 +667,10 @@ enum SpellEffects
     SPELL_EFFECT_APPLY_AREA_AURA_ENEMY     = 129,
     SPELL_EFFECT_REDIRECT_THREAT           = 130,
     SPELL_EFFECT_131                       = 131,
-    SPELL_EFFECT_132                       = 132,
+    SPELL_EFFECT_PLAY_MUSIC                = 132,
     SPELL_EFFECT_UNLEARN_SPECIALIZATION    = 133,
     SPELL_EFFECT_KILL_CREDIT2              = 134,
-    SPELL_EFFECT_135                       = 135,
+    SPELL_EFFECT_CALL_PET                  = 135,
     SPELL_EFFECT_HEAL_PCT                  = 136,
     SPELL_EFFECT_ENERGIZE_PCT              = 137,
     SPELL_EFFECT_138                       = 138,
@@ -702,196 +703,201 @@ enum SpellEffects
 
 enum SpellCastResult
 {
-    SPELL_FAILED_AFFECTING_COMBAT = 0,
-    SPELL_FAILED_ALREADY_AT_FULL_HEALTH = 1,
-    SPELL_FAILED_ALREADY_AT_FULL_MANA = 2,
-    SPELL_FAILED_ALREADY_AT_FULL_POWER = 3,
-    SPELL_FAILED_ALREADY_BEING_TAMED = 4,
-    SPELL_FAILED_ALREADY_HAVE_CHARM = 5,
-    SPELL_FAILED_ALREADY_HAVE_SUMMON = 6,
-    SPELL_FAILED_ALREADY_OPEN = 7,
-    SPELL_FAILED_AURA_BOUNCED = 8,
-    SPELL_FAILED_AUTOTRACK_INTERRUPTED = 9,
-    SPELL_FAILED_BAD_IMPLICIT_TARGETS = 10,
-    SPELL_FAILED_BAD_TARGETS = 11,
-    SPELL_FAILED_CANT_BE_CHARMED = 12,
-    SPELL_FAILED_CANT_BE_DISENCHANTED = 13,
-    SPELL_FAILED_CANT_BE_DISENCHANTED_SKILL = 14,
-    SPELL_FAILED_CANT_BE_MILLED = 15,
-    SPELL_FAILED_CANT_BE_PROSPECTED = 16,
-    SPELL_FAILED_CANT_CAST_ON_TAPPED = 17,
-    SPELL_FAILED_CANT_DUEL_WHILE_INVISIBLE = 18,
-    SPELL_FAILED_CANT_DUEL_WHILE_STEALTHED = 19,
-    SPELL_FAILED_CANT_STEALTH = 20,
-    SPELL_FAILED_CASTER_AURASTATE = 21,
-    SPELL_FAILED_CASTER_DEAD = 22,
-    SPELL_FAILED_CHARMED = 23,
-    SPELL_FAILED_CHEST_IN_USE = 24,
-    SPELL_FAILED_CONFUSED = 25,
-    SPELL_FAILED_DONT_REPORT = 26,
-    SPELL_FAILED_EQUIPPED_ITEM = 27,
-    SPELL_FAILED_EQUIPPED_ITEM_CLASS = 28,
-    SPELL_FAILED_EQUIPPED_ITEM_CLASS_MAINHAND = 29,
-    SPELL_FAILED_EQUIPPED_ITEM_CLASS_OFFHAND = 30,
-    SPELL_FAILED_ERROR = 31,
-    SPELL_FAILED_FIZZLE = 32,
-    SPELL_FAILED_FLEEING = 33,
-    SPELL_FAILED_FOOD_LOWLEVEL = 34,
-    SPELL_FAILED_HIGHLEVEL = 35,
-    SPELL_FAILED_HUNGER_SATIATED = 36,
-    SPELL_FAILED_IMMUNE = 37,
-    SPELL_FAILED_INCORRECT_AREA = 38,
-    SPELL_FAILED_INTERRUPTED = 39,
-    SPELL_FAILED_INTERRUPTED_COMBAT = 40,
-    SPELL_FAILED_ITEM_ALREADY_ENCHANTED = 41,
-    SPELL_FAILED_ITEM_GONE = 42,
-    SPELL_FAILED_ITEM_NOT_FOUND = 43,
-    SPELL_FAILED_ITEM_NOT_READY = 44,
-    SPELL_FAILED_LEVEL_REQUIREMENT = 45,
-    SPELL_FAILED_LINE_OF_SIGHT = 46,
-    SPELL_FAILED_LOWLEVEL = 47,
-    SPELL_FAILED_LOW_CASTLEVEL = 48,
-    SPELL_FAILED_MAINHAND_EMPTY = 49,
-    SPELL_FAILED_MOVING = 50,
-    SPELL_FAILED_NEED_AMMO = 51,
-    SPELL_FAILED_NEED_AMMO_POUCH = 52,
-    SPELL_FAILED_NEED_EXOTIC_AMMO = 53,
-    SPELL_FAILED_NEED_MORE_ITEMS = 54,
-    SPELL_FAILED_NOPATH = 55,
-    SPELL_FAILED_NOT_BEHIND = 56,
-    SPELL_FAILED_NOT_FISHABLE = 57,
-    SPELL_FAILED_NOT_FLYING = 58,
-    SPELL_FAILED_NOT_HERE = 59,
-    SPELL_FAILED_NOT_INFRONT = 60,
-    SPELL_FAILED_NOT_IN_CONTROL = 61,
-    SPELL_FAILED_NOT_KNOWN = 62,
-    SPELL_FAILED_NOT_MOUNTED = 63,
-    SPELL_FAILED_NOT_ON_TAXI = 64,
-    SPELL_FAILED_NOT_ON_TRANSPORT = 65,
-    SPELL_FAILED_NOT_READY = 66,
-    SPELL_FAILED_NOT_SHAPESHIFT = 67,
-    SPELL_FAILED_NOT_STANDING = 68,
-    SPELL_FAILED_NOT_TRADEABLE = 69,
-    SPELL_FAILED_NOT_TRADING = 70,
-    SPELL_FAILED_NOT_UNSHEATHED = 71,
-    SPELL_FAILED_NOT_WHILE_GHOST = 72,
-    SPELL_FAILED_NOT_WHILE_LOOTING = 73,
-    SPELL_FAILED_NO_AMMO = 74,
-    SPELL_FAILED_NO_CHARGES_REMAIN = 75,
-    SPELL_FAILED_NO_CHAMPION = 76,
-    SPELL_FAILED_NO_COMBO_POINTS = 77,
-    SPELL_FAILED_NO_DUELING = 78,
-    SPELL_FAILED_NO_ENDURANCE = 79,
-    SPELL_FAILED_NO_FISH = 80,
-    SPELL_FAILED_NO_ITEMS_WHILE_SHAPESHIFTED = 81,
-    SPELL_FAILED_NO_MOUNTS_ALLOWED = 82,
-    SPELL_FAILED_NO_PET = 83,
-    SPELL_FAILED_NO_POWER = 84,
-    SPELL_FAILED_NOTHING_TO_DISPEL = 85,
-    SPELL_FAILED_NOTHING_TO_STEAL = 86,
-    SPELL_FAILED_ONLY_ABOVEWATER = 87,
-    SPELL_FAILED_ONLY_DAYTIME = 88,
-    SPELL_FAILED_ONLY_INDOORS = 89,
-    SPELL_FAILED_ONLY_MOUNTED = 90,
-    SPELL_FAILED_ONLY_NIGHTTIME = 91,
-    SPELL_FAILED_ONLY_OUTDOORS = 92,
-    SPELL_FAILED_ONLY_SHAPESHIFT = 93,
-    SPELL_FAILED_ONLY_STEALTHED = 94,
-    SPELL_FAILED_ONLY_UNDERWATER = 95,
-    SPELL_FAILED_OUT_OF_RANGE = 96,
-    SPELL_FAILED_PACIFIED = 97,
-    SPELL_FAILED_POSSESSED = 98,
-    SPELL_FAILED_REAGENTS = 99,
-    SPELL_FAILED_REQUIRES_AREA = 100,
-    SPELL_FAILED_REQUIRES_SPELL_FOCUS = 101,
-    SPELL_FAILED_ROOTED = 102,
-    SPELL_FAILED_SILENCED = 103,
-    SPELL_FAILED_SPELL_IN_PROGRESS = 104,
-    SPELL_FAILED_SPELL_LEARNED = 105,
-    SPELL_FAILED_SPELL_UNAVAILABLE = 106,
-    SPELL_FAILED_STUNNED = 107,
-    SPELL_FAILED_TARGETS_DEAD = 108,
-    SPELL_FAILED_TARGET_AFFECTING_COMBAT = 109,
-    SPELL_FAILED_TARGET_AURASTATE = 110,
-    SPELL_FAILED_TARGET_DUELING = 111,
-    SPELL_FAILED_TARGET_ENEMY = 112,
-    SPELL_FAILED_TARGET_ENRAGED = 113,
-    SPELL_FAILED_TARGET_FRIENDLY = 114,
-    SPELL_FAILED_TARGET_IN_COMBAT = 115,
-    SPELL_FAILED_TARGET_IS_PLAYER = 116,
-    SPELL_FAILED_TARGET_IS_PLAYER_CONTROLLED = 117,
-    SPELL_FAILED_TARGET_NOT_DEAD = 118,
-    SPELL_FAILED_TARGET_NOT_IN_PARTY = 119,
-    SPELL_FAILED_TARGET_NOT_LOOTED = 120,
-    SPELL_FAILED_TARGET_NOT_PLAYER = 121,
-    SPELL_FAILED_TARGET_NO_POCKETS = 122,
-    SPELL_FAILED_TARGET_NO_WEAPONS = 123,
-    SPELL_FAILED_TARGET_NO_RANGED_WEAPONS = 124,
-    SPELL_FAILED_TARGET_UNSKINNABLE = 125,
-    SPELL_FAILED_THIRST_SATIATED = 126,
-    SPELL_FAILED_TOO_CLOSE = 127,
-    SPELL_FAILED_TOO_MANY_OF_ITEM = 128,
-    SPELL_FAILED_TOTEM_CATEGORY = 129,
-    SPELL_FAILED_TOTEMS = 130,
-    SPELL_FAILED_TRY_AGAIN = 131,
-    SPELL_FAILED_UNIT_NOT_BEHIND = 132,
-    SPELL_FAILED_UNIT_NOT_INFRONT = 133,
-    SPELL_FAILED_WRONG_PET_FOOD = 134,
-    SPELL_FAILED_NOT_WHILE_FATIGUED = 135,
-    SPELL_FAILED_TARGET_NOT_IN_INSTANCE = 136,
-    SPELL_FAILED_NOT_WHILE_TRADING = 137,
-    SPELL_FAILED_TARGET_NOT_IN_RAID = 138,
-    SPELL_FAILED_TARGET_FREEFORALL = 139,
-    SPELL_FAILED_NO_EDIBLE_CORPSES = 140,
-    SPELL_FAILED_ONLY_BATTLEGROUNDS = 141,
-    SPELL_FAILED_TARGET_NOT_GHOST = 142,
-    SPELL_FAILED_TRANSFORM_UNUSABLE = 143,
-    SPELL_FAILED_WRONG_WEATHER = 144,
-    SPELL_FAILED_DAMAGE_IMMUNE = 145,
-    SPELL_FAILED_PREVENTED_BY_MECHANIC = 146,
-    SPELL_FAILED_PLAY_TIME = 147,
-    SPELL_FAILED_REPUTATION = 148,
-    SPELL_FAILED_MIN_SKILL = 149,
-    SPELL_FAILED_NOT_IN_ARENA = 150,
-    SPELL_FAILED_NOT_ON_SHAPESHIFT = 151,
-    SPELL_FAILED_NOT_ON_STEALTHED = 152,
-    SPELL_FAILED_NOT_ON_DAMAGE_IMMUNE = 153,
-    SPELL_FAILED_NOT_ON_MOUNTED = 154,
-    SPELL_FAILED_TOO_SHALLOW = 155,
-    SPELL_FAILED_TARGET_NOT_IN_SANCTUARY = 156,
-    SPELL_FAILED_TARGET_IS_TRIVIAL = 157,
-    SPELL_FAILED_BM_OR_INVISGOD = 158,
-    SPELL_FAILED_EXPERT_RIDING_REQUIREMENT = 159,
-    SPELL_FAILED_ARTISAN_RIDING_REQUIREMENT = 160,
-    SPELL_FAILED_NOT_IDLE = 161,
-    SPELL_FAILED_NOT_INACTIVE = 162,
-    SPELL_FAILED_PARTIAL_PLAYTIME = 163,
-    SPELL_FAILED_NO_PLAYTIME = 164,
-    SPELL_FAILED_NOT_IN_BATTLEGROUND = 165,
-    SPELL_FAILED_NOT_IN_RAID_INSTANCE = 166,
-    SPELL_FAILED_ONLY_IN_ARENA = 167,
-    SPELL_FAILED_TARGET_LOCKED_TO_RAID_INSTANCE = 168,
-    SPELL_FAILED_ON_USE_ENCHANT = 169,
-    SPELL_FAILED_NOT_ON_GROUND = 170,
-    SPELL_FAILED_CUSTOM_ERROR = 171,
-    SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW = 172,
-    SPELL_FAILED_TOO_MANY_SOCKETS = 173,
-    SPELL_FAILED_INVALID_GLYPH = 174,
-    SPELL_FAILED_UNIQUE_GLYPH = 175,
-    SPELL_FAILED_GLYPH_SOCKET_LOCKED = 176,
-    SPELL_FAILED_NO_VALID_TARGETS = 177,
-    SPELL_FAILED_ITEM_AT_MAX_CHARGES = 178,
-    SPELL_FAILED_NOT_IN_BARBERSHOP = 179,
-    SPELL_FAILED_FISHING_TOO_LOW = 180,
-    SPELL_FAILED_UNKNOWN = 181,
+    SPELL_FAILED_AFFECTING_COMBAT               = 0x00,
+    SPELL_FAILED_ALREADY_AT_FULL_HEALTH         = 0x01,
+    SPELL_FAILED_ALREADY_AT_FULL_MANA           = 0x02,
+    SPELL_FAILED_ALREADY_AT_FULL_POWER          = 0x03,
+    SPELL_FAILED_ALREADY_BEING_TAMED            = 0x04,
+    SPELL_FAILED_ALREADY_HAVE_CHARM             = 0x05,
+    SPELL_FAILED_ALREADY_HAVE_SUMMON            = 0x06,
+    SPELL_FAILED_ALREADY_OPEN                   = 0x07,
+    SPELL_FAILED_AURA_BOUNCED                   = 0x08,
+    SPELL_FAILED_AUTOTRACK_INTERRUPTED          = 0x09,
+    SPELL_FAILED_BAD_IMPLICIT_TARGETS           = 0x0A,
+    SPELL_FAILED_BAD_TARGETS                    = 0x0B,
+    SPELL_FAILED_CANT_BE_CHARMED                = 0x0C,
+    SPELL_FAILED_CANT_BE_DISENCHANTED           = 0x0D,
+    SPELL_FAILED_CANT_BE_DISENCHANTED_SKILL     = 0x0E,
+    SPELL_FAILED_CANT_BE_MILLED                 = 0x0F,
+    SPELL_FAILED_CANT_BE_PROSPECTED             = 0x10,
+    SPELL_FAILED_CANT_CAST_ON_TAPPED            = 0x11,
+    SPELL_FAILED_CANT_DUEL_WHILE_INVISIBLE      = 0x12,
+    SPELL_FAILED_CANT_DUEL_WHILE_STEALTHED      = 0x13,
+    SPELL_FAILED_CANT_STEALTH                   = 0x14,
+    SPELL_FAILED_CASTER_AURASTATE               = 0x15,
+    SPELL_FAILED_CASTER_DEAD                    = 0x16,
+    SPELL_FAILED_CHARMED                        = 0x17,
+    SPELL_FAILED_CHEST_IN_USE                   = 0x18,
+    SPELL_FAILED_CONFUSED                       = 0x19,
+    SPELL_FAILED_DONT_REPORT                    = 0x1A,
+    SPELL_FAILED_EQUIPPED_ITEM                  = 0x1B,
+    SPELL_FAILED_EQUIPPED_ITEM_CLASS            = 0x1C,
+    SPELL_FAILED_EQUIPPED_ITEM_CLASS_MAINHAND   = 0x1D,
+    SPELL_FAILED_EQUIPPED_ITEM_CLASS_OFFHAND    = 0x1E,
+    SPELL_FAILED_ERROR                          = 0x1F,
+    SPELL_FAILED_FIZZLE                         = 0x20,
+    SPELL_FAILED_FLEEING                        = 0x21,
+    SPELL_FAILED_FOOD_LOWLEVEL                  = 0x22,
+    SPELL_FAILED_HIGHLEVEL                      = 0x23,
+    SPELL_FAILED_HUNGER_SATIATED                = 0x24,
+    SPELL_FAILED_IMMUNE                         = 0x25,
+    SPELL_FAILED_INCORRECT_AREA                 = 0x26,
+    SPELL_FAILED_INTERRUPTED                    = 0x27,
+    SPELL_FAILED_INTERRUPTED_COMBAT             = 0x28,
+    SPELL_FAILED_ITEM_ALREADY_ENCHANTED         = 0x29,
+    SPELL_FAILED_ITEM_GONE                      = 0x2A,
+    SPELL_FAILED_ITEM_NOT_FOUND                 = 0x2B,
+    SPELL_FAILED_ITEM_NOT_READY                 = 0x2C,
+    SPELL_FAILED_LEVEL_REQUIREMENT              = 0x2D,
+    SPELL_FAILED_LINE_OF_SIGHT                  = 0x2E,
+    SPELL_FAILED_LOWLEVEL                       = 0x2F,
+    SPELL_FAILED_LOW_CASTLEVEL                  = 0x30,
+    SPELL_FAILED_MAINHAND_EMPTY                 = 0x31,
+    SPELL_FAILED_MOVING                         = 0x32,
+    SPELL_FAILED_NEED_AMMO                      = 0x33,
+    SPELL_FAILED_NEED_AMMO_POUCH                = 0x34,
+    SPELL_FAILED_NEED_EXOTIC_AMMO               = 0x35,
+    SPELL_FAILED_NEED_MORE_ITEMS                = 0x36,
+    SPELL_FAILED_NOPATH                         = 0x37,
+    SPELL_FAILED_NOT_BEHIND                     = 0x38,
+    SPELL_FAILED_NOT_FISHABLE                   = 0x39,
+    SPELL_FAILED_NOT_FLYING                     = 0x3A,
+    SPELL_FAILED_NOT_HERE                       = 0x3B,
+    SPELL_FAILED_NOT_INFRONT                    = 0x3C,
+    SPELL_FAILED_NOT_IN_CONTROL                 = 0x3D,
+    SPELL_FAILED_NOT_KNOWN                      = 0x3E,
+    SPELL_FAILED_NOT_MOUNTED                    = 0x3F,
+    SPELL_FAILED_NOT_ON_TAXI                    = 0x40,
+    SPELL_FAILED_NOT_ON_TRANSPORT               = 0x41,
+    SPELL_FAILED_NOT_READY                      = 0x42,
+    SPELL_FAILED_NOT_SHAPESHIFT                 = 0x43,
+    SPELL_FAILED_NOT_STANDING                   = 0x44,
+    SPELL_FAILED_NOT_TRADEABLE                  = 0x45,
+    SPELL_FAILED_NOT_TRADING                    = 0x46,
+    SPELL_FAILED_NOT_UNSHEATHED                 = 0x47,
+    SPELL_FAILED_NOT_WHILE_GHOST                = 0x48,
+    SPELL_FAILED_NOT_WHILE_LOOTING              = 0x49,
+    SPELL_FAILED_NO_AMMO                        = 0x4A,
+    SPELL_FAILED_NO_CHARGES_REMAIN              = 0x4B,
+    SPELL_FAILED_NO_CHAMPION                    = 0x4C,
+    SPELL_FAILED_NO_COMBO_POINTS                = 0x4D,
+    SPELL_FAILED_NO_DUELING                     = 0x4E,
+    SPELL_FAILED_NO_ENDURANCE                   = 0x4F,
+    SPELL_FAILED_NO_FISH                        = 0x50,
+    SPELL_FAILED_NO_ITEMS_WHILE_SHAPESHIFTED    = 0x51,
+    SPELL_FAILED_NO_MOUNTS_ALLOWED              = 0x52,
+    SPELL_FAILED_NO_PET                         = 0x53,
+    SPELL_FAILED_NO_POWER                       = 0x54,
+    SPELL_FAILED_NOTHING_TO_DISPEL              = 0x55,
+    SPELL_FAILED_NOTHING_TO_STEAL               = 0x56,
+    SPELL_FAILED_ONLY_ABOVEWATER                = 0x57,
+    SPELL_FAILED_ONLY_DAYTIME                   = 0x58,
+    SPELL_FAILED_ONLY_INDOORS                   = 0x59,
+    SPELL_FAILED_ONLY_MOUNTED                   = 0x5A,
+    SPELL_FAILED_ONLY_NIGHTTIME                 = 0x5B,
+    SPELL_FAILED_ONLY_OUTDOORS                  = 0x5C,
+    SPELL_FAILED_ONLY_SHAPESHIFT                = 0x5D,
+    SPELL_FAILED_ONLY_STEALTHED                 = 0x5E,
+    SPELL_FAILED_ONLY_UNDERWATER                = 0x5F,
+    SPELL_FAILED_OUT_OF_RANGE                   = 0x60,
+    SPELL_FAILED_PACIFIED                       = 0x61,
+    SPELL_FAILED_POSSESSED                      = 0x62,
+    SPELL_FAILED_REAGENTS                       = 0x63,
+    SPELL_FAILED_REQUIRES_AREA                  = 0x64,
+    SPELL_FAILED_REQUIRES_SPELL_FOCUS           = 0x65,
+    SPELL_FAILED_ROOTED                         = 0x66,
+    SPELL_FAILED_SILENCED                       = 0x67,
+    SPELL_FAILED_SPELL_IN_PROGRESS              = 0x68,
+    SPELL_FAILED_SPELL_LEARNED                  = 0x69,
+    SPELL_FAILED_SPELL_UNAVAILABLE              = 0x6A,
+    SPELL_FAILED_STUNNED                        = 0x6B,
+    SPELL_FAILED_TARGETS_DEAD                   = 0x6C,
+    SPELL_FAILED_TARGET_AFFECTING_COMBAT        = 0x6D,
+    SPELL_FAILED_TARGET_AURASTATE               = 0x6E,
+    SPELL_FAILED_TARGET_DUELING                 = 0x6F,
+    SPELL_FAILED_TARGET_ENEMY                   = 0x70,
+    SPELL_FAILED_TARGET_ENRAGED                 = 0x71,
+    SPELL_FAILED_TARGET_FRIENDLY                = 0x72,
+    SPELL_FAILED_TARGET_IN_COMBAT               = 0x73,
+    SPELL_FAILED_TARGET_IS_PLAYER               = 0x74,
+    SPELL_FAILED_TARGET_IS_PLAYER_CONTROLLED    = 0x75,
+    SPELL_FAILED_TARGET_NOT_DEAD                = 0x76,
+    SPELL_FAILED_TARGET_NOT_IN_PARTY            = 0x77,
+    SPELL_FAILED_TARGET_NOT_LOOTED              = 0x78,
+    SPELL_FAILED_TARGET_NOT_PLAYER              = 0x79,
+    SPELL_FAILED_TARGET_NO_POCKETS              = 0x7A,
+    SPELL_FAILED_TARGET_NO_WEAPONS              = 0x7B,
+    SPELL_FAILED_TARGET_NO_RANGED_WEAPONS       = 0x7C,
+    SPELL_FAILED_TARGET_UNSKINNABLE             = 0x7D,
+    SPELL_FAILED_THIRST_SATIATED                = 0x7E,
+    SPELL_FAILED_TOO_CLOSE                      = 0x7F,
+    SPELL_FAILED_TOO_MANY_OF_ITEM               = 0x80,
+    SPELL_FAILED_TOTEM_CATEGORY                 = 0x81,
+    SPELL_FAILED_TOTEMS                         = 0x82,
+    SPELL_FAILED_TRY_AGAIN                      = 0x83,
+    SPELL_FAILED_UNIT_NOT_BEHIND                = 0x84,
+    SPELL_FAILED_UNIT_NOT_INFRONT               = 0x85,
+    SPELL_FAILED_WRONG_PET_FOOD                 = 0x86,
+    SPELL_FAILED_NOT_WHILE_FATIGUED             = 0x87,
+    SPELL_FAILED_TARGET_NOT_IN_INSTANCE         = 0x88,
+    SPELL_FAILED_NOT_WHILE_TRADING              = 0x89,
+    SPELL_FAILED_TARGET_NOT_IN_RAID             = 0x8A,
+    SPELL_FAILED_TARGET_FREEFORALL              = 0x8B,
+    SPELL_FAILED_NO_EDIBLE_CORPSES              = 0x8C,
+    SPELL_FAILED_ONLY_BATTLEGROUNDS             = 0x8D,
+    SPELL_FAILED_TARGET_NOT_GHOST               = 0x8E,
+    SPELL_FAILED_TRANSFORM_UNUSABLE             = 0x8F,
+    SPELL_FAILED_WRONG_WEATHER                  = 0x90,
+    SPELL_FAILED_DAMAGE_IMMUNE                  = 0x91,
+    SPELL_FAILED_PREVENTED_BY_MECHANIC          = 0x92,
+    SPELL_FAILED_PLAY_TIME                      = 0x93,
+    SPELL_FAILED_REPUTATION                     = 0x94,
+    SPELL_FAILED_MIN_SKILL                      = 0x95,
+    SPELL_FAILED_NOT_IN_ARENA                   = 0x96,
+    SPELL_FAILED_NOT_ON_SHAPESHIFT              = 0x97,
+    SPELL_FAILED_NOT_ON_STEALTHED               = 0x98,
+    SPELL_FAILED_NOT_ON_DAMAGE_IMMUNE           = 0x99,
+    SPELL_FAILED_NOT_ON_MOUNTED                 = 0x9A,
+    SPELL_FAILED_TOO_SHALLOW                    = 0x9B,
+    SPELL_FAILED_TARGET_NOT_IN_SANCTUARY        = 0x9C,
+    SPELL_FAILED_TARGET_IS_TRIVIAL              = 0x9D,
+    SPELL_FAILED_BM_OR_INVISGOD                 = 0x9E,
+    SPELL_FAILED_EXPERT_RIDING_REQUIREMENT      = 0x9F,
+    SPELL_FAILED_ARTISAN_RIDING_REQUIREMENT     = 0xA0,
+    SPELL_FAILED_NOT_IDLE                       = 0xA1,
+    SPELL_FAILED_NOT_INACTIVE                   = 0xA2,
+    SPELL_FAILED_PARTIAL_PLAYTIME               = 0xA3,
+    SPELL_FAILED_NO_PLAYTIME                    = 0xA4,
+    SPELL_FAILED_NOT_IN_BATTLEGROUND            = 0xA5,
+    SPELL_FAILED_NOT_IN_RAID_INSTANCE           = 0xA6,
+    SPELL_FAILED_ONLY_IN_ARENA                  = 0xA7,
+    SPELL_FAILED_TARGET_LOCKED_TO_RAID_INSTANCE = 0xA8,
+    SPELL_FAILED_ON_USE_ENCHANT                 = 0xA9,
+    SPELL_FAILED_NOT_ON_GROUND                  = 0xAA,
+    SPELL_FAILED_CUSTOM_ERROR                   = 0xAB,
+    SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW         = 0xAC,
+    SPELL_FAILED_TOO_MANY_SOCKETS               = 0xAD,
+    SPELL_FAILED_INVALID_GLYPH                  = 0xAE,
+    SPELL_FAILED_UNIQUE_GLYPH                   = 0xAF,
+    SPELL_FAILED_GLYPH_SOCKET_LOCKED            = 0xB0,
+    SPELL_FAILED_NO_VALID_TARGETS               = 0xB1,
+    SPELL_FAILED_ITEM_AT_MAX_CHARGES            = 0xB2,
+    SPELL_FAILED_NOT_IN_BARBERSHOP              = 0xB3,
+    SPELL_FAILED_FISHING_TOO_LOW                = 0xB4,
+    SPELL_FAILED_ITEM_ENCHANT_TRADE_WINDOW      = 0xB5,
+    SPELL_FAILED_SUMMON_PENDING                 = 0xB6,
+    SPELL_FAILED_MAX_SOCKETS                    = 0xB7,
+    SPELL_FAILED_PET_CAN_RENAME                 = 0xB8,
+    SPELL_FAILED_UNKNOWN                        = 0xB9,
 
-    SPELL_CAST_OK = 255                                     //custom value, don't must be send to client
+    SPELL_CAST_OK                               = 0xFF      // custom value, don't must be send to client
 };
 
 // Spell aura states
 enum AuraState
 {   // (C) used in caster aura state     (T) used in target aura state
     // (c) used in caster aura state-not (t) used in target aura state-not
+    AURA_STATE_NONE                         = 0,            // C   |
     AURA_STATE_DEFENSE                      = 1,            // C   |
     AURA_STATE_HEALTHLESS_20_PERCENT        = 2,            // CcT |
     AURA_STATE_BERSERKING                   = 3,            // C T |
@@ -907,7 +913,7 @@ enum AuraState
     //AURA_STATE_UNKNOWN11                  = 11,           //    t|
     AURA_STATE_FAERIE_FIRE                  = 12,           //  c t|
     AURA_STATE_HEALTHLESS_35_PERCENT        = 13,           // C T |
-    AURA_STATE_IMMOLATE                     = 14,           //   T |
+    AURA_STATE_CONFLAGRATE                  = 14,           //   T |
     AURA_STATE_SWIFTMEND                    = 15,           //   T |
     AURA_STATE_DEADLY_POISON                = 16,           //   T |
     AURA_STATE_ENRAGE                       = 17,           // C   |
@@ -918,6 +924,9 @@ enum AuraState
     //AURA_STATE_UNKNOWN22                  = 22,           // C   | not implemented yet (Requires Evasive Charges to use)
     AURA_STATE_HEALTH_ABOVE_75_PERCENT      = 23,           // C   |
 };
+
+#define PER_CASTER_AURA_STATE_MASK ( \
+    (1<<(AURA_STATE_CONFLAGRATE-1))|(1<<(AURA_STATE_DEADLY_POISON-1)))
 
 // Spell mechanics
 enum Mechanics
@@ -965,7 +974,13 @@ enum Mechanics
     (1<<MECHANIC_SHACKLE )|(1<<MECHANIC_TURN     )|(1<<MECHANIC_HORROR)| \
     (1<<MECHANIC_DAZE    )|(1<<MECHANIC_SAPPED   ) )
 
-// Spell dispel type
+// Daze and all croud control spells except polymorph are not removed
+#define MECHANIC_NOT_REMOVED_BY_SHAPESHIFT ( \
+    (1<<MECHANIC_CHARM )|(1<<MECHANIC_DISORIENTED)|(1<<MECHANIC_FEAR  )|(1<<MECHANIC_PACIFY )| \
+    (1<<MECHANIC_STUN  )|(1<<MECHANIC_FREEZE     )|(1<<MECHANIC_BANISH)|(1<<MECHANIC_SHACKLE)| \
+    (1<<MECHANIC_HORROR)|(1<<MECHANIC_TURN       )|(1<<MECHANIC_DAZE  )|(1<<MECHANIC_SAPPED ) )
+
+// Spell dispell type
 enum DispelType
 {
     DISPEL_NONE         = 0,
@@ -1835,6 +1850,7 @@ enum CreatureType
     CREATURE_TYPE_GAS_CLOUD        = 13
 };
 
+uint32 const CREATURE_TYPEMASK_DEMON_OR_UNDEAD = (1 << (CREATURE_TYPE_DEMON-1)) | (1 << (CREATURE_TYPE_UNDEAD-1));
 uint32 const CREATURE_TYPEMASK_HUMANOID_OR_UNDEAD = (1 << (CREATURE_TYPE_HUMANOID-1)) | (1 << (CREATURE_TYPE_UNDEAD-1));
 uint32 const CREATURE_TYPEMASK_MECHANICAL_OR_ELEMENTAL = (1 << (CREATURE_TYPE_MECHANICAL-1)) | (1 << (CREATURE_TYPE_ELEMENTAL-1));
 
@@ -2269,7 +2285,9 @@ enum CorpseDynFlags
 #define SPELL_ID_WEAPON_SWITCH_COOLDOWN_1_0s    6123
 #define SPELL_ID_AUTOSHOT                       75          // used for checks in other spells interruption
 #define SPELL_ID_SHADOWMELD                     58984       // used for check ignore stealth stance state
-
+#define SPELL_ID_BLOOD_PRESENCE 48266 // Blood Presence
+#define SPELL_ID_FROST_PRESENCE 48263 // Frost Presence
+#define SPELL_ID_UNHOLY_PRESENCE 48265 // Unholy Presence
 enum WeatherType
 {
     WEATHER_TYPE_FINE       = 0,
@@ -2384,20 +2402,23 @@ enum DiminishingGroup
 {
     // Common Groups
     DIMINISHING_NONE,
-    DIMINISHING_CONTROL_STUN,           // Player Controlled stuns
-    DIMINISHING_TRIGGER_STUN,           // By aura proced stuns, usualy chance on hit talents
-    DIMINISHING_CONTROL_ROOT,           // Immobilizing effects from casted spells
-    DIMINISHING_TRIGGER_ROOT,           // Immobilizing effects from triggered spells like Frostbite
+    DIMINISHING_CONTROL_STUN,                               // Player Controlled stuns
+    DIMINISHING_TRIGGER_STUN,                               // By aura proced stuns, usualy chance on hit talents
+    DIMINISHING_CONTROL_ROOT,                               // Immobilizing effects from casted spells
+    DIMINISHING_TRIGGER_ROOT,                               // Immobilizing effects from triggered spells like Frostbite
     DIMINISHING_CHARM,
-    DIMINISHING_SLEEP_FREEZE,
     DIMINISHING_POLYMORPH,              // Also: Gouge, Sap, Repentance, Hungering Cold
-    DIMINISHING_CHEAPSHOT_POUNCE,
-    DIMINISHING_DEATHCOIL,              // Death Coil Diminish only with another Death Coil
-    DIMINISHING_SILENCE,
     DIMINISHING_KNOCKOUT,               // Sap, Knockout mechanics
-    DIMINISHING_DISARM,
     DIMINISHING_FEAR_BLIND,             // Intimidating Shout, Howl of Terror, Blind
-    DIMINISHING_FEAR,
+    // Warlock Specific
+    DIMINISHING_DEATHCOIL,                                  // Death Coil Diminish only with another Death Coil
+    // Druid Specific
+    DIMINISHING_CYCLONE,                                    // From 2.3.0
+    // Shared Class Specific
+    DIMINISHING_CHEAPSHOT_POUNCE,
+    DIMINISHING_DISARM,                                     // From 2.3.0
+    DIMINISHING_SILENCE,                                    // From 2.3.0
+    DIMINISHING_FREEZE_SLEEP,                               // Hunter's Freezing Trap
     DIMINISHING_BANISH,
     DIMINISHING_TAUNT,
     DIMINISHING_LIMITONLY               // Don't Diminish, but limit duration to 10s

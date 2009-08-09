@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1250"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="TrinityScript"
 	ProjectGUID="{4295C8A9-79B7-4354-8064-F05FB9CA0C96}"
 	RootNamespace="ScriptDev2"
@@ -130,7 +130,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/MP"
 				AdditionalIncludeDirectories="..\..\..\..\dep\include\;..\..\..\shared\;..\..\..\framework\;..\..\..\game\;..\include\;..\..\..\..\dep\ACE_wrappers"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SCRIPT"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SCRIPT;_SECURE_SCL=0"
 				MinimalRebuild="false"
 				RuntimeLibrary="2"
 				EnableEnhancedInstructionSet="1"
@@ -300,7 +300,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/MP"
 				AdditionalIncludeDirectories="..\..\..\..\dep\include\;..\..\..\shared\;..\..\..\framework\;..\..\..\game\;..\include\;..\..\..\..\dep\ACE_wrappers"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SCRIPT"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SCRIPT;_SECURE_SCL=0"
 				MinimalRebuild="false"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
@@ -555,14 +555,14 @@
 					<Filter
 						Name="Blackfathom Depths"
 						>
-                        <File
-                            RelativePath="..\scripts\zone\blackfathom_depths\instance_blackfathom_deeps.cpp"
-                            >
-                        </File>
-                        <File
-                            RelativePath="..\scripts\zone\blackfathom_depths\def_blackfathom_deeps.h"
-                            >
-                        </File>
+						<File
+							RelativePath="..\scripts\zone\blackfathom_depths\def_blackfathom_deeps.h"
+							>
+						</File>
+						<File
+							RelativePath="..\scripts\zone\blackfathom_depths\instance_blackfathom_deeps.cpp"
+							>
+						</File>
 					</Filter>
 					<Filter
 						Name="Bloodmyst Isle"
@@ -725,10 +725,12 @@
 						>
 					</Filter>
 					<Filter
-						Name="Desolace">
-                        <File
-                            RelativePath="..\scripts\zone\desolace\desolace.cpp">
-                        </File>
+						Name="Desolace"
+						>
+						<File
+							RelativePath="..\scripts\zone\desolace\desolace.cpp"
+							>
+						</File>
 					</Filter>
 					<Filter
 						Name="Dire Maul"
@@ -838,7 +840,7 @@
 						Name="Razorfen Kraul"
 						>
 						<File
-							RelativePath="..\scripts\zone\razorfen_kraul\razorfen_kraul.cpp"
+							RelativePath="..\scripts\zone\razorfen_kraul\def_razorfen_kraul.h"
 							>
 						</File>
 						<File
@@ -846,7 +848,7 @@
 							>
 						</File>
 						<File
-							RelativePath="..\scripts\zone\razorfen_kraul\def_razorfen_kraul.h"
+							RelativePath="..\scripts\zone\razorfen_kraul\razorfen_kraul.cpp"
 							>
 						</File>
 					</Filter>
@@ -1101,6 +1103,10 @@
 							RelativePath="..\scripts\zone\magisters_terrace\instance_magisters_terrace.cpp"
 							>
 						</File>
+                        <File
+                            RelativePath="..\scripts\zone\magisters_terrace\magisters_terrace.cpp"
+                            >
+                        </File>
 					</Filter>
 					<Filter
 						Name="Loch Modan"
@@ -1834,6 +1840,14 @@
 							>
 						</File>
 					</Filter>
+                    <Filter
+                        Name="Zul&apos;Drak"
+                        >
+                        <File
+                            RelativePath="..\scripts\zone\zuldrak\zuldrak.cpp"
+                            >
+                        </File>
+                    </Filter>
 					<Filter
 						Name="Wetlands"
 						>
@@ -2444,6 +2458,10 @@
 						<Filter
 							Name="Sholazar Basin"
 							>
+                            <File
+                                RelativePath="..\scripts\zone\sholazar_basin\sholazar_basin.cpp"
+                                >
+                            </File>
 						</Filter>
 						<Filter
 							Name="Dalaran"
@@ -2814,6 +2832,10 @@
 							>
 							<File
 								RelativePath="..\scripts\zone\vault_of_archavon\boss_archavon.cpp"
+								>
+							</File>
+							<File
+								RelativePath="..\scripts\zone\vault_of_archavon\boss_emalon.cpp"
 								>
 							</File>
 							<File

@@ -33,31 +33,94 @@ EndContentData */
 ## npc_calvin_montague
 ######*/
 
-#define QUEST_590           590
-#define FACTION_FRIENDLY    68
-#define FACTION_HOSTILE     16
+enum
+{
+    SAY_COMPLETE        = -1000431,
+    SPELL_DRINK         = 2639,                             // possibly not correct spell (but iconId is correct)
+    QUEST_590           = 590,
+    FACTION_HOSTILE     = 168
+};
 
 struct TRINITY_DLL_DECL npc_calvin_montagueAI : public ScriptedAI
 {
-    npc_calvin_montagueAI(Creature* c) : ScriptedAI(c) {}
+    npc_calvin_montagueAI(Creature* pCreature) : ScriptedAI(pCreature) { }
+
+    uint32 m_uiPhase;
+    uint32 m_uiPhaseTimer;
+    uint64 m_uiPlayerGUID;
 
     void Reset()
     {
-        m_creature->setFaction(FACTION_FRIENDLY);
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
+        m_uiPhase = 0;
+        m_uiPhaseTimer = 5000;
+        m_uiPlayerGUID = 0;
+
+        me->RestoreFaction();
+
+        if (!m_creature->HasFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NOT_ATTACKABLE_2))
+            m_creature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NOT_ATTACKABLE_2);
     }
 
     void EnterCombat(Unit* who) { }
 
-    void JustDied(Unit* Killer)
+    void AttackedBy(Unit* pAttacker)
     {
-        if( Killer->GetTypeId() == TYPEID_PLAYER )
-            if( CAST_PLR(Killer)->GetQuestStatus(QUEST_590) == QUEST_STATUS_INCOMPLETE )
-                CAST_PLR(Killer)->AreaExploredOrEventHappens(QUEST_590);
+        if (m_creature->getVictim() || m_creature->IsFriendlyTo(pAttacker))
+            return;
+
+        AttackStart(pAttacker);
     }
 
-    void UpdateAI(const uint32 diff)
+    void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
     {
+        if (uiDamage > m_creature->GetHealth() || ((m_creature->GetHealth() - uiDamage)*100 / m_creature->GetMaxHealth() < 15))
+        {
+            uiDamage = 0;
+
+            me->RestoreFaction();
+            m_creature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NOT_ATTACKABLE_2);
+            m_creature->CombatStop(true);
+
+            m_uiPhase = 1;
+
+            if (pDoneBy->GetTypeId() == TYPEID_PLAYER)
+                m_uiPlayerGUID = pDoneBy->GetGUID();
+        }
+    }
+
+    void UpdateAI(const uint32 uiDiff)
+    {
+        if (m_uiPhase)
+        {
+            if (m_uiPhaseTimer < uiDiff)
+                m_uiPhaseTimer = 7500;
+            else
+            {
+                m_uiPhaseTimer -= uiDiff;
+                return;
+            }
+
+            switch(m_uiPhase)
+            {
+                case 1:
+                    DoScriptText(SAY_COMPLETE, m_creature);
+                    ++m_uiPhase;
+                    break;
+                case 2:
+                    if (Unit* pUnit = Unit::GetUnit(*m_creature, m_uiPlayerGUID))
+                        CAST_PLR(pUnit)->AreaExploredOrEventHappens(QUEST_590);
+
+                    m_creature->CastSpell(m_creature,SPELL_DRINK,true);
+                    ++m_uiPhase;
+                    break;
+                case 3:
+                    EnterEvadeMode();
+                    break;
+            }
+
+            return;
+        }
+
         if (!UpdateVictim())
             return;
 
@@ -69,13 +132,13 @@ CreatureAI* GetAI_npc_calvin_montague(Creature *_Creature)
     return new npc_calvin_montagueAI (_Creature);
 }
 
-bool QuestAccept_npc_calvin_montague(Player* player, Creature* creature, Quest const* quest)
+bool QuestAccept_npc_calvin_montague(Player* pPlayer, Creature* pCreature, Quest const* quest)
 {
     if( quest->GetQuestId() == QUEST_590 )
     {
-        creature->setFaction(FACTION_HOSTILE);
-        creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
-        CAST_AI(npc_calvin_montagueAI, creature->AI())->AttackStart(player);
+        pCreature->setFaction(FACTION_HOSTILE);
+        pCreature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
+        CAST_AI(npc_calvin_montagueAI, pCreature->AI())->AttackStart(pPlayer);
     }
     return true;
 }
@@ -85,55 +148,38 @@ bool QuestAccept_npc_calvin_montague(Player* player, Creature* creature, Quest c
 ## go_mausoleum_trigger
 ######*/
 
-#define QUEST_ULAG      1819
-#define C_ULAG          6390
-#define GO_TRIGGER      104593
-#define GO_DOOR         176594
-
-GameObject* SearchMausoleumGo(Unit *source, uint32 entry, float range)
+enum
 {
-    GameObject* pGo = NULL;
+    QUEST_ULAG      = 1819,
+    NPC_ULAG        = 6390,
+    GO_TRIGGER      = 104593,
+    GO_DOOR         = 176594
+};
 
-    CellPair pair(Trinity::ComputeCellPair(source->GetPositionX(), source->GetPositionY()));
-    Cell cell(pair);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
-    Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*source, entry, range);
-    Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(source, pGo, go_check);
-
-    TypeContainerVisitor<Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer> go_searcher(searcher);
-
-    CellLock<GridReadGuard> cell_lock(cell, pair);
-    cell_lock->Visit(cell_lock, go_searcher,*(source->GetMap()));
-
-    return pGo;
-}
-
-bool GOHello_go_mausoleum_door(Player *player, GameObject* _GO)
+bool GOHello_go_mausoleum_door(Player* pPlayer, GameObject* pGo)
 {
-    if (player->GetQuestStatus(QUEST_ULAG) != QUEST_STATUS_INCOMPLETE)
+    if (pPlayer->GetQuestStatus(QUEST_ULAG) != QUEST_STATUS_INCOMPLETE)
         return false;
 
-    if (GameObject *trigger = SearchMausoleumGo(player, GO_TRIGGER, 30))
+    if (GameObject* pTrigger = pPlayer->FindNearestGameObject(GO_TRIGGER, 30.0f))
     {
-        trigger->SetGoState(GO_STATE_READY);
-        player->SummonCreature(C_ULAG, 2390.26, 336.47, 40.01, 2.26, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 300000);
+        pTrigger->SetGoState(GO_STATE_READY);
+        pPlayer->SummonCreature(NPC_ULAG, 2390.26, 336.47, 40.01, 2.26, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 300000);
         return false;
     }
 
     return false;
 }
 
-bool GOHello_go_mausoleum_trigger(Player *player, GameObject* _GO)
+bool GOHello_go_mausoleum_trigger(Player* pPlayer, GameObject* pGo)
 {
-    if (player->GetQuestStatus(QUEST_ULAG) != QUEST_STATUS_INCOMPLETE)
+    if (pPlayer->GetQuestStatus(QUEST_ULAG) != QUEST_STATUS_INCOMPLETE)
         return false;
 
-    if (GameObject *door = SearchMausoleumGo(player, GO_DOOR, 30))
+    if (GameObject* pDoor = pPlayer->FindNearestGameObject(GO_DOOR, 30.0f))
     {
-        _GO->SetGoState(GO_STATE_ACTIVE);
-        door->RemoveFlag(GAMEOBJECT_FLAGS,GO_FLAG_INTERACT_COND);
+        pGo->SetGoState(GO_STATE_ACTIVE);
+        pDoor->RemoveFlag(GAMEOBJECT_FLAGS,GO_FLAG_INTERACT_COND);
         return true;
     }
 

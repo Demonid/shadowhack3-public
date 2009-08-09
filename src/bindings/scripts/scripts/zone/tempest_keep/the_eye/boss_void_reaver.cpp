@@ -24,18 +24,21 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_the_eye.h"
 
-#define SAY_AGGRO                   -1550000
-#define SAY_SLAY1                   -1550001
-#define SAY_SLAY2                   -1550002
-#define SAY_SLAY3                   -1550003
-#define SAY_DEATH                   -1550004
-#define SAY_POUNDING1               -1550005
-#define SAY_POUNDING2               -1550006
+enum
+{
+    SAY_AGGRO                   = -1550000,
+    SAY_SLAY1                   = -1550001,
+    SAY_SLAY2                   = -1550002,
+    SAY_SLAY3                   = -1550003,
+    SAY_DEATH                   = -1550004,
+    SAY_POUNDING1               = -1550005,
+    SAY_POUNDING2               = -1550006,
 
-#define SPELL_POUNDING              34162
-#define SPELL_ARCANE_ORB            34172
-#define SPELL_KNOCK_AWAY            25778
-#define SPELL_BERSERK               27680
+    SPELL_POUNDING              = 34162,
+    SPELL_ARCANE_ORB            = 34172,
+    SPELL_KNOCK_AWAY            = 25778,
+    SPELL_BERSERK               = 27680
+};
 
 struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
 {
@@ -79,6 +82,7 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
     void JustDied(Unit *victim)
     {
         DoScriptText(SAY_DEATH, m_creature);
+        DoZoneInCombat();
 
         if(pInstance)
             pInstance->SetData(DATA_VOIDREAVEREVENT, DONE);
@@ -119,16 +123,23 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
             for(std::list<HostilReference *>::iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
             {
                 target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
-                                                            //18 yard radius minimum
+                // exclude pets & totems
+                if (target->GetTypeId() != TYPEID_PLAYER)
+                    continue;
+
+                //18 yard radius minimum
                 if(target && target->GetTypeId() == TYPEID_PLAYER && target->isAlive() && !target->IsWithinDist(m_creature, 18, false))
                     target_list.push_back(target);
                 target = NULL;
             }
+
             if(target_list.size())
                 target = *(target_list.begin()+rand()%target_list.size());
+            else
+                target = m_creature->getVictim();
 
             if (target)
-                m_creature->CastSpell(target->GetPositionX(),target->GetPositionY(),target->GetPositionZ(), SPELL_ARCANE_ORB, false);
+                m_creature->CastSpell(target->GetPositionX(),target->GetPositionY(),target->GetPositionZ(), SPELL_ARCANE_ORB, false, NULL, NULL, NULL, target);
 
             ArcaneOrb_Timer = 3000;
         }else ArcaneOrb_Timer -= diff;
@@ -153,6 +164,8 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
         }else Berserk_Timer -= diff;
 
         DoMeleeAttackIfReady();
+
+        EnterEvadeIfOutOfCombatArea(diff);
     }
 };
 

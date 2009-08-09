@@ -116,7 +116,6 @@ bool OPvPCapturePoint::DelCreature(uint32 type)
     // Don't save respawn time
     cr->SetRespawnTime(0);
     cr->RemoveCorpse();
-    cr->CleanupsBeforeDelete();
     // explicit removal from map
     // beats me why this is needed, but with the recent removal "cleanup" some creatures stay in the map if "properly" deleted
     // so this is a big fat workaround, if AddObjectToRemoveList and DoDelayedMovesAndRemoves worked correctly, this wouldn't be needed
@@ -360,7 +359,7 @@ void OPvPCapturePoint::SendObjectiveComplete(uint32 id,uint64 guid)
 
     // send to all players present in the area
     for(PlayerSet::iterator itr = m_activePlayers[team].begin(); itr != m_activePlayers[team].end(); ++itr)
-        (*itr)->KilledMonster(id, guid);
+        (*itr)->KilledMonsterCredit(id, guid);
 }
 
 void OutdoorPvP::HandleKill(Player *killer, Unit * killed)

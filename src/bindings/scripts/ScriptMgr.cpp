@@ -356,6 +356,7 @@ extern void AddSC_boss_selin_fireheart();
 extern void AddSC_boss_vexallus();
 extern void AddSC_boss_priestess_delrissa();
 extern void AddSC_instance_magisters_terrace();
+extern void AddSC_magisters_terrace();
 
 //Maraudon
 extern void AddSC_boss_celebras_the_cursed();
@@ -414,6 +415,9 @@ extern void AddSC_boss_ormorok();
 extern void AddSC_boss_keristrasza();
 extern void AddSC_instance_nexus();
 
+//Obsidian Sanctum
+extern void AddSC_instance_obsidian_sanctum();
+
 //Onyxia's Lair
 extern void AddSC_boss_onyxia();
 
@@ -471,6 +475,9 @@ extern void AddSC_shadowmoon_valley();
 
 //Shattrath
 extern void AddSC_shattrath_city();
+
+//Sholazar Basin
+extern void AddSC_sholazar_basin();
 
 //Silithus
 extern void AddSC_silithus();
@@ -636,10 +643,19 @@ extern void AddSC_boss_zuljin();
 extern void AddSC_instance_zulaman();
 extern void AddSC_zulaman();
 
+//Zul'Drak
+extern void AddSC_zuldrak();
+
 //Northrend
 //Dungeon
 //Vault of Archavon
 extern void AddSC_boss_archavon();
+extern void AddSC_boss_emalon();
+extern void AddSC_instance_archavon();
+
+//Ulduar
+extern void AddSC_boss_flame_leviathan();
+extern void AddSC_boss_razorscale();
 
 //Region
 extern void AddSC_wintergrasp();
@@ -1254,6 +1270,7 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
     AddSC_boss_vexallus();
     AddSC_boss_priestess_delrissa();
     AddSC_instance_magisters_terrace();
+    AddSC_magisters_terrace();
 
     //Maraudon
     AddSC_boss_celebras_the_cursed();
@@ -1312,6 +1329,9 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
     AddSC_boss_keristrasza();
     AddSC_instance_nexus();
 
+    //Obsidian Sanctum
+    AddSC_instance_obsidian_sanctum();
+
     //Onyxia's Lair
     AddSC_boss_onyxia();
 
@@ -1369,6 +1389,9 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
 
     //Shattrath
     AddSC_shattrath_city();
+
+    //Sholazar Basin
+    AddSC_sholazar_basin();
 
     //Silithus
     AddSC_silithus();
@@ -1534,10 +1557,19 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
     AddSC_instance_zulaman();
     AddSC_zulaman();
 
+    //Zul'Drak
+    AddSC_zuldrak();
+
     //Northrend
     //Dungeon
     //Vault of Archavon
     AddSC_boss_archavon();
+    AddSC_boss_emalon();
+    AddSC_instance_archavon();
+
+    //Ulduar
+    AddSC_boss_flame_leviathan();
+    AddSC_boss_razorscale();
 
     //Region
     AddSC_wintergrasp();
@@ -1854,6 +1886,15 @@ bool ItemUse( Player *player, Item* _Item, SpellCastTargets const& targets)
     if (!tmpscript || !tmpscript->pItemUse) return false;
 
     return tmpscript->pItemUse(player,_Item,targets);
+}
+
+TRINITY_DLL_EXPORT
+bool ItemExpire( Player *player, ItemPrototype const * _ItemProto)
+{
+    Script *tmpscript = m_scripts[_ItemProto->ScriptId];
+    if (!tmpscript || !tmpscript->pItemExpire) return true;
+
+    return tmpscript->pItemExpire(player,_ItemProto);
 }
 
 TRINITY_DLL_EXPORT

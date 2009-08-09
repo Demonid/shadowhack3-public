@@ -160,7 +160,7 @@ class TRINITY_DLL_SPEC Object
         uint32 GetEntry() const { return GetUInt32Value(OBJECT_FIELD_ENTRY); }
         void SetEntry(uint32 entry) { SetUInt32Value(OBJECT_FIELD_ENTRY, entry); }
 
-        uint8 GetTypeId() const { return m_objectTypeId; }
+        TypeID GetTypeId() const { return m_objectTypeId; }
         bool isType(uint16 mask) const { return (mask & m_objectType); }
 
         virtual void BuildCreateUpdateBlockForPlayer( UpdateData *data, Player *target ) const;
@@ -171,7 +171,7 @@ class TRINITY_DLL_SPEC Object
         void BuildMovementUpdateBlock( UpdateData * data, uint32 flags = 0 ) const;
         void BuildUpdate(UpdateDataMapType &);
 
-        virtual void DestroyForPlayer( Player *target ) const;
+        virtual void DestroyForPlayer( Player *target, bool anim = false ) const;
 
         const int32& GetInt32Value( uint16 index ) const
         {
@@ -337,7 +337,7 @@ class TRINITY_DLL_SPEC Object
 
         uint16 m_objectType;
 
-        uint8 m_objectTypeId;
+        TypeID m_objectTypeId;
         uint16 m_updateFlag;
 
         union
@@ -371,7 +371,7 @@ class TRINITY_DLL_SPEC WorldObject : public Object
 
         virtual void Update ( uint32 /*time_diff*/ ) { }
 
-        void _Create( uint32 guidlow, HighGuid guidhigh, uint32 mapid, uint32 phaseMask);
+        void _Create( uint32 guidlow, HighGuid guidhigh, uint32 phaseMask);
 
         void Relocate(WorldObject *obj)
         {
@@ -407,7 +407,7 @@ class TRINITY_DLL_SPEC WorldObject : public Object
         void GetPosition( float &x, float &y, float &z ) const
             { x = m_positionX; y = m_positionY; z = m_positionZ; }
         void GetPosition( WorldLocation &loc ) const
-            { loc.mapid = m_mapId; GetPosition(loc.coord_x, loc.coord_y, loc.coord_z); loc.orientation = GetOrientation(); }
+            { loc.mapid = GetMapId(); GetPosition(loc.coord_x, loc.coord_y, loc.coord_z); loc.orientation = GetOrientation(); }
         void GetPosition(Position pos) const
             { pos[0] = m_positionX; pos[1] = m_positionY; pos[2] = m_positionZ; pos[3] = m_orientation; }
         float GetOrientation( ) const { return m_orientation; }
@@ -439,10 +439,8 @@ class TRINITY_DLL_SPEC WorldObject : public Object
 
         void GetRandomPoint( float x, float y, float z, float distance, float &rand_x, float &rand_y, float &rand_z ) const;
 
-        void SetMapId(uint32 newMap) { m_mapId = newMap; m_map = NULL; }
-        uint32 GetMapId() const { return m_mapId; }
-        void SetInstanceId(uint32 val) { m_InstanceId = val; m_map = NULL; }
-        uint32 GetInstanceId() const { return m_InstanceId; }
+        virtual uint32 GetMapId() const { return m_currMap ? m_currMap->GetId() : 0; }
+        virtual uint32 GetInstanceId() const { return m_currMap ? m_currMap->GetInstanceId() : 0; }
 
         virtual void SetPhaseMask(uint32 newPhaseMask, bool update);
         uint32 GetPhaseMask() const { return m_phaseMask; }
@@ -470,8 +468,7 @@ class TRINITY_DLL_SPEC WorldObject : public Object
         float GetDistanceZ(const WorldObject* obj) const;
         bool IsInMap(const WorldObject* obj) const
         {
-            return IsInWorld() && obj->IsInWorld() && GetMapId()==obj->GetMapId() &&
-                GetInstanceId()==obj->GetInstanceId() && InSamePhase(obj);
+            return IsInWorld() && obj->IsInWorld() && (GetMap() == obj->GetMap()) && InSamePhase(obj);
         }
         bool IsWithinDist3d(float x, float y, float z, float dist2compare) const;
         bool IsWithinDist2d(float x, float y, float dist2compare) const;
@@ -498,6 +495,8 @@ class TRINITY_DLL_SPEC WorldObject : public Object
         bool HasInArc( const float arcangle, const WorldObject* obj ) const;
         bool IsInBetween(const WorldObject *obj1, const WorldObject *obj2, float size = 0) const;
 
+        virtual void CleanupsBeforeDelete();                // used in destructor or explicitly before mass creature delete to remove cross-references to already deleted units
+
         virtual void SendMessageToSet(WorldPacket *data, bool self);
         virtual void SendMessageToSetInRange(WorldPacket *data, float dist, bool self);
 
@@ -518,7 +517,6 @@ class TRINITY_DLL_SPEC WorldObject : public Object
         void SendObjectDeSpawnAnim(uint64 guid);
 
         virtual void SaveRespawnTime() {}
-
         void AddObjectToRemoveList();
 
         // main visibility check function in normal case (ignore grey zone distance check)
@@ -530,8 +528,13 @@ class TRINITY_DLL_SPEC WorldObject : public Object
         // Low Level Packets
         void SendPlaySound(uint32 Sound, bool OnlySelf);
 
-        Map      * GetMap() const   { return m_map ? m_map : const_cast<WorldObject*>(this)->_getMap(); }
-        Map      * FindMap() const  { return m_map ? m_map : const_cast<WorldObject*>(this)->_findMap(); }
+        virtual void SetMap(Map * map);
+        Map * GetMap() const { ASSERT(m_currMap); return m_currMap; }
+        Map * FindMap() const { return m_currMap; }
+        //used to check all object's GetMap() calls when object is not in world!
+        virtual void ResetMap() { assert(m_currMap); m_currMap = NULL; }
+
+        //this function should be removed in nearest time...
         Map const* GetBaseMap() const;
 
         void SetZoneScript();
@@ -545,6 +548,9 @@ class TRINITY_DLL_SPEC WorldObject : public Object
         Creature*   FindNearestCreature(uint32 entry, float range, bool alive = true);
         GameObject* FindNearestGameObject(uint32 entry, float range);
 
+        void GetGameObjectListWithEntryInGrid(std::list<GameObject*>& lList, uint32 uiEntry, float fMaxSearchRange);
+        void GetCreatureListWithEntryInGrid(std::list<Creature*>& lList, uint32 uiEntry, float fMaxSearchRange);
+
         bool isActiveObject() const { return m_isActive; }
         void setActive(bool isActiveObject);
         void SetWorldObject(bool apply);
@@ -555,10 +561,10 @@ class TRINITY_DLL_SPEC WorldObject : public Object
 
 #ifdef MAP_BASED_RAND_GEN
         int32 irand(int32 min, int32 max) const     { return int32 (GetMap()->mtRand.randInt(max - min)) + min; }
-        uint32 urand(uint32 min, uint32 max) const  { return GetMap()->mtRand.randInt(max - min) + min; }
-        int32 rand32() const                        { return GetMap()->mtRand.randInt(); }
-        double rand_norm() const                    { return GetMap()->mtRand.randExc(); }
-        double rand_chance() const                  { return GetMap()->mtRand.randExc(100.0); }
+        uint32 urand(uint32 min, uint32 max) const  { return GetMap()->mtRand.randInt(max - min) + min;}
+        int32 rand32() const                        { return GetMap()->mtRand.randInt();}
+        double rand_norm() const                    { return GetMap()->mtRand.randExc();}
+        double rand_chance() const                  { return GetMap()->mtRand.randExc(100.0);}
 #endif
 
     protected:
@@ -568,13 +574,8 @@ class TRINITY_DLL_SPEC WorldObject : public Object
         ZoneScript *m_zoneScript;
 
     private:
-        uint32 m_mapId;                                     // object at map with map_id
-        uint32 m_InstanceId;                                // in map copy with instance id
+        Map * m_currMap;                                    //current object's Map location
         uint32 m_phaseMask;                                 // in area phase state
-        Map    *m_map;
-
-        Map* _getMap();
-        Map* _findMap();
 
         float m_positionX;
         float m_positionY;

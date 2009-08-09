@@ -42,10 +42,9 @@ class TRINITY_DLL_DECL MapInstanced : public Map
         void UnloadAll();
         bool CanEnter(Player* player);
 
-        Map* GetInstance(const WorldObject* obj);
+        Map* CreateInstance(const uint32 mapId, Player * player, uint32 instanceId);
         Map* FindMap(uint32 InstanceId) const { return _FindMap(InstanceId); }
-        void DestroyInstance(uint32 InstanceId);
-        void DestroyInstance(InstancedMaps::iterator &itr);
+        bool DestroyInstance(InstancedMaps::iterator &itr);
 
         void AddGridMapReference(const GridPair &p)
         {

@@ -111,10 +111,19 @@ struct TRINITY_DLL_DECL mob_inner_demonAI : public ScriptedAI
 
         if (m_creature->getVictim()->GetGUID() != victimGUID)
         {
+            DoModifyThreatPercent(m_creature->getVictim(), -100);
             Unit* owner = Unit::GetUnit((*m_creature),victimGUID);
-                if (owner)
-                    AttackStart(owner);
+            if (owner && owner->isAlive())
+            {
+                m_creature->AddThreat(owner,999999);
+                AttackStart(owner);
+            }else if(owner && owner->isDead())
+            {
+                m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                return;
+            }
         }
+
         if(Link_Timer < diff)
         {
             DoCast(m_creature->getVictim(), SPELL_SOUL_LINK, true);
@@ -201,14 +210,9 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
         for(uint8 i = 0; i < 3; i++)
         {
             Creature *add = Unit::GetCreature(*m_creature,SpellBinderGUID[i]);
-            if (add && add->isAlive())
-            {
-                add->setDeathState(DEAD);
-                add->RemoveCorpse();
-            }else{
-                if(add && add->isDead())
-                    add->RemoveCorpse();
-            }
+            if (add)
+                add->RemoveFromWorld();
+
             float nx = x;
             float ny = y;
             float o = 2.4f;
@@ -433,6 +437,7 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
         //Enrage_Timer ( 10 min )
         if(Berserk_Timer < diff && !EnrageUsed)
         {
+            m_creature->InterruptNonMeleeSpells(false);
             DoCast(m_creature, SPELL_BERSERK);
             EnrageUsed = true;
         }else Berserk_Timer -= diff;
@@ -550,6 +555,8 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
         if (!IsFinalForm && (m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 15)
         {
             //at this point he divides himself in two parts
+            CastConsumingMadness();
+            DespawnDemon();
             Creature *Copy = NULL;
             Copy = DoSpawnCreature(DEMON_FORM, 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 6000);
             if(Copy)

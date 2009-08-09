@@ -84,11 +84,14 @@ struct AchievementCriteriaEntry
         } kill_creature;
 
         // ACHIEVEMENT_CRITERIA_TYPE_WIN_BG                 = 1
-        // TODO: there are further criterias instead just winning
         struct
         {
             uint32  bgMapID;                                // 3
             uint32  winCount;                               // 4
+            uint32  additionalRequirement1_type;            // 5 additional requirement 1 type
+            uint32  additionalRequirement1_value;           // 6 additional requirement 1 value
+            uint32  additionalRequirement2_type;            // 7 additional requirement 2 type
+            uint32  additionalRequirement2_value;           // 8 additional requirement 1 value
         } win_bg;
 
         // ACHIEVEMENT_CRITERIA_TYPE_REACH_LEVEL            = 5
@@ -490,7 +493,9 @@ struct AchievementCriteriaEntry
     //uint32 name_flags;                                    // 25
     uint32  completionFlag;                                 // 26
     uint32  groupFlag;                                      // 27
-    //uint32 unk1;                                          // 28
+    //uint32 unk1;                                          // 28 Alway appears with timed events
+                                                            // for timed spells it is spell id for
+                                                            // timed kills it is creature id
     uint32  timeLimit;                                      // 29 time limit in seconds
     //uint32 showOrder;                                     // 30 show order
 };
@@ -507,6 +512,14 @@ struct AreaTableEntry
     char*   area_name[16];                                  // 11-26
                                                             // 27, string flags, unused
     uint32  team;                                           // 28
+
+    // helpers
+    bool IsSanctuary() const
+    {
+        if (mapid == 609)
+            return true;
+        return (flags & AREA_FLAG_SANCTUARY);
+    }
 };
 
 struct AreaGroupEntry
@@ -1423,7 +1436,7 @@ struct SpellEntry
     uint32    SchoolMask;                                   // 228      m_schoolMask
     uint32    runeCostID;                                   // 229      m_runeCostID
     //uint32    spellMissileID;                             // 230      m_spellMissileID not used
-    //uint32  PowerDisplayId;                               // 231 PowerDisplay.dbc, new in 3.1
+    //uint32  PowerDisplayId;                               // 231      PowerDisplay.dbc, new in 3.1
 
     // helpers
     int32 CalculateSimpleValue(uint8 eff) const { return EffectBasePoints[eff]+int32(EffectBaseDice[eff]); }
@@ -1451,13 +1464,6 @@ struct SpellFocusObjectEntry
     uint32    ID;                                           // 0
     //char*     Name[16];                                   // 1-15 unused
                                                             // 16 string flags, unused
-};
-
-// stored in SQL table
-struct SpellThreatEntry
-{
-    uint32      spellId;
-    int32       threat;
 };
 
 struct SpellRadiusEntry

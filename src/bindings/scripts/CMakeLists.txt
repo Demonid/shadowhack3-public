@@ -208,6 +208,7 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/magisters_terrace/boss_vexallus.cpp
    scripts/zone/magisters_terrace/def_magisters_terrace.h
    scripts/zone/magisters_terrace/instance_magisters_terrace.cpp
+   scripts/zone/magisters_terrace/magisters_terrace.cpp
    scripts/zone/maraudon/boss_celebras_the_cursed.cpp
    scripts/zone/maraudon/boss_landslide.cpp
    scripts/zone/maraudon/boss_noxxion.cpp
@@ -293,6 +294,7 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/shadowmoon_valley/boss_doomwalker.cpp
    scripts/zone/shadowmoon_valley/shadowmoon_valley.cpp
    scripts/zone/shattrath/shattrath_city.cpp
+   scripts/zone/sholazar_basin/sholazar_basin.cpp
    scripts/zone/silithus/silithus.cpp
    scripts/zone/silvermoon/silvermoon_city.cpp
    scripts/zone/silverpine_forest/silverpine_forest.cpp
@@ -380,6 +382,7 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/zulaman/def_zulaman.h
    scripts/zone/zulaman/instance_zulaman.cpp
    scripts/zone/zulaman/zulaman.cpp
+   scripts/zone/zuldrak/zuldrak.cpp
    scripts/zone/zulfarrak/zulfarrak.cpp
    scripts/zone/zulgurub/boss_arlokk.cpp
    scripts/zone/zulgurub/boss_gahzranka.cpp
@@ -481,6 +484,7 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/obsidian_sanctum/def_obsidian_sanctum.h
    scripts/zone/vault_of_archavon/instance_vault_of_archavon.cpp
    scripts/zone/vault_of_archavon/boss_archavon.cpp
+   scripts/zone/vault_of_archavon/boss_emalon.cpp
    scripts/zone/vault_of_archavon/def_vault_of_archavon.h
    scripts/zone/wintergrasp/wintergrasp.cpp
    scripts/zone/ulduar/ulduar/boss_algalon.cpp

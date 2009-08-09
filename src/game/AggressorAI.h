@@ -48,9 +48,21 @@ class TRINITY_DLL_SPEC SpellAI : public CreatureAI
         void JustDied(Unit *killer);
         void UpdateAI(const uint32 diff);
         static int Permissible(const Creature *);
-    private:
+    protected:
         EventMap events;
         SpellVct spells;
+};
+
+class TRINITY_DLL_SPEC SpellCasterAI : public SpellAI
+{
+    public:
+        explicit SpellCasterAI(Creature *c) : SpellAI(c) {m_attackDist = MELEE_RANGE;}
+        void InitializeAI();
+        void AttackStart(Unit * victim){SpellAI::AttackStartCaster(victim, m_attackDist);}
+        void UpdateAI(const uint32 diff);
+        void EnterCombat(Unit *who);
+    private:
+        float m_attackDist;
 };
 
 #endif

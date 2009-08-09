@@ -117,9 +117,13 @@ MapManager::_createBaseMap(uint32 id)
         {
             m = new MapInstanced(id, i_gridCleanUpDelay);
         }
-        else
+        else if (entry)
         {
             m = new Map(id, i_gridCleanUpDelay, 0, 0);
+        }
+        else
+        {
+            assert(false);
         }
         i_maps[id] = m;
     }
@@ -128,13 +132,13 @@ MapManager::_createBaseMap(uint32 id)
     return m;
 }
 
-Map* MapManager::GetMap(uint32 id, const WorldObject* obj)
+Map* MapManager::CreateMap(uint32 id, const WorldObject* obj, uint32 instanceId)
 {
     ASSERT(obj);
     //if(!obj->IsInWorld()) sLog.outError("GetMap: called for map %d with object (typeid %d, guid %d, mapid %d, instanceid %d) who is not in world!", id, obj->GetTypeId(), obj->GetGUIDLow(), obj->GetMapId(), obj->GetInstanceId());
     Map *m = _createBaseMap(id);
 
-    if (m && obj && m->Instanceable()) m = ((MapInstanced*)m)->GetInstance(obj);
+    if (m && (obj->GetTypeId() == TYPEID_PLAYER) && m->Instanceable()) m = ((MapInstanced*)m)->CreateInstance(id, (Player*)obj, instanceId);
 
     return m;
 }
@@ -230,13 +234,6 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player)
         return true;
 }
 
-void MapManager::DeleteInstance(uint32 mapid, uint32 instanceId)
-{
-    Map *m = _createBaseMap(mapid);
-    if (m && m->Instanceable())
-        ((MapInstanced*)m)->DestroyInstance(instanceId);
-}
-
 void MapManager::RemoveBonesFromMap(uint32 mapid, uint64 guid, float x, float y)
 {
     bool remove_result = _createBaseMap(mapid)->RemoveBones(guid, x, y);
@@ -259,20 +256,19 @@ MapManager::Update(uint32 diff)
     MapMapType::iterator iter;
     std::vector<Map*> update_queue(i_maps.size());
 	int omp_set_num_threads(sWorld.getConfig(CONFIG_NUMTHREADS));
-	for(iter = i_maps.begin(), i=0;iter != i_maps.end(); ++iter, i++)
-		update_queue[i]=iter->second;		
+    for(iter = i_maps.begin(), i=0;iter != i_maps.end(); ++iter, i++)
+        update_queue[i]=iter->second;
 /*
-	gomp in gcc <4.4 version cannot parallelise loops using random access iterators
-	so until gcc 4.4 isnt standard, we need the update_queue workaround
+    gomp in gcc <4.4 version cannot parallelise loops using random access iterators
+    so until gcc 4.4 isnt standard, we need the update_queue workaround
 */
 #pragma omp parallel for schedule(dynamic) private(i) shared(update_queue)
     for(int32 i = 0; i < i_maps.size(); ++i)
     {
         checkAndCorrectGridStatesArray();                   // debugging code, should be deleted some day
-	update_queue[i]->Update(i_timer.GetCurrent());
-       	sWorld.RecordTimeDiff("UpdateMap %u", update_queue[i]->GetId());
-	//	sLog.outError("This is thread %d out of %d threads,updating map %u",omp_get_thread_num(),omp_get_num_threads(),iter->second->GetId());
-	
+        update_queue[i]->Update(i_timer.GetCurrent());
+        sWorld.RecordTimeDiff("UpdateMap %u", update_queue[i]->GetId());
+    //  sLog.outError("This is thread %d out of %d threads,updating map %u",omp_get_thread_num(),omp_get_num_threads(),iter->second->GetId());
     }
 #else
     for(MapMapType::iterator iter=i_maps.begin(); iter != i_maps.end(); ++iter)

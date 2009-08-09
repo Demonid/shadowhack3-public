@@ -26,20 +26,25 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_utgarde_keep.h"
 
-#define SPELL_SHADOWBOLT                         43667
-#define SPELL_SHADOWBOLT_HEROIC                  59389
-#define SPELL_FROST_TOMB                         48400
-#define SPELL_FROST_TOMB_SUMMON                  42714
-#define SPELL_DECREPIFY                          42702
-#define SPELL_SCOURGE_RESSURRECTION              42704
-#define CREATURE_FROSTTOMB                       23965
-#define CREATURE_SKELETON                        23970
+enum
+{
+    ACHIEVEMENT_ON_THE_ROCKS                 = 1919,
 
-#define SAY_AGGRO                                -1574000
-#define SAY_KILL                                 -1574001
-#define SAY_DEATH                                -1574002
-#define SAY_FROST_TOMB                           -1574003
-#define SAY_SKELETONS                            -1574004
+    SPELL_SHADOWBOLT                         = 43667,
+    SPELL_SHADOWBOLT_HEROIC                  = 59389,
+    SPELL_FROST_TOMB                         = 48400,
+    SPELL_FROST_TOMB_SUMMON                  = 42714,
+    SPELL_DECREPIFY                          = 42702,
+    SPELL_SCOURGE_RESSURRECTION              = 42704,
+    CREATURE_FROSTTOMB                       = 23965,
+    CREATURE_SKELETON                        = 23970,
+
+    SAY_AGGRO                                = -1574000,
+    SAY_FROST_TOMB                           = -1574001,
+    SAY_SKELETONS                            = -1574002,
+    SAY_KILL                                 = -1574003,
+    SAY_DEATH                                = -1574004
+};
 
 #define SKELETONSPAWN_Z                          42.8668
 
@@ -53,6 +58,8 @@ float SkeletonSpawnPoint[5][5]=
 };
 
 float AttackLoc[3]={197.636, 194.046, 40.8164};
+
+bool ShatterFrostTomb; // needed for achievement: On The Rocks(1919)
 
 struct TRINITY_DLL_DECL mob_frost_tombAI : public ScriptedAI
 {
@@ -75,6 +82,9 @@ struct TRINITY_DLL_DECL mob_frost_tombAI : public ScriptedAI
 
     void JustDied(Unit *killer)
     {
+        if(killer->GetGUID() != m_creature->GetGUID())
+            ShatterFrostTomb = true;
+
         if(FrostTombGUID)
         {
             Unit* FrostTomb = Unit::GetUnit((*m_creature),FrostTombGUID);
@@ -115,6 +125,8 @@ struct TRINITY_DLL_DECL boss_kelesethAI : public ScriptedAI
         ShadowboltTimer = 0;
         Skeletons = false;
 
+        ShatterFrostTomb = false;
+
         ResetTimer();
 
         if(pInstance)
@@ -132,6 +144,21 @@ struct TRINITY_DLL_DECL boss_kelesethAI : public ScriptedAI
     void JustDied(Unit* killer)
     {
         DoScriptText(SAY_DEATH, m_creature);
+
+        if(Heroic && !ShatterFrostTomb)
+        {
+            AchievementEntry const *AchievOnTheRocks = GetAchievementStore()->LookupEntry(ACHIEVEMENT_ON_THE_ROCKS);
+            if(AchievOnTheRocks)
+            {
+                Map *map = m_creature->GetMap();
+                if(map && map->IsDungeon())
+                {
+                    Map::PlayerList const &players = map->GetPlayers();
+                    for(Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                        itr->getSource()->CompletedAchievement(AchievOnTheRocks);
+                }
+            }
+        }
 
         if(pInstance)
             pInstance->SetData(DATA_PRINCEKELESETH_EVENT, DONE);

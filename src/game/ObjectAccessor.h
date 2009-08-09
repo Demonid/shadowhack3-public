@@ -103,8 +103,14 @@ class MANGOS_DLL_DECL ObjectAccessor : public MaNGOS::Singleton<ObjectAccessor, 
             if(!guid)
                 return NULL;
 
-            if(IS_PLAYER_GUID(guid))
-                return (Unit*)HashMapHolder<Player>::Find(guid);
+            if (IS_PLAYER_GUID(guid))
+            {
+                Unit * u = (Unit*)HashMapHolder<Player>::Find(guid);
+                if(!u || !u->IsInWorld())
+                    return NULL;
+
+                return u;
+            }
 
             if(IS_CREATURE_GUID(guid))
                 return (Unit*)HashMapHolder<Creature>::Find(guid);
@@ -114,6 +120,24 @@ class MANGOS_DLL_DECL ObjectAccessor : public MaNGOS::Singleton<ObjectAccessor, 
 
             return (Unit*)HashMapHolder<Vehicle>::Find(guid);
         }
+
+        static Unit* GetUnitInOrOutOfWorld(uint64 guid, Unit* /*fake*/)
+        {
+            if(!guid)
+                return NULL;
+
+            if (IS_PLAYER_GUID(guid))
+            {
+                Unit * u = (Unit*)HashMapHolder<Player>::Find(guid);
+                if(!u)
+                    return NULL;
+
+                return u;
+            }
+            // Other object types than player are unloaded while out of world
+            return GetObjectInWorld(guid, ((Unit*)NULL));
+        }
+
 
         template<class T> static T* GetObjectInWorld(uint32 mapid, float x, float y, uint64 guid, T* /*fake*/)
         {
@@ -144,6 +168,7 @@ class MANGOS_DLL_DECL ObjectAccessor : public MaNGOS::Singleton<ObjectAccessor, 
         static Object*   GetObjectByTypeMask(WorldObject const &, uint64, uint32 typemask);
         static Creature* GetCreatureOrPetOrVehicle(WorldObject const &, uint64);
         static Unit* GetUnit(WorldObject const &, uint64 guid) { return GetObjectInWorld(guid, (Unit*)NULL); }
+        static Unit* GetUnitInOrOutOfWorld(WorldObject const &, uint64 guid) { return GetUnitInOrOutOfWorld(guid, (Unit*)NULL); }
         static Pet* GetPet(Unit const &, uint64 guid) { return GetPet(guid); }
         static Player* GetPlayer(Unit const &, uint64 guid) { return FindPlayer(guid); }
         static Corpse* GetCorpse(WorldObject const &u, uint64 guid);
@@ -204,7 +229,7 @@ class MANGOS_DLL_DECL ObjectAccessor : public MaNGOS::Singleton<ObjectAccessor, 
 
         Corpse* GetCorpseForPlayerGUID(uint64 guid);
         void RemoveCorpse(Corpse *corpse);
-        void AddCorpse(Corpse* corpse);
+        void AddCorpse(Corpse *corpse);
         void AddCorpsesToGrid(GridPair const& gridpair,GridType& grid,Map* map);
         Corpse* ConvertCorpseForPlayer(uint64 player_guid, bool insignia = false);
 
