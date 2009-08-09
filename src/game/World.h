@@ -29,6 +29,7 @@
 #include "Timer.h"
 #include "Policies/Singleton.h"
 #include "SharedDefines.h"
+#include "ace/Atomic_Op.h"
 
 #include <map>
 #include <set>
@@ -79,7 +80,8 @@ enum WorldTimers
     WUPDATE_CORPSES     = 5,
     WUPDATE_EVENTS      = 6,
     WUPDATE_CLEANDB     = 7,
-    WUPDATE_COUNT       = 8
+    WUPDATE_AUTOBROADCAST = 8,
+    WUPDATE_COUNT       = 9
 };
 
 /// Configuration elements
@@ -112,6 +114,9 @@ enum WorldConfigs
     CONFIG_STRICT_PLAYER_NAMES,
     CONFIG_STRICT_CHARTER_NAMES,
     CONFIG_STRICT_PET_NAMES,
+    CONFIG_MIN_PLAYER_NAME,
+    CONFIG_MIN_CHARTER_NAME,
+    CONFIG_MIN_PET_NAME,
     CONFIG_CHARACTERS_CREATING_DISABLED,
     CONFIG_CHARACTERS_PER_ACCOUNT,
     CONFIG_CHARACTERS_PER_REALM,
@@ -138,8 +143,8 @@ enum WorldConfigs
     CONFIG_GM_ACCEPT_TICKETS,
     CONFIG_GM_CHAT,
     CONFIG_GM_WISPERING_TO,
-    CONFIG_GM_IN_GM_LIST,
-    CONFIG_GM_IN_WHO_LIST,
+    CONFIG_GM_LEVEL_IN_GM_LIST,
+    CONFIG_GM_LEVEL_IN_WHO_LIST,
     CONFIG_GM_LOG_TRADE,
     CONFIG_START_GM_LEVEL,
     CONFIG_ALLOW_GM_GROUP,
@@ -160,6 +165,7 @@ enum WorldConfigs
     CONFIG_SKILL_GAIN_DEFENSE,
     CONFIG_SKILL_GAIN_GATHERING,
     CONFIG_SKILL_GAIN_WEAPON,
+    CONFIG_DURABILITY_LOSS_IN_PVP,
     CONFIG_MAX_OVERSPEED_PINGS,
     CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY,
     CONFIG_ALWAYS_MAX_SKILL_FOR_LEVEL,
@@ -275,6 +281,7 @@ enum Rates
     RATE_XP_KILL,
     RATE_XP_QUEST,
     RATE_XP_EXPLORE,
+    RATE_REPAIRCOST,
     RATE_REPUTATION_GAIN,
     RATE_REPUTATION_LOWLEVEL_KILL,
     RATE_REPUTATION_LOWLEVEL_QUEST,
@@ -308,6 +315,7 @@ enum Rates
     RATE_CORPSE_DECAY_LOOTED,
     RATE_INSTANCE_RESET_TIME,
     RATE_TARGET_POS_RECALCULATION_RANGE,
+    RATE_DURABILITY_LOSS_ON_DEATH,
     RATE_DURABILITY_LOSS_DAMAGE,
     RATE_DURABILITY_LOSS_PARRY,
     RATE_DURABILITY_LOSS_ABSORB,
@@ -412,6 +420,7 @@ class World
 
         WorldSession* FindSession(uint32 id) const;
         void AddSession(WorldSession *s);
+        void SendRNDBroadcast();
         bool RemoveSession(uint32 id);
         /// Get the number of current active sessions
         void UpdateMaxSessionCounters();
@@ -421,8 +430,18 @@ class World
         /// Get the maximum number of parallel sessions on the server since last reboot
         uint32 GetMaxQueuedSessionCount() const { return m_maxQueuedSessionCount; }
         uint32 GetMaxActiveSessionCount() const { return m_maxActiveSessionCount; }
-        Player* FindPlayerInZone(uint32 zone);
+        /// Get number of players
+        inline uint32 GetPlayerCount() const { return m_PlayerCount; }
+        inline uint32 GetMaxPlayerCount() const { return m_MaxPlayerCount; }
+        /// Increase/Decrease number of players
+        inline void IncreasePlayerCount()
+        {
+            m_PlayerCount++;
+            m_MaxPlayerCount = std::max(m_MaxPlayerCount, m_PlayerCount);
+        }
+        inline void DecreasePlayerCount() { m_PlayerCount--; }
 
+        Player* FindPlayerInZone(uint32 zone);
         Weather* FindWeather(uint32 id) const;
         Weather* AddWeather(uint32 zone_id);
         void RemoveWeather(uint32 zone_id);
@@ -540,9 +559,10 @@ class World
         BanReturn BanAccount(BanMode mode, std::string nameOrIP, std::string duration, std::string reason, std::string author);
         bool RemoveBanAccount(BanMode mode, std::string nameOrIP);
 
-        void ScriptsStart(std::map<uint32, std::multimap<uint32, ScriptInfo> > const& scripts, uint32 id, Object* source, Object* target, bool start = true);
-        void ScriptCommandStart(ScriptInfo const& script, uint32 delay, Object* source, Object* target);
-        bool IsScriptScheduled() const { return !m_scriptSchedule.empty(); }
+        uint32 IncreaseScheduledScriptsCount() { return (uint32)++m_scheduledScripts; }
+        uint32 DecreaseScheduledScriptCount() { return (uint32)--m_scheduledScripts; }
+        uint32 DecreaseScheduledScriptCount(size_t count) { return (uint32)(m_scheduledScripts -= count); }
+        bool IsScriptScheduled() const { return m_scheduledScripts > 0; }
 
         bool IsAllowedMap(uint32 mapid) { return m_forbiddenMapIds.count(mapid) == 0 ;}
 
@@ -579,7 +599,6 @@ class World
         void RecordTimeDiff(const char * text, ...);
     protected:
         void _UpdateGameTime();
-        void ScriptsProcess();
         // callback for UpdateRealmCharacters
         void _UpdateRealmCharCount(QueryResult *resultCharCount, uint32 accountId);
 
@@ -592,6 +611,9 @@ class World
         uint32 m_ShutdownMask;
 
         bool m_isClosed;
+
+        //atomic op counter for active scripts amount
+        ACE_Atomic_Op<ACE_Thread_Mutex, long> m_scheduledScripts;
 
         time_t m_startTime;
         time_t m_gameTime;
@@ -610,8 +632,8 @@ class World
         DisconnectMap m_disconnects;
         uint32 m_maxActiveSessionCount;
         uint32 m_maxQueuedSessionCount;
-
-        std::multimap<time_t, ScriptAction> m_scriptSchedule;
+        uint32 m_PlayerCount;
+        uint32 m_MaxPlayerCount;
 
         std::string m_newCharString;
 

@@ -107,7 +107,7 @@ bool OutdoorPvPSI::HandleAreaTrigger(Player *plr, uint32 trigger)
             // add 20 cenarion circle repu
             plr->GetReputationMgr().ModifyReputation(sFactionStore.LookupEntry(609),20);
             // complete quest
-            plr->KilledMonster(SI_TURNIN_QUEST_CM_A,0);
+            plr->KilledMonsterCredit(SI_TURNIN_QUEST_CM_A,0);
         }
         return true;
     case SI_AREATRIGGER_H:
@@ -132,7 +132,7 @@ bool OutdoorPvPSI::HandleAreaTrigger(Player *plr, uint32 trigger)
             // add 20 cenarion circle repu
             plr->GetReputationMgr().ModifyReputation(sFactionStore.LookupEntry(609),20);
             // complete quest
-            plr->KilledMonster(SI_TURNIN_QUEST_CM_H,0);
+            plr->KilledMonsterCredit(SI_TURNIN_QUEST_CM_H,0);
         }
         return true;
     }
@@ -156,7 +156,7 @@ bool OutdoorPvPSI::HandleDropFlag(Player *plr, uint32 spellId)
                     {
                         // he dropped it further, summon mound
                         GameObject * go = new GameObject;
-                        Map * map = MapManager::Instance().GetMap(plr->GetMapId(), plr);
+                        Map * map = plr->GetMap();
                         if(!map)
                         {
                             delete go;
@@ -186,7 +186,7 @@ bool OutdoorPvPSI::HandleDropFlag(Player *plr, uint32 spellId)
                     {
                         // he dropped it further, summon mound
                         GameObject * go = new GameObject;
-                        Map * map = MapManager::Instance().GetMap(plr->GetMapId(), plr);
+                        Map * map = plr->GetMap();
                         if(!map)
                         {
                           delete go;

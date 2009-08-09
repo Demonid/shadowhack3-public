@@ -24,7 +24,7 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_black_temple.h"
 
-#define GETGO(obj, guid)      GameObject* obj = pInstance->instance->GetGameObject(pInstance->GetData64(guid))
+#define GETGO(obj, guid)      GameObject* obj = pInstance->instance->GetGameObject(guid)
 #define GETUNIT(unit, guid)   Unit* unit = Unit::GetUnit(*m_creature, guid)
 #define GETCRE(cre, guid)     Creature* cre = Unit::GetCreature(*m_creature, guid)
 #define HPPCT(unit)           unit->GetHealth()*100 / unit->GetMaxHealth()
@@ -999,10 +999,10 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
             DoorGUID[0] = pInstance->GetData64(DATA_GAMEOBJECT_ILLIDAN_DOOR_R);
             DoorGUID[1] = pInstance->GetData64(DATA_GAMEOBJECT_ILLIDAN_DOOR_L);
 
-            pInstance->HandleGameObject(pInstance->GetData64(GateGUID), false);
+            pInstance->HandleGameObject(GateGUID, false);
 
             for(uint8 i = 0; i < 2; i++)
-                pInstance->HandleGameObject(pInstance->GetData64(DoorGUID[i]), false);
+                pInstance->HandleGameObject(DoorGUID[i], false);
 
         }
         else
@@ -1073,7 +1073,7 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
         pInstance->SetData(DATA_ILLIDANSTORMRAGEEVENT, IN_PROGRESS);
 
         for(uint8 i = 0; i < 2; i++)
-            pInstance->HandleGameObject(pInstance->GetData64(DoorGUID[i]), false);
+            pInstance->HandleGameObject(DoorGUID[i], false);
 
         if(GETCRE(Illidan, IllidanGUID))
         {
@@ -1094,6 +1094,8 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
         float x, y, z;
         if(GETGO(Gate, GateGUID))
             Gate->GetPosition(x, y, z);
+        else
+            return;//if door not spawned, don't crash server
 
         if(Creature* Channel = m_creature->SummonCreature(ILLIDAN_DOOR_TRIGGER, x, y, z+5, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 360000))
         {
@@ -1104,7 +1106,7 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
         }
 
         for(uint8 i = 0; i < 2; ++i)
-            if(Creature* Spirit = m_creature->SummonCreature(i ? SPIRIT_OF_OLUM : SPIRIT_OF_UDALO, SpiritSpawns[i].x, SpiritSpawns[i].y, SpiritSpawns[i].z, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 360000))
+            if(Creature* Spirit = m_creature->SummonCreature(i ? SPIRIT_OF_OLUM : SPIRIT_OF_UDALO, SpiritSpawns[i].x, SpiritSpawns[i].y, SpiritSpawns[i].z, 0, TEMPSUMMON_TIMED_DESPAWN, 20000))
             {
                 Spirit->SetVisibility(VISIBILITY_OFF);
                 SpiritGUID[i] = Spirit->GetGUID();
@@ -1238,7 +1240,7 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
             m_creature->InterruptNonMeleeSpells(true);
             Spirit[0]->InterruptNonMeleeSpells(true);
             Spirit[1]->InterruptNonMeleeSpells(true);
-            pInstance->HandleGameObject(pInstance->GetData64(GateGUID), true);
+            pInstance->HandleGameObject(GateGUID, true);
             Timer = 2000;
             break;
         case 4:
@@ -1249,8 +1251,8 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
             DoYell(SAY_AKAMA_BEWARE, LANG_UNIVERSAL, NULL);
             DoPlaySoundToSet(m_creature, SOUND_AKAMA_BEWARE);
             Channel->setDeathState(JUST_DIED);
-            Spirit[0]->setDeathState(JUST_DIED);
-            Spirit[1]->setDeathState(JUST_DIED);
+            Spirit[0]->SetVisibility(VISIBILITY_OFF);
+            Spirit[1]->SetVisibility(VISIBILITY_OFF);
             Timer = 3000;
             break;
         case 6:
@@ -1268,7 +1270,7 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
         {
         case 6:
             for(uint8 i = 0; i < 2; i++)
-                pInstance->HandleGameObject(pInstance->GetData64(DoorGUID[i]), true);
+                pInstance->HandleGameObject(DoorGUID[i], true);
             break;
         case 8:
             if(Phase == PHASE_WALK)
@@ -1648,30 +1650,15 @@ struct TRINITY_DLL_DECL cage_trap_triggerAI : public ScriptedAI
     }
 };
 
-bool GOHello_cage_trap(Player* plr, GameObject* go)
+bool GOHello_cage_trap(Player* pPlayer, GameObject* pGo)
 {
     float x, y, z;
-    plr->GetPosition(x, y, z);
-
-    Creature* trigger = NULL;
-
-    CellPair pair(Trinity::ComputeCellPair(x, y));
-    Cell cell(pair);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
+    pPlayer->GetPosition(x, y, z);
 
     // Grid search for nearest live creature of entry 23304 within 10 yards
-    Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck check(*plr, 23304, true, 10);
-    Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(plr, trigger, check);
-
-    TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> cSearcher(searcher);
-
-    CellLock<GridReadGuard> cell_lock(cell, pair);
-    cell_lock->Visit(cell_lock, cSearcher, *(plr->GetMap()));
-
-    if(trigger)
-        CAST_AI(cage_trap_triggerAI, trigger->AI())->Active = true;
-    go->SetGoState(GO_STATE_ACTIVE);
+    if(Creature* pTrigger = pGo->FindNearestCreature(23304, 10.0f))
+        CAST_AI(cage_trap_triggerAI, pTrigger->AI())->Active = true;
+    pGo->SetGoState(GO_STATE_ACTIVE);
     return true;
 }
 
@@ -1746,7 +1733,9 @@ struct TRINITY_DLL_DECL mob_parasitic_shadowfiendAI : public ScriptedAI
             if(!m_creature->getVictim()->HasAura(SPELL_PARASITIC_SHADOWFIEND)
                 && !m_creature->getVictim()->HasAura(SPELL_PARASITIC_SHADOWFIEND2))
             {
-                m_creature->CastSpell(m_creature->getVictim(), SPELL_PARASITIC_SHADOWFIEND2, true, 0, 0, IllidanGUID); //do not stack
+                if(Creature* illidan = Unit::GetCreature((*m_creature),IllidanGUID))//summon only in 1. phase
+                    if(((boss_illidan_stormrageAI*)illidan->AI())->Phase == PHASE_NORMAL)
+                        m_creature->CastSpell(m_creature->getVictim(), SPELL_PARASITIC_SHADOWFIEND2, true, 0, 0, IllidanGUID); //do not stack
             }
             m_creature->AttackerStateUpdate(m_creature->getVictim());
             m_creature->resetAttackTimer();

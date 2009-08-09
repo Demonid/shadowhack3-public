@@ -1349,7 +1349,7 @@ void BattleGroundMgr::BuildPvpLogDataPacket(WorldPacket *data, BattleGround *bg)
 
     *data << (int32)(bg->GetPlayerScoresSize());
 
-    for(std::map<uint64, BattleGroundScore*>::const_iterator itr = bg->GetPlayerScoresBegin(); itr != bg->GetPlayerScoresEnd(); ++itr)
+    for(BattleGround::BattleGroundScoreMap::const_iterator itr = bg->GetPlayerScoresBegin(); itr != bg->GetPlayerScoresEnd(); ++itr)
     {
         *data << (uint64)itr->first;
         *data << (int32)itr->second->KillingBlows;
@@ -1474,6 +1474,8 @@ BattleGround * BattleGroundMgr::GetBattleGroundThroughClientInstance(uint32 inst
 
 BattleGround * BattleGroundMgr::GetBattleGround(uint32 InstanceID, BattleGroundTypeId bgTypeId)
 {
+    if (!InstanceID)
+        return NULL;
     //search if needed
     BattleGroundSet::iterator itr;
     if (bgTypeId == BATTLEGROUND_TYPE_NONE)

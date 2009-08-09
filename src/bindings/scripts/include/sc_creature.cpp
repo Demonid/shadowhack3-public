@@ -79,7 +79,7 @@ void SummonList::DespawnAll()
     }
 }
 
-ScriptedAI::ScriptedAI(Creature* creature) : CreatureAI(creature), m_creature(creature), IsFleeing(false), CombatMovement(true)
+ScriptedAI::ScriptedAI(Creature* creature) : CreatureAI(creature), m_creature(creature), IsFleeing(false), CombatMovement(true), m_uiEvadeCheckCooldown(2500)
 {
     HeroicMode = m_creature->GetMap()->IsHeroic();
 }
@@ -174,14 +174,14 @@ void ScriptedAI::DoWhisper(const char* text, Unit* reciever, bool IsBossWhisper)
     m_creature->MonsterWhisper(text, reciever->GetGUID(), IsBossWhisper);
 }
 
-void ScriptedAI::DoPlaySoundToSet(Unit* pSource, uint32 uiSoundId)
+void ScriptedAI::DoPlaySoundToSet(WorldObject* pSource, uint32 uiSoundId)
 {
     if (!pSource)
         return;
 
     if (!GetSoundEntriesStore()->LookupEntry(uiSoundId))
     {
-        error_log("TSCR: Invalid soundId %u used in DoPlaySoundToSet (by unit TypeId %u, guid %u)", uiSoundId, pSource->GetTypeId(), pSource->GetGUID());
+        error_log("TSCR: Invalid soundId %u used in DoPlaySoundToSet (Source: TypeId %u, GUID %u)", uiSoundId, pSource->GetTypeId(), pSource->GetGUIDLow());
         return;
     }
 
@@ -533,6 +533,25 @@ std::list<Creature*> ScriptedAI::DoFindFriendlyMissingBuff(float range, uint32 s
     return pList;
 }
 
+Player* ScriptedAI::GetPlayerAtMinimumRange(float fMinimumRange)
+{
+    Player* pPlayer = NULL;
+
+    CellPair pair(Trinity::ComputeCellPair(m_creature->GetPositionX(), m_creature->GetPositionY()));
+    Cell cell(pair);
+    cell.data.Part.reserved = ALL_DISTRICT;
+    cell.SetNoCreate();
+
+    Trinity::PlayerAtMinimumRangeAway check(m_creature, fMinimumRange);
+    Trinity::PlayerSearcher<Trinity::PlayerAtMinimumRangeAway> searcher(m_creature, pPlayer, check);
+    TypeContainerVisitor<Trinity::PlayerSearcher<Trinity::PlayerAtMinimumRangeAway>, GridTypeMapContainer> visitor(searcher);
+
+    CellLock<GridReadGuard> cell_lock(cell, pair);
+    cell_lock->Visit(cell_lock, visitor, *(m_creature->GetMap()));
+
+    return pPlayer;
+}
+
 void ScriptedAI::SetEquipmentSlots(bool bLoadDefault, int32 uiMainHand, int32 uiOffHand, int32 uiRanged)
 {
     if (bLoadDefault)
@@ -553,14 +572,55 @@ void ScriptedAI::SetEquipmentSlots(bool bLoadDefault, int32 uiMainHand, int32 ui
         m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 2, uint32(uiRanged));
 }
 
-void ScriptedAI::SetSheathState(SheathState newState)
-{
-    m_creature->SetByteValue(UNIT_FIELD_BYTES_2, 0, newState);
-}
-
 void ScriptedAI::SetCombatMovement(bool CombatMove)
 {
     CombatMovement = CombatMove;
+}
+
+// Hacklike storage used for misc creatures that are expected to evade of outside of a certain area.
+// It is assumed the information is found elswehere and can be handled by mangos. So far no luck finding such information/way to extract it.
+bool ScriptedAI::EnterEvadeIfOutOfCombatArea(const uint32 uiDiff)
+{
+    if (m_uiEvadeCheckCooldown < uiDiff)
+        m_uiEvadeCheckCooldown = 2500;
+    else
+    {
+        m_uiEvadeCheckCooldown -= uiDiff;
+        return false;
+    }
+
+    if (m_creature->IsInEvadeMode() || !m_creature->getVictim())
+        return false;
+
+    float fX = m_creature->GetPositionX();
+    float fY = m_creature->GetPositionY();
+    float fZ = m_creature->GetPositionZ();
+
+    switch(m_creature->GetEntry())
+    {
+        case 12017:                                         // broodlord (not move down stairs)
+            if (fZ > 448.60f)
+                return false;
+            break;
+        case 19516:                                         // void reaver (calculate from center of room)
+            if (m_creature->GetDistance2d(432.59f, 371.93f) < 105.0f)
+                return false;
+            break;
+        case 23578:                                         // jan'alai (calculate by Z)
+            if (fZ > 12.0f)
+                return false;
+            break;
+        case 28860:                                         // sartharion (calculate box)
+            if (fX > 3218.86f && fX < 3275.69f && fY > 572.40f && fY < 484.68f)
+                return false;
+            break;
+        default:
+            error_log("TSCR: EnterEvadeIfOutOfCombatArea used for creature entry %u, but does not have any definition.", m_creature->GetEntry());
+            return false;
+    }
+
+    EnterEvadeMode();
+    return true;
 }
 
 /*void Scripted_NoMovementAI::MoveInLineOfSight(Unit *who)
@@ -730,7 +790,7 @@ void LoadOverridenDBCData()
                 spellInfo->DurationIndex = 21;
                 spellInfo->Effect[0] = SPELL_EFFECT_APPLY_AREA_AURA_ENEMY;
                 break;
-            // Naxxramas: Gothik : Inform Inf range
+            // Naxxramas : Gothik : Inform Inf range
             case 27892:
             case 27928:
             case 27935:
@@ -739,6 +799,33 @@ void LoadOverridenDBCData()
             case 27937:
                 spellInfo->rangeIndex = 13;
                 break;
+            // Ulduar : Flame Leviathan : Pursued
+            case 62374:
+                spellInfo->MaxAffectedTargets = 1;
+                spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_AREA_ENTRY_SRC;
+                spellInfo->EffectImplicitTargetB[1] = TARGET_UNIT_AREA_ENTRY_SRC;
+                break;
         }
     }
+}
+
+
+Creature* GetClosestCreatureWithEntry(WorldObject* pSource, uint32 Entry, float MaxSearchRange)
+{
+    Creature* pCreature = NULL;
+
+    CellPair pair(Trinity::ComputeCellPair(pSource->GetPositionX(), pSource->GetPositionY()));
+    Cell cell(pair);
+    cell.data.Part.reserved = ALL_DISTRICT;
+    cell.SetNoCreate();
+
+    Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*pSource, Entry, true, MaxSearchRange);
+    Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pSource, pCreature, creature_check);
+
+    TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> creature_searcher(searcher);
+
+    CellLock<GridReadGuard> cell_lock(cell, pair);
+    cell_lock->Visit(cell_lock, creature_searcher,*(pSource->GetMap()));
+
+    return pCreature;
 }

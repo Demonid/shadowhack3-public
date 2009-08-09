@@ -143,7 +143,7 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     void DoWhisper(const char* text, Unit* reciever, bool IsBossWhisper = false);
 
     //Plays a sound to all nearby players
-    void DoPlaySoundToSet(Unit* unit, uint32 sound);
+    void DoPlaySoundToSet(WorldObject* pSource, uint32 sound);
 
     //Drops all threat to 0%. Does not remove players from the threat list
     void DoResetThreat();
@@ -169,6 +169,9 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     //Returns a list of all friendly units missing a specific buff within range
     std::list<Creature*> DoFindFriendlyMissingBuff(float range, uint32 spellid);
 
+    //Return a player with at least minimumRange from m_creature
+    Player* GetPlayerAtMinimumRange(float fMinimumRange);
+
     //Spawns a creature relative to m_creature
     Creature* DoSpawnCreature(uint32 id, float x, float y, float z, float angle, uint32 type, uint32 despawntime);
     Creature *DoSummon(uint32 entry, const float pos[4], uint32 despawntime = 30000, TempSummonType type = TEMPSUMMON_CORPSE_TIMED_DESPAWN);
@@ -186,13 +189,16 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     bool CanCast(Unit* Target, SpellEntry const *Spell, bool Triggered = false);
 
     void SetEquipmentSlots(bool bLoadDefault, int32 uiMainHand = EQUIP_NO_CHANGE, int32 uiOffHand = EQUIP_NO_CHANGE, int32 uiRanged = EQUIP_NO_CHANGE);
-
-    void SetSheathState(SheathState newState);
     
     void SetCombatMovement(bool CombatMove);
+
+    bool EnterEvadeIfOutOfCombatArea(const uint32 uiDiff);
     
     protected:
         bool CombatMovement;
+
+    private:
+        uint32 m_uiEvadeCheckCooldown;
 };
 
 struct TRINITY_DLL_DECL Scripted_NoMovementAI : public ScriptedAI
@@ -242,6 +248,11 @@ struct TRINITY_DLL_DECL BossAI : public ScriptedAI
         bool CheckBoundary(Unit *who);
         void TeleportCheaters();
 };
+
+// SD2's grid searchers
+
+//return closest creature alive in grid, with range from pSource
+Creature* GetClosestCreatureWithEntry(WorldObject* pSource, uint32 Entry, float MaxSearchRange);
 
 #endif
 

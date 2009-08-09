@@ -691,16 +691,17 @@ void Creature::Motion_Initialize()
 
 bool Creature::Create(uint32 guidlow, Map *map, uint32 phaseMask, uint32 Entry, uint32 team, float x, float y, float z, float ang, const CreatureData *data)
 {
+    ASSERT(map);
+    SetMap(map);
+    SetPhaseMask(phaseMask,false);
+
     Relocate(x, y, z, ang);
+
     if(!IsPositionValid())
     {
         sLog.outError("Creature (guidlow %d, entry %d) not loaded. Suggested coordinates isn't valid (X: %f Y: %f)",guidlow,Entry,x,y);
         return false;
     }
-
-    SetMapId(map->GetId());
-    SetInstanceId(map->GetInstanceId());
-    SetPhaseMask(phaseMask,false);
 
     //oX = x;     oY = y;    dX = x;    dY = y;    m_moveTime = 0;    m_startMove = 0;
     const bool bResult = CreateFromProto(guidlow, Entry, team, data);
@@ -1392,7 +1393,7 @@ void Creature::SelectLevel(const CreatureInfo *cinfo)
 
 
     //damage
-    float damagemod = _GetDamageMod(rank);
+    float damagemod = 1.0f;//_GetDamageMod(rank);
 
     SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, cinfo->mindmg * damagemod);
     SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, cinfo->maxdmg * damagemod);
@@ -2055,7 +2056,7 @@ void Creature::CallAssistance()
                 TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AnyAssistCreatureInRangeCheck>, GridTypeMapContainer >  grid_creature_searcher(searcher);
 
                 CellLock<GridReadGuard> cell_lock(cell, p);
-                cell_lock->Visit(cell_lock, grid_creature_searcher, *MapManager::Instance().GetMap(GetMapId(), this));
+                cell_lock->Visit(cell_lock, grid_creature_searcher, *GetMap());
             }
 
             if (!assistList.empty())
@@ -2100,6 +2101,10 @@ bool Creature::CanAssistTo(const Unit* u, const Unit* enemy, bool checkfaction /
 
     // we don't need help from zombies :)
     if (!isAlive())
+        return false;
+
+    // we don't need help from non-combatant ;)
+    if (isCivilian())
         return false;
 
     // skip fighting creature
@@ -2260,6 +2265,43 @@ void Creature::SendZoneUnderAttackMessage(Player* attacker)
     WorldPacket data(SMSG_ZONE_UNDER_ATTACK,4);
     data << (uint32)GetZoneId();
     sWorld.SendGlobalMessage(&data,NULL,(enemy_team==ALLIANCE ? HORDE : ALLIANCE));
+}
+
+void Creature::SetInCombatWithZone()
+{
+    if (!CanHaveThreatList())
+    {
+        sLog.outError("Creature entry %u call SetInCombatWithZone but creature cannot have threat list.", GetEntry());
+        return;
+    }
+
+    Map* pMap = GetMap();
+
+    if (!pMap->IsDungeon())
+    {
+        sLog.outError("Creature entry %u call SetInCombatWithZone for map (id: %u) that isn't an instance.", GetEntry(), pMap->GetId());
+        return;
+    }
+
+    Map::PlayerList const &PlList = pMap->GetPlayers();
+
+    if (PlList.isEmpty())
+        return;
+
+    for(Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
+    {
+        if (Player* pPlayer = i->getSource())
+        {
+            if (pPlayer->isGameMaster())
+                continue;
+
+            if (pPlayer->isAlive())
+            {
+                pPlayer->SetInCombatWith(this);
+                AddThreat(pPlayer, 0.0f);
+            }
+        }
+    }
 }
 
 void Creature::_AddCreatureSpellCooldown(uint32 spell_id, time_t end_time)
@@ -2540,3 +2582,4 @@ time_t Creature::GetLinkedCreatureRespawnTime() const
 
     return 0;
 }
+

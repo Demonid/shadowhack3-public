@@ -154,7 +154,7 @@ struct TRINITY_DLL_DECL npc_air_force_botsAI : public ScriptedAI
     
     Creature* GetSummonedGuard()
     {
-        Creature* pCreature = (Creature*)Unit::GetUnit(*m_creature, m_uiSpawnedGUID);
+        Creature* pCreature = Unit::GetCreature(*m_creature, m_uiSpawnedGUID);
 
         if (pCreature && pCreature->isAlive())
             return pCreature;
@@ -169,7 +169,7 @@ struct TRINITY_DLL_DECL npc_air_force_botsAI : public ScriptedAI
 
         if (pWho->isTargetableForAttack() && m_creature->IsHostileTo(pWho))
         {
-            Player* pPlayerTarget = pWho->GetTypeId() == TYPEID_PLAYER ? (Player*)pWho : NULL;
+            Player* pPlayerTarget = pWho->GetTypeId() == TYPEID_PLAYER ? CAST_PLR(pWho) : NULL;
 
             // airforce guards only spawn for players
             if (!pPlayerTarget)
@@ -1467,22 +1467,22 @@ struct TRINITY_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
     npc_snake_trap_serpentsAI(Creature *c) : ScriptedAI(c) {}
 
     uint32 SpellTimer;
-    Unit *Owner;
     bool IsViper;
+    bool Spawn;
 
     void EnterCombat(Unit *who) {}
 
     void Reset()
     {
-        Owner = m_creature->GetOwner();
-
-        if (!m_creature->isPet() || !Owner)
-            return;
+        Spawn = true;
+        SpellTimer = 0;
 
         CreatureInfo const *Info = m_creature->GetCreatureInfo();
 
         if(Info->Entry == C_VIPER)
             IsViper = true;
+        else
+            IsViper = false;
 
         //We have to reload the states from db for summoned guardians
         m_creature->SetMaxHealth(Info->maxhealth);
@@ -1499,10 +1499,7 @@ struct TRINITY_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
     //Redefined for random target selection:
     void MoveInLineOfSight(Unit *who)
     {
-        if (!m_creature->isPet() || !Owner)
-            return;
-
-        if( !m_creature->getVictim() && who->isTargetableForAttack() && ( m_creature->IsHostileTo( who )) && who->isInAccessiblePlaceFor(m_creature) && Owner->IsHostileTo(who))//don't attack not-pvp-flaged
+        if( !m_creature->getVictim() && who->isTargetableForAttack() && ( m_creature->IsHostileTo( who )) && who->isInAccessiblePlaceFor(m_creature))
         {
             if (m_creature->GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE)
                 return;
@@ -1522,25 +1519,20 @@ struct TRINITY_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->isPet() || !Owner)
-            return;
-
-        //Follow if not in combat
-        if (!m_creature->hasUnitState(UNIT_STAT_FOLLOW)&& !m_creature->isInCombat())
+        if(Spawn)
         {
-            m_creature->GetMotionMaster()->Clear();
-            m_creature->GetMotionMaster()->MoveFollow(Owner,PET_FOLLOW_DIST,PET_FOLLOW_ANGLE);
+            Spawn = false;
+            // Start attacking attacker of owner on first ai update after spawn - move in line of sight may choose better target
+            if (!m_creature->getVictim() && m_creature->isSummon())
+                if (Unit * Owner = CAST_SUM(m_creature)->GetSummoner())
+                    if(Owner->getAttackerForHelper())
+                        AttackStart(Owner->getAttackerForHelper());
         }
 
-        //No victim -> get new from owner (need this because MoveInLineOfSight won't work while following -> corebug)
         if (!m_creature->getVictim())
         {
             if (m_creature->isInCombat())
                 DoStopAttack();
-
-            if(Owner->getAttackerForHelper())
-                AttackStart(Owner->getAttackerForHelper());
-
             return;
         }
 
@@ -1575,6 +1567,158 @@ struct TRINITY_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
 CreatureAI* GetAI_npc_snake_trap_serpents(Creature *_Creature)
 {
     return new npc_snake_trap_serpentsAI(_Creature);
+}
+
+struct TRINITY_DLL_DECL mob_mojoAI : public ScriptedAI
+{    
+    mob_mojoAI(Creature *c) : ScriptedAI(c) {Reset();}
+    uint32 hearts;
+    uint64 victimGUID;
+    void Reset()
+    {
+        victimGUID = 0;
+        hearts = 15000;
+        Unit* own = m_creature->GetOwner();
+        if (own)
+            m_creature->GetMotionMaster()->MoveFollow(own,0,0);
+    }
+    void Aggro(Unit *who){}
+    void UpdateAI(const uint32 diff)
+    {
+        if(m_creature->HasAura(20372,0))
+        {
+            if(hearts<diff)
+            {
+                m_creature->RemoveAurasDueToSpell(20372);
+                hearts = 15000;
+            }hearts-=diff;
+        }
+    }
+    void ReceiveEmote(Player *player, uint32 emote)
+    {
+        m_creature->HandleEmoteCommand(emote);
+        Unit* own = m_creature->GetOwner();
+        if (!own || own->GetTypeId() != TYPEID_PLAYER || CAST_PLR(own)->GetTeam() != player->GetTeam())
+            return;
+        if (emote == TEXTEMOTE_KISS)
+        {
+            std::string whisp = "";
+            switch (rand()%8)
+            {
+                case 0:whisp.append("Now that's what I call froggy-style!");break;
+                case 1:whisp.append("Your lily pad or mine?");break;
+                case 2:whisp.append("This won't take long, did it?");break;
+                case 3:whisp.append("I thought you'd never ask!");break;
+                case 4:whisp.append("I promise not to give you warts...");break;
+                case 5:whisp.append("Feelin' a little froggy, are ya?");break;
+                case 6:
+                    whisp.append("Listen, ");
+                    whisp.append(player->GetName());
+                    whisp.append(", I know of a little swamp not too far from here....");
+                    break;
+                case 7:whisp.append("There's just never enough Mojo to go around...");break;
+            }
+            m_creature->MonsterWhisper(whisp.c_str(),player->GetGUID());
+            if(victimGUID)
+            {
+                Player* victim = Unit::GetPlayer(victimGUID);
+                if(victim)
+                    victim->RemoveAura(43906);//remove polymorph frog thing
+            }
+            m_creature->AddAura(43906,player);//add polymorph frog thing
+            victimGUID = player->GetGUID();            
+            m_creature->CastSpell(m_creature,20372,true);//tag.hearts
+            m_creature->GetMotionMaster()->MoveFollow(player,0,0);
+            hearts = 15000;
+        }   
+    }
+};
+
+CreatureAI* GetAI_mob_mojo(Creature *_Creature)
+{
+    return new mob_mojoAI (_Creature);
+}
+
+struct TRINITY_DLL_DECL npc_mirror_image : SpellCasterAI
+{
+    npc_mirror_image(Creature *c) : SpellCasterAI(c) {}
+
+    void InitializeAI()
+    {
+        SpellCasterAI::InitializeAI();
+        Unit * owner = me->GetOwner();
+        if (!owner)
+            return;
+        // Inherit Master's Threat List (not yet implemented)
+        owner->CastSpell((Unit*)NULL, 58838, true);
+        // here mirror image casts on summoner spell (not present in client dbc) 49866
+        // here should be auras (not present in client dbc): 35657, 35658, 35659, 35660 selfcasted by mirror images (stats related?)
+        // Clone Me!
+        owner->CastSpell(me, 45204, false);
+    }
+
+    // Do not reload creature templates on evade mode enter - prevent visual lost
+    void EnterEvadeMode()
+    {
+        if(me->IsInEvadeMode() || !me->isAlive())
+            return;
+
+        Unit *owner = me->GetCharmerOrOwner();
+
+        me->CombatStop(true);
+        if(owner && !me->hasUnitState(UNIT_STAT_FOLLOW) )
+        {
+            me->GetMotionMaster()->Clear(false);
+            me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, m_creature->GetFollowAngle(), MOTION_SLOT_ACTIVE);
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_mirror_image(Creature *_Creature)
+{
+    return new npc_mirror_image (_Creature);
+}
+
+struct TRINITY_DLL_DECL npc_training_dummy : Scripted_NoMovementAI
+{
+    npc_training_dummy(Creature *c) : Scripted_NoMovementAI(c) {}
+
+    uint32 ResetTimer;
+    void Reset()
+    {
+        m_creature->SetControlled(true,UNIT_STAT_STUNNED);//disable rotate
+        m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);//imune to knock aways like blast wave
+        m_creature->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
+        ResetTimer = 10000;
+    }
+
+    void DamageTaken(Unit *done_by, uint32 &damage)
+    {
+        ResetTimer = 10000;
+        damage = 0;
+    }
+
+    void EnterCombat(Unit *who){return;}
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+        if(!m_creature->hasUnitState(UNIT_STAT_STUNNED))
+            m_creature->SetControlled(true,UNIT_STAT_STUNNED);//disable rotate
+        if(ResetTimer <= diff)
+        {
+            EnterEvadeMode();
+            ResetTimer = 10000;
+        }else ResetTimer -= diff;
+        return;
+    }
+    void MoveInLineOfSight(Unit *who){return;}
+};
+
+CreatureAI* GetAI_npc_training_dummy(Creature *_Creature)
+{
+    return new npc_training_dummy (_Creature);
 }
 
 void AddSC_npcs_special()
@@ -1666,6 +1810,21 @@ void AddSC_npcs_special()
     newscript = new Script;
     newscript->Name="npc_snake_trap_serpents";
     newscript->GetAI = &GetAI_npc_snake_trap_serpents;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_mirror_image";
+    newscript->GetAI = &GetAI_npc_mirror_image;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="mob_mojo";
+    newscript->GetAI = &GetAI_mob_mojo;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_training_dummy";
+    newscript->GetAI = &GetAI_npc_training_dummy;
     newscript->RegisterSelf();
 }
 

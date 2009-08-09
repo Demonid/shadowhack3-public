@@ -39,7 +39,6 @@ struct TRINITY_DLL_DECL boss_broodlordAI : public ScriptedAI
     uint32 BlastWave_Timer;
     uint32 MortalStrike_Timer;
     uint32 KnockBack_Timer;
-    uint32 LeashCheck_Timer;
 
     void Reset()
     {
@@ -47,10 +46,6 @@ struct TRINITY_DLL_DECL boss_broodlordAI : public ScriptedAI
         BlastWave_Timer = 12000;
         MortalStrike_Timer = 20000;
         KnockBack_Timer = 30000;
-        LeashCheck_Timer = 2000;
-
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
-        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
     }
 
     void EnterCombat(Unit *who)
@@ -63,20 +58,6 @@ struct TRINITY_DLL_DECL boss_broodlordAI : public ScriptedAI
     {
         if (!UpdateVictim())
             return;
-
-        //LeashCheck_Timer
-        if (LeashCheck_Timer < diff)
-        {
-            float rx,ry,rz;
-            m_creature->GetRespawnCoord(rx, ry, rz);
-            if(!m_creature->IsWithinDist3d(rx,ry,rz,250.0f))
-            {
-                DoScriptText(SAY_LEASH, m_creature);
-                EnterEvadeMode();
-                return;
-            }
-            LeashCheck_Timer = 2000;
-        }else LeashCheck_Timer -= diff;
 
         //Cleave_Timer
         if (Cleave_Timer < diff)
@@ -108,6 +89,9 @@ struct TRINITY_DLL_DECL boss_broodlordAI : public ScriptedAI
 
             KnockBack_Timer = 15000 + rand()%15000;
         }else KnockBack_Timer -= diff;
+
+        if (EnterEvadeIfOutOfCombatArea(diff))
+            DoScriptText(SAY_LEASH, m_creature);
 
         DoMeleeAttackIfReady();
     }

@@ -84,8 +84,6 @@ class TRINITY_DLL_SPEC Aura
         int8 GetStackAmount() const {return m_stackAmount;}
         void SetStackAmount(uint8 num, bool applied = true);
         bool modStackAmount(int32 num); // return true if last charge dropped
-        uint32 GetAuraStateMask(){return m_auraStateMask;}
-        void SetAuraState(uint8 num){m_auraStateMask |= 1<<(num-1);}  //modifies auras' aura state (not unit!)
 
         void SetRemoveMode(AuraRemoveMode mode) { m_removeMode = mode; }
         uint8 GetRemoveMode() const {return m_removeMode;}
@@ -119,6 +117,7 @@ class TRINITY_DLL_SPEC Aura
                     m_target->HandleAuraEffect(m_partAuras[i], apply);
         }
         void ApplyAllModifiers(bool apply, bool Real=false);
+        void HandleAuraSpecificMods(bool apply);
 
         void Update(uint32 diff);
 
@@ -153,7 +152,6 @@ class TRINITY_DLL_SPEC Aura
         uint8 m_auraLevel;                                  // Aura level (store caster level for correct show level dep amount)
         uint8 m_procCharges;                                // Aura charges (0 for infinite)
         uint8 m_stackAmount;                                // Aura stack amount
-        uint32 m_auraStateMask;
         AuraEffect * m_partAuras[3];
 
         uint32 m_procDamage;                                // used in aura proc code
@@ -334,6 +332,10 @@ class TRINITY_DLL_SPEC AuraEffect
         void HandleCharmConvert(bool apply, bool Real, bool changeAmount);
         void HandleReflectSpells( bool Apply, bool Real , bool changeAmount);
         void HandleModArmorPenetrationPct(bool Apply, bool Real, bool changeAmount);
+        void HandleAuraInitializeImages(bool Apply, bool Real, bool changeAmount);
+        void HandleAuraCloneCaster(bool Apply, bool Real, bool changeAmount);
+
+        int32 CalculateCrowdControlAuraAmount(Unit * caster);
 
         // add/remove SPELL_AURA_MOD_SHAPESHIFT (36) linked auras
         void HandleShapeshiftBoosts(bool apply);
@@ -348,9 +350,12 @@ class TRINITY_DLL_SPEC AuraEffect
         uint32 GetEffIndex() const { return m_effIndex; }
         int32 GetBasePoints() const { return m_currentBasePoints; }
         int32 GetAuraAmplitude(){return m_amplitude;}
+        void ResetPeriodicTimer(){m_periodicTimer = m_amplitude;}
+
         virtual void Update(uint32 diff);
 
         uint32 GetTickNumber() const { return m_tickNumber; }
+        int32 GetTotalTicks () const { return m_amplitude ? (GetParentAura()->GetAuraMaxDuration() / m_amplitude) : 1;}
         bool IsAreaAura() const { return m_isAreaAura; }
         bool IsPeriodic() const { return m_isPeriodic; }
         bool IsPersistent() const { return m_isPersistent; }

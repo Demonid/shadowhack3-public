@@ -43,9 +43,13 @@ class WorldPacket;
 class InstanceData;
 class Group;
 class InstanceSave;
+class Object;
 class WorldObject;
 class TempSummon;
+class Player;
 class CreatureGroup;
+struct ScriptInfo;
+struct ScriptAction;
 
 
 typedef ACE_RW_Thread_Mutex GridRWLock;
@@ -74,10 +78,11 @@ typedef MaNGOS::SingleThreaded<GridRWLock>::Lock NullGuard;
 #define MAP_MAGIC             'SPAM'
 #define MAP_VERSION_MAGIC     '0.1w'
 #define MAP_AREA_MAGIC        'AERA'
-#define MAP_HEIGTH_MAGIC      'TGHM'
+#define MAP_HEIGHT_MAGIC      'TGHM'
 #define MAP_LIQUID_MAGIC      'QILM'
 
-struct map_fileheader{
+struct map_fileheader
+{
     uint32 mapMagic;
     uint32 versionMagic;
     uint32 areaMapOffset;
@@ -89,17 +94,20 @@ struct map_fileheader{
 };
 
 #define MAP_AREA_NO_AREA      0x0001
-struct map_areaHeader{
+
+struct map_areaHeader
+{
     uint32 fourcc;
     uint16 flags;
     uint16 gridArea;
 };
 
-#define MAP_HEIGHT_NO_HIGHT   0x0001
+#define MAP_HEIGHT_NO_HEIGHT  0x0001
 #define MAP_HEIGHT_AS_INT16   0x0002
 #define MAP_HEIGHT_AS_INT8    0x0004
 
-struct map_heightHeader{
+struct map_heightHeader
+{
     uint32 fourcc;
     uint32 flags;
     float  gridHeight;
@@ -107,8 +115,10 @@ struct map_heightHeader{
 };
 
 #define MAP_LIQUID_NO_TYPE    0x0001
-#define MAP_LIQUID_NO_HIGHT   0x0002
-struct map_liquidHeader{
+#define MAP_LIQUID_NO_HEIGHT  0x0002
+
+struct map_liquidHeader
+{
     uint32 fourcc;
     uint16 flags;
     uint16 liquidType;
@@ -119,7 +129,8 @@ struct map_liquidHeader{
     float  liquidLevel;
 };
 
-enum ZLiquidStatus{
+enum ZLiquidStatus
+{
     LIQUID_MAP_NO_WATER     = 0x00000000,
     LIQUID_MAP_ABOVE_WATER  = 0x00000001,
     LIQUID_MAP_WATER_WALK   = 0x00000002,
@@ -138,7 +149,8 @@ enum ZLiquidStatus{
 #define MAP_LIQUID_TYPE_DARK_WATER  0x10
 #define MAP_LIQUID_TYPE_WMO_WATER   0x20
 
-struct LiquidData{
+struct LiquidData
+{
     uint32 type;
     float  level;
     float  depth_level;
@@ -251,7 +263,7 @@ class MANGOS_DLL_SPEC Map : public GridRefManager<NGridType>, public MaNGOS::Obj
 {
     friend class MapReference;
     public:
-        Map(uint32 id, time_t, uint32 InstanceId, uint8 SpawnMode);
+        Map(uint32 id, time_t, uint32 InstanceId, uint8 SpawnMode, Map* _parent = NULL);
         virtual ~Map();
 
         // currently unused for normal maps
@@ -298,7 +310,7 @@ class MANGOS_DLL_SPEC Map : public GridRefManager<NGridType>, public MaNGOS::Obj
         }
 
         time_t GetGridExpiry(void) const { return i_gridExpiry; }
-        uint32 GetId(void) const { return i_id; }
+        uint32 GetId(void) const { return i_mapEntry->MapID; }
 
         static bool ExistMap(uint32 mapid, int gx, int gy);
         static bool ExistVMap(uint32 mapid, int gx, int gy);
@@ -306,11 +318,13 @@ class MANGOS_DLL_SPEC Map : public GridRefManager<NGridType>, public MaNGOS::Obj
         static void InitStateMachine();
         static void DeleteStateMachine();
 
+        Map const * GetParent() const { return m_parentMap; }
+
         // some calls like isInWater should not use vmaps due to processor power
         // can return INVALID_HEIGHT if under z+2 z coord not found height
         float GetHeight(float x, float y, float z, bool pCheckVMap=true) const;
         float GetVmapHeight(float x, float y, float z, bool useMaps) const;
-        bool IsInWater(float x, float y, float z) const;    // does not use z pos. This is for future use
+        bool IsInWater(float x, float y, float z, float min_depth = 2.0f) const;
 
         ZLiquidStatus getLiquidStatus(float x, float y, float z, uint8 ReqLiquidType, LiquidData *data = 0) const;
 
@@ -325,22 +339,23 @@ class MANGOS_DLL_SPEC Map : public GridRefManager<NGridType>, public MaNGOS::Obj
 
         uint32 GetAreaId(float x, float y, float z) const
         {
-            return GetAreaIdByAreaFlag(GetAreaFlag(x,y,z),i_id);
+            return GetAreaIdByAreaFlag(GetAreaFlag(x,y,z),GetId());
         }
 
         uint32 GetZoneId(float x, float y, float z) const
         {
-            return GetZoneIdByAreaFlag(GetAreaFlag(x,y,z),i_id);
+            return GetZoneIdByAreaFlag(GetAreaFlag(x,y,z),GetId());
         }
 
         void GetZoneAndAreaId(uint32& zoneid, uint32& areaid, float x, float y, float z) const
         {
-            GetZoneAndAreaIdByAreaFlag(zoneid,areaid,GetAreaFlag(x,y,z),i_id);
+            GetZoneAndAreaIdByAreaFlag(zoneid,areaid,GetAreaFlag(x,y,z),GetId());
         }
 
         virtual void MoveAllCreaturesInMoveList();
         virtual void RemoveAllObjectsInRemoveList();
         virtual void RelocationNotify();
+        virtual void RemoveAllPlayers();
 
         bool CreatureRespawnRelocation(Creature *c);        // used only in MoveAllCreaturesInMoveList and ObjectGridUnloader
 
@@ -389,12 +404,16 @@ class MANGOS_DLL_SPEC Map : public GridRefManager<NGridType>, public MaNGOS::Obj
         bool ActiveObjectsNearGrid(uint32 x, uint32 y) const;
 
         void AddUnitToNotify(Unit* unit);
-        void RemoveUnitFromNotify(int32 slot);
+        void RemoveUnitFromNotify(Unit *unit, int32 slot);
 
         void SendToPlayers(WorldPacket const* data) const;
 
         typedef MapRefManager PlayerList;
         PlayerList const& GetPlayers() const { return m_mapRefManager; }
+
+        //per-map script storage
+        void ScriptsStart(std::map<uint32, std::multimap<uint32, ScriptInfo> > const& scripts, uint32 id, Object* source, Object* target);
+        void ScriptCommandStart(ScriptInfo const& script, uint32 delay, Object* source, Object* target);
 
         // must called with AddToWorld
         template<class T>
@@ -413,6 +432,8 @@ class MANGOS_DLL_SPEC Map : public GridRefManager<NGridType>, public MaNGOS::Obj
         template<class NOTIFIER> void VisitWorld(const float &x, const float &y, float radius, NOTIFIER &notifier);
         template<class NOTIFIER> void VisitGrid(const float &x, const float &y, float radius, NOTIFIER &notifier);
         CreatureGroupHolderType CreatureGroupHolder;
+
+        void UpdateIteratorBack(Player *player);
 
 #ifdef MAP_BASED_RAND_GEN
         MTRand mtRand;
@@ -465,6 +486,7 @@ class MANGOS_DLL_SPEC Map : public GridRefManager<NGridType>, public MaNGOS::Obj
         void setGridObjectDataLoaded(bool pLoaded, uint32 x, uint32 y) { getNGrid(x,y)->setGridObjectDataLoaded(pLoaded); }
 
         void setNGrid(NGridType* grid, uint32 x, uint32 y);
+        void ScriptsProcess();
 
         void UpdateActiveCells(const float &x, const float &y, const uint32 &t_diff);
     protected:
@@ -474,7 +496,6 @@ class MANGOS_DLL_SPEC Map : public GridRefManager<NGridType>, public MaNGOS::Obj
 
         MapEntry const* i_mapEntry;
         uint8 i_spawnMode;
-        uint32 i_id;
         uint32 i_InstanceId;
         uint32 m_unloadTimer;
 
@@ -487,6 +508,10 @@ class MANGOS_DLL_SPEC Map : public GridRefManager<NGridType>, public MaNGOS::Obj
 
 
     private:
+        //used for fast base_map (e.g. MapInstanced class object) search for
+        //InstanceMaps and BattleGroundMaps...
+        Map* m_parentMap;
+
         typedef GridReadGuard ReadGuard;
         typedef GridWriteGuard WriteGuard;
 
@@ -502,6 +527,7 @@ class MANGOS_DLL_SPEC Map : public GridRefManager<NGridType>, public MaNGOS::Obj
         std::vector<Unit*> i_unitsToNotify;
         std::set<WorldObject *> i_objectsToRemove;
         std::map<WorldObject*, bool> i_objectsToSwitch;
+        std::multimap<time_t, ScriptAction> m_scriptSchedule;
 
         // Type specific code for add/remove to/from grid
         template<class T>
@@ -553,7 +579,7 @@ enum InstanceResetMethod
 class TRINITY_DLL_SPEC InstanceMap : public Map
 {
     public:
-        InstanceMap(uint32 id, time_t, uint32 InstanceId, uint8 SpawnMode);
+        InstanceMap(uint32 id, time_t, uint32 InstanceId, uint8 SpawnMode, Map* _parent);
         ~InstanceMap();
         bool Add(Player *);
         void Remove(Player *, bool);
@@ -578,14 +604,14 @@ class TRINITY_DLL_SPEC InstanceMap : public Map
 class TRINITY_DLL_SPEC BattleGroundMap : public Map
 {
     public:
-        BattleGroundMap(uint32 id, time_t, uint32 InstanceId);
+        BattleGroundMap(uint32 id, time_t, uint32 InstanceId, Map* _parent);
         ~BattleGroundMap();
 
         bool Add(Player *);
         void Remove(Player *, bool);
         bool CanEnter(Player* player);
         void SetUnload();
-        void UnloadAll();
+        void RemoveAllPlayers();
 };
 
 /*inline

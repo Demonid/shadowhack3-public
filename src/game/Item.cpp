@@ -25,6 +25,7 @@
 #include "Database/DatabaseEnv.h"
 #include "ItemEnchantmentMgr.h"
 #include "SpellMgr.h"
+#include "ScriptCalls.h"
 
 void AddItemsSetItem(Player*player,Item *item)
 {
@@ -285,6 +286,7 @@ void Item::UpdateDuration(Player* owner, uint32 diff)
     if (GetUInt32Value(ITEM_FIELD_DURATION)<=diff)
     {
         owner->DestroyItem(GetBagSlot(), GetSlot(), true);
+        Script->ItemExpire(owner, GetProto());
         return;
     }
 
@@ -379,6 +381,16 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResult *result)
     ItemPrototype const* proto = GetProto();
     if(!proto)
         return false;
+
+    // update max durability (and durability) if need
+    if(proto->MaxDurability!= GetUInt32Value(ITEM_FIELD_MAXDURABILITY))
+    {
+        SetUInt32Value(ITEM_FIELD_MAXDURABILITY,proto->MaxDurability);
+        if(GetUInt32Value(ITEM_FIELD_DURABILITY) > proto->MaxDurability)
+            SetUInt32Value(ITEM_FIELD_DURABILITY,proto->MaxDurability);
+
+        need_save = true;
+    }
 
     // recalculate suffix factor
     if(GetItemRandomPropertyId() < 0)

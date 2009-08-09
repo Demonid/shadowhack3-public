@@ -150,6 +150,7 @@ enum CreatureFlagsExtra
     CREATURE_FLAG_EXTRA_WORLDEVENT      = 0x00004000,       // custom flag for world event creatures (left room for merging)
     //CREATURE_FLAG_EXTRA_CHARM_AI        = 0x00008000,       // use ai when charmed
     CREATURE_FLAG_EXTRA_NO_CRIT         = 0x00020000,       // creature can't do critical strikes
+    CREATURE_FLAG_EXTRA_NO_SKILLGAIN    = 0x00040000,       // creature won't increase weapon skills
 };
 
 enum SummonMask
@@ -163,6 +164,7 @@ enum SummonMask
     SUMMON_MASK_VEHICLE               = 0x00000020,
     SUMMON_MASK_PUPPET                = 0x00000040,
     SUMMON_MASK_HUNTER_PET            = 0x00000080,
+    SUMMON_MASK_CONTROLABLE_GUARDIAN  = 0x00000100,
 };
 
 // GCC have alternative #pragma pack(N) syntax and old gcc version not support pack(push,N), also any gcc version not support it at some platform
@@ -172,13 +174,14 @@ enum SummonMask
 #pragma pack(push,1)
 #endif
 
+#define MAX_KILL_CREDIT 2
+
 // from `creature_template` table
 struct CreatureInfo
 {
     uint32  Entry;
     uint32  HeroicEntry;
-    uint32  unk1;
-    uint32  unk2;
+    uint32  KillCredit[MAX_KILL_CREDIT];
     uint32  DisplayID_A[2];
     uint32  DisplayID_H[2];
     char*   Name;
@@ -319,7 +322,7 @@ struct CreatureData
 
 struct CreatureDataAddonAura
 {
-    uint16 spell_id;
+    uint32 spell_id;
     uint8 effect_idx;
 };
 
@@ -692,6 +695,8 @@ class TRINITY_DLL_SPEC Creature : public Unit
 
         void SendZoneUnderAttackMessage(Player* attacker);
 
+        void SetInCombatWithZone();
+
         bool hasQuest(uint32 quest_id) const;
         bool hasInvolvedQuest(uint32 quest_id)  const;
 
@@ -700,10 +705,10 @@ class TRINITY_DLL_SPEC Creature : public Unit
         virtual uint8 GetPetAutoSpellSize() const { return CREATURE_MAX_SPELLS; }
         virtual uint32 GetPetAutoSpellOnPos(uint8 pos) const
         {
-            if (pos >= CREATURE_MAX_SPELLS || m_charmInfo->GetCharmSpell(pos)->active != ACT_ENABLED)
+            if (pos >= CREATURE_MAX_SPELLS || m_charmInfo->GetCharmSpell(pos)->GetType() != ACT_ENABLED)
                 return 0;
             else
-                return m_charmInfo->GetCharmSpell(pos)->spellId;
+                return m_charmInfo->GetCharmSpell(pos)->GetAction();
         }
 
         void SetHomePosition(float x, float y, float z, float ori) { mHome_X = x; mHome_Y = y; mHome_Z = z; mHome_O = ori;}
@@ -734,10 +739,11 @@ class TRINITY_DLL_SPEC Creature : public Unit
         }
         void ResetPlayerDamageReq() { m_PlayerDamageReq = GetHealth() / 2; }
         uint32 m_PlayerDamageReq;
-        
+
         void SetOriginalEntry(uint32 entry) { m_originalEntry = entry; }
 
         static float _GetDamageMod(int32 Rank);
+
     protected:
         bool CreateFromProto(uint32 guidlow,uint32 Entry,uint32 team, const CreatureData *data = NULL);
         bool InitEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=NULL);
@@ -751,7 +757,6 @@ class TRINITY_DLL_SPEC Creature : public Unit
 
         uint32 m_lootMoney;
         uint64 m_lootRecipient;
-        uint32 m_unDamageByPlayers;
 
         /// Timers
         uint32 m_deathTimer;                                // (msecs)timer for death or corpse disappearance

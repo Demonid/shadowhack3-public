@@ -253,13 +253,11 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& /*recv_data*/)
             SendDoFlight( mountDisplayId, path, 1 );        // skip start fly node
         else
             GetPlayer()->m_taxi.ClearTaxiDestinations();    // clear problematic path and next
+        return;
     }
 
-    GetPlayer()->m_taxi.ClearTaxiDestinations();        // not destinations, clear source node
-    GetPlayer()->Unmount();
-    GetPlayer()->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_TAXI_FLIGHT);
+    GetPlayer()->CleanupAfterTaxiFlight();
     GetPlayer()->SetFallInformation(0, GetPlayer()->GetPositionZ());
-    GetPlayer()->getHostilRefManager().setOnlineOfflineState(true);
     if(GetPlayer()->pvpInfo.inHostileArea)
         GetPlayer()->CastSpell(GetPlayer(), 2479, true);
 }

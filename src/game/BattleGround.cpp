@@ -182,6 +182,9 @@ BattleGround::BattleGround()
     m_PlayersCount[BG_TEAM_ALLIANCE]    = 0;
     m_PlayersCount[BG_TEAM_HORDE]       = 0;
 
+    m_TeamScores[BG_TEAM_ALLIANCE]      = 0;
+    m_TeamScores[BG_TEAM_HORDE]         = 0;
+
     m_PrematureCountDown = false;
     m_PrematureCountDown = 0;
 
@@ -204,16 +207,13 @@ BattleGround::~BattleGround()
     // (this is done automatically in mapmanager update, when the instance is reset after the reset time)
     int size = m_BgCreatures.size();
     for(int i = 0; i < size; ++i)
-    {
         DelCreature(i);
-    }
+
     size = m_BgObjects.size();
     for(int i = 0; i < size; ++i)
-    {
         DelObject(i);
-    }
 
-    if(GetInstanceID())                                     // not spam by useless queries in case BG templates
+    if (GetInstanceID())                                    // not spam by useless queries in case BG templates
     {
         // delete creature and go respawn times
         WorldDatabase.PExecute("DELETE FROM creature_respawn WHERE instance = '%u'",GetInstanceID());
@@ -230,6 +230,9 @@ BattleGround::~BattleGround()
             ((BattleGroundMap*)map)->SetUnload();
     // remove from bg free slot queue
     this->RemoveFromBGFreeSlotQueue();
+
+    for(BattleGroundScoreMap::const_iterator itr = m_PlayerScores.begin(); itr != m_PlayerScores.end(); ++itr)
+        delete itr->second;
 }
 
 void BattleGround::Update(uint32 diff)
@@ -473,7 +476,7 @@ void BattleGround::Update(uint32 diff)
 
 void BattleGround::SetTeamStartLoc(uint32 TeamID, float X, float Y, float Z, float O)
 {
-    uint8 idx = GetTeamIndexByTeamId(TeamID);
+    BattleGroundTeamId idx = GetTeamIndexByTeamId(TeamID);
     m_TeamStartLocX[idx] = X;
     m_TeamStartLocY[idx] = Y;
     m_TeamStartLocZ[idx] = Z;
@@ -759,6 +762,7 @@ void BattleGround::EndBattleGround(uint32 winner)
         {
             RewardMark(plr,ITEM_WINNER_COUNT);
             RewardQuestComplete(plr);
+            plr->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_BG, 1);
         }
         else if(winner)
             RewardMark(plr,ITEM_LOSER_COUNT);
@@ -843,7 +847,7 @@ void BattleGround::RewardMark(Player *plr,uint32 count)
 void BattleGround::RewardSpellCast(Player *plr, uint32 spell_id)
 {
     // 'Inactive' this aura prevents the player from gaining honor points and battleground tokens
-    if (plr->GetDummyAura(SPELL_AURA_PLAYER_INACTIVE))
+    if (plr->HasAura(SPELL_AURA_PLAYER_INACTIVE))
         return;
 
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(spell_id);
@@ -859,7 +863,7 @@ void BattleGround::RewardSpellCast(Player *plr, uint32 spell_id)
 void BattleGround::RewardItem(Player *plr, uint32 item_id, uint32 count)
 {
     // 'Inactive' this aura prevents the player from gaining honor points and battleground tokens
-    if (plr->GetDummyAura(SPELL_AURA_PLAYER_INACTIVE))
+    if (plr->HasAura(SPELL_AURA_PLAYER_INACTIVE))
         return;
 
     ItemPosCountVec dest;
@@ -963,7 +967,7 @@ void BattleGround::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
         participant = true;
     }
 
-    std::map<uint64, BattleGroundScore*>::iterator itr2 = m_PlayerScores.find(guid);
+    BattleGroundScoreMap::iterator itr2 = m_PlayerScores.find(guid);
     if (itr2 != m_PlayerScores.end())
     {
         delete itr2->second;                                // delete player's score
@@ -1105,7 +1109,12 @@ void BattleGround::Reset()
     m_InBGFreeSlotQueue = false;
 
     m_Players.clear();
+
+    for(BattleGroundScoreMap::const_iterator itr = m_PlayerScores.begin(); itr != m_PlayerScores.end(); ++itr)
+        delete itr->second;
     m_PlayerScores.clear();
+
+    ResetBGSubclass();
 }
 
 void BattleGround::StartBattleGround()
@@ -1342,7 +1351,7 @@ bool BattleGround::HasFreeSlots() const
 void BattleGround::UpdatePlayerScore(Player *Source, uint32 type, uint32 value)
 {
     //this procedure is called from virtual function implemented in bg subclass
-    std::map<uint64, BattleGroundScore*>::const_iterator itr = m_PlayerScores.find(Source->GetGUID());
+    BattleGroundScoreMap::const_iterator itr = m_PlayerScores.find(Source->GetGUID());
 
     if(itr == m_PlayerScores.end())                         // player not found...
         return;
@@ -1609,8 +1618,6 @@ bool BattleGround::DelCreature(uint32 type)
         sLog.outError("Can't find creature guid: %u",GUID_LOPART(m_BgCreatures[type]));
         return false;
     }
-    //TODO: only delete creature after not in combat
-    cr->CleanupsBeforeDelete();
     cr->AddObjectToRemoveList();
     m_BgCreatures[type] = 0;
     return true;
@@ -1875,4 +1882,10 @@ void BattleGround::SetBgRaid( uint32 TeamID, Group *bg_raid )
 WorldSafeLocsEntry const* BattleGround::GetClosestGraveYard( Player* player )
 {
     return objmgr.GetClosestGraveYard( player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetMapId(), player->GetTeam() );
+}
+
+bool BattleGround::IsTeamScoreInRange(uint32 team, uint32 minScore, uint32 maxScore) const
+{
+    BattleGroundTeamId team_idx = GetTeamIndexByTeamId(team);
+    return m_TeamScores[team_idx] >= minScore && m_TeamScores[team_idx] <= maxScore;
 }

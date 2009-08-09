@@ -1,4 +1,4 @@
--- Up to TC2 3515
+-- Up to TC2 4748
 -- 
 -- trinityscript_script_texts.sql Contains data for table `script_texts` mainly used in C++ parts.
 -- valid entries for table are between -1000000 and -1999999
@@ -87,23 +87,23 @@ INSERT INTO `script_texts` (`entry`, `content_default`, `content_loc1`, `content
 (-1000144, 'Thank you for saving my life and bringing me back to safety, $N', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 1, 0, 'lilatha SAY_END1'),
 (-1000145, 'Captain Helios, I''ve been rescued from the Amani Catacombs. Reporting for duty, sir!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 1, 0, 'lilatha SAY_END2'),
 (-1000146, 'Liatha, get someone to look at those injuries. Thank you for bringing her back safely.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 1, 0, 'lilatha CAPTAIN_ANSWER'),
-(-1000147, 'Lets go $N. I am ready to start to Whitereach Post.', NULL, NULL, 'Gehen wir $N.Ich bin bereit,mich zum Weissgipfelposten aufzumachen.', NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, NULL),
-(-1000148, 'This seems to me trusted. If we move to the east, we are  probably... Aah!  Wyvern attack !', NULL, NULL, 'Das kommt mir vertraut vor.Wenn wir nach Osten ziehen,können wir wahrscheinlich...Aah!Flügeldrachen im Angriff!', NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, NULL),
-(-1000149, 'Thanks so much... From here I find the way back to the Whitereach Post. Speak with Motega Firemane, maybe you can persuade him to send me home.', NULL, NULL, 'Tausend Dank...Von hier aus finde ich den Rückweg zum Weissgipfelposten.Sprecht unbedingt mit Motega Feuermähne,vielleicht könnt ihr ihn überreden,mich nach Hause zu schicken.', NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, NULL),
-(-1000150, 'Greetings, $N. I will guide you through the cavern. Please try and keep up.', NULL, 'Salutations, $N. Je vais vous guider ŕ travers cette grotte. Veuillez me suivre.', NULL, NULL, NULL, NULL, NULL, NULL, 0, 4, 0, 0, 'WHISPER_CUSTODIAN_1'),
-(-1000151, 'We do not know if the Caverns of Time have always been accessible to mortals. Truly, it is impossible to tell as the Timeless One is in perpetual motion, changing our timeways as he sees fit. What you see now may very well not exist tomorrow. You may wake up and have no memory of this place.', NULL, 'Nous ne savons pas si les Grottes du Temps ont toujours été accessibles aux mortels. Vraiment, c''est impossible ŕ dire étant donné que l''Intemporel est en mouvement perpétuel, changeant nos spirales temporelles comme bon lui semble. Ce que vous voyez aujourd''hui peut trčs bien ne plus exister demain. Vous pourriez vous réveiller sans aucun souvenir de cet endroit.', NULL, NULL, NULL, NULL, NULL, NULL, 0, 4, 0, 0, 'WHISPER_CUSTODIAN_2'),
-(-1000152, 'It is strange, I know... Most mortals cannot actually comprehend what they see here, as often, what they see is not anchored within their own perception of reality.', NULL, 'C''est étrange, je sais... La plupart des mortels ne peuvent pas réellement comprendre ce quils voient ici, comme souvent, ce qu''ils voient n''est pas ancré dans leur propre perception de la réalité.', NULL, NULL, NULL, NULL, NULL, NULL, 0, 4, 0, 0, 'WHISPER_CUSTODIAN_3'),
-(-1000153, 'Follow me, please.', NULL, 'Veuillez me suivre.', NULL, NULL, NULL, NULL, NULL, NULL, 0, 4, 0, 0, 'WHISPER_CUSTODIAN_4'),
-(-1000154, 'There are only two truths to be found here: First, that time is chaotic, always in flux, and completely malleable and second, perception does not dictate reality.', NULL, 'Il n''y a que deux vérités qui peuvent ętre trouvées ici : premičrement, ce temps est chaotique, toujours en mouvement, et complčtement malléable, et ensuite, la perception ne détermine pas la réalité.', NULL, NULL, NULL, NULL, NULL, NULL, 0, 4, 0, 0, 'WHISPER_CUSTODIAN_5'),
-(-1000155, 'As custodians of time, we watch over and care for Nozdormu''s realm. The master is away at the moment, which means that attempts are being made to dramatically alter time. The master never meddles in the affairs of mortals but instead corrects the alterations made to time by others. He is reactionary in this regard.', NULL, 'En tant que protecteurs du temps, nous observons et veillons sur le royaume de Nozdormu. Le maître est absent en ce moment, ce qui signifie que des tentatives sont faites pour altérer fortement le temps. Le maître ne se męle jamais des affaires des mortels mais il corrige les altérations faites au temps par d''autres. Il est réactionnaire ŕ cet égard.', NULL, NULL, NULL, NULL, NULL, NULL, 0, 4, 0, 0, 'WHISPER_CUSTODIAN_6'),
-(-1000156, 'For normal maintenance of time, the Keepers of Time are sufficient caretakers. We are able to deal with most ordinary disturbances. I speak of little things, such as rogue mages changing something in the past to elevate their status or wealth in the present.', NULL, 'Pour le maintien normal du temps, les Gardiens du temps suffisent ŕ la tâche. Nous sommes capables de gérer les perturbations les plus ordinaires. Je parle de petites choses, comme des mages voleurs qui changent quelque chose dans le passé pour élever leur statut ou leur richesse dans le présent.', NULL, NULL, NULL, NULL, NULL, NULL, 0, 4, 0, 0, 'WHISPER_CUSTODIAN_7'),
-(-1000157, 'These tunnels that you see are called timeways. They are infinite in number. The ones that currently exist in your reality are what the master has deemed as ''trouble spots.'' These trouble spots may differ completely in theme but they always share a cause. That is, their existence is a result of the same temporal disturbance. Remember that should you venture inside one...', NULL, 'Ces tunnels que vous voyez sont appelés Voies Temporelles. Leur nombre est infini. Ceux qui existent actuellement dans votre réalité sont ceux que le maître a considérés comme ''points sensibles''. Ces points sensibles peuvent différer complčtement de part leur thčme, mais partagent toujours une cause. C''est-ŕ-dire, leur existence est le résultat des męmes perturbations temporelles. Rappelez-vous en si vous osez vous aventurer dans l''un d''eux...', NULL, NULL, NULL, NULL, NULL, NULL, 0, 4, 0, 0, 'WHISPER_CUSTODIAN_8'),
-(-1000158, 'This timeway is in great disarray! We have agents inside right now attempting to restore order. What information I have indicates that Thrall''s freedom is in jeopardy. A malevolent organization known as the Infinite Dragonflight is trying to prevent his escape. I fear without outside assistance, all will be lost.', NULL, 'Cette voie temporelle est en grand désarroi ! Nous avons actuellement des agents ŕ lintérieur qui tentent de restaurer l''ordre. Les informations que j''ai indiquent que la liberté de Thrall est en péril. Une organisation malveillante connue sous le nom de Vol du Dragon Infini essaye d''empęcher son évasion. J''ai peur que sans assistance extérieure, tout soit perdu.', NULL, NULL, NULL, NULL, NULL, NULL, 0, 4, 0, 0, 'WHISPER_CUSTODIAN_9'),
-(-1000159, 'We have very little information on this timeway. Sa''at has been dispatched and is currently inside. The data we have gathered from his correspondence is that the Infinite Dragonflight are once again attempting to alter time. Could it be that the opening of the Dark Portal is being targeted for sabotage? Let us hope not...', NULL, 'Nous avons trčs peu d''informations sur cette voie. Sa''at a été envoyé et est actuellement sur place. Les données que nous avons recueillies de sa correspondance est que le Vol du Dragon Infini tente une fois de plus d''altérer le temps. Se pourrait-il que l''ouverture de la Porte des Ténčbres soit la cible d''un sabotage. Espérons que non...', NULL, NULL, NULL, NULL, NULL, NULL, 0, 4, 0, 0, 'WHISPER_CUSTODIAN_10'),
-(-1000160, 'This timeway is currently collapsing. What that may hold for the past, present and future is currently unknown...', NULL, 'Cette voie est en train de s''effondrer. Ce qu''elle peut avoir contenu dans le passé, le présent et le futur nous est actuellement inconnu...', NULL, NULL, NULL, NULL, NULL, NULL, 0, 4, 0, 0, 'WHISPER_CUSTODIAN_11'),
-(-1000161, 'The timeways are currently ranked in order from least catastrophic to most catastrophic. Note that they are all classified as catastrophic, meaning that any single one of these timeways collapsing would mean that your world would end. We only classify them in such a way so that the heroes and adventurers that are sent here know which timeway best suits their abilities.', NULL, 'Les voies sont pour le moment classées de la moins catastrophique ŕ la plus catastrophique, ce qui veut dire que la moindre de celles-ci qui s''effondre signifierait la fin de votre monde. Nous les classons seulement de cette façon pour que les héros et aventuriers qui y sont envoyés sachent quelle voie est la plus adaptée ŕ leurs compétences.', NULL, NULL, NULL, NULL, NULL, NULL, 0, 4, 0, 0, 'WHISPER_CUSTODIAN_12'),
-(-1000162, 'All we know of this timeway is that it leads to Mount Hyjal. The Infinite Dragonflight have gone to great lengths to prevent our involvement. We know next to nothing, mortal. Soridormi is currently attempting to break through the timeway''s defenses but has thus far been unsuccessful. You might be our only hope of breaking through and resolving the conflict.', NULL, 'Tout ce que nous savons sur cette voie temporelle est qu''elle mčne au Mont Hyjal. Le Vol du Dragon Infini s''est donné beaucoup de peine pour empęcher notre participation. Soridormi est actuellement en train de tenter de briser les défenses de cette voie, mais ses efforts ont été vain jusqu''ici. Vous pourriez ętre notre seul espoir de les briser et de résoudre le conflit.', NULL, NULL, NULL, NULL, NULL, NULL, 0, 4, 0, 0, 'WHISPER_CUSTODIAN_13'),
-(-1000163, 'Our time is at an end $N. I would wish you luck, if such a thing existed.', NULL, 'Notre entretien touche ŕ sa fin, $N. Je vous souhaite bonne chance, si tant est qu''une telle chose a jamais existé.', NULL, NULL, NULL, NULL, NULL, NULL, 0, 4, 0, 0, 'WHISPER_CUSTODIAN_14'),
+(-1000147, 'Lets go $N. I am ready to start to Whitereach Post.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, NULL),
+(-1000148, 'This seems to me trusted. If we move to the east, we are  probably... Aah!  Wyvern attack !', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, NULL),
+(-1000149, 'Thanks so much... From here I find the way back to the Whitereach Post. Speak with Motega Firemane, maybe you can persuade him to send me home.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, NULL),
+(-1000150, 'Greetings, $N. I will guide you through the cavern. Please try and keep up.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 4, 0, 0, 'WHISPER_CUSTODIAN_1'),
+(-1000151, 'We do not know if the Caverns of Time have always been accessible to mortals. Truly, it is impossible to tell as the Timeless One is in perpetual motion, changing our timeways as he sees fit. What you see now may very well not exist tomorrow. You may wake up and have no memory of this place.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 4, 0, 0, 'WHISPER_CUSTODIAN_2'),
+(-1000152, 'It is strange, I know... Most mortals cannot actually comprehend what they see here, as often, what they see is not anchored within their own perception of reality.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 4, 0, 0, 'WHISPER_CUSTODIAN_3'),
+(-1000153, 'Follow me, please.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 4, 0, 0, 'WHISPER_CUSTODIAN_4'),
+(-1000154, 'There are only two truths to be found here: First, that time is chaotic, always in flux, and completely malleable and second, perception does not dictate reality.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 4, 0, 0, 'WHISPER_CUSTODIAN_5'),
+(-1000155, 'As custodians of time, we watch over and care for Nozdormu''s realm. The master is away at the moment, which means that attempts are being made to dramatically alter time. The master never meddles in the affairs of mortals but instead corrects the alterations made to time by others. He is reactionary in this regard.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 4, 0, 0, 'WHISPER_CUSTODIAN_6'),
+(-1000156, 'For normal maintenance of time, the Keepers of Time are sufficient caretakers. We are able to deal with most ordinary disturbances. I speak of little things, such as rogue mages changing something in the past to elevate their status or wealth in the present.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 4, 0, 0, 'WHISPER_CUSTODIAN_7'),
+(-1000157, 'These tunnels that you see are called timeways. They are infinite in number. The ones that currently exist in your reality are what the master has deemed as ''trouble spots.'' These trouble spots may differ completely in theme but they always share a cause. That is, their existence is a result of the same temporal disturbance. Remember that should you venture inside one...', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 4, 0, 0, 'WHISPER_CUSTODIAN_8'),
+(-1000158, 'This timeway is in great disarray! We have agents inside right now attempting to restore order. What information I have indicates that Thrall''s freedom is in jeopardy. A malevolent organization known as the Infinite Dragonflight is trying to prevent his escape. I fear without outside assistance, all will be lost.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 4, 0, 0, 'WHISPER_CUSTODIAN_9'),
+(-1000159, 'We have very little information on this timeway. Sa''at has been dispatched and is currently inside. The data we have gathered from his correspondence is that the Infinite Dragonflight are once again attempting to alter time. Could it be that the opening of the Dark Portal is being targeted for sabotage? Let us hope not...', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 4, 0, 0, 'WHISPER_CUSTODIAN_10'),
+(-1000160, 'This timeway is currently collapsing. What that may hold for the past, present and future is currently unknown...', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 4, 0, 0, 'WHISPER_CUSTODIAN_11'),
+(-1000161, 'The timeways are currently ranked in order from least catastrophic to most catastrophic. Note that they are all classified as catastrophic, meaning that any single one of these timeways collapsing would mean that your world would end. We only classify them in such a way so that the heroes and adventurers that are sent here know which timeway best suits their abilities.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 4, 0, 0, 'WHISPER_CUSTODIAN_12'),
+(-1000162, 'All we know of this timeway is that it leads to Mount Hyjal. The Infinite Dragonflight have gone to great lengths to prevent our involvement. We know next to nothing, mortal. Soridormi is currently attempting to break through the timeway''s defenses but has thus far been unsuccessful. You might be our only hope of breaking through and resolving the conflict.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 4, 0, 0, 'WHISPER_CUSTODIAN_13'),
+(-1000163, 'Our time is at an end $N. I would wish you luck, if such a thing existed.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 4, 0, 0, 'WHISPER_CUSTODIAN_14'),
 (-1000164, 'Ah, $GPriest:Priestess; you came along just in time. I appreciate it.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 2, 'garments SAY_COMMON_HEALED'),
 (-1000165, 'Thank you! Thank you, $GPriest:Priestess;. Now I can take on those gnolls with your power to back me!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 1, 1, 'garments SAY_DG_KEL_THANKS'),
 (-1000166, 'Farewell to you, and may shadow always protect you!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 1, 3, 'garments SAY_DG_KEL_GOODBYE'),
@@ -116,12 +116,12 @@ INSERT INTO `script_texts` (`entry`, `content_default`, `content_loc1`, `content
 (-1000173, 'Thank you! Thank you, $GPriest:Priestess;. Now I can take on those corrupt timberlings with Elune''s power behind me!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 2, 1, 'garments SAY_SHAYA_THANKS'),
 (-1000174, 'Farewell to you, and may Elune be with you always.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 2, 3, 'garments SAY_SHAYA_GOODBYE');
 INSERT INTO `script_texts` (`entry`, `content_default`, `content_loc1`, `content_loc2`, `content_loc3`, `content_loc4`, `content_loc5`, `content_loc6`, `content_loc7`, `content_loc8`, `sound`, `type`, `language`, `emote`, `comment`) VALUES
-(-1000200, 'A-Me good.Good A-me.Follow...A-ME follow.Home.A-ME go home.', NULL, NULL, 'A-ME gut.Gut A-Me.Folgen...Heim.A-ME geht heim.', NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, NULL),
-(-1000201, 'Bad Un´Goro Stomper.Stomper evil.', NULL, NULL, 'Böser Stampfer von Un´Goro. Stampfer von Un´Goro böse.', NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, NULL),
-(-1000202, 'Good..good,A-ME. Home. Search way.', NULL, NULL, 'Gut...gut.A-ME.A-ME gut.Heim.Heim suchen.', NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, NULL),
-(-1000203, 'A-Me home.A-ME go home!Tar Lord dont disturb A-ME.', NULL, NULL, 'A-ME daheim.A-ME geht heim!Teerfürst A-ME nicht aufhalten.', NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, NULL),
-(-1000204, 'Tar Lord A-ME no hurt.A-ME good.', NULL, NULL, 'Teerfürst A-ME nicht wehtun.A-ME gut.', NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, NULL),
-(-1000205, 'A-ME at home!A-ME good!Good A-ME.At home.Home.Home', NULL, NULL, 'A-ME daheim!A-ME gut!Gute A-ME.Daheim.Daheim.Daheim', NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, NULL),
+(-1000200, 'A-Me good.Good A-me.Follow...A-ME follow.Home.A-ME go home.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, NULL),
+(-1000201, 'Bad Un´Goro Stomper.Stomper evil.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, NULL),
+(-1000202, 'Good..good,A-ME. Home. Search way.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, NULL),
+(-1000203, 'A-Me home.A-ME go home!Tar Lord dont disturb A-ME.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, NULL),
+(-1000204, 'Tar Lord A-ME no hurt.A-ME good.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, NULL),
+(-1000205, 'A-ME at home!A-ME good!Good A-ME.At home.Home.Home', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, NULL),
 (-1000206, 'Come, $N. Lord Stormrage awaits.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1, 'OVERLORD_SAY_1'),
 (-1000207, 'Lord Illidan will be here shortly.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1, 'OVERLORD_SAY_2'),
 (-1000208, 'Lord Illidan, this is the Dragonmaw that I, and others, have told you about. He will lead us to victory!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 1, 'OVERLORD_SAY_3'),
@@ -343,12 +343,10 @@ INSERT INTO `script_texts` (`entry`, `content_default`, `content_loc1`, `content
 (-1000425, 'Ah. I remember now! I gave the mysterious fossil to Hollee! Check with her.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 7, 0, 'remtravel SAY_REM_REMEMBER'),
 (-1000426, '%s goes back to work, oblivious to everything around him.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 2, 7, 0, 'remtravel EMOTE_REM_END'),
 (-1000427, 'Something tells me this $r wants the mysterious fossil too. Help!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 7, 0, 'remtravel SAY_REM_AGGRO'),
-
 (-1000428, 'Ah...the wondrous sound of kodos. I love the way they make the ground shake... inspect the beast for me.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0,'kodo round SAY_SMEED_HOME_1'),
 (-1000429, 'Hey, look out with that kodo! You had better inspect that beast before i give you credit!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0,'kodo round SAY_SMEED_HOME_2'),
-(-1000430, 'That kodo sure is a beauty. Wait a minute, where are my bifocals? Perhaps you should inspect the beast for me.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'kodo round SAY_SMEED_HOME_3');
-
-
+(-1000430, 'That kodo sure is a beauty. Wait a minute, where are my bifocals? Perhaps you should inspect the beast for me.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'kodo round SAY_SMEED_HOME_3'),
+(-1000431, 'Okay, okay... gimme a minute to rest now. You gone and beat me up good.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 1, 14, 'calvin SAY_COMPLETE');
 
 -- -1 033 000 SHADOWFANG KEEP
 INSERT INTO `script_texts` (`entry`, `content_default`, `content_loc1`, `content_loc2`, `content_loc3`, `content_loc4`, `content_loc5`, `content_loc6`, `content_loc7`, `content_loc8`, `sound`, `type`, `language`, `emote`, `comment`) VALUES
@@ -388,12 +386,12 @@ INSERT INTO `script_texts` (`entry`, `content_default`, `content_loc1`, `content
 
 -- -1 060 000 863_world_scripts.sql
 INSERT INTO `script_texts` (`entry`, `content_default`, `content_loc1`, `content_loc2`, `content_loc3`, `content_loc4`, `content_loc5`, `content_loc6`, `content_loc7`, `content_loc8`, `sound`, `type`, `language`, `emote`, `comment`) VALUES
-(-1060005, 'Cloaking systems online! CLUCK! Engaging cloak for transport to Booty Bay!', NULL, NULL, 'Tarnsysteme online! GLUCK! Tarnung für Transport nach Beutebucht wird aktiviert.', NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'oox17 SAY_END'),
-(-1060004, 'No one challenges the wastevander nomads -- not even robotic chickens! ATTACK!', NULL, NULL, 'Niemand fordert die Wüsenläufernomaden heraus - auch keine Robothühner! ANGRIFF!', NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'oox17 SAY_AMBUSH_REPLY'),
-(-1060003, 'CLUCK! Sensors detect spatial anomaly -- danger imminent! CLUCK', NULL, NULL, 'GLUCK! Sensoren haben räumliche Anomalie entdeckt - Gefahr im Verzug! GLUCK!', NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'oox17 SAY_AMBUSH'),
-(-1060002, 'Threat analyzed! Activating combat plan beta! CLUCK!', NULL, NULL, 'Bedrohung analysiert! Gefechtsplan Beta wird aktiviert! GLUCK!', NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'oox17 SAY_AGGRO2'),
-(-1060001, 'Physical threat detected! Evasive action! CLUCK!', NULL, NULL, 'Körperliche Bedrohung entdeckt! Ausweichmanöver! GLUCK!', NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'oox17 SAY_AGGRO1'),
-(-1060000, 'Emergency power activated! Initializing ambulatory motor! CLUCK!', NULL, NULL, 'Notfallenergie aktiviert! Ambulatorenantrieb wird gestartet! GLUCK!', NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'oox17 SAY_START');
+(-1060005, 'Cloaking systems online! CLUCK! Engaging cloak for transport to Booty Bay!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'oox17 SAY_END'),
+(-1060004, 'No one challenges the wastevander nomads -- not even robotic chickens! ATTACK!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'oox17 SAY_AMBUSH_REPLY'),
+(-1060003, 'CLUCK! Sensors detect spatial anomaly -- danger imminent! CLUCK', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'oox17 SAY_AMBUSH'),
+(-1060002, 'Threat analyzed! Activating combat plan beta! CLUCK!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'oox17 SAY_AGGRO2'),
+(-1060001, 'Physical threat detected! Evasive action! CLUCK!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'oox17 SAY_AGGRO1'),
+(-1060000, 'Emergency power activated! Initializing ambulatory motor! CLUCK!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'oox17 SAY_START');
 
 -- -1 070 000 ULDAMAN
 INSERT INTO `script_texts` (`entry`, `content_default`, `content_loc1`, `content_loc2`, `content_loc3`, `content_loc4`, `content_loc5`, `content_loc6`, `content_loc7`, `content_loc8`, `sound`, `type`, `language`, `emote`, `comment`) VALUES
@@ -1539,13 +1537,35 @@ INSERT INTO `script_texts` (`entry`, `content_default`, `content_loc1`, `content
 (-1568022, 'Da Amani gonna rule again!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 12076, 1, 0, 0, 'nalorakk SAY_SLAY2'),
 (-1568023, 'I... be waitin'' on da udda side....', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 12077, 1, 0, 0, 'nalorakk SAY_DEATH');
 
+-- -1 571 000 SHOLAZAR BASIN
+INSERT INTO `script_texts` (`entry`, `content_default`, `content_loc1`, `content_loc2`, `content_loc3`, `content_loc4`, `content_loc5`, `content_loc6`, `content_loc7`, `content_loc8`, `sound`, `type`, `language`, `emote`, `comment`) VALUES
+(-1571000, 'You save me! We thank you. We going to go back to village now. You come too... you can stay with us! Puppy-men kind of mean anyway. ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'npc_injured_rainspeaker_oracle SAY_END_IRO'),
+(-1571001, 'Let me know when you ready to go, okay?', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'npc_injured_rainspeaker_oracle SAY_QUEST_ACCEPT_IRO '),
+(-1571002, 'Home time!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'npc_injured_rainspeaker_oracle SAY_START_IRO');
+
 -- -1 574 000 UTGARDE KEEP
 INSERT INTO `script_texts` (`entry`, `content_default`, `content_loc1`, `content_loc2`, `content_loc3`, `content_loc4`, `content_loc5`, `content_loc6`, `content_loc7`, `content_loc8`, `sound`, `type`, `language`, `emote`, `comment`) VALUES
 (-1574000, 'Your blood is mine!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 13221, 1, 0, 0, 'keleseth SAY_AGGRO'),
-(-1574001, 'Darkness waits', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 13223, 1, 0, 0, 'keleseth SAY_KILL'),
-(-1574002, 'I join... the night.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 13225, 1, 0, 0, 'keleseth SAY_DEATH'),
-(-1574003, 'Not so fast.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 13222, 1, 0, 0, 'keleseth SAY_FROST_TOMB'),
-(-1574004, 'Aranal, lidel! Their fate shall be yours!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 13224, 1, 0, 0, 'keleseth SAY_SKELETONS');
+(-1574001, 'Not so fast.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 13222, 1, 0, 0, 'keleseth SAY_FROST_TOMB'),
+(-1574002, 'Aranal, lidel! Their fate shall be yours!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 13224, 1, 0, 0, 'keleseth SAY_SKELETONS'),
+(-1574003, 'Darkness waits', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 13223, 1, 0, 0, 'keleseth SAY_KILL'),
+(-1574004, 'I join... the night.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 13225, 1, 0, 0, 'keleseth SAY_DEATH'),
+(-1574005,'I\'ll paint my face with your blood!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,13207,1,0,0,'ingvar SAY_AGGRO_FIRST'),
+(-1574006,'I return! A second chance to carve out your skull!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,13209,1,0,0,'ingvar SAY_AGGRO_SECOND'),
+(-1574007,'My life for the... death god!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,13213,1,0,0,'ingvar SAY_DEATH_FIRST'),
+(-1574008,'No! I can do... better! I can...', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,13211,1,0,0,'ingvar SAY_DEATH_SECOND'),
+(-1574009,'Mjul orm agn gjor!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,13212,1,0,0,'ingvar SAY_KILL_FIRST'),
+(-1574010,'I am a warrior born!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,13214,1,0,0,'ingvar SAY_KILL_SECOND'),
+(-1574011,'Dalronn! See if you can muster the nerve to join my attack!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,13229,1,0,0,'skarvald YELL_SKARVALD_AGGRO'),
+(-1574012,'Not... over... yet.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,13230,1,0,0,'skarvald YELL_SKARVALD_DAL_DIED'),
+(-1574013,'A warrior\'s death.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,13231,1,0,0,'skarvald YELL_SKARVALD_SKA_DIEDFIRST'),
+(-1574014,'???', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,13232,1,0,0,'skarvald YELL_SKARVALD_KILL'),
+(-1574015,'Pagh! What sort of necromancer lets death stop him? I knew you were worthless!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,13233,1,0,0,'skarvald YELL_SKARVALD_DAL_DIEDFIRST'),
+(-1574016,'By all means, don\'t assess the situation, you halfwit! Just jump into the fray!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,13199,1,0,0,'dalronn YELL_DALRONN_AGGRO'),
+(-1574017,'See... you... soon.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,13200,1,0,0,'dalronn YELL_DALRONN_SKA_DIED'),
+(-1574018,'There\'s no... greater... glory.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,13201,1,0,0,'dalronn YELL_DALRONN_DAL_DIEDFIRST'),
+(-1574019,'You may serve me yet.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,13202,1,0,0,'dalronn YELL_DALRONN_KILL'),
+(-1574020,'Skarvald, you incompetent slug! Return and make yourself useful!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,13203,1,0,0,'dalronn YELL_DALRONN_SKA_DIEDFIRST');
 
 -- -1 580 000 SUNWELL PLATEAU
 INSERT INTO `script_texts` (`entry`, `content_default`, `content_loc1`, `content_loc2`, `content_loc3`, `content_loc4`, `content_loc5`, `content_loc6`, `content_loc7`, `content_loc8`, `sound`, `type`, `language`, `emote`, `comment`) VALUES
@@ -1693,6 +1713,62 @@ INSERT INTO `script_texts` (`entry`, `content_default`, `content_loc1`, `content
 (-1585028, 'Do not... get too comfortable.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 12420, 1, 0, 0, 'kaelthas MT SAY_RECAST_GRAVITY'),
 (-1585029, 'My demise accomplishes nothing! The Master will have you! You will drown in your own blood! This world shall burn! Aaaghh!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 12421, 1, 0, 0, 'kaelthas MT SAY_DEATH');
 
+-- 1 590 000 VAULT OF ARCHAVON
+INSERT INTO `script_texts` (`entry`, `content_default`, `content_loc1`, `content_loc2`, `content_loc3`, `content_loc4`, `content_loc5`, `content_loc6`, `content_loc7`, `content_loc8`, `sound`, `type`, `language`, `emote`, `comment`) VALUES
+(-1590000, 'Emalon the Storm Watcher overcharges a Tempest Minion!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 3, 0, 0, 'emalon EMOTE_OVERCHARGE_TEMPEST_MINION'),
+(-1590001, 'A Tempest Minion appears to defend Emalon!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 3, 0, 0, 'emalon EMOTE_MINION_RESPAWN'),
+(-1590002, 'Archavon the Stone Watcher goes into a berserker rage!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 2, 0, 0, 'archavon EMOTE_BERSERK');
+
+-- -1 615 000 OBSIDIAN SANCTUM
+INSERT INTO `script_texts` (`entry`, `content_default`, `content_loc1`, `content_loc2`, `content_loc3`, `content_loc4`, `content_loc5`, `content_loc6`, `content_loc7`, `content_loc8`, `sound`, `type`, `language`, `emote`, `comment`) VALUES
+(-1615000,'I fear nothing! Least of all you!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14111,1,0,0,'shadron SAY_SHADRON_AGGRO'),
+(-1615001,'You are insignificant!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14112,1,0,0,'shadron SAY_SHADRON_SLAY_1'),
+(-1615002,'Such mediocre resistance!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14113,1,0,0,'shadron SAY_SHADRON_SLAY_2'),
+(-1615003,'We...are superior! How could this...be...', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14118,1,0,0,'shadron SAY_SHADRON_DEATH'),
+(-1615004,'You are easily bested! ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14114,1,0,0,'shadron SAY_SHADRON_BREATH'),
+(-1615005,'I will take pity on you Sartharion, just this once.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14117,1,0,0,'shadron SAY_SHADRON_RESPOND'),
+(-1615006,'Father tought me well!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14115,1,0,0,'shadron SAY_SHADRON_SPECIAL_1'),
+(-1615007,'On your knees!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14116,1,0,0,'shadron SAY_SHADRON_SPECIAL_2'),
+(-1615008,'A Shadron Disciple appears in the Twilight!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,0,5,0,0,'shadron WHISPER_SHADRON_DICIPLE'),
+
+(-1615009,'You have no place here. Your place is among the departed.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14122,1,0,0,'tenebron SAY_TENEBRON_AGGRO'),
+(-1615010,'No contest.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14123,1,0,0,'tenebron SAY_TENEBRON_SLAY_1'),
+(-1615011,'Typical... Just as I was having fun.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14124,1,0,0,'tenebron SAY_TENEBRON_SLAY_2'),
+(-1615012,'I should not... have held back...', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 14129,1,0,0,'tenebron SAY_TENEBRON_DEATH'),
+(-1615013,'To darkness I condemn you...', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14125,1,0,0,'tenebron SAY_TENEBRON_BREATH'),
+(-1615014,'It is amusing to watch you struggle. Very well, witness how it is done.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14128,1,0,0,'tenebron SAY_TENEBRON_RESPOND'),
+(-1615015,'Arrogant little creatures! To challenge powers you do not yet understand...', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14126,1,0,0,'tenebron SAY_TENEBRON_SPECIAL_1'),
+(-1615016,'I am no mere dragon! You will find I am much, much, more...', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14127,1,0,0,'tenebron SAY_TENEBRON_SPECIAL_2'),
+(-1615017,'%s begins to hatch eggs in the twilight!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,0,5,0,0,'tenebron WHISPER_HATCH_EGGS'),
+
+(-1615018,'It is my charge to watch over these eggs. I will see you burn before any harm comes to them!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14093,1,0,0,'sartharion SAY_SARTHARION_AGGRO'),
+(-1615019,'This pathetic siege ends NOW!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14103,1,0,0,'sartharion SAY_SARTHARION_BERSERK'),
+(-1615020,'Burn, you miserable wretches!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14098, 1,0,0,'sartharion SAY_SARTHARION_BREATH'),
+(-1615021,'Shadron! Come to me, all is at risk!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14105,1,0,0,'sartharion SARTHARION_CALL_SHADRON'),
+(-1615022,'Tenebron! The eggs are yours to protect as well!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14106,1,0,0,'sartharion SAY_SARTHARION_CALL_TENEBRON'),
+(-1615023,'Vesperon! The clutch is in danger! Assist me!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14104,1,0,0,'sartharion SAY_SARTHARION_CALL_VESPERON'),
+(-1615024,'Such is the price... of failure...', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14107,1,0,0,'sartharion SAY_SARTHARION_DEATH'),
+(-1615025,'Such flammable little insects....', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14099,1,0,0,'sartharion SAY_SARTHARION_SPECIAL_1'),
+(-1615026,'Your charred bones will litter the floor!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14100,1,0,0,'sartharion SAY_SARTHARION_SPECIAL_2'),
+(-1615027,'How much heat can you take?', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14101,1,0,0,'sartharion SAY_SARTHARION_SPECIAL_3'),
+(-1615028,'All will be reduced to ash!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14102,1,0,0,'sartharion SAY_SARTHARION_SPECIAL_4'),
+(-1615029,'You will make a fine meal for the hatchlings.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14094,1,0,0,'sartharion SAY_SARTHARION_SLAY_1'),
+(-1615030,'You are the grave disadvantage.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14096,1,0,0,'sartharion SAY_SARTHARION_SLAY_2'),
+(-1615031,'This is why we call you lesser beeings.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14097,1,0,0,'sartharion SAY_SARTHARION_SLAY_3'),
+(-1615032,'The lava surrounding %s churns!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,0,5,0,0,'sartharion WHISPER_LAVA_CHURN'),
+
+(-1615033,'You pose no threat, lesser beings...give me your worst!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14133,1,0,0,'vesperon SAY_VESPERON_AGGRO'),
+(-1615034,'The least you could do is put up a fight...', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14134,1,0,0,'vesperon SAY_VESPERON_SLAY_1'),
+(-1615035,'Was that the best you can do?', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14135,1,0,0,'vesperon SAY_VESPERON_SLAY_2'),
+(-1615036,'I still have some...fight..in...me...', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 14140,1,0,0,'vesperon SAY_VESPERON_DEATH'),
+(-1615037,'I will pick my teeth with your bones!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14136,1,0,0,'vesperon SAY_VESPERON_BREATH'),
+(-1615038,'Father was right about you, Sartharion...You are a weakling!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14139,1,0,0,'vesperon SAY_VESPERON_RESPOND'),
+(-1615039,'Aren\'t you tricky...I have a few tricks of my own...', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14137,1,0,0,'vesperon SAY_VESPERON_SPECIAL_1'),
+(-1615040,'Unlike, I have many talents.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,14138,1,0,0,'vesperon SAY_VESPERON_SPECIAL_2'),
+(-1615041,'A Vesperon Disciple appears in the Twilight!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,0,5,0,0,'shadron WHISPER_VESPERON_DICIPLE'),
+
+(-1615042,'%s begins to open a Twilight Portal!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,0,5,0,0,'sartharion drake WHISPER_OPEN_PORTAL');
+
 -- -1 645 000 ???
 INSERT INTO `script_texts` (`entry`, `content_default`, `content_loc1`, `content_loc2`, `content_loc3`, `content_loc4`, `content_loc5`, `content_loc6`, `content_loc7`, `content_loc8`, `sound`, `type`, `language`, `emote`, `comment`) VALUES
 (-1645006, 'Let the trial begin, Bloodwrath, attack!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, 0, 0, 'master_kelerun_bloodmourn YELL_PHASE'),
@@ -1728,6 +1804,86 @@ INSERT INTO `script_texts` (`entry`, `content_default`, `content_loc1`, `content
 (-1999923, 'Wrong!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'example_gossip_codebox SAY_WRONG'),
 (-1999924, 'You''re right, you are allowed to see my inner secrets.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'example_gossip_codebox SAY_CORRECT'),
 (-1999925, 'Hi!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'example_areatrigger SAY_HI');
+
+-- -1 609 000 - THE SCARLET ENCLAVE
+INSERT INTO `script_texts` (`entry`, `content_default`, `content_loc1`, `content_loc2`, `content_loc3`, `content_loc4`, `content_loc5`, `content_loc6`, `content_loc7`, `content_loc8`, `sound`, `type`, `language`, `emote`, `comment`) VALUES
+(-1609000, 'You have made a grave error, fiend!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'unworthy_initiate SAY_EVENT_START_1' ),
+(-1609001, 'I was a soldier of the Light once... Look at what I have become... ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'unworthy_initiate SAY_EVENT_START_2'),
+(-1609002, 'You are hopelessly outmatched\, $R.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'unworthy_initiate SAY_EVENT_START_3'),
+(-1609003, 'They brand me unworthy? I will show them unmorthy!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'unworthy_initiate SAY_EVENT_START_4'),
+(-1609004, 'You will allow me a weapon and armor, yes?', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'unworthy_initiate SAY_EVENT_START_5'),
+(-1609005, 'I will win my freedom and leave this cursed place!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'unworthy_initiate SAY_EVENT_START_6'),
+(-1609006, 'I will dismantle this festering hellhole!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'unworthy_initiate SAY_EVENT_START_7'),
+(-1609007, 'There can be only one survivor!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'unworthy_initiate SAY_EVENT_START_8'),
+(-1609008, 'To battle!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'unworthy_initiate SAY_EVENT_ATTACK_1'),
+(-1609009, 'Let your fears consume you!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'unworthy_initiate SAY_EVENT_ATTACK_2'),
+(-1609010, 'HAH! You can barely hold a blade! Yours will be a quick death.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'unworthy_initiate SAY_EVENT_ATTACK_3'),
+(-1609011, 'And now you die', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'unworthy_initiate SAY_EVENT_ATTACK_4'),
+(-1609012, 'To battle!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'unworthy_initiate SAY_EVENT_ATTACK_5'),
+(-1609013, 'There is no hope for our future...', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'unworthy_initiate SAY_EVENT_ATTACK_6'),
+(-1609014, 'Sate your hunger on cold steel\, $R', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'unworthy_initiate SAY_EVENT_ATTACK_7'),
+(-1609015, 'It ends here!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'unworthy_initiate SAY_EVENT_ATTACK_8'),
+(-1609016, 'Death is the only cure!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 'unworthy_initiate SAY_EVENT_ATTACK_9'),
+(-1609017,'No potions!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,0,0,0,0,'dk_initiate SAY_DUEL_A'),
+(-1609018,'Remember this day, $n, for it is the day that you will be thoroughly owned.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,0,0,0,0,'dk_initiate SAY_DUEL_B'),
+(-1609019,'I\'m going to tear your heart out, cupcake!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,0,0,0,0,'dk_initiate SAY_DUEL_C'),
+(-1609020,'Don\'t make me laugh.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,0,0,0,0,'dk_initiate SAY_DUEL_D'),
+(-1609021,'Here come the tears...', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,0,0,0,0,'dk_initiate SAY_DUEL_E'),
+(-1609022,'You have challenged death itself!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,0,0,0,0,'dk_initiate SAY_DUEL_F'),
+(-1609025,'Come to finish the job, have you?', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,1,'special_surprise SAY_EXEC_START_1'),
+(-1609026,'Come to finish the job, have ye?', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,1,'special_surprise SAY_EXEC_START_2'),
+(-1609027,'Come ta finish da job, mon?', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,1,'special_surprise SAY_EXEC_START_3'),
+(-1609028,'You\'ll look me in the eyes when...', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,25,'special_surprise SAY_EXEC_PROG_1'),
+(-1609029,'Well this son o\' Ironforge would like...', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,25,'special_surprise SAY_EXEC_PROG_2'),
+(-1609030,'Ironic, isn\'t it? To be killed...', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,25,'special_surprise SAY_EXEC_PROG_3'),
+(-1609031,'If you\'d allow me just one...', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,25,'special_surprise SAY_EXEC_PROG_4'),
+(-1609032,'I\'d like to stand for...', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,25,'special_surprise SAY_EXEC_PROG_5'),
+(-1609033,'I want to die like an orc...', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,25,'special_surprise SAY_EXEC_PROG_6'),
+(-1609034,'Dis troll gonna stand for da...', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,25,'special_surprise SAY_EXEC_PROG_7'),
+(-1609035,'$N?', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,1,'special_surprise SAY_EXEC_NAME_1'),
+(-1609036,'$N? Mon?', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,1,'special_surprise SAY_EXEC_NAME_2'),
+(-1609037,'$N, I\'d recognize that face anywhere... What... What have they done to you, $N?', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,1,'special_surprise SAY_EXEC_RECOG_1'),
+(-1609038,'$N, I\'d recognize those face tentacles anywhere... What... What have they done to you, $N?', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,1,'special_surprise SAY_EXEC_RECOG_2'),
+(-1609039,'$N, I\'d recognize that face anywhere... What... What have they done to ye, $Glad:lass;?', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,1,'special_surprise SAY_EXEC_RECOG_3'),
+(-1609040,'$N, I\'d recognize that decay anywhere... What... What have they done to you, $N?', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,1,'special_surprise SAY_EXEC_RECOG_4'),
+(-1609041,'$N, I\'d recognize those horns anywhere... What have they done to you, $N?', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,1,'special_surprise SAY_EXEC_RECOG_5'),
+(-1609042,'$N, I\'d recognize dem tusks anywhere... What... What have dey done ta you, mon?', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,1,'special_surprise SAY_EXEC_RECOG_6'),
+(-1609043,'You don\'t remember me, do you? Blasted Scourge... They\'ve tried to drain you of everything that made you a righteous force of reckoning. Every last ounce of good... Everything that made you a draenei!', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,1,'special_surprise SAY_EXEC_NOREM_1'),
+(-1609044,'Ye don\'t remember me, do ye? Blasted Scourge... They\'ve tried to drain ye o\' everything that made ye a righteous force o\' reckoning. Every last ounce o\' good... Everything that made you a $Gson:daughter; of Ironforge!', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,1,'special_surprise SAY_EXEC_NOREM_2'),
+(-1609045,'You don\'t remember me, do you? We were humans once - long, long ago - until Lordaeron fell to the Scourge. Your transformation to a Scourge zombie came shortly after my own. Not long after that, our minds were freed by the Dark Lady.', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,1,'special_surprise SAY_EXEC_NOREM_3'),
+(-1609046,'You don\'t remember me, do you? Blasted Scourge... They\'ve tried to drain you of everything that made you a pint-sized force of reckoning. Every last ounce of good... Everything that made you a gnome!', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,1,'special_surprise SAY_EXEC_NOREM_4'),
+(-1609047,'You don\'t remember me, do you? Blasted Scourge...They\'ve tried to drain of everything that made you a righteous force of reckoning. Every last ounce of good...Everything that made you a human!', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,1,'special_surprise SAY_EXEC_NOREM_5'),
+(-1609048,'You don\'t remember me? When you were a child your mother would leave you in my care while she served at the Temple of the Moon. I held you in my arms and fed you with honey and sheep\'s milk to calm you until she would return. You were my little angel. Blasted Scourge... What have they done to you, $N?', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,1,'special_surprise SAY_EXEC_NOREM_6'),
+(-1609049,'You don\'t recognize me, do you? Blasted Scourge... They\'ve tried to drain you of everything that made you a righteous force of reckoning. Every last ounce of good... Everything that made you an orc!', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,1,'special_surprise SAY_EXEC_NOREM_7'),
+(-1609050,'You don\'t remember me, do you? Blasted Scourge... They\'ve tried to drain you of everything that made you a righteous force of reckoning. Every last ounce of good... Everything that made you a tauren!', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,1,'special_surprise SAY_EXEC_NOREM_8'),
+(-1609051,'You don\'t remember me, mon? Damn da Scourge! Dey gone ta drain you of everytin dat made ya a mojo masta. Every last ounce of good... Everytin\' dat made ya a troll hero, mon!', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,1,'special_surprise SAY_EXEC_NOREM_9'),
+(-1609052,'A pact was made, $Gbrother:sister;! We vowed vengeance against the Lich King! For what he had done to us! We battled the Scourge as Forsaken, pushing them back into the plaguelands and freeing Tirisfal! You and I were champions of the Forsaken!', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,1,'special_surprise SAY_EXEC_THINK_1'),
+(-1609053,'You must remember the splendor of life, $Gbrother:sister;. You were a champion of the Kaldorei once! This isn\'t you!', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,1,'special_surprise SAY_EXEC_THINK_2'),
+(-1609054,'Think, $N. Think back. Try and remember the majestic halls of Silvermoon City, where you were born. Remember the splendor of life, $Gbrother:sister;. You were a champion of the sin\'dorei once! This isn\'t you.', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,6,'special_surprise SAY_EXEC_THINK_3'),
+(-1609055,'Think, $N. Think back. Try and remember the proud mountains of Argus, where you were born. Remember the splendor of life, $Gbrother:sister;. You were a champion of the draenei once! This isn\'t you.', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,6,'special_surprise SAY_EXEC_THINK_4'),
+(-1609056,'Think, $N. Think back. Try and remember the snow capped mountains o\' Dun Morogh! Ye were born there, $Glad:lass;. Remember the splendor o\' life, $N! Ye were a champion o\' the dwarves once! This isn\'t ye!', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,6,'special_surprise SAY_EXEC_THINK_5'),
+(-1609057,'Think, $N. Think back. Try and remember Gnomeregan before those damned troggs! Remember the feel of an [arclight spanner] $Gbrother:sister;. You were a champion of gnome-kind once! This isn\'t you.', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,6,'special_surprise SAY_EXEC_THINK_6'),
+(-1609058,'Think, $N. Think back. Try and remember the hills and valleys of Elwynn, where you were born. Remember the splendor of life, $Gbrother:sister;. You were a champion of the Alliance once! This isn\'t you.', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,6,'special_surprise SAY_EXEC_THINK_7'),
+(-1609059,'Think, $N. Think back. Try and remember Durotar, $Gbrother:sister;! Remember the sacrifices our heroes made so that we could be free of the blood curse. Harken back to the Valley of Trials, where we were reborn into a world without demonic influence. We found the splendor of life, $N. Together! This isn\'t you. You were a champion of the Horde once!', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,6,'special_surprise SAY_EXEC_THINK_8'),
+(-1609060,'Think, $N. Think back. Try and remember the rolling plains of Mulgore, where you were born. Remember the splendor of life, $Gbrother:sister;. You were a champion of the tauren once! This isn\'t you.', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,6,'special_surprise SAY_EXEC_THINK_9'),
+(-1609061,'TINK $N. Tink back, mon! We be Darkspear, mon! Bruddas and sistas! Remember when we fought the Zalazane and done took he head and freed da Echo Isles? MON! TINK! You was a champion of da Darkspear trolls!', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,6,'special_surprise SAY_EXEC_THINK_10'),
+(-1609062,'Listen to me, $N. You must fight against the Lich King\'s control. He is a monster that wants to see this world - our world - in ruin. Don\'t let him use you to accomplish his goals. You were once a hero and you can be again. Fight, damn you! Fight his control!', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,5,'special_surprise SAY_EXEC_LISTEN_1'),
+(-1609063,'Listen to me, $N Ye must fight against the Lich King\'s control. He\'s a monster that wants to see this world - our world - in ruin. Don\'t let him use ye to accomplish his goals. Ye were once a hero and ye can be again. Fight, damn ye! Fight his control!', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,5,'special_surprise SAY_EXEC_LISTEN_2'),
+(-1609064,'Listen to me, $N. You must fight against the Lich King\'s control. He is a monster that wants to see this world - our world - in ruin. Don\'t let him use you to accomplish his goals AGAIN. You were once a hero and you can be again. Fight, damn you! Fight his control!', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,5,'special_surprise SAY_EXEC_LISTEN_3'),
+(-1609065,'Listen ta me, $Gbrudda:sista;. You must fight against da Lich King\'s control. He be a monstar dat want ta see dis world - our world - be ruined. Don\'t let he use you ta accomplish he goals. You be a hero once and you be a hero again! Fight it, mon! Fight he control!', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,5,'special_surprise SAY_EXEC_LISTEN_4'),
+(-1609066,'What\'s going on in there? What\'s taking so long, $N?', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,1,0,0,'special_surprise SAY_PLAGUEFIST'),
+(-1609067,'There... There\'s no more time for me. I\'m done for. Finish me off, $N. Do it or they\'ll kill us both. $N... Remember Silvermoon. This world is worth saving!', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,18,'special_surprise SAY_EXEC_TIME_1'),
+(-1609068,'There... There\'s no more time for me. I\'m done for. Finish me off, $N. Do it or they\'ll kill us both. $N... Remember Argus. Don\'t let that happen to this world.', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,18,'special_surprise SAY_EXEC_TIME_2'),
+(-1609069,'There... There\'s no more time for me. I\'m done for. Finish me off, $N. Do it or they\'ll kill us both $N... For KHAAAAAAAAZZZ MODAAAAAANNNNNN!!!', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,18,'special_surprise SAY_EXEC_TIME_3'),
+(-1609070,'There... There\'s no more time for me. I\'m done for. Finish me off, $N. Do it or they\'ll kill us both. $N... Remember Tirisfal! This world is worth saving!', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,18,'special_surprise SAY_EXEC_TIME_4'),
+(-1609071,'There... There\'s no more time for me. I\'m done for. Finish me off, $N. Do it or they\'ll kill us both. $N... Remember Gnomeregan! This world is worth saving.', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,18,'special_surprise SAY_EXEC_TIME_5'),
+(-1609072,'There... There\'s no more time for me. I\'m done for. FInish me off, $N. Do it or they\'ll kill us both. $N...Remember Elwynn. This world is worth saving.', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,18,'special_surprise SAY_EXEC_TIME_6'),
+(-1609073,'There... There\'s no more time for me. I\'m done for. Finish me off, $N. Do it or they\'ll kill us both. $N... Remember Teldrassil, our beloved home. This world is worth saving.', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,18,'special_surprise SAY_EXEC_TIME_7'),
+(-1609074,'There... There\'s no more time for me. I\'m done for. Finish me off, $N. Do it or they\'ll kill us both. $N... For the Horde! This world is worth saving.', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,18,'special_surprise SAY_EXEC_TIME_8'),
+(-1609075,'There... There\'s no more time for me. I\'m done for. Finish me off, $N. Do it or they\'ll kill us both. $N... Remember Mulgore. This world is worth saving.', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,18,'special_surprise SAY_EXEC_TIME_9'),
+(-1609076,'Der... Der\'s no more time for me. I be done for. Finish me off $N. Do it or they\'ll kill us both. $N... Remember Sen\'jin Village, mon! Dis world be worth saving!', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,18,'special_surprise SAY_EXEC_TIME_10'),
+(-1609077,'Do it, $N! Put me out of my misery!', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,0,0,1,'special_surprise SAY_EXEC_WAITING'),
+(-1609078,'dies from his wounds.', NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL,0,2,0,0,'special_surprise EMOTE_DIES');
 
 -- 
 -- Below just for beautiful view in table, run at own desire
@@ -1793,3 +1949,18 @@ REPLACE INTO `script_texts` (`entry`, `content_default`, `sound`, `type`, `langu
 (-1576042,'Finish it! FINISH IT! Kill me, or I swear by the Dragonqueen you\'ll never see daylight again!',13452,1,0,0,'keristrasza SAY_ENRAGE'),
 (-1576043,'Dragonqueen... Life-Binder... preserve... me.',13454,1,0,0,'keristrasza SAY_DEATH'),
 (-1576044,'Stay. Enjoy your final moments.',13451,1,0,0,'keristrasza SAY_CRYSTAL_NOVA');
+
+-- boss_bjarngrim
+DELETE FROM script_texts  where entry IN (-1602001,-1602000,-1602002,-1602003,-1602004,-1602005,-1602006,-1602007,-1602008,-1602009,-1602010);
+INSERT INTO script_texts (entry,content_default,sound,type,language,emote,comment) VALUES
+(-1602000,'I am the greatest of my father\'s sons! Your end has come!',14149,1,0,0,'bjarngrim SAY_AGGRO'),
+(-1602001,'So ends your curse!',14153,1,0,0,'bjarngrim SAY_SLAY_1'),
+(-1602002,'Flesh... is... weak!',14154,1,0,0,'bjarngrim SAY_SLAY_2'),
+(-1602003,'...',14155,1,0,0,'bjarngrim SAY_SLAY_3'),
+(-1602004,'How can it be...? Flesh is not... stronger!',14156,1,0,0,'bjarngrim SAY_DEATH'),
+(-1602005,'Defend yourself, for all the good it will do!',14151,1,0,0,'bjarngrim SAY_BATTLE_STANCE'),
+(-1602006,'%s switches to Battle Stance!',0,3,0,0,'bjarngrim EMOTE_BATTLE_STANCE'),
+(-1602007,'GRAAAAAH! Behold the fury of iron and steel!',14152,1,0,0,'bjarngrim SAY_BERSEKER_STANCE'),
+(-1602008,'%s switches to Berserker Stance!',0,3,0,0,'bjarngrim EMOTE_BERSEKER_STANCE'),
+(-1602009,'Give me your worst!',14150,1,0,0,'bjarngrim SAY_DEFENSIVE_STANCE'),
+(-1602010,'%s switches to Defensive Stance!',0,3,0,0,'bjarngrim EMOTE_DEFENSIVE_STANCE');

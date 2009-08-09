@@ -86,11 +86,13 @@ bool ChatHandler::HandleStartCommand(const char* /*args*/)
 
 bool ChatHandler::HandleServerInfoCommand(const char* /*args*/)
 {
+    uint32 PlayersNum = sWorld.GetPlayerCount();
+    uint32 MaxPlayersNum = sWorld.GetMaxPlayerCount();
     uint32 activeClientsNum = sWorld.GetActiveSessionCount();
     uint32 queuedClientsNum = sWorld.GetQueuedSessionCount();
     uint32 maxActiveClientsNum = sWorld.GetMaxActiveSessionCount();
     uint32 maxQueuedClientsNum = sWorld.GetMaxQueuedSessionCount();
-    std::string str = secsToTimeString(sWorld.GetUptime());
+    std::string uptime = secsToTimeString(sWorld.GetUptime());
     uint32 updateTime = sWorld.GetUpdateTime();
 
     PSendSysMessage(_FULLVERSION);
@@ -103,8 +105,9 @@ bool ChatHandler::HandleServerInfoCommand(const char* /*args*/)
     //PSendSysMessage(LANG_USING_SCRIPT_LIB,sWorld.GetScriptsVersion());
     //PSendSysMessage(LANG_USING_WORLD_DB,sWorld.GetDBVersion());
     //PSendSysMessage(LANG_USING_EVENT_AI,sWorld.GetCreatureEventAIVersion());
+    PSendSysMessage(LANG_CONNECTED_PLAYERS, PlayersNum, MaxPlayersNum);
     PSendSysMessage(LANG_CONNECTED_USERS, activeClientsNum, maxActiveClientsNum, queuedClientsNum, maxQueuedClientsNum);
-    PSendSysMessage(LANG_UPTIME, str.c_str());
+    PSendSysMessage(LANG_UPTIME, uptime.c_str());
     PSendSysMessage("Update time diff: %u.", updateTime);
 
     return true;
@@ -160,9 +163,9 @@ bool ChatHandler::HandleGMListIngameCommand(const char* /*args*/)
     HashMapHolder<Player>::MapType::const_iterator itr = m.begin();
     for(; itr != m.end(); ++itr)
     {
-        if (itr->second->GetSession()->GetSecurity() > SEC_PLAYER &&
-            (itr->second->isGameMaster() || sWorld.getConfig(CONFIG_GM_IN_GM_LIST)) &&
-            (!m_session || itr->second->IsVisibleGloballyFor(m_session->GetPlayer())) )
+        AccountTypes itr_sec = itr->second->GetSession()->GetSecurity();
+        if ((itr->second->isGameMaster() || itr_sec > SEC_PLAYER && itr_sec <= sWorld.getConfig(CONFIG_GM_LEVEL_IN_GM_LIST)) &&
+            (!m_session || itr->second->IsVisibleGloballyFor(m_session->GetPlayer())))
         {
             if(first)
             {
@@ -242,14 +245,14 @@ bool ChatHandler::HandleAccountLockCommand(const char* args)
     std::string argstr = (char*)args;
     if (argstr == "on")
     {
-        LoginDatabase.PExecute( "UPDATE account SET locked = '1' WHERE id = '%d'",m_session->GetAccountId());
+        loginDatabase.PExecute( "UPDATE account SET locked = '1' WHERE id = '%d'",m_session->GetAccountId());
         PSendSysMessage(LANG_COMMAND_ACCLOCKLOCKED);
         return true;
     }
 
     if (argstr == "off")
     {
-        LoginDatabase.PExecute( "UPDATE account SET locked = '0' WHERE id = '%d'",m_session->GetAccountId());
+        loginDatabase.PExecute( "UPDATE account SET locked = '0' WHERE id = '%d'",m_session->GetAccountId());
         PSendSysMessage(LANG_COMMAND_ACCLOCKUNLOCKED);
         return true;
     }
