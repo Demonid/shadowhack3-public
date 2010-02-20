@@ -1982,10 +1982,6 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
         {
             if (cur == TARGET_SRC_CASTER)
             {
-                // Earthen Power
-                if (m_spellInfo->Id == 3600)
-                    AddUnitTarget(m_caster, i);
-
                 m_targets.setSrc(m_caster);
                 break;
             }
@@ -2999,14 +2995,8 @@ void Spell::cast(bool skipCheck)
                     m_caster->RemoveAurasDueToSpell(-(*i));
                 else
                     m_caster->CastSpell(m_targets.getUnitTarget() ? m_targets.getUnitTarget() : m_caster, *i, true);
-    }
-    // Summon Water Elemental - handling for Glyph of Eternal Water
-    if (m_spellInfo->Id == 31687)
-        if (m_caster->HasAura(70937))
-            m_caster->CastSpell(m_targets.getUnitTarget() ? m_targets.getUnitTarget() : m_caster, 70908, true);
-        else
-           m_caster->CastSpell(m_targets.getUnitTarget() ? m_targets.getUnitTarget() : m_caster, 70907, true);
 
+        }
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
         ((Player*)m_caster)->SetSpellModTakingSpell(this, false);
 
