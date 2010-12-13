@@ -117,7 +117,7 @@ public:
                         if (AuraEffect *dummy = owner->GetAuraEffect(SHAMAN_SPELL_GLYPH_OF_MANA_TIDE, 0))
                             effValue += dummy->GetAmount();
                     // Regenerate 6% of Total Mana Every 3 secs
-                    int32 effBasePoints0 = unitTarget->GetMaxPower(POWER_MANA) * effValue / 100;
+                    int32 effBasePoints0 = int32(CalculatePctN(unitTarget->GetMaxPower(POWER_MANA), effValue));
                     caster->CastCustomSpell(unitTarget, SHAMAN_SPELL_MANA_TIDE_TOTEM, &effBasePoints0, NULL, NULL, true, NULL, NULL, GetOriginalCaster()->GetGUID());
                 }
             }
@@ -156,11 +156,11 @@ public:
 
         void HandleEffectPeriodic(AuraEffect const * aurEff, AuraApplication const * aurApp)
         {
-            if (Unit* target = aurApp->GetTarget())
-                if (Unit *caster = aurEff->GetBase()->GetCaster())
-                    if (AuraEffect* aur = caster->GetDummyAuraEffect(SPELLFAMILY_SHAMAN, 2289, 0))
-                        if (roll_chance_i(aur->GetBaseAmount()))
-                            target->CastSpell(target, SHAMAN_TOTEM_SPELL_EARTHEN_POWER, true, NULL, aurEff);
+            Unit* target = aurApp->GetTarget();
+            if (Unit *caster = aurEff->GetBase()->GetCaster())
+                if (AuraEffect* aur = caster->GetDummyAuraEffect(SPELLFAMILY_SHAMAN, 2289, 0))
+                    if (roll_chance_i(aur->GetBaseAmount()))
+                        target->CastSpell(target, SHAMAN_TOTEM_SPELL_EARTHEN_POWER, true, NULL, aurEff);
         }
 
         void Register()

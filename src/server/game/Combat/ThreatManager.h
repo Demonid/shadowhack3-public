@@ -58,8 +58,8 @@ class HostileReference : public Reference<Unit, ThreatManager>
         void addThreatPercent(int32 pPercent)
         {
             float tmpThreat = iThreat;
-            tmpThreat = tmpThreat * (pPercent+100.0f) / 100.0f;
-            addThreat(tmpThreat-iThreat);
+            AddPctN(tmpThreat, pPercent);
+            addThreat(tmpThreat - iThreat);
         }
 
         float getThreat() const { return iThreat; }
@@ -170,9 +170,9 @@ class ThreatContainer
 
         void setDirty(bool pDirty) { iDirty = pDirty; }
 
-        bool isDirty() { return iDirty; }
+        bool isDirty() const { return iDirty; }
 
-        bool empty() { return(iThreatList.empty()); }
+        bool empty() const { return(iThreatList.empty()); }
 
         HostileReference* getMostHated() { return iThreatList.empty() ? NULL : iThreatList.front(); }
 

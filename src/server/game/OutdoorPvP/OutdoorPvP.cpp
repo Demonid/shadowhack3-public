@@ -135,7 +135,7 @@ bool OPvPCapturePoint::SetCapturePointData(uint32 entry, uint32 map, float x, fl
     m_maxValue = (float)goinfo->capturePoint.maxTime;
     m_maxSpeed = m_maxValue / (goinfo->capturePoint.minTime ? goinfo->capturePoint.minTime : 60);
     m_neutralValuePct = goinfo->capturePoint.neutralPercent;
-    m_minValue = m_maxValue * goinfo->capturePoint.neutralPercent / 100;
+    m_minValue = CalculatePctU(m_maxValue, m_neutralValuePct);
 
     return true;
 }
@@ -590,11 +590,20 @@ void OutdoorPvP::TeamApplyBuff(TeamId team, uint32 spellId, uint32 spellId2)
     TeamCastSpell(OTHER_TEAM(team), spellId2 ? -(int32)spellId2 : -(int32)spellId);
 }
 
-void OutdoorPvP::OnGameObjectCreate(GameObject *go, bool add)
+void OutdoorPvP::OnGameObjectCreate(GameObject *go)
 {
     if (go->GetGoType() != GAMEOBJECT_TYPE_CAPTURE_POINT)
         return;
 
     if (OPvPCapturePoint *cp = GetCapturePoint(go->GetDBTableGUIDLow()))
-        cp->m_capturePoint = add ? go : NULL;
+        cp->m_capturePoint = go;
+}
+
+void OutdoorPvP::OnGameObjectRemove(GameObject *go)
+{
+    if (go->GetGoType() != GAMEOBJECT_TYPE_CAPTURE_POINT)
+        return;
+
+    if (OPvPCapturePoint *cp = GetCapturePoint(go->GetDBTableGUIDLow()))
+        cp->m_capturePoint = NULL;
 }

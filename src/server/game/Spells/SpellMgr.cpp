@@ -392,16 +392,16 @@ uint32 CalculatePowerCost(SpellEntry const * spellInfo, Unit const * caster, Spe
         {
             // health as power used
             case POWER_HEALTH:
-                powerCost += spellInfo->ManaCostPercentage * caster->GetCreateHealth() / 100;
+                powerCost += int32(CalculatePctU(caster->GetCreateHealth(), spellInfo->ManaCostPercentage));
                 break;
             case POWER_MANA:
-                powerCost += spellInfo->ManaCostPercentage * caster->GetCreateMana() / 100;
+                powerCost += int32(CalculatePctU(caster->GetCreateMana(), spellInfo->ManaCostPercentage));
                 break;
             case POWER_RAGE:
             case POWER_FOCUS:
             case POWER_ENERGY:
             case POWER_HAPPINESS:
-                powerCost += spellInfo->ManaCostPercentage * caster->GetMaxPower(Powers(spellInfo->powerType)) / 100;
+                powerCost += int32(CalculatePctU(caster->GetMaxPower(Powers(spellInfo->powerType)), spellInfo->ManaCostPercentage));
                 break;
             case POWER_RUNE:
             case POWER_RUNIC_POWER:
@@ -1862,7 +1862,7 @@ int32 SpellMgr::CalculateSpellEffectAmount(SpellEntry const * spellEntry, uint8 
             break;
     }
 
-    int32 value = basePoints;
+    float value = float(basePoints);
 
     // random damage
     if (caster)
@@ -1871,7 +1871,7 @@ int32 SpellMgr::CalculateSpellEffectAmount(SpellEntry const * spellEntry, uint8 
         if  (caster->m_movedPlayer)
             if (uint8 comboPoints = caster->m_movedPlayer->GetComboPoints())
                 if (float comboDamage = spellEntry->EffectPointsPerComboPoint[effIndex])
-                    value += int32(comboDamage * comboPoints);
+                    value += comboDamage * comboPoints;
 
         value = caster->ApplyEffectModifiers(spellEntry, effIndex, value);
 
@@ -1884,11 +1884,11 @@ int32 SpellMgr::CalculateSpellEffectAmount(SpellEntry const * spellEntry, uint8 
                 spellEntry->EffectApplyAuraName[effIndex] != SPELL_AURA_MOD_INCREASE_SPEED &&
                 spellEntry->EffectApplyAuraName[effIndex] != SPELL_AURA_MOD_DECREASE_SPEED)
                 //there are many more: slow speed, -healing pct
-            value = int32(value*0.25f*exp(caster->getLevel()*(70-spellEntry->spellLevel)/1000.0f));
+            value *= 0.25f * exp(caster->getLevel() * (70 - spellEntry->spellLevel) / 1000.0f);
             //value = int32(value * (int32)getLevel() / (int32)(spellProto->spellLevel ? spellProto->spellLevel : 1));
     }
 
-    return value;
+    return int32(value);
 }
 
 int32 SpellMgr::CalculateSpellEffectBaseAmount(int32 value, SpellEntry const * spellEntry, uint8 effIndex)
@@ -2871,7 +2871,7 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
             else if (spellproto->SpellFamilyFlags[1] & 0x8)
                 return DIMINISHING_FEAR_BLIND;
             // Seduction
-            else if (spellproto->SpellFamilyFlags[0] & 0x40000000)
+            else if (spellproto->SpellFamilyFlags[1] & 0x10000000)
                 return DIMINISHING_FEAR_BLIND;
             break;
         }
@@ -3157,6 +3157,9 @@ bool SpellMgr::CanAurasStack(SpellEntry const *spellInfo_1, SpellEntry const *sp
                 case SPELL_AURA_OBS_MOD_POWER:
                 case SPELL_AURA_OBS_MOD_HEALTH:
                 case SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE:
+                    // periodic auras which target areas are not allowed to stack this way (replenishment for example)
+                    if (IsAreaOfEffectSpellEffect(spellInfo_1, i) || IsAreaOfEffectSpellEffect(spellInfo_2, i))
+                        break;
                     return true;
                 default:
                     break;
@@ -3885,11 +3888,6 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetA[0] = TARGET_DST_DB;
             count++;
             break;
-        // Deathbringer Saurfang achievement (must be cast on players, cannot do that with ENTRY target)
-        case 72928:
-            spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_AREA_ENEMY_SRC;
-            count++;
-            break;
         case 63675: // Improved Devouring Plague
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_DONE_BONUS;
             count++;
@@ -3949,6 +3947,12 @@ void SpellMgr::LoadSpellCustomAttr()
         case 72855: // Unbound Plague
         case 72856: // Unbound Plague
             spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_TARGET_ENEMY;
+            count++;
+            break;
+        case 71518: // Unholy Infusion Quest Credit
+        case 72934: // Blood Infusion Quest Credit
+        case 72289: // Frost Infusion Quest Credit
+            spellInfo->EffectRadiusIndex[0] = 28;   // another missing radius
             count++;
             break;
         case 71708: // Empowered Flare

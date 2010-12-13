@@ -18,7 +18,6 @@
 #ifndef _DATABASEWORKERPOOL_H
 #define _DATABASEWORKERPOOL_H
 
-#include <ace/Atomic_Op_T.h>
 #include <ace/Thread_Mutex.h>
 
 #include "Common.h"
@@ -51,13 +50,10 @@ class PingOperation : public SQLOperation
 template <class T>
 class DatabaseWorkerPool
 {
-    private:
-        typedef ACE_Atomic_Op<ACE_SYNCH_MUTEX, uint32> AtomicUInt;
-
     public:
         DatabaseWorkerPool() :
         m_queue(new ACE_Activation_Queue(new ACE_Message_Queue<ACE_MT_SYNCH>)),
-        m_connections(0)
+        m_connectionCount(0)
         {
             m_connections.resize(IDX_SIZE);
 
@@ -84,7 +80,7 @@ class DatabaseWorkerPool
                 T* t = new T(m_queue, m_connectionInfo);
                 t->Open();
                 m_connections[IDX_ASYNC][i] = t;
-                ++m_connectionCount;
+                ++m_connectionCount[IDX_ASYNC];
             }
 
             /// Open synchronous connections (direct, blocking operations)
@@ -94,10 +90,10 @@ class DatabaseWorkerPool
                 T* t = new T(m_connectionInfo);
                 t->Open();
                 m_connections[IDX_SYNCH][i] = t;
-                ++m_connectionCount;
+                ++m_connectionCount[IDX_SYNCH];
             }
 
-            sLog.outSQLDriver("Databasepool opened succesfuly. %u connections running.", (uint32)m_connectionCount.value());
+            sLog.outSQLDriver("Databasepool opened succesfuly. %u connections running.", m_connectionCount);
             return true;
         }
 
@@ -107,25 +103,27 @@ class DatabaseWorkerPool
 
             /// Shuts down delaythreads for this connection pool.
             m_queue->queue()->deactivate();
-            for (uint8 i = 0; i < m_connections[IDX_ASYNC].size(); ++i)
+            for (uint8 i = 0; i < m_connectionCount[IDX_ASYNC]; ++i)
             {
                 /// TODO: Better way. probably should flip a boolean and check it on low level code before doing anything on the mysql ctx
                 /// Now we just wait until m_queue gives the signal to the worker threads to stop
                 T* t = m_connections[IDX_ASYNC][i];
-                t->m_worker->wait(); // t->Close(); is called from worker thread                
-                --m_connectionCount;
+                DatabaseWorker* worker = t->m_worker;
+                worker->wait(); // t->Close(); is called from worker thread
+                delete worker;
+                --m_connectionCount[IDX_ASYNC];
             }
 
             sLog.outSQLDriver("Asynchronous connections on databasepool '%s' terminated. Proceeding with synchronous connections.", m_connectionInfo.database.c_str());
 
             /// Shut down the synchronous connections
-            for (uint8 i = 0; i < m_connections[IDX_SYNCH].size(); ++i)
+            for (uint8 i = 0; i < m_connectionCount[IDX_SYNCH]; ++i)
             {
                 T* t = m_connections[IDX_SYNCH][i];
                 //while (1)
                 //    if (t->LockIfReady()) -- For some reason deadlocks us 
                 t->Close();
-                --m_connectionCount;
+                --m_connectionCount[IDX_SYNCH];
             }
             
             sLog.outSQLDriver("All connections on databasepool %s closed.", m_connectionInfo.database.c_str());
@@ -256,16 +254,19 @@ class DatabaseWorkerPool
         {
             if (sLog.GetSQLDriverQueryLogging())
             {
-                if (transaction->GetSize() == 0)
+                switch (transaction->GetSize())
                 {
-                    sLog.outSQLDriver("Transaction contains 0 queries. Not executing.");
-                    return;
-                }
-                if (transaction->GetSize() == 1)
-                {
-                    sLog.outSQLDriver("Warning: Transaction only holds 1 query, consider removing Transaction context in code.");
+                    case 0:
+                        sLog.outSQLDriver("Transaction contains 0 queries. Not executing.");
+                        return;
+                    case 1:
+                        sLog.outSQLDriver("Warning: Transaction only holds 1 query, consider removing Transaction context in code.");
+                        break;
+                    default:
+                        break;
                 }
             }
+
             Enqueue(new TransactionTask(transaction));
         }
 
@@ -313,7 +314,7 @@ class DatabaseWorkerPool
         void KeepAlive()
         {
             /// Ping synchronous connections
-            for (uint8 i = 0; i < m_connections[IDX_SYNCH].size(); ++i)
+            for (uint8 i = 0; i < m_connectionCount[IDX_SYNCH]; ++i)
             {
                 T* t = m_connections[IDX_SYNCH][i];
                 if (t->LockIfReady())
@@ -350,7 +351,7 @@ class DatabaseWorkerPool
         T* GetFreeConnection()
         {
             uint8 i = 0;
-            size_t num_cons = m_connections[IDX_SYNCH].size();
+            size_t num_cons = m_connectionCount[IDX_SYNCH];
             for (;;)    /// Block forever until a connection is free
             {
                 T* t = m_connections[IDX_SYNCH][++i % num_cons ];
@@ -372,7 +373,7 @@ class DatabaseWorkerPool
 
         ACE_Activation_Queue*           m_queue;             //! Queue shared by async worker threads.
         std::vector< std::vector<T*> >  m_connections;
-        AtomicUInt                      m_connectionCount;       //! Counter of MySQL connections;
+        uint32                          m_connectionCount[2];       //! Counter of MySQL connections;
         MySQLConnectionInfo             m_connectionInfo;
 };
 
