@@ -321,6 +321,13 @@ PathFinding.Enable = 0
 PathFinding.ignoreMapIds = ""
 
 #
+#    PathFinding.MovemapType
+#       Mmaps using type
+#        
+
+PathFinding.MovemapType = "1"
+
+#
 #    DetectPosCollision
 #        Description: Check final move position, summon position, etc for visible collision with
 #                     other objects or walls (walls only if vmaps are enabled).
@@ -2988,21 +2995,21 @@ OutdoorPvP.Wintergrasp.CustomHonorIntactBuilding = 1500
 
 #
 #   OutdoorPvP.Wintergrasp.Antifarm.Enable
-#		Enable or Disable antifarm system
+#        Enable or Disable antifarm system
 #              (Default: 0)
 
 OutdoorPvP.Wintergrasp.Antifarm.Enable = 1
 
 #
 #   OutdoorPvP.Wintergrasp.Antifarm.Atk
-#		Min count atack players for antifarm
+#        Min count atack players for antifarm
 #              (Default: 5)
 
 OutdoorPvP.Wintergrasp.Antifarm.Atk = 1
 
 #
 #   OutdoorPvP.Wintergrasp.Antifarm.Def
-#		Min count defense players for antifarm
+#        Min count defense players for antifarm
 #              (Default: 5)
 
 OutdoorPvP.Wintergrasp.Antifarm.Def = 1
