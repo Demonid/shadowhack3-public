@@ -20,8 +20,8 @@
 /*####
 ## npc_valkyr_battle_maiden
 ####*/
-#define SPELL_REVIVE 51918
-#define VALK_WHISPER "It is not yet your time, champion. Rise! Rise and fight once more!"
+#define SPELL_VALKYR_REVIVE 51918
+#define VALK_WHISPER -1608999
 
 class npc_valkyr_battle_maiden : public CreatureScript
 {
@@ -88,8 +88,8 @@ public:
                         if (!plr->isRessurectRequested())
                         {
                             me->HandleEmoteCommand(EMOTE_ONESHOT_CUSTOMSPELL01);
-                            DoCast(plr, SPELL_REVIVE, true);
-                            me->MonsterWhisper(VALK_WHISPER, plr->GetGUID());
+                            DoCast(plr, SPELL_VALKYR_REVIVE, true);
+                            DoScriptText(VALK_WHISPER, me, plr);
                         }
                         FlyBackTimer = 5000;
                         break;
@@ -111,8 +111,104 @@ public:
 
 };
 
+class npc_scourge_sky_darkener : public CreatureScript
+{
+public:
+    npc_scourge_sky_darkener() : CreatureScript("npc_scourge_sky_darkener") {}
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_scourge_sky_darkenerAI (pCreature);
+    }
+
+    struct npc_scourge_sky_darkenerAI : public ScriptedAI
+    {
+	    npc_scourge_sky_darkenerAI(Creature* pCreature) : ScriptedAI(pCreature) { Reset(); }
+
+	    uint32 m_uiAttackTimer;
+
+	    void Reset()
+	    {
+		    m_uiAttackTimer=9000;
+	    }
+
+	    void UpdateAI(const uint32 diff)
+	    {
+		    if (m_uiAttackTimer <= diff)
+		    {
+			    me->CastSpell(me, 75, true);
+			    float rx = rand()% 420 + 1902;
+			    float ry = -(rand() % 177 + 5757);
+			    float ground_Z = me->GetMap()->GetHeight(rx, ry, me->GetPositionZ());
+			    me->SummonGameObject(190691, rx, ry, ground_Z, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 15);
+			    m_uiAttackTimer = urand(1, 2000) + 8000;
+		    }
+		    else m_uiAttackTimer -= diff;
+	    }
+    };
+};
+
+enum eAcherusTeleportSpells
+{
+	SPELL_PORT_29580 = 54700,
+	SPELL_PORT_29581 = 54724,
+	SPELL_PORT_29588 = 54742,
+	SPELL_PORT_29589 = 54745,
+};
+
+class npc_acherus_teleport : public CreatureScript
+{
+public:
+	npc_acherus_teleport() : CreatureScript("npc_acherus_teleport") {}
+
+	CreatureAI* GetAI(Creature* pCreature) const
+	{
+		return new npc_acherus_teleportAI (pCreature);
+	}
+
+	struct npc_acherus_teleportAI : public ScriptedAI
+	{
+		npc_acherus_teleportAI(Creature* pCreature) : ScriptedAI(pCreature) { Reset(); }
+
+		uint32 m_uiAttackTimer;
+
+		void Reset()
+		{
+			m_uiAttackTimer=3000;
+		}
+
+		void UpdateAI(const uint32 diff)
+		{
+			if (m_uiAttackTimer <= diff)
+			{
+				switch (me->GetEntry())
+				{
+					case 29580:
+						me->CastSpell(me, SPELL_PORT_29580, false);
+						break;
+					case 29581:
+						me->CastSpell(me, SPELL_PORT_29581, false);
+						break;
+					case 29588:
+						me->CastSpell(me, SPELL_PORT_29588, false);
+						break;
+					case 29589:
+						me->CastSpell(me, SPELL_PORT_29589, false);
+						break;
+					default:
+						break;
+				}
+				m_uiAttackTimer=3000;
+			}
+			else m_uiAttackTimer -= diff;
+		}
+	};
+};
+
 
 void AddSC_the_scarlet_enclave()
 {
     new npc_valkyr_battle_maiden();
+    new npc_scourge_sky_darkener();
+    new npc_acherus_teleport();
 }

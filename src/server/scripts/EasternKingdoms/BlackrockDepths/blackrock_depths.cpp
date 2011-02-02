@@ -116,7 +116,7 @@ public:
             pInstance->SetData(TYPE_RING_OF_LAW,IN_PROGRESS);
             pPlayer->SummonCreature(NPC_GRIMSTONE,625.559f,-205.618f,-52.735f,2.609f,TEMPSUMMON_DEAD_DESPAWN,0);
 
-            return false;
+            return false;   //Q: should return true here?
         }
         return false;
     }
@@ -588,7 +588,7 @@ public:
         if (pCreature->isVendor() && pPlayer->GetReputationRank(59) >= REP_FRIENDLY)
               pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, GOSSIP_ITEM_SHOW_ACCESS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
 
-        if (pPlayer->GetQuestRewardStatus(QUEST_A_BINDING_CONTRACT) != 1 &&
+        if (!pPlayer->GetQuestRewardStatus(QUEST_A_BINDING_CONTRACT) &&
             !pPlayer->HasItemCount(ITEM_THRORIUM_BROTHERHOOD_CONTRACT, 1, true) &&
             pPlayer->HasItemCount(ITEM_SULFURON_INGOT, 1))
         {
@@ -1242,19 +1242,19 @@ public:
 
         if (quest->GetQuestId() == QUEST_ALE)
         {
-            if (instance->GetData(TYPE_BAR) != IN_PROGRESS)
-                instance->SetData(TYPE_BAR, IN_PROGRESS);
+//            if (instance->GetData(TYPE_BAR) != IN_PROGRESS)
+//                instance->SetData(TYPE_BAR, IN_PROGRESS);
 
             instance->SetData(TYPE_BAR, SPECIAL);
 
             //keep track of amount in instance script, returns SPECIAL if amount ok and event in progress
-            if (instance->GetData(TYPE_BAR) == SPECIAL)
-            {
+//            if (instance->GetData(TYPE_BAR) == SPECIAL)
+//            {
                 DoScriptText(SAY_GOT_BEER, creature);
                 creature->CastSpell(creature, SPELL_DRUNKEN_RAGE, false);
                 if (npc_escortAI* escortAI = CAST_AI(npc_rocknot::npc_rocknotAI, creature->AI()))
                     escortAI->Start(false, false);
-            }
+//            }
         }
 
         return true;

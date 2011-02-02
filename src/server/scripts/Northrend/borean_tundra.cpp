@@ -40,6 +40,177 @@ EndContentData */
 #include "ScriptPCH.h"
 #include "ScriptedEscortAI.h"
 #include "ScriptedFollowerAI.h"
+#include "ScriptedEscortAI.h"
+#include "ScriptedFollowerAI.h"
+
+/*######
+## npc_fizzcrank_fullthrottle
+######*/
+
+#define GOSSIP_ITEM_GO_ON   "Go on."
+#define GOSSIP_ITEM_TELL_ME "Tell me what's going on out here, Fizzcrank."
+
+enum eFizzcrank
+{
+    GOSSIP_TEXTID_FIZZCRANK1    = 12456,
+    GOSSIP_TEXTID_FIZZCRANK2    = 12457,
+    GOSSIP_TEXTID_FIZZCRANK3    = 12458,
+    GOSSIP_TEXTID_FIZZCRANK4    = 12459,
+    GOSSIP_TEXTID_FIZZCRANK5    = 12460,
+    GOSSIP_TEXTID_FIZZCRANK6    = 12461,
+    GOSSIP_TEXTID_FIZZCRANK7    = 12462,
+    GOSSIP_TEXTID_FIZZCRANK8    = 12463,
+    GOSSIP_TEXTID_FIZZCRANK9    = 12464,
+
+    QUEST_THE_MECHAGNOMES       = 11708
+};
+
+class npc_fizzcrank_fullthrottle : public CreatureScript
+{
+public:
+    npc_fizzcrank_fullthrottle(): CreatureScript("npc_fizzcrank_fullthrottle") {}
+
+    bool OnGossipHello(Player* pPlayer, Creature* pCreature)
+    {
+        if (pCreature->isQuestGiver())
+            pPlayer->PrepareQuestMenu(pCreature->GetGUID());
+
+        if (pPlayer->GetQuestStatus(QUEST_THE_MECHAGNOMES) == QUEST_STATUS_INCOMPLETE)
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_TELL_ME, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+
+        pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
+        return true;
+    }
+
+    bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
+    {
+        pPlayer->PlayerTalkClass->ClearMenus();
+        switch(uiAction)
+        {
+            case GOSSIP_ACTION_INFO_DEF+1:
+                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_GO_ON, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+                pPlayer->SEND_GOSSIP_MENU(GOSSIP_TEXTID_FIZZCRANK1, pCreature->GetGUID());
+                break;
+            case GOSSIP_ACTION_INFO_DEF+2:
+                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_GO_ON, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
+                pPlayer->SEND_GOSSIP_MENU(GOSSIP_TEXTID_FIZZCRANK2, pCreature->GetGUID());
+                break;
+            case GOSSIP_ACTION_INFO_DEF+3:
+                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_GO_ON, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
+                pPlayer->SEND_GOSSIP_MENU(GOSSIP_TEXTID_FIZZCRANK3, pCreature->GetGUID());
+                break;
+            case GOSSIP_ACTION_INFO_DEF+4:
+                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_GO_ON, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5);
+                pPlayer->SEND_GOSSIP_MENU(GOSSIP_TEXTID_FIZZCRANK4, pCreature->GetGUID());
+                break;
+            case GOSSIP_ACTION_INFO_DEF+5:
+                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_GO_ON, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 6);
+                pPlayer->SEND_GOSSIP_MENU(GOSSIP_TEXTID_FIZZCRANK5, pCreature->GetGUID());
+                break;
+            case GOSSIP_ACTION_INFO_DEF+6:
+                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_GO_ON, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7);
+                pPlayer->SEND_GOSSIP_MENU(GOSSIP_TEXTID_FIZZCRANK6, pCreature->GetGUID());
+                break;
+            case GOSSIP_ACTION_INFO_DEF+7:
+                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_GO_ON, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 8);
+                pPlayer->SEND_GOSSIP_MENU(GOSSIP_TEXTID_FIZZCRANK7, pCreature->GetGUID());
+                break;
+            case GOSSIP_ACTION_INFO_DEF+8:
+                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_GO_ON, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 9);
+                pPlayer->SEND_GOSSIP_MENU(GOSSIP_TEXTID_FIZZCRANK8, pCreature->GetGUID());
+                break;
+            case GOSSIP_ACTION_INFO_DEF+9:
+                pPlayer->SEND_GOSSIP_MENU(GOSSIP_TEXTID_FIZZCRANK9, pCreature->GetGUID());
+                pPlayer->AreaExploredOrEventHappens(QUEST_THE_MECHAGNOMES);
+                break;
+        }
+        return true;
+    }
+};
+
+/*######
+## npc_surristrasz
+######*/
+
+#define GOSSIP_ITEM_FREE_FLIGHT "I'd like passage to the Transitus Shield."
+#define GOSSIP_ITEM_FLIGHT      "May I use a drake to fly elsewhere?"
+
+enum eSurristrasz
+{
+    SPELL_ABMER_TO_COLDARRA     = 46064
+};
+
+class npc_surristrasz : public CreatureScript
+{
+public:
+    npc_surristrasz(): CreatureScript("npc_surristrasz") {}
+
+    bool GossipHello_npc_surristrasz(Player* pPlayer, Creature* pCreature)
+    {
+        if (pCreature->isQuestGiver())
+            pPlayer->PrepareQuestMenu(pCreature->GetGUID());
+
+        if (pCreature->isTaxi())
+        {
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_FREE_FLIGHT, GOSSIP_SENDER_MAIN, GOSSIP_OPTION_GOSSIP);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, GOSSIP_ITEM_FLIGHT, GOSSIP_SENDER_MAIN, GOSSIP_OPTION_TAXIVENDOR);
+        }
+
+        pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
+        return true;
+    }
+
+    bool GossipSelect_npc_surristrasz(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
+    {
+        pPlayer->PlayerTalkClass->ClearMenus();
+        if (uiAction == GOSSIP_OPTION_GOSSIP)
+        {
+            pPlayer->CLOSE_GOSSIP_MENU();
+
+            //TaxiPath 795 (amber to coldarra)
+            pPlayer->CastSpell(pPlayer, SPELL_ABMER_TO_COLDARRA, true);
+        }
+
+        if (uiAction == GOSSIP_OPTION_TAXIVENDOR)
+            pPlayer->GetSession()->SendTaxiMenu(pCreature);
+
+        return true;
+    }
+};
+
+/*######
+## npc_tiare    //Q: to DB entirely?
+######*/
+
+#define GOSSIP_ITEM_TELEPORT    "Teleport me to Amber Ledge, please."
+
+enum eTiare
+{
+    SPELL_TELEPORT_COLDARRA     = 50135
+};
+
+class npc_tiare : public CreatureScript
+{
+public:
+    npc_tiare() : CreatureScript("npc_tiare") {}
+
+    bool GossipHello_npc_tiare(Player* pPlayer, Creature* pCreature)
+    {
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_TELEPORT, GOSSIP_SENDER_MAIN, GOSSIP_OPTION_GOSSIP);
+        pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
+        return true;
+    }
+
+    bool GossipSelect_npc_tiare(Player* pPlayer, Creature* /*pCreature*/, uint32 /*uiSender*/, uint32 uiAction)
+    {
+        if (uiAction == GOSSIP_OPTION_GOSSIP)
+        {
+            pPlayer->CLOSE_GOSSIP_MENU();
+            pPlayer->CastSpell(pPlayer, SPELL_TELEPORT_COLDARRA, true);
+        }
+        return true;
+    }
+};
 
 /*######
 ## npc_sinkhole_kill_credit
@@ -100,13 +271,13 @@ public:
                     case 1:
                         DoCast(me, SPELL_EXPLODE_CART, true);
                         DoCast(me, SPELL_SUMMON_CART, true);
-                        if (GameObject* cart = me->FindNearestGameObject(188160,3))
+                        if (GameObject* cart = me->FindNearestGameObject(188160,3.0f))
                             cart->SetUInt32Value(GAMEOBJECT_FACTION, 14);
                         uiPhaseTimer = 3000;
                         Phase = 2;
                         break;
                     case 2:
-                        if (GameObject* cart = me->FindNearestGameObject(188160,3))
+                        if (GameObject* cart = me->FindNearestGameObject(188160,3.0f))
                             cart->UseDoorOrButton();
                         DoCast(me, SPELL_EXPLODE_CART, true);
                         uiPhaseTimer = 3000;
@@ -118,7 +289,7 @@ public:
                         Phase = 4;
                     case 5:
                         DoCast(me, SPELL_SUMMON_WORM, true);
-                        if (Unit* worm = me->FindNearestCreature(26250, 3))
+                        if (Unit* worm = me->FindNearestCreature(26250, 3.0f))
                         {
                             worm->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                             worm->HandleEmoteCommand(EMOTE_ONESHOT_EMERGE);
@@ -338,11 +509,6 @@ public:
 
 #define WARSONG_PEON        25270
 
-const uint32 nerubarVictims[3] =
-{
-    45526, 45527, 45514
-};
-
 class mob_nerubar_victim : public CreatureScript
 {
 public:
@@ -358,18 +524,18 @@ public:
 
         void JustDied(Unit* Killer)
         {
-            if (Killer->GetTypeId() == TYPEID_PLAYER)
+            if (Player* playerKiller = Killer->GetCharmerOrOwnerPlayerOrPlayerItself())
             {
-                if (CAST_PLR(Killer)->GetQuestStatus(11611) == QUEST_STATUS_INCOMPLETE)
+                if (playerKiller->GetQuestStatus(11611) == QUEST_STATUS_INCOMPLETE)
                 {
                     uint8 uiRand = urand(0,99);
                     if (uiRand < 25)
                     {
-                        Killer->CastSpell(me,45532,true);
-                        CAST_PLR(Killer)->KilledMonsterCredit(WARSONG_PEON, 0);
+                        playerKiller->CastSpell(me,45532,true);
+                        playerKiller->GroupKillHappens(WARSONG_PEON, me, 0);
                     }
                     else if (uiRand < 75)
-                        Killer->CastSpell(me, nerubarVictims[urand(0,2)], true);
+                        playerKiller->CastSpell(me, RAND(45526, 45527, 45514), true);
                 }
             }
         }
@@ -403,7 +569,7 @@ public:
         {
             me->SetReactState(REACT_PASSIVE);
 
-            if (GameObject* pGO = me->FindNearestGameObject(GO_SCOURGE_CAGE,5.0f))
+            if (GameObject* pGO = me->FindNearestGameObject(GO_SCOURGE_CAGE,INTERACTION_DISTANCE))
                 if (pGO->GetGoState() == GO_STATE_ACTIVE)
                     pGO->SetGoState(GO_STATE_READY);
         }
@@ -478,7 +644,7 @@ public:
             if (!setCrateNumber && !me->HasAura(SPELL_CRATES_CARRIED))
                 me->DisappearAndDie();
 
-            if (!UpdateVictim())
+            if (!UpdateVictim())    //Q: WTF at the end of the method?
                 return;
         }
     };
@@ -651,7 +817,7 @@ public:
                         GameObject *go_caribou = NULL;
                         for (uint8 i = 0; i < CaribouTrapsNum; ++i)
                         {
-                            go_caribou = me->FindNearestGameObject(CaribouTraps[i], 5.0f);
+                            go_caribou = me->FindNearestGameObject(CaribouTraps[i], INTERACTION_DISTANCE);
                             if (go_caribou)
                             {
                                 go_caribou->SetGoState(GO_STATE_ACTIVE);
@@ -784,7 +950,7 @@ public:
             }
             npc_escortAI::UpdateAI(diff);
 
-            if (!UpdateVictim())
+            if (!UpdateVictim())    //Q: WTF?
                 return;
         }
     };
@@ -798,7 +964,7 @@ public:
     {
         if (pQuest->GetQuestId() == QUEST_ESCAPE_WINTERFIN_CAVERNS)
         {
-            if (GameObject* pGo = pCreature->FindNearestGameObject(GO_CAGE, 5.0f))
+            if (GameObject* pGo = pCreature->FindNearestGameObject(GO_CAGE, INTERACTION_DISTANCE))
             {
                 pGo->SetRespawnTime(0);
                 pGo->SetGoType(GAMEOBJECT_TYPE_BUTTON);
@@ -901,18 +1067,31 @@ public:
 
         void UpdateAI(const uint32 /*diff*/)
         {
-            if (WithRedDragonBlood && HarpoonerGUID && !me->HasAura(SPELL_RED_DRAGONBLOOD))
+            if (HarpoonerGUID)
             {
-                if (Player *pHarpooner = Unit::GetPlayer(*me, HarpoonerGUID))
+                if (Player* pHarpooner = Unit::GetPlayer(*me,HarpoonerGUID))
                 {
-                    EnterEvadeMode();
-                    StartFollow(pHarpooner, 35, NULL);
+			        if (!me->HasAura(SPELL_RED_DRAGONBLOOD))
+			        {			
+				        if (WithRedDragonBlood)
+				        {
+					        EnterEvadeMode();
+					        StartFollow(pHarpooner, 35, NULL);
 
-                    DoCast(me, SPELL_SUBDUED, true);
-                    pHarpooner->CastSpell(pHarpooner, SPELL_DRAKE_HATCHLING_SUBDUED, true);
+					        DoCast(me, SPELL_SUBDUED, true);
+					        pHarpooner->CastSpell(pHarpooner, SPELL_DRAKE_HATCHLING_SUBDUED, true);
 
-                    me->AttackStop();
-                    WithRedDragonBlood = false;
+					        me->AttackStop();
+					        WithRedDragonBlood = false;
+					        me->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
+				        }
+				        else if (!me->HasAura(SPELL_SUBDUED) && !pHarpooner->HasAura(SPELL_DRAKE_HATCHLING_SUBDUED))
+				        {
+					        SetFollowComplete();
+					        HarpoonerGUID = 0;
+					        me->DisappearAndDie();
+				        }
+			        }
                 }
             }
 
@@ -1248,7 +1427,7 @@ public:
         if (pCreature->isQuestGiver())
             pPlayer->PrepareQuestMenu(pCreature->GetGUID());
 
-        if (pPlayer->GetQuestStatus(QUEST_LAST_RITES) == QUEST_STATUS_INCOMPLETE && pCreature->GetAreaId() == 4128)
+        if (pPlayer->GetQuestStatus(QUEST_LAST_RITES) == QUEST_STATUS_INCOMPLETE && pCreature->GetAreaId() == 4125) //Q: check, new was AId 4128
             pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_T, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
         pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
@@ -1300,7 +1479,7 @@ public:
 
             if (me->isSummon())
                 if (Unit* pSummoner = CAST_SUM(me)->GetSummoner())
-                    CAST_AI(npc_thassarian::npc_thassarianAI,CAST_CRE(pSummoner)->AI())->bArthasInPosition = true;
+                    if (CAST_CRE(pSummoner)->AI()) CAST_AI(npc_thassarian::npc_thassarianAI,CAST_CRE(pSummoner)->AI())->bArthasInPosition = true;
         }
     };
 
@@ -1332,7 +1511,7 @@ public:
             me->CastSpell(me, SPELL_STUN, true);
             if (me->isSummon())
                 if (Unit* pSummoner = CAST_SUM(me)->GetSummoner())
-                    CAST_AI(npc_thassarian::npc_thassarianAI,CAST_CRE(pSummoner)->AI())->bArlosInPosition = true;
+                    if (CAST_CRE(pSummoner)->AI()) CAST_AI(npc_thassarian::npc_thassarianAI,CAST_CRE(pSummoner)->AI())->bArlosInPosition = true;
         }
     };
 
@@ -1389,7 +1568,7 @@ public:
 
             if (me->isSummon())
                 if (Unit* pSummoner = CAST_SUM(me)->GetSummoner())
-                    CAST_AI(npc_thassarian::npc_thassarianAI,CAST_CRE(pSummoner)->AI())->bTalbotInPosition = true;
+                    if (CAST_CRE(pSummoner)->AI()) CAST_AI(npc_thassarian::npc_thassarianAI,CAST_CRE(pSummoner)->AI())->bTalbotInPosition = true;
         }
 
         void UpdateAI(const uint32 uiDiff)
@@ -1493,14 +1672,14 @@ public:
             if (!bDone)
             {
                 if (Creature* pTalbot = me->FindNearestCreature(NPC_PRINCE_VALANAR, 50.0f, true))
-                    CAST_AI(npc_counselor_talbot::npc_counselor_talbotAI, pTalbot->AI())->bCheck = true;
+                    if (pTalbot->AI()) CAST_AI(npc_counselor_talbot::npc_counselor_talbotAI, pTalbot->AI())->bCheck = true;
 
                 me->AddUnitState(UNIT_STAT_STUNNED);
                 me->CastSpell(me, SPELL_STUN, true);
 
                 if (me->isSummon())
                     if (Unit* pSummoner = CAST_SUM(me)->GetSummoner())
-                        CAST_AI(npc_thassarian::npc_thassarianAI,CAST_CRE(pSummoner)->AI())->bLeryssaInPosition = true;
+                        if (CAST_CRE(pSummoner)->AI()) CAST_AI(npc_thassarian::npc_thassarianAI,CAST_CRE(pSummoner)->AI())->bLeryssaInPosition = true;
                 bDone = true;
             }
             else
@@ -1549,7 +1728,7 @@ public:
                     case 5:
                         if (me->isSummon())
                             if (Unit* pThassarian = CAST_SUM(me)->GetSummoner())
-                        DoScriptText(SAY_THASSARIAN_6, pThassarian);
+                                DoScriptText(SAY_THASSARIAN_6, pThassarian);
                         uiPhaseTimer = 5000;
                         ++Phase;
                         break;
@@ -1564,7 +1743,7 @@ public:
                             if (Unit* pThassarian = CAST_SUM(me)->GetSummoner())
                             {
                                 DoScriptText(SAY_THASSARIAN_7, pThassarian);
-                                CAST_AI(npc_thassarian::npc_thassarianAI,CAST_CRE(pThassarian)->AI())->uiPhase = 16;
+                                if (CAST_CRE(pThassarian)->AI()) CAST_AI(npc_thassarian::npc_thassarianAI,CAST_CRE(pThassarian)->AI())->uiPhase = 16;
                             }
                         uiPhaseTimer = 5000;
                         Phase = 0;
@@ -1631,7 +1810,7 @@ public:
                 StartFollow(CAST_PLR(pCaster), NULL, NULL);
                 me->UpdateEntry(NPC_CAPTURED_BERLY_SORCERER, TEAM_NEUTRAL);
                 DoCast(me, SPELL_COSMETIC_ENSLAVE_CHAINS_SELF, true);
-                CAST_PLR(pCaster)->KilledMonsterCredit(NPC_CAPTURED_BERLY_SORCERER, 0);
+                CAST_PLR(pCaster)->GroupKillHappens(NPC_CAPTURED_BERLY_SORCERER, me, 0);
                 bEnslaved = true;
             }
         }
@@ -1765,7 +1944,7 @@ public:
                         if (Player *pCaster = Unit::GetPlayer(*me, CasterGUID))
                         {
                             DoScriptText(SAY_IMPRISIONED_BERYL_5, me);
-                            pCaster->KilledMonsterCredit(25478,0);
+                            pCaster->GroupKillHappens(25478, me, 0);
                             uiStep = 6;
                         }
                     }
@@ -2224,9 +2403,9 @@ public:
             if (uiTimer <= diff)
             {
                 me->HandleEmoteCommand(EMOTE_ONESHOT_KNEEL);
-                GameObject* pCannon = me->FindNearestGameObject(GO_VALIANCE_KEEP_CANNON_1,10);
+                GameObject* pCannon = me->FindNearestGameObject(GO_VALIANCE_KEEP_CANNON_1,10.0f);
                 if (!pCannon)
-                    pCannon = me->FindNearestGameObject(GO_VALIANCE_KEEP_CANNON_2,10);
+                    pCannon = me->FindNearestGameObject(GO_VALIANCE_KEEP_CANNON_2,10.0f);
                 if (pCannon)
                     pCannon->Use(me);
                 uiTimer = urand(13000,18000);
@@ -2440,7 +2619,7 @@ public:
         {
             me->setFaction(14);
             if (Player* pPlayer = me->GetPlayer(*me,uiPlayerGUID))
-                me->AI()->AttackStart(pPlayer);
+                AttackStart(pPlayer);
         }
 
         void UpdateAI(const uint32 uiDiff)
@@ -2450,26 +2629,22 @@ public:
                 switch(uiEventPhase)
                 {
                     case 1:
+                        uiEventTimer = 5000;
+                        uiEventPhase = 2;
                         switch(me->GetEntry())
                         {
                             case NPC_SALTY_JOHN_THORPE:
                                 me->SetUInt32Value(UNIT_NPC_EMOTESTATE,0);
                                 DoScriptText(SAY_HIDDEN_CULTIST_1,me);
-                                uiEventTimer = 5000;
-                                uiEventPhase = 2;
                                 break;
                             case NPC_GUARD_MITCHELLS:
                                 DoScriptText(SAY_HIDDEN_CULTIST_2,me);
-                                uiEventTimer = 5000;
-                                uiEventPhase = 2;
                                 break;
                             case NPC_TOM_HEGGER:
                                 DoScriptText(SAY_HIDDEN_CULTIST_3,me);
-                                uiEventTimer = 5000;
-                                uiEventPhase = 2;
                                 break;
                         }
-                        break;
+                       break;
                     case 2:
                         switch(me->GetEntry())
                         {
@@ -2566,8 +2741,179 @@ public:
 
 };
 
+/*************
+ * npc_horde_siege_tank //Q: this should be rewritten heawily, as well as DB
+ ************/
+
+enum eHordeSiegeTank
+{
+    SPELL_RESCUE_INJURED_SOLDIER = 47962,
+	SPELL_SOLDIER_RESCUED		 = 47967,
+	SPELL_TUNE_UP				 = 47969,
+	SPELL_WARLORDS_BULWARK		 = 47975,
+
+	NPC_HORDE_SIEGE_TANK		 = 25334,
+	NPC_ABANDONED_FUEL_TANK		 = 27064,
+    NPC_INJURED_WARSONG_WARRIOR  = 27106,
+    NPC_INJURED_WARSONG_MAGE     = 27107,
+    NPC_INJURED_WARSONG_SHAMAN   = 27108,
+    NPC_INJURED_WARSONG_ENGINEER = 27110,
+
+	QUEST_THE_PLAINS_OF_NASAM    = 11652,
+
+	AREAID_PLAINS_OF_NASAM		 = 4130
+};
+
+#define TEXTID_HSG_NO_QUEST		10078
+#define TEXTID_HSG_WRONG_ZONE	10079
+
+class npc_horde_siege_tank : public CreatureScript
+{
+public:
+    npc_horde_siege_tank() : CreatureScript("npc_horde_siege_tank") {}
+
+    CreatureAI* GetAI_npc_horde_siege_tank(Creature* pCreature)
+    {
+	    return new npc_horde_siege_tankAI(pCreature);
+    }
+
+    struct npc_horde_siege_tankAI : public ScriptedAI
+    {
+	    npc_horde_siege_tankAI(Creature* pCreature) : ScriptedAI(pCreature){ Reset(); }
+
+	    uint64 m_DriverGUID;
+	    uint32 m_uiTimer;	// alarm = to check nearest neighbours for supply NPC_ABANDONED_FUEL_TANK
+	    int8 m_toUnsummon;	// number of m_uiTimer alarms in wrong zone before unsummon self
+	    bool m_zoneOK;
+	    uint8 rescuedSoldiers;
+
+	    void Reset() 
+	    { 
+		    if (!me->GetVehicleKit())
+		    {
+			    me->ForcedDespawn();
+		    }
+    		
+		    m_toUnsummon = 13;
+		    m_zoneOK = true; 
+		    m_uiTimer = 2000;
+		    m_DriverGUID = 0;
+		    rescuedSoldiers = 0;
+	    }
+
+        void EnterCombat(Unit* /*pWho*/) {}
+
+        void AttackStart(Unit* /*pWho*/) {}
+
+	    void UpdateAI(const uint32 uiDiff)
+	    {
+		    if (Player *m_Driver = Unit::GetPlayer(*me, m_DriverGUID))
+		    {
+			    if (m_uiTimer <= uiDiff)
+			    {
+				    if (Creature* supply = me->FindNearestCreature(NPC_ABANDONED_FUEL_TANK, INTERACTION_DISTANCE))
+				    {  // CheckMe: values of bonus mana/health
+					    me->ModifyHealth(6000);
+					    me->ModifyPower(POWER_MANA, 2000);
+					    supply->ForcedDespawn();
+				    }
+				    m_uiTimer = 2000;
+
+				    m_zoneOK = me->GetAreaId() == AREAID_PLAINS_OF_NASAM;
+
+				    if (m_zoneOK) 
+					    m_toUnsummon = 13;
+				    else if (--m_toUnsummon > 0) 
+					    me->Say(TEXTID_HSG_WRONG_ZONE, LANG_UNIVERSAL, m_DriverGUID);
+				    else if (Vehicle * siegeTank = m_Driver->GetVehicle())
+				    {
+					    if (me == m_Driver->GetVehicleCreatureBase())
+					    {
+						    siegeTank->Dismiss();
+					    }										
+				    }
+			    }
+			    else m_uiTimer -= uiDiff;
+		    }
+
+            return;
+	    }
+
+	    void PassengerBoarded(Unit *who, int8 seatId, bool apply)
+	    {
+		    if (apply)
+		    {
+			    if (Player *m_Driver = who->ToPlayer())
+			    {
+				    if (m_Driver->GetQuestStatus(QUEST_THE_PLAINS_OF_NASAM) != QUEST_STATUS_INCOMPLETE)
+				    {
+					    me->Say(TEXTID_HSG_NO_QUEST, LANG_UNIVERSAL, m_DriverGUID);
+					    me->RemoveCharmedBy(m_Driver);
+				    }
+				    else 
+				    {
+					    me->InitCharmInfo();
+					    me->SetReactState(REACT_PASSIVE);
+					    m_DriverGUID = who->GetGUID();
+				    }
+			    }
+		    }
+		    else m_DriverGUID = 0;
+	    }
+
+	    void OnCharmed(bool apply) {}
+
+	    void SpellHitTarget(Unit *pTarget, const SpellEntry *spell)
+	    {
+		    if (spell->Id != SPELL_RESCUE_INJURED_SOLDIER)
+			    return;
+
+		    if (!pTarget || !pTarget->ToCreature())
+			    return;
+
+		    if (Player *m_Driver = Unit::GetPlayer(*me, m_DriverGUID))
+		    {
+			    if (m_Driver->GetQuestStatus(QUEST_THE_PLAINS_OF_NASAM) != QUEST_STATUS_INCOMPLETE)
+				    return;
+
+			    if (rescuedSoldiers > 2)
+				    return; 
+
+			    // first rescued applies a mod to the Tank
+			    if (rescuedSoldiers == 0)
+			    {	
+				    switch (pTarget->GetEntry())
+				    {
+				    case NPC_INJURED_WARSONG_WARRIOR:
+					    DoCast(me, SPELL_WARLORDS_BULWARK);
+					    break;
+				    case NPC_INJURED_WARSONG_MAGE:
+				    case NPC_INJURED_WARSONG_SHAMAN:
+					    break;
+				    case NPC_INJURED_WARSONG_ENGINEER:
+					    DoCast(me, SPELL_TUNE_UP);
+					    break;
+				    default:
+					    return;
+				    }
+			    }
+
+			    rescuedSoldiers++;
+			    DoCast(m_Driver, SPELL_SOLDIER_RESCUED);
+			    pTarget->HandleEmoteCommand(EMOTE_STATE_STAND);
+			    pTarget->EnterVehicle(me->GetVehicleKit());
+		    }
+
+		    return;
+	    }
+    };
+};
+
 void AddSC_borean_tundra()
 {
+    new npc_fizzcrank_fullthrottle;
+    new npc_surristrasz;
+    new npc_tiare;
     new npc_sinkhole_kill_credit;
     new npc_khunok_the_behemoth;
     new npc_keristrasza;
@@ -2595,4 +2941,5 @@ void AddSC_borean_tundra()
     new npc_valiance_keep_cannoneer;
     new npc_warmage_coldarra;
     new npc_hidden_cultist;
+    new npc_horde_siege_tank;
 }

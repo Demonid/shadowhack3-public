@@ -106,11 +106,11 @@ public:
 
         void JustDied(Unit* pKiller)
         {
-            if (pKiller->GetTypeId() == TYPEID_PLAYER)
-                if (CAST_PLR(pKiller)->GetQuestStatus(QUEST_WHATS_HAUNTING_WITCH_HILL) == QUEST_STATUS_INCOMPLETE)
+            if (Player* const pPlayer = pKiller->GetCharmerOrOwnerPlayerOrPlayerItself())
+                if (pPlayer->GetQuestStatus(QUEST_WHATS_HAUNTING_WITCH_HILL) == QUEST_STATUS_INCOMPLETE)
                 {
                     DoCast(pKiller, SPELL_SUMMON_RESTLESS_APPARITION, true);
-                    CAST_PLR(pKiller)->KilledMonsterCredit(NPC_RESTLESS_APPARITION,0);
+                    pPlayer->GroupKillHappens(NPC_RESTLESS_APPARITION,me);
                 }
         }
     };
@@ -238,7 +238,7 @@ public:
 };
 
 /*######
-## npc_deserter_agitator
+## npc_theramore_guard
 ######*/
 
 enum eTheramoreGuard

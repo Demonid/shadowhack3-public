@@ -97,6 +97,7 @@ class Log
         void outString( );
         void outStringInLine( const char * str, ... )           ATTR_PRINTF(2,3);
         void outError( const char * err, ... )                  ATTR_PRINTF(2,3);
+	void outCheater( const char * cheat, ... )              ATTR_PRINTF(2,3);
         void outCrash( const char * err, ... )                  ATTR_PRINTF(2,3);
         void outBasic( const char * str, ... )                  ATTR_PRINTF(2,3);
         void outDetail( const char * str, ... )                 ATTR_PRINTF(2,3);
@@ -138,6 +139,7 @@ class Log
         FILE* logfile;
         FILE* gmLogfile;
         FILE* charLogfile;
+        FILE* cheatLogfile;
         FILE* dberLogfile;
         FILE* chatLogfile;
         FILE* arenaLogFile;

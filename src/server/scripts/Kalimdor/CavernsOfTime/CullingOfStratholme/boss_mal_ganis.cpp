@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -26,42 +27,52 @@ Script Data End */
 #include "ScriptPCH.h"
 #include "culling_of_stratholme.h"
 
-enum Spells
+/*enum Yells
 {
-    SPELL_CARRION_SWARM                         = 52720, //A cresting wave of chaotic magic splashes over enemies in front of the caster, dealing 3230 to 3570 Shadow damage and 380 to 420 Shadow damage every 3 sec. for 15 sec.
-    H_SPELL_CARRION_SWARM                       = 58852,
-    SPELL_MIND_BLAST                            = 52722, //Inflicts 4163 to 4837 Shadow damage to an enemy.
-    H_SPELL_MIND_BLAST                          = 58850,
-    SPELL_SLEEP                                 = 52721, //Puts an enemy to sleep for up to 10 sec. Any damage caused will awaken the target.
-    H_SPELL_SLEEP                               = 58849,
-    SPELL_VAMPIRIC_TOUCH                        = 52723 //Heals the caster for half the damage dealt by a melee attack.
+	SAY_INTRO_1                                 = -1595009,
+	SAY_INTRO_2                                 = -1595010,
+	SAY_AGGRO                                   = -1595011,
+	SAY_KILL_1                                  = -1595012,
+	SAY_KILL_2                                  = -1595013,
+	SAY_KILL_3                                  = -1595014,
+	SAY_SLAY_1                                  = -1595015,
+	SAY_SLAY_2                                  = -1595016,
+	SAY_SLAY_3                                  = -1595017,
+	SAY_SLAY_4                                  = -1595018,
+	SAY_SLEEP_1                                 = -1595019,
+	SAY_SLEEP_2                                 = -1595020,
+	SAY_30HEALTH                                = -1595021,
+	SAY_15HEALTH                                = -1595022,
+	SAY_ESCAPE_SPEECH_1                         = -1595023,
+	SAY_ESCAPE_SPEECH_2                         = -1595024,
+	SAY_OUTRO                                   = -1595025,
+};*/
+
+enum Says
+{
+	SAY_MALGANIS_AGGRO       = -1594170,  
+	SAY_MALGANIS_SLAY01      = -1594172, 
+	SAY_MALGANIS_SLAY02      = -1594173, 
+	SAY_MALGANIS_SLAY03      = -1594174,
+	SAY_MALGANIS_SLAY04      = -1594175,
+	SAY_MALGANIS_SLAY05      = -1594176,
+	SAY_MALGANIS_SLAY06      = -1594177,
+	SAY_MALGANIS_SLAY07      = -1594166,
+	SAY_MALGANIS_SLEEP01     = -1594185,
+	SAY_MALGANIS_SLEEP02     = -1594186,
+	SAY_MALGANIS_Sleep       = -1594178,
+	SAY_MALGANIS_15HP        = -1594179,
 };
 
-enum Yells
+enum MalGanisSpells
 {
-    SAY_INTRO_1                                 = -1595009,
-    SAY_INTRO_2                                 = -1595010,
-    SAY_AGGRO                                   = -1595011,
-    SAY_KILL_1                                  = -1595012,
-    SAY_KILL_2                                  = -1595013,
-    SAY_KILL_3                                  = -1595014,
-    SAY_SLAY_1                                  = -1595015,
-    SAY_SLAY_2                                  = -1595016,
-    SAY_SLAY_3                                  = -1595017,
-    SAY_SLAY_4                                  = -1595018,
-    SAY_SLEEP_1                                 = -1595019,
-    SAY_SLEEP_2                                 = -1595020,
-    SAY_30HEALTH                                = -1595021,
-    SAY_15HEALTH                                = -1595022,
-    SAY_ESCAPE_SPEECH_1                         = -1595023,
-    SAY_ESCAPE_SPEECH_2                         = -1595024,
-    SAY_OUTRO                                   = -1595025,
-};
-
-enum CombatPhases
-{
-    COMBAT,
-    OUTRO
+	SPELL_SWAMP_N                          = 52720,
+	SPELL_SWAMP_H                          = 58852,
+	SPELL_MIND_BLAST_N                     = 52722,
+	SPELL_MIND_BLAST_H                     = 58850,
+	SPELL_SLEEP_N                          = 52721,
+	SPELL_SLEEP_H                          = 58849,
+	SPELL_VAMPIRE                          = 52723
 };
 
 class boss_mal_ganis : public CreatureScript
@@ -76,180 +87,204 @@ public:
 
     struct boss_mal_ganisAI : public ScriptedAI
     {
-        boss_mal_ganisAI(Creature *c) : ScriptedAI(c)
-        {
-            pInstance = c->GetInstanceScript();
-        }
+		boss_mal_ganisAI(Creature *c) : ScriptedAI(c)
+		{
+			pInstance = c->GetInstanceScript();
+			Reset();
+		}
 
-        uint32 uiCarrionSwarmTimer;
-        uint32 uiMindBlastTimer;
-        uint32 uiVampiricTouchTimer;
-        uint32 uiSleepTimer;
+		bool Sleep;
+		bool Vampire;
+		uint32 Phase;
+		Creature* Malganis;
+		Creature* Arthas;
 
-        uint8 uiOutroStep;
-        uint32 uiOutroTimer;
+		uint32 Swamp_Timer;
+		uint32 MindBlast_Timer;
+		uint32 Sleep_Timer;
+		uint32 Vampire_Timer;
 
-        bool bYelled;
-        bool bYelled2;
+		InstanceScript* pInstance;
 
-        CombatPhases Phase;
+		void Reset() 
+		{ 
+			Sleep = false;
+			Vampire = false;
+			Swamp_Timer = 6300;
+			MindBlast_Timer = 11300;
+			Sleep_Timer = 17300;
+			Vampire_Timer = 30000;
+		}
 
-        InstanceScript* pInstance;
+		void AttackStart(Unit* who)
+		{
+			if(pInstance->GetData(TYPE_PHASE) > 9) return;
 
-        void Reset()
-        {
-             bYelled = false;
-             bYelled2 = false;
-             Phase = COMBAT;
-             uiCarrionSwarmTimer = 6000;
-             uiMindBlastTimer = 11000;
-             uiVampiricTouchTimer = urand(10000,15000);
-             uiSleepTimer = urand(15000,20000);
-             uiOutroTimer = 1000;
+			if(pInstance->GetData(TYPE_MALGANIS) != IN_PROGRESS) return;
 
-             if (pInstance)
-                 pInstance->SetData(DATA_MAL_GANIS_EVENT, NOT_STARTED);
-        }
+			if(!who || who == me)
+				return;
 
-        void EnterCombat(Unit* /*who*/)
-        {
-            DoScriptText(SAY_AGGRO, me);
-            if (pInstance)
-                pInstance->SetData(DATA_MAL_GANIS_EVENT, IN_PROGRESS);
-        }
+			me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
 
-        void DamageTaken(Unit *done_by, uint32 &damage)
-        {
-            if (damage >= me->GetHealth() && done_by != me)
-                damage = me->GetHealth()-1;
-        }
+			ScriptedAI::AttackStart(who);
+		}
 
-        void UpdateAI(const uint32 diff)
-        {
-            switch(Phase)
-            {
-                case COMBAT:
-                    //Return since we have no target
-                    if (!UpdateVictim())
-                        return;
+		void KillCreditMalganis()
+		{
+			Map *map = me->GetMap();
+			Map::PlayerList const& players = map->GetPlayers();
+			if (!players.isEmpty() && map->IsDungeon())
+			{
+				for(Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+				{
+					if(Player* pPlayer = itr->getSource())
+					{
+						pPlayer->KilledMonsterCredit(31006, me->GetGUID());
+						pPlayer->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
+					}
+				}
+			}
+			if (pInstance)
+				pInstance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 58630);
+		}
 
-                    if (!bYelled && HealthBelowPct(30))
-                    {
-                        DoScriptText(SAY_30HEALTH, me);
-                        bYelled = true;
-                    }
+		void EnterEvadeMode()
+		{
+			me->RemoveAllAuras();
+			me->DeleteThreatList();
+			me->CombatStop(true);
+			me->LoadCreaturesAddon();
 
-                    if (!bYelled2 && HealthBelowPct(15))
-                    {
-                        DoScriptText(SAY_15HEALTH, me);
-                        bYelled2 = true;
-                    }
+			if(pInstance->GetData(TYPE_PHASE) > 9)
+			{
+				KillCreditMalganis();
+				me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+				if (Creature* pArthas = Unit::GetCreature(*me, pInstance->GetData64(NPC_ARTHAS)))
+				{
+					me->SetInCombatWith(pArthas);
+				}
+			}
+			else
+				me->RemoveFromWorld();
 
-                    if (HealthBelowPct(1))
-                    {
-                        //Handle Escape Event: Don't forget to add Player::RewardPlayerAndGroupAtEvent
-                        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-                        uiOutroStep = 1;
-                        Phase = OUTRO;
-                        return;
-                    }
+			me->SetLootRecipient(NULL);
+		}
 
-                    if (Creature* pArthas = me->GetCreature(*me, pInstance ? pInstance->GetData64(DATA_ARTHAS) : 0))
-                        if (pArthas->isDead())
-                        {
-                            EnterEvadeMode();
-                            me->DisappearAndDie();
-                            if (pInstance)
-                                pInstance->SetData(DATA_MAL_GANIS_EVENT, FAIL);
-                        }
+		void EnterCombat(Unit* who)
+		{
+			if(pInstance->GetData(TYPE_PHASE) > 9) return;
+			me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
 
-                    if (uiCarrionSwarmTimer < diff)
-                    {
-                        DoCastVictim(SPELL_CARRION_SWARM);
-                        uiCarrionSwarmTimer = 7000;
-                    } else uiCarrionSwarmTimer -= diff;
+			DoScriptText(SAY_MALGANIS_AGGRO, me);
+		}
 
-                    if (uiMindBlastTimer < diff)
-                    {
-                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
-                            DoCast(pTarget, SPELL_MIND_BLAST);
-                        uiMindBlastTimer = 6000;
-                    } else uiMindBlastTimer -= diff;
+		void KilledUnit(Unit* pVictim)
+		{
+			switch(rand()%7)
+			{
+			case 0: DoScriptText(SAY_MALGANIS_SLAY01, me); break;
+			case 1: DoScriptText(SAY_MALGANIS_SLAY02, me); break;
+			case 2: DoScriptText(SAY_MALGANIS_SLAY03, me); break;
+			case 3: DoScriptText(SAY_MALGANIS_SLAY04, me); break;
+			case 4: DoScriptText(SAY_MALGANIS_SLAY05, me); break;
+			case 5: DoScriptText(SAY_MALGANIS_SLAY06, me); break;
+			case 6: DoScriptText(SAY_MALGANIS_SLAY07, me); break;
+			}
+			if (pVictim->GetGUID() == pInstance->GetData64(NPC_ARTHAS))
+			{
+				pInstance->SetData(TYPE_MALGANIS, FAIL);
+				EnterEvadeMode();
+				me->RemoveFromWorld();
+				me->SetLootRecipient(NULL);
+			}
+		}
 
-                    if (uiVampiricTouchTimer < diff)
-                    {
-                        DoCast(me, SPELL_VAMPIRIC_TOUCH);
-                        uiVampiricTouchTimer = 32000;
-                    } else uiVampiricTouchTimer -= diff;
+		void UpdateAI(const uint32 diff)
+		{
+			if(pInstance->GetData(TYPE_PHASE) > 9) return;
 
-                    if (uiSleepTimer < diff)
-                    {
-                        DoScriptText(RAND(SAY_SLEEP_1,SAY_SLEEP_2), me);
-                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
-                            DoCast(pTarget, SPELL_SLEEP);
-                        uiSleepTimer = urand(15000,20000);
-                    } else uiSleepTimer -= diff;
+			if (!UpdateVictim())
+				return;
 
-                    DoMeleeAttackIfReady();
-                    break;
-                case OUTRO:
-                    if (uiOutroTimer < diff)
-                    {
-                        switch(uiOutroStep)
-                        {
-                            case 1:
-                                DoScriptText(SAY_ESCAPE_SPEECH_1, me);
-                                me->GetMotionMaster()->MoveTargetedHome();
-                                ++uiOutroStep;
-                                uiOutroTimer = 8000;
-                                break;
-                            case 2:
-                                me->SetUInt64Value(UNIT_FIELD_TARGET, pInstance ? pInstance->GetData64(DATA_ARTHAS) : 0);
-                                me->HandleEmoteCommand(29);
-                                DoScriptText(SAY_ESCAPE_SPEECH_2, me);
-                                ++uiOutroStep;
-                                uiOutroTimer = 9000;
-                                break;
-                            case 3:
-                                DoScriptText(SAY_OUTRO, me);
-                                ++uiOutroStep;
-                                uiOutroTimer = 16000;
-                                break;
-                            case 4:
-                                me->HandleEmoteCommand(33);
-                                ++uiOutroStep;
-                                uiOutroTimer = 500;
-                                break;
-                            case 5:
-                                me->SetVisible(false);
-                                me->Kill(me);
-                                break;
+			DoMeleeAttackIfReady();
 
-                        }
-                    } else uiOutroTimer -= diff;
-                    break;
-            }
-        }
+			if (Swamp_Timer < diff)
+			{
+				if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 20.0f, true))
+					DoCast(target, DUNGEON_MODE(SPELL_SWAMP_N, SPELL_SWAMP_H));
 
-        void JustDied(Unit* /*killer*/)
-        {
-            if (pInstance)
-            {
-                pInstance->SetData(DATA_MAL_GANIS_EVENT, DONE);
+				Swamp_Timer = 7300;
+			}else Swamp_Timer -= diff;
 
-                // give achievement credit to players. criteria use spell 58630 which doesn't exist.
-                if (pInstance)
-                    pInstance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 58630);
-            }
-        }
+			if (MindBlast_Timer < diff)
+			{
+				if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
+					DoCast(target, DUNGEON_MODE(SPELL_MIND_BLAST_N, SPELL_MIND_BLAST_H));
 
-        void KilledUnit(Unit * victim)
-        {
-            if (victim == me)
-                return;
+				MindBlast_Timer = 11300;
+			}else MindBlast_Timer -= diff;
 
-            DoScriptText(RAND(SAY_SLAY_1,SAY_SLAY_2,SAY_SLAY_3,SAY_SLAY_4), me);
-        }
+			if(HealthBelowPct(40.0f))
+			{
+				if(!Sleep)
+				{
+					Sleep = true;
+					DoScriptText(SAY_MALGANIS_Sleep, me); 
+				}
+
+				if (Sleep_Timer < diff)
+				{
+					if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 45.0f, true))
+						DoCast(target, DUNGEON_MODE(SPELL_SLEEP_N, SPELL_SLEEP_H));
+					switch(rand()%2)
+					{
+					case 0: DoScriptText(SAY_MALGANIS_SLEEP01, me); break;
+					case 1: DoScriptText(SAY_MALGANIS_SLEEP02, me); break;
+					}
+
+					Sleep_Timer = 17300;
+				}else Sleep_Timer -= diff;
+			}
+
+			if(HealthBelowPct(25.0f))
+			{
+				if(Vampire == false)
+				{
+					Vampire = true;
+					DoScriptText(SAY_MALGANIS_15HP, me); 
+					DoCast(me, SPELL_VAMPIRE);
+				}
+
+				if (Vampire_Timer < diff)
+				{
+					DoCast(me, SPELL_VAMPIRE);
+
+					Vampire_Timer = 30000;
+				}else Vampire_Timer -= diff;
+
+			}
+
+			if(HealthBelowPct(5.0f))
+			{ 
+				pInstance->SetData(TYPE_PHASE, 10);
+				pInstance->SetData(TYPE_MALGANIS, DONE);
+				EnterEvadeMode();
+			}
+
+		}
+
+		void DamageTaken(Unit* /*pDoneBy*/, uint32 &uiDamage)
+		{
+			if (uiDamage > me->GetHealth())
+			{
+				uiDamage = 0;
+
+				pInstance->SetData(TYPE_PHASE, 10);
+				pInstance->SetData(TYPE_MALGANIS, DONE);
+				EnterEvadeMode();
+			}
+		}
     };
 
 };

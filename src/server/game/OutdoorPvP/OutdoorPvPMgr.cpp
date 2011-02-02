@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -16,6 +17,7 @@
  */
 
 #include "OutdoorPvPMgr.h"
+#include "OutdoorPvPWG.h"
 #include "ObjectMgr.h"
 #include "Player.h"
 #include "DisableMgr.h"

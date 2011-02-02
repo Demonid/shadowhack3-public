@@ -1,3 +1,4 @@
+# Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
 # Copyright (C) 2005-2010 Trinity <http://www.trinitycore.org/>
 #
 # This file is free software; as a special exception the author gives
@@ -9,7 +10,7 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 # Set projectname (must be done AFTER setting configurationtypes)
-project(TrinityCore)
+project(Izb00shkaCore)
 
 # CMake policies (can not be handled elsewhere)
 cmake_minimum_required(VERSION 2.6)

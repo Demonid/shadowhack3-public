@@ -259,6 +259,8 @@ bool CharacterDatabaseConnection::Open()
     PREPARE_STATEMENT(CHAR_ADD_AURA, "INSERT INTO character_aura (guid,caster_guid,item_guid,spell,effect_mask,recalculate_mask,stackcount,amount0,amount1,amount2,base_amount0,base_amount1,base_amount2,maxduration,remaintime,remaincharges) "
     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC)
 
+    PREPARE_STATEMENT(CHAR_LOG_ADDITEM, "INSERT INTO character_itemlog (`date`, `guid`, `name`, `item`) VALUES (NOW(), ?, ?, ?)", CONNECTION_ASYNC)
+
     for (PreparedStatementMap::const_iterator itr = m_queries.begin(); itr != m_queries.end(); ++itr)
     {
         PrepareStatement(itr->first, itr->second.first, itr->second.second);

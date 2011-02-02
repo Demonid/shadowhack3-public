@@ -469,6 +469,8 @@ struct Position
     bool IsInDist(const Position *pos, float dist) const
         { return GetExactDistSq(pos) < dist * dist; }
     bool HasInArc(float arcangle, const Position *pos) const;
+    bool HasInArc( float arcangle, float x, float y) const;
+
     bool HasInLine(const Unit *target, float distance, float width) const;
     std::string ToString() const;
 };
@@ -631,6 +633,7 @@ class WorldObject : public Object, public WorldLocation
             return (m_valuesCount > UNIT_FIELD_COMBATREACH) ? m_floatValues[UNIT_FIELD_COMBATREACH] : DEFAULT_WORLD_OBJECT_SIZE;
         }
         void UpdateGroundPositionZ(float x, float y, float &z) const;
+        void UpdateAllowedPositionZ(float x, float y, float &z) const;
 
         void GetRandomPoint(const Position &srcPos, float distance, float &rand_x, float &rand_y, float &rand_z) const;
         void GetRandomPoint(const Position &srcPos, float distance, Position &pos) const
@@ -657,6 +660,15 @@ class WorldObject : public Object, public WorldLocation
         void SetName(const std::string& newname) { m_name=newname; }
 
         virtual const char* GetNameForLocaleIdx(LocaleConstant /*locale_idx*/) const { return GetName(); }
+        float GetDistanceSqr(float x, float y, float z) const
+        {
+            float dx = GetPositionX() - x;
+            float dy = GetPositionY() - y;
+            float dz = GetPositionZ() - z;
+            float sizefactor = GetObjectSize();
+            float dist = dx*dx+dy*dy+dz*dz-sizefactor;
+            return (dist > 0 ? dist : 0);
+        }
 
         float GetDistance(const WorldObject *obj) const
         {
@@ -809,6 +821,7 @@ class WorldObject : public Object, public WorldLocation
 
         void GetGameObjectListWithEntryInGrid(std::list<GameObject*>& lList, uint32 uiEntry, float fMaxSearchRange);
         void GetCreatureListWithEntryInGrid(std::list<Creature*>& lList, uint32 uiEntry, float fMaxSearchRange);
+        void GetPlayerListInDistance(std::list<Player*>& lList, float fMaxSearchRange);
 
         void DestroyForNearbyPlayers();
         virtual void UpdateObjectVisibility(bool forced = true);

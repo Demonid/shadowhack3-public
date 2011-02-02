@@ -53,7 +53,7 @@ EndScriptData */
 #define SPELL_UPPERCUT              26007
 #define SPELL_UNBALANCING_STRIKE    26613
 
-#define VEKLOR_DIST                 20                      // VL will not come to melee when attacking
+#define VEKLOR_DIST                 20.0f                      // VL will not come to melee when attacking
 
 #define SPELL_SHADOWBOLT            26006
 #define SPELL_BLIZZARD              26607
@@ -143,7 +143,7 @@ struct boss_twinemperorsAI : public ScriptedAI
     {
         DoZoneInCombat();
         Creature *pOtherBoss = GetOtherBoss();
-        if (pOtherBoss)
+        if (pOtherBoss && pOtherBoss->AI())
         {
             // TODO: we should activate the other boss location so he can start attackning even if nobody
             // is near I dont know how to do that
@@ -227,7 +227,7 @@ struct boss_twinemperorsAI : public ScriptedAI
             thismap->CreatureRelocation(me, other_x, other_y, other_z, other_o);
 
             SetAfterTeleport();
-            CAST_AI(boss_twinemperorsAI,  pOtherBoss->AI())->SetAfterTeleport();
+            if (pOtherBoss->AI()) CAST_AI(boss_twinemperorsAI,  pOtherBoss->AI())->SetAfterTeleport();
         }
     }
 
@@ -421,7 +421,7 @@ public:
         void CastSpellOnBug(Creature *pTarget)
         {
             pTarget->setFaction(14);
-            pTarget->AI()->AttackStart(me->getThreatManager().getHostilTarget());
+            if (pTarget->AI()) pTarget->AI()->AttackStart(me->getThreatManager().getHostilTarget());
             pTarget->AddAura(SPELL_MUTATE_BUG, pTarget);
             pTarget->SetFullHealth();
         }
@@ -503,7 +503,7 @@ public:
             Scorpions_Timer = 7000 + rand()%7000;
 
             //Added. Can be removed if its included in DB.
-            me->ApplySpellImmune(0, IMMUNITY_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, true);
+            me->ApplySpellImmune(0, IMMUNITY_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, true);   //DB:
             me->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, 0);
             me->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, 0);
         }
@@ -533,7 +533,7 @@ public:
             if (ShadowBolt_Timer <= diff)
             {
                 if (!me->IsWithinDist(me->getVictim(), 45.0f))
-                    me->GetMotionMaster()->MoveChase(me->getVictim(), VEKLOR_DIST, 0);
+                    me->GetMotionMaster()->MoveChase(me->getVictim(), VEKLOR_DIST, 0.0f);
                 else
                     DoCast(me->getVictim(), SPELL_SHADOWBOLT);
                 ShadowBolt_Timer = 2000;
@@ -543,7 +543,7 @@ public:
             if (Blizzard_Timer <= diff)
             {
                 Unit *pTarget = NULL;
-                pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 45, true);
+                pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 45.0f, true);
                 if (pTarget)
                     DoCast(pTarget, SPELL_BLIZZARD);
                 Blizzard_Timer = 15000+rand()%15000;
@@ -586,7 +586,7 @@ public:
                 // VL doesn't melee
                 if (me->Attack(who, false))
                 {
-                    me->GetMotionMaster()->MoveChase(who, VEKLOR_DIST, 0);
+                    me->GetMotionMaster()->MoveChase(who, VEKLOR_DIST, 0.0f);
                     me->AddThreat(who, 0.0f);
                 }
             }

@@ -59,7 +59,7 @@ EndScriptData */
 #define ENTRY_FLAMEWALKER_ELITE     11664
 
 #define GOSSIP_HELLO 4995
-#define GOSSIP_SELLECT "Tell me more."
+#define GOSSIP_SELECT "Tell me more."
 
 class boss_majordomo : public CreatureScript
 {
@@ -73,7 +73,7 @@ public:
 
     bool OnGossipHello(Player* pPlayer, Creature* pCreature)
     {
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_SELLECT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_SELECT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
         pPlayer->SEND_GOSSIP_MENU(GOSSIP_HELLO, pCreature->GetGUID());
         return true;
     }
@@ -139,7 +139,7 @@ public:
                  if (((!me->FindNearestCreature(ENTRY_FLAMEWALKER_HEALER,100.0f)) && (!me->FindNearestCreature(ENTRY_FLAMEWALKER_ELITE,100.0f))) && (!m_pInstance->GetData(DATA_MAJORDOMOISDEAD)))
                  {
                     me->setFaction(35);
-                    me->AI()->EnterEvadeMode();
+                    EnterEvadeMode();
                     DoScriptText(SAY_DEFEAT, me);
                     //DoCast(SPELL_SUMMON_RAGNAROS); Not working atm ,doing workaround
                     if (m_pInstance)

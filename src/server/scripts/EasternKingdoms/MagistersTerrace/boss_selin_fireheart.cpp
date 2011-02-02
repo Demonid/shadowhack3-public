@@ -83,7 +83,7 @@ public:
 
         InstanceScript* pInstance;
 
-        std::list<uint64> Crystals;
+        std::list<uint64> Crystals;     //Q: is destructor needed for clearing this? it inits once in constructor only
 
         uint32 DrainLifeTimer;
         uint32 DrainManaTimer;
@@ -347,7 +347,7 @@ public:
             if (InstanceScript* pInstance = me->GetInstanceScript())
             {
                 Creature* Selin = (Unit::GetCreature(*me, pInstance->GetData64(DATA_SELIN)));
-                if (Selin && Selin->isAlive())
+                if (Selin && Selin->isAlive() && Selin->AI())
                 {
                     if (CAST_AI(boss_selin_fireheart::boss_selin_fireheartAI, Selin->AI())->CrystalGUID == me->GetGUID())
                     {
