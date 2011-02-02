@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -289,7 +290,9 @@ void AddSC_boss_salramm();
 void AddSC_boss_mal_ganis();
 void AddSC_boss_meathook();
 void AddSC_culling_of_stratholme();
+void AddSC_culling_of_stratholmeAI();
 void AddSC_instance_culling_of_stratholme();
+void AddSC_trash_culling_of_stratholme();
 void AddSC_boss_celebras_the_cursed();       //Maraudon
 void AddSC_boss_landslide();
 void AddSC_boss_noxxion();
@@ -413,14 +416,20 @@ void AddSC_boss_krystallus();
 void AddSC_boss_sjonnir();
 void AddSC_instance_halls_of_stone();
 void AddSC_halls_of_stone();
-void AddSC_boss_auriaya();               //Ulduar Ulduar
-void AddSC_boss_flame_leviathan();
-void AddSC_boss_ignis();
-void AddSC_boss_razorscale();
-void AddSC_boss_xt002();
-void AddSC_boss_kologarn();
+void AddSC_boss_algalon();               //Ulduar Ulduar
 void AddSC_boss_assembly_of_iron();
+void AddSC_boss_auriaya();
+void AddSC_boss_flame_leviathan();
+void AddSC_boss_freya();
 void AddSC_boss_general_vezax();
+void AddSC_boss_hodir();
+void AddSC_boss_ignis();
+void AddSC_boss_kologarn();
+void AddSC_boss_mimiron();
+void AddSC_boss_razorscale();
+void AddSC_boss_thorim();
+void AddSC_boss_xt002();
+//void AddSC_boss_yoggsaron();
 void AddSC_ulduar_teleporter();
 void AddSC_instance_ulduar();
 void AddSC_boss_keleseth();              //Utgarde Keep
@@ -569,6 +578,7 @@ void AddSC_shadowmoon_valley();
 void AddSC_shattrath_city();
 void AddSC_terokkar_forest();
 void AddSC_zangarmarsh();
+void AddSC_wintergrasp();
 
 // battlegrounds
 
@@ -579,6 +589,7 @@ void AddSC_outdoorpvp_na();
 void AddSC_outdoorpvp_si();
 void AddSC_outdoorpvp_tf();
 void AddSC_outdoorpvp_zm();
+void AddSC_outdoorpvp_wg();
 
 // player
 void AddSC_chat_log();
@@ -888,7 +899,9 @@ void AddKalimdorScripts()
     AddSC_boss_mal_ganis();
     AddSC_boss_meathook();
     AddSC_culling_of_stratholme();
+    AddSC_culling_of_stratholmeAI();
     AddSC_instance_culling_of_stratholme();
+    AddSC_trash_culling_of_stratholme();
     AddSC_boss_celebras_the_cursed();       //Maraudon
     AddSC_boss_landslide();
     AddSC_boss_noxxion();
@@ -1102,14 +1115,20 @@ void AddNorthrendScripts()
     AddSC_boss_sjonnir();
     AddSC_instance_halls_of_stone();
     AddSC_halls_of_stone();
-    AddSC_boss_auriaya();               //Ulduar Ulduar
-    AddSC_boss_flame_leviathan();
-    AddSC_boss_ignis();
-    AddSC_boss_razorscale();
-    AddSC_boss_xt002();
-    AddSC_boss_general_vezax();
+    AddSC_boss_algalon();               //Ulduar Ulduar
     AddSC_boss_assembly_of_iron();
+    AddSC_boss_auriaya();
+    AddSC_boss_flame_leviathan();
+    AddSC_boss_freya();
+    AddSC_boss_general_vezax();
+    AddSC_boss_hodir();
+    AddSC_boss_ignis();
     AddSC_boss_kologarn();
+    AddSC_boss_mimiron();
+    AddSC_boss_razorscale();
+    AddSC_boss_thorim();
+    AddSC_boss_xt002();
+    //AddSC_boss_yoggsaron();
     AddSC_ulduar_teleporter();
     AddSC_instance_ulduar();
     AddSC_boss_keleseth();              //Utgarde Keep
@@ -1175,6 +1194,7 @@ void AddNorthrendScripts()
     AddSC_storm_peaks();
     AddSC_zuldrak();
     AddSC_crystalsong_forest();
+	AddSC_wintergrasp();
     AddSC_isle_of_conquest();
 #endif
 }
@@ -1188,6 +1208,7 @@ void AddOutdoorPvPScripts()
     AddSC_outdoorpvp_si();
     AddSC_outdoorpvp_tf();
     AddSC_outdoorpvp_zm();
+	AddSC_outdoorpvp_wg();
 #endif
 }
 

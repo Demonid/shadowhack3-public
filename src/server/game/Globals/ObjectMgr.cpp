@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
@@ -5788,6 +5789,98 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
     sLog->outString();
 }
 
+void ObjectMgr::SendExternalMails()
+{
+	QueryResult result = CharacterDatabase.PQuery("SELECT id, receiver, subject, message, money, item, item_count FROM mail_external");
+	if(!result)
+	{
+		sLog->outString("Izb00shkaMailer: No Mails in Queue...");
+		return;
+	}
+
+	sLog->outString("Izb00shkaMailer: Send Mails from Queue...");
+
+	do
+	{
+		Field *fields = result->Fetch();
+		uint32 id = fields[0].GetUInt32();
+		uint32 receiver_guid = fields[1].GetUInt32();
+		std::string subject = fields[2].GetString();
+		std::string message = fields[3].GetString();
+		uint32 money = fields[4].GetUInt32();
+		uint32 ItemID = fields[5].GetUInt32();
+		uint32 ItemCount = fields[6].GetUInt32();
+		Player *receiver = NULL;
+		uint64 rec_guid = 0;
+
+		if (!receiver_guid)
+		{
+			sLog->outError("Izb00shkaMailer: Unknown player GUID, skip mail.");
+			continue;
+		}
+
+		rec_guid = MAKE_NEW_GUID(receiver_guid, 0, HIGHGUID_PLAYER);
+
+		receiver = sObjectMgr->GetPlayer(receiver_guid);
+
+		MailSender sender(MAIL_NORMAL, 0, MAIL_STATIONERY_GM);
+		MailDraft draft(subject, message);
+
+		Item* ToMailItem = NULL;
+		ItemPrototype const* item_proto = NULL;
+
+		SQLTransaction trans = CharacterDatabase.BeginTransaction();
+
+		if (ItemID)
+			item_proto = sObjectMgr->GetItemPrototype(ItemID);
+
+		if(item_proto)
+		{
+			if ( ItemCount < 1 || (item_proto->MaxCount > 0 && ItemCount > uint32(item_proto->MaxCount)) )
+			{
+				sLog->outDetail("Izb00shkaMailer: Warning: invalid ItemCount of %u, setting to 1", ItemCount);
+				ItemCount = 1;
+			}
+
+			if ( ItemCount > 1 && ItemCount > item_proto->GetMaxStackSize() )
+			{
+				sLog->outDetail("Izb00shkaMailer: Warning: invalid ItemCount of %u, setting to %u.", ItemCount, item_proto->GetMaxStackSize());
+				ItemCount = item_proto->GetMaxStackSize();
+			}
+
+			ToMailItem = Item::CreateItem(ItemID, ItemCount, receiver);
+		}
+
+		if (ToMailItem)
+		{
+			ToMailItem->SaveToDB(trans);
+			draft.AddItem(ToMailItem);
+
+			sLog->outString("Izb00shkaMailer: Sending mail to player %s. Attached item: %u", receiver ? receiver->GetName() : "", ItemID);				
+		}
+		else
+		{
+			sLog->outString("Izb00shkaMailer: Sending mail to player %s.", receiver ? receiver->GetName() : "");
+		}
+
+		if (money)
+			draft.AddMoney(money);
+
+		draft.SendMailTo(trans, MailReceiver(receiver, GUID_LOPART(rec_guid)), sender);
+
+		std::ostringstream ss;
+
+		ss << "DELETE FROM mail_external WHERE id = " << id << ";";
+
+		trans->Append(ss.str().c_str());
+
+		CharacterDatabase.CommitTransaction(trans);
+
+	} while(result->NextRow());
+
+	sLog->outString("Izb00shkaMailer: All Mails Sent.");
+}
+
 void ObjectMgr::LoadQuestAreaTriggers()
 {
     uint32 oldMSTime = getMSTime();
@@ -5924,7 +6017,7 @@ void ObjectMgr::LoadAreaTriggerScripts()
     sLog->outString();
 }
 
-uint32 ObjectMgr::GetNearestTaxiNode(float x, float y, float z, uint32 mapid, uint32 team)
+uint32 ObjectMgr::GetNearestTaxiNode(float x, float y, float z, uint32 mapid, uint32 team, uint32 searched_node )
 {
     bool found = false;
     float dist = 10000;
@@ -5934,20 +6027,30 @@ uint32 ObjectMgr::GetNearestTaxiNode(float x, float y, float z, uint32 mapid, ui
     {
         TaxiNodesEntry const* node = sTaxiNodesStore.LookupEntry(i);
 
-        if (!node || node->map_id != mapid || (!node->MountCreatureID[team == ALLIANCE ? 1 : 0] && node->MountCreatureID[0] != 32981)) // dk flight
-            continue;
+        if (!node || node->map_id != mapid) continue;
+
+        const float dist2 = pow(node->x - x, 2) + pow(node->y - y, 2) + pow(node->z - z, 2);
+
+        if (searched_node != 0 && i == searched_node)
+        {
+            id = i;
+            dist = dist2;
+            break;
+        }
+
+        if (!node->MountCreatureID[team == ALLIANCE ? 1 : 0] && node->MountCreatureID[0] != 32981) // dk flight
+             continue;
 
         uint8  field   = (uint8)((i - 1) / 32);
         uint32 submask = 1<<((i-1)%32);
 
         // skip not taxi network nodes
-        if ((sTaxiNodesMask[field] & submask) == 0)
+        if((sTaxiNodesMask[field] & submask)==0)
             continue;
 
-        float dist2 = (node->x - x)*(node->x - x)+(node->y - y)*(node->y - y)+(node->z - z)*(node->z - z);
-        if (found)
+        if(found)
         {
-            if (dist2 < dist)
+            if(dist2 < dist)
             {
                 dist = dist2;
                 id = i;
@@ -5960,6 +6063,8 @@ uint32 ObjectMgr::GetNearestTaxiNode(float x, float y, float z, uint32 mapid, ui
             id = i;
         }
     }
+
+    if (dist > 3600) id = 0;
 
     return id;
 }
@@ -8437,7 +8542,7 @@ void ObjectMgr::LoadMailLevelRewards()
 
     m_mailLevelRewardMap.clear();                           // for reload case
 
-    QueryResult result = WorldDatabase.Query("SELECT level, raceMask, mailTemplateId, senderEntry FROM mail_level_reward");
+    QueryResult result = WorldDatabase.Query("SELECT level, raceMask, mailTemplateId, senderEntry, subject, message, money, item, item_count FROM mail_level_reward");
 
     if (!result)
     {
@@ -8457,6 +8562,11 @@ void ObjectMgr::LoadMailLevelRewards()
         uint32 raceMask       = fields[1].GetUInt32();
         uint32 mailTemplateId = fields[2].GetUInt32();
         uint32 senderEntry    = fields[3].GetUInt32();
+		std::string subject   = fields[4].GetString();
+		std::string message   = fields[5].GetString();
+		uint32 money          = fields[6].GetUInt32();
+		uint32 ItemID         = fields[7].GetUInt32();
+		uint32 ItemCount      = fields[8].GetUInt32();
 
         if (level > MAX_LEVEL)
         {
@@ -8470,7 +8580,7 @@ void ObjectMgr::LoadMailLevelRewards()
             continue;
         }
 
-        if (!sMailTemplateStore.LookupEntry(mailTemplateId))
+        if (subject.empty() && !sMailTemplateStore.LookupEntry(mailTemplateId))
         {
             sLog->outErrorDb("Table `mail_level_reward` have invalid mailTemplateId (%u) for level %u that invalid not include any player races, ignoring.",mailTemplateId,level);
             continue;
@@ -8482,7 +8592,7 @@ void ObjectMgr::LoadMailLevelRewards()
             continue;
         }
 
-        m_mailLevelRewardMap[level].push_back(MailLevelReward(raceMask,mailTemplateId,senderEntry));
+        m_mailLevelRewardMap[level].push_back(MailLevelReward(raceMask, mailTemplateId, senderEntry, subject, message, money, ItemID, ItemCount));
 
         ++count;
     }

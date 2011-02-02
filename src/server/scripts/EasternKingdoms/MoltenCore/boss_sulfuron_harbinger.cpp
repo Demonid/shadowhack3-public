@@ -102,7 +102,7 @@ public:
                     std::list<Creature*>::const_iterator i = pList.begin();
                     advance(i, (rand()%pList.size()));
                     pTarget = (*i);
-                }
+                }   //Q: pList.clear() ?
 
                 if (pTarget)
                     DoCast(pTarget, SPELL_INSPIRE);

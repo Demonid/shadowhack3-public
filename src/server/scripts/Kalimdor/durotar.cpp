@@ -24,7 +24,7 @@
 
 enum LazyPeonYells
 {
-    SAY_SPELL_HIT                                 = -1000600   //Ow! OK, I''ll get back to work, $N!'
+    SAY_SPELL_HIT                                 = -1000600   //Ow! OK, I''ll get back to work, $N!'   //DB: old -1999900
 };
 
 enum LazyPeon
@@ -75,7 +75,7 @@ public:
                 caster->ToPlayer()->KilledMonsterCredit(me->GetEntry(),me->GetGUID());
                 DoScriptText(SAY_SPELL_HIT, me, caster);
                 me->RemoveAllAuras();
-                if (GameObject* Lumberpile = me->FindNearestGameObject(GO_LUMBERPILE, 20))
+                if (GameObject* Lumberpile = me->FindNearestGameObject(GO_LUMBERPILE, 20.0f))
                     me->GetMotionMaster()->MovePoint(1,Lumberpile->GetPositionX()-1,Lumberpile->GetPositionY(),Lumberpile->GetPositionZ());
             }
         }
@@ -86,7 +86,7 @@ public:
                 me->HandleEmoteCommand(466);
             if (m_uiRebuffTimer <= uiDiff)
             {
-                DoCast(me, SPELL_BUFF_SLEEP);
+                DoCast(me, SPELL_BUFF_SLEEP);   //Q: return to homepoint?
                 m_uiRebuffTimer = 300000;                 //Rebuff agian in 5 minutes
             }
             else

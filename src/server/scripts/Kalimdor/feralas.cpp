@@ -177,7 +177,7 @@ public:
 
         void JustSummoned(Creature* summoned)
         {
-            summoned->AI()->AttackStart(me);
+            if (summoned->AI()) summoned->AI()->AttackStart(me);
         }
     };
 

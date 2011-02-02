@@ -145,7 +145,7 @@ public:
         void KilledUnit(Unit *who)
         {
             Unit *pMalchezaar = Unit::GetUnit(*me, malchezaar);
-            if (pMalchezaar)
+            if (pMalchezaar && CAST_CRE(pMalchezaar)->AI())
                 CAST_CRE(pMalchezaar)->AI()->KilledUnit(who);
         }
 
@@ -337,6 +337,7 @@ public:
                     pTarget->CastSpell(pTarget, SPELL_ENFEEBLE, true, 0, 0, me->GetGUID());
                     pTarget->SetHealth(1);
                 }
+                //Q: targets.clear() ?
         }
 
         void EnfeebleResetHealth()
@@ -356,7 +357,7 @@ public:
             InfernalPoint *point = NULL;
             Position pos;
             if ((me->GetMapId() != 532) || positions.empty())
-                me->GetRandomNearPosition(pos, 60);
+                me->GetRandomNearPosition(pos, 60.f);
             else
             {
                 std::vector<InfernalPoint*>::iterator itr = positions.begin()+rand()%positions.size();
@@ -371,9 +372,12 @@ public:
             {
                 Infernal->SetDisplayId(INFERNAL_MODEL_INVISIBLE);
                 Infernal->setFaction(me->getFaction());
-                if (point)
-                    CAST_AI(netherspite_infernal::netherspite_infernalAI, Infernal->AI())->point=point;
-                CAST_AI(netherspite_infernal::netherspite_infernalAI, Infernal->AI())->malchezaar=me->GetGUID();
+                if (Infernal->AI())
+                {
+                    if (point)
+                        CAST_AI(netherspite_infernal::netherspite_infernalAI, Infernal->AI())->point=point;
+                    CAST_AI(netherspite_infernal::netherspite_infernalAI, Infernal->AI())->malchezaar=me->GetGUID();
+                }
 
                 infernals.push_back(Infernal->GetGUID());
                 DoCast(Infernal, SPELL_INFERNAL_RELAY);
@@ -449,7 +453,7 @@ public:
 
                     DoScriptText(SAY_AXE_TOSS2, me);
 
-                    Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true);
+                    Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.f, true);
                     for (uint8 i = 0; i < 2; ++i)
                     {
                         Creature *axe = me->SummonCreature(MALCHEZARS_AXE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1000);
@@ -494,7 +498,7 @@ public:
                 {
                     AxesTargetSwitchTimer = urand(7500,20000);
 
-                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.f, true))
                     {
                         for (uint8 i = 0; i < 2; ++i)
                         {
@@ -513,7 +517,7 @@ public:
 
                 if (AmplifyDamageTimer <= diff)
                 {
-                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.f, true))
                         DoCast(pTarget, SPELL_AMPLIFY_DAMAGE);
                     AmplifyDamageTimer = urand(20000,30000);
                 } else AmplifyDamageTimer -= diff;
@@ -540,7 +544,7 @@ public:
                     if (phase == 1)
                         pTarget = me->getVictim();        // the tank
                     else                                          // anyone but the tank
-                        pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 100, true);
+                        pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 100.f, true);
 
                     if (pTarget)
                         DoCast(pTarget, SPELL_SW_PAIN);
@@ -604,7 +608,7 @@ void netherspite_infernal::netherspite_infernalAI::Cleanup()
 {
     Unit *pMalchezaar = Unit::GetUnit(*me, malchezaar);
 
-    if (pMalchezaar && pMalchezaar->isAlive())
+    if (pMalchezaar && pMalchezaar->isAlive() && CAST_CRE(pMalchezaar)->AI())
         CAST_AI(boss_malchezaar::boss_malchezaarAI, CAST_CRE(pMalchezaar)->AI())->Cleanup(me, point);
 }
 

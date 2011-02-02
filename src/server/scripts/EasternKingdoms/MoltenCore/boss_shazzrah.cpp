@@ -116,7 +116,7 @@ public:
             {
                 // Teleporting him to a random gamer and casting Arcane Explosion after that.
                 // Blink is not working cause of LoS System we need to do this hardcoded.
-                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0, 100, true))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0, 100.0f, true))
                 {
                     DoTeleportTo(pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ());
                     DoCast(pTarget, SPELL_ARCANEEXPLOSION);

@@ -189,11 +189,11 @@ enum eRizzleSprysprocketData
     SPELL_PERIODIC_DEPTH_CHARGE     = 39912,
     SPELL_GIVE_SOUTHFURY_MOONSTONE  = 39886,
 
-    SAY_RIZZLE_START                = -1000351,
+    SAY_RIZZLE_START                = -1000351, //DB: old -1000245
     MSG_ESCAPE_NOTICE               = -1000352,
-    SAY_RIZZLE_GRENADE              = -1000353,
+    SAY_RIZZLE_GRENADE              = -1000353, //DB: old -1000246
     SAY_RIZZLE_GRENADE_BACKFIRE     = -1000354, // Not used
-    SAY_RIZZLE_FINAL                = -1000355,
+    SAY_RIZZLE_FINAL                = -1000355, //DB: old -1000247
     SAY_RIZZLE_FINAL2               = -1000356, // Not used
 };
 
@@ -357,12 +357,12 @@ public:
                     Map* pMap = me->GetMap();
                     if (pMap)
                     {
-                        pMap->CreatureRelocation(me, 3706.39f, -3969.15f, 35.9118f, 0);
+                        pMap->CreatureRelocation(me, 3706.39f, -3969.15f, 35.9118f, 0.0f);
                         me->AI_SendMoveToPacket(3706.39f, -3969.15f, 35.9118f, 0, 0, 0);
                     }
                     //begin swimming and summon depth charges
                     Player* pPlayer = Unit::GetPlayer(*me, PlayerGUID);
-                    SendText(MSG_ESCAPE_NOTICE, pPlayer);
+                    if (pPlayer) SendText(MSG_ESCAPE_NOTICE, pPlayer);
                     DoCast(me, SPELL_PERIODIC_DEPTH_CHARGE);
                     me->SetUnitMovementFlags(MOVEMENTFLAG_HOVER | MOVEMENTFLAG_SWIMMING);
                     me->SetSpeed(MOVE_RUN, 0.85f, true);
@@ -400,7 +400,7 @@ public:
                     return;
                 }
 
-                if (me->IsWithinDist(pPlayer, 10) && me->GetPositionX() > pPlayer->GetPositionX() && !Reached)
+                if (me->IsWithinDist(pPlayer, 10.0f) && me->GetPositionX() > pPlayer->GetPositionX() && !Reached)
                 {
                     DoScriptText(SAY_RIZZLE_FINAL, me);
                     me->SetUInt32Value(UNIT_NPC_FLAGS, 1);
@@ -500,7 +500,7 @@ public:
             if (!who)
                 return;
 
-            if (who->GetTypeId() == TYPEID_PLAYER && me->IsWithinDistInMap(who, 5))
+            if (who->GetTypeId() == TYPEID_PLAYER && me->IsWithinDistInMap(who, INTERACTION_DISTANCE))
             {
                 DoCast(who, SPELL_DEPTH_CHARGE_TRAP);
                 we_must_die = true;
@@ -519,6 +519,47 @@ public:
 
 };
 
+/*####
+# npc_ghost_of_azuregos
+####*/
+
+enum eGhostOfAzuregos
+{
+    QUEST_AZUREGOS_MAGICAL_LEDGER   = 8575,
+    ITEM_MAGICAL_LEDGER             = 20949
+};
+#define AZUREGOS_GHOST_ASK  "Do you want the Magical Ledger?"
+#define AZUREGOS_GHOST_ASK_RU   "Ты за магической книгой?"
+
+class npc_ghost_of_azuregos : public CreatureScript
+{
+public:
+    npc_ghost_of_azuregos(): CreatureScript("npc_ghost_of_azuregos") {}
+
+    bool OnGossipHello(Player* pPlayer, Creature* pCreature)
+    {
+        if (pPlayer->GetQuestStatus(QUEST_AZUREGOS_MAGICAL_LEDGER) == QUEST_STATUS_NONE && !pPlayer->HasItemCount(ITEM_MAGICAL_LEDGER, 1, true))
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, (pPlayer->isRussianLocale()) ? AZUREGOS_GHOST_ASK_RU:AZUREGOS_GHOST_ASK, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+        pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
+        return true;
+    }
+
+    bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 /*uiAction*/)
+    {
+        pPlayer->PlayerTalkClass->ClearMenus();
+        pPlayer->PlayerTalkClass->CloseGossip();
+        ItemPosCountVec dest;
+        uint8 canStoreNewItem = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, ITEM_MAGICAL_LEDGER, 1);
+        if (canStoreNewItem == EQUIP_ERR_OK)
+        {
+            Item *newItem = NULL;
+            newItem = pPlayer->StoreNewItem(dest, ITEM_MAGICAL_LEDGER, 1, true);
+            pPlayer->SendNewItem(newItem, 1, true, false);
+        }
+        else pPlayer->GetSession()->SendNotification((pPlayer->isRussianLocale()) ? "Нет места в сумках!":"No room in bags!");  //Q: to trinity_string?
+        return true;
+    }
+};
 
 void AddSC_azshara()
 {
@@ -526,4 +567,5 @@ void AddSC_azshara()
     new npc_loramus_thalipedes();
     new mob_rizzle_sprysprocket();
     new mob_depth_charge();
+    new npc_ghost_of_azuregos();
 }

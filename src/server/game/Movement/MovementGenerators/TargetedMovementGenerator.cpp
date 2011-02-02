@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
@@ -23,27 +24,16 @@
 #include "CreatureAI.h"
 #include "DestinationHolderImp.h"
 #include "World.h"
+#include "Unit.h"
+#include "Pet.h"
 
 #define SMALL_ALPHA 0.05f
 
 #include <cmath>
-/*
-struct StackCleaner
-{
-    Creature &i_creature;
-    StackCleaner(Creature &creature) : i_creature(creature) {}
-    void Done(void) { i_creature.StopMoving(); }
-    ~StackCleaner()
-    {
-        i_creature->Clear();
-    }
-};
-*/
 
 template<class T>
-TargetedMovementGenerator<T>::TargetedMovementGenerator(Unit &target, float offset, float angle)
-: TargetedMovementGeneratorBase(target)
-, i_offset(offset), i_angle(angle), i_recalculateTravel(false)
+TargetedMovementGenerator<T>::TargetedMovementGenerator(Unit &target, float offset, float angle, bool _usePathfinding):
+TargetedMovementGeneratorBase(target), i_offset(offset), i_angle(angle), m_usePathfinding(_usePathfinding), i_recalculateTravel(false), i_path(NULL), m_pathPointsSent(0)
 {
     target.GetPosition(i_targetX, i_targetY, i_targetZ);
 }
@@ -51,70 +41,129 @@ TargetedMovementGenerator<T>::TargetedMovementGenerator(Unit &target, float offs
 template<class T>
 bool
 TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
+
 {
     if (!i_target.isValid() || !i_target->IsInWorld())
         return false;
 
-    if (owner.HasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED))
+    if( owner.HasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED) )
         return false;
 
     float x, y, z;
+
     Traveller<T> traveller(owner);
-    if (i_destinationHolder.HasDestination())
+    if(i_destinationHolder.HasDestination() && !m_pathPointsSent )
     {
-        if (i_destinationHolder.HasArrived())
+        if(i_destinationHolder.HasArrived())
         {
             // prevent redundant micro-movement
-            if (!i_offset)
+            if(!i_offset)
             {
-                if (i_target->IsWithinMeleeRange(&owner))
+                if(i_target->IsWithinMeleeRange(&owner))
                     return false;
             }
-            else if (!i_angle && !owner.HasUnitState(UNIT_STAT_FOLLOW))
+            else if(!i_angle && !owner.HasUnitState(UNIT_STAT_FOLLOW))
             {
-                if (i_target->IsWithinDistInMap(&owner, i_offset))
+                if(i_target->IsWithinDistInMap(&owner, i_offset))
                     return false;
             }
             else
             {
-                if (i_target->IsWithinDistInMap(&owner, i_offset + 1.0f))
+                if(i_target->IsWithinDistInMap(&owner, i_offset + 1.0f))
                     return false;
             }
         }
         else
         {
             bool stop = false;
-            if (!i_offset)
+            if(!i_offset)
             {
-                if (i_target->IsWithinMeleeRange(&owner, 0))
+                if(i_target->IsWithinMeleeRange(&owner, 0.0f))
                     stop = true;
             }
-            else if (!i_angle && !owner.HasUnitState(UNIT_STAT_FOLLOW))
+            else if(!i_angle && !owner.HasUnitState(UNIT_STAT_FOLLOW))
             {
-                if (i_target->IsWithinDist(&owner, i_offset * 0.8f))
+                if(i_target->IsWithinDist(&owner, i_offset * 0.8f))
                     stop = true;
             }
 
-            if (stop)
+            if(stop)
             {
+                
                 owner.GetPosition(x, y, z);
-                i_destinationHolder.SetDestination(traveller, x, y, z);
-                i_destinationHolder.StartTravel(traveller, false);
-                owner.StopMoving();
-                return false;
+
+                if (owner.GetTypeId() == TYPEID_UNIT && (owner.canFly() || owner.IsInWater() || i_target->IsInWater()))
+                        z = i_target->GetPositionZ();
+
+                if(m_usePathfinding)
+                {                
+                    bool newPathCalculated = true;
+
+                    if(!i_path)
+                        i_path = new PathInfo(&owner, x, y, z);
+                    else
+                        newPathCalculated = i_path->Update(x, y, z);
+
+                    // nothing we can do here ...
+                    if(i_path->getPathType() & PATHFIND_NOPATH)
+                        return true;
+
+                    PointPath pointPath = i_path->getFullPath();
+
+                    if (i_destinationHolder.HasArrived() && m_pathPointsSent)
+                        --m_pathPointsSent;
+
+                    i_path->getNextPosition(x, y, z);
+                    i_destinationHolder.SetDestination(traveller, x, y, z, false);
+
+                    // send the path if:
+                    //    we have brand new path
+                    //    we have visited almost all of the previously sent points
+                    //    movespeed has changed
+                    //    the owner is stopped (caused by some movement effects)
+                    if (newPathCalculated || m_pathPointsSent < 2 || i_recalculateTravel || owner.IsStopped())
+                    {
+                        // send 10 nodes, or send all nodes if there are less than 10 left
+                        m_pathPointsSent = std::min<uint32>(10, pointPath.size() - 1);
+                        uint32 endIndex = m_pathPointsSent + 1;
+
+                        // dist to next node + world-unit length of the path
+                        x -= owner.GetPositionX();
+                        y -= owner.GetPositionY();
+                        z -= owner.GetPositionZ();
+                        float dist = sqrt(x*x + y*y + z*z) + pointPath.GetTotalLength(1, endIndex);
+
+                        // calculate travel time, set spline, then send path
+                        uint32 traveltime = uint32(dist / (traveller.Speed()*0.001f));
+
+						if (!owner.IsStopped())
+							owner.StopMoving();
+
+                        owner.SendMonsterMoveByPath(pointPath, 1, endIndex, traveltime);
+
+                        return false;
+                    }
+                }
+                else
+                {
+                    i_destinationHolder.SetDestination(traveller, x, y, z);
+                    i_destinationHolder.StartTravel(traveller, false);
+                    owner.StopMoving();
+                    return false;
+                }
             }
         }
 
-        if (i_target->GetExactDistSq(i_targetX, i_targetY, i_targetZ) < 0.01f)
+        if(i_target->GetExactDistSq(i_targetX, i_targetY, i_targetZ) < 0.01f)
             return false;
     }
-
-    if (!i_offset)
+    
+    if(!i_offset)
     {
         // to nearest random contact position
-        i_target->GetRandomContactPoint(&owner, x, y, z, 0, MELEE_RANGE - 0.5f);
+        i_target->GetRandomContactPoint( &owner, x, y, z, 0.0f, MELEE_RANGE - 0.5f );
     }
-    else if (!i_angle && !owner.HasUnitState(UNIT_STAT_FOLLOW))
+    else if(!i_angle && !owner.HasUnitState(UNIT_STAT_FOLLOW))
     {
         // caster chase
         i_target->GetContactPoint(&owner, x, y, z, i_offset * urand(80, 95) * 0.01f);
@@ -122,8 +171,9 @@ TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
     else
     {
         // to at i_offset distance from target and i_angle from target facing
-        i_target->GetClosePoint(x,y,z,owner.GetObjectSize(),i_offset,i_angle);
+        i_target->GetClosePoint(x, y, z, owner.GetObjectSize(), i_offset, i_angle);
     }
+    
 
     /*
         We MUST not check the distance difference and avoid setting the new location for smaller distances.
@@ -138,12 +188,70 @@ TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
 
         //We don't update Mob Movement, if the difference between New destination and last destination is < BothObjectSize
         float  bothObjectSize = i_target->GetObjectSize() + owner.GetObjectSize() + CONTACT_DISTANCE;
-        if (i_destinationHolder.HasDestination() && i_destinationHolder.GetDestinationDiff(x,y,z) < bothObjectSize)
+        if( i_destinationHolder.HasDestination() && i_destinationHolder.GetDestinationDiff(x,y,z) < bothObjectSize )
             return;
     */
-    i_destinationHolder.SetDestination(traveller, x, y, z);
-    owner.AddUnitState(UNIT_STAT_CHASE);
-    i_destinationHolder.StartTravel(traveller);
+
+    if (owner.GetTypeId() == TYPEID_UNIT && (owner.canFly() || owner.IsInWater() || i_target->IsInWater()))
+            z = i_target->GetPositionZ();
+
+    if(m_usePathfinding)
+    {
+        bool newPathCalculated = true;
+        if(!i_path)
+            i_path = new PathInfo(&owner, x, y, z);
+        else
+            newPathCalculated = i_path->Update(x, y, z);
+
+        // nothing we can do here ...
+        if(i_path->getPathType() & PATHFIND_NOPATH)
+            return true;
+
+        PointPath pointPath = i_path->getFullPath();
+
+        if (i_destinationHolder.HasArrived() && m_pathPointsSent)
+            --m_pathPointsSent;
+
+        i_path->getNextPosition(x, y, z);
+        i_destinationHolder.SetDestination(traveller, x, y, z, false);
+
+        // send the path if:
+        //    we have brand new path
+        //    we have visited almost all of the previously sent points
+        //    movespeed has changed
+        //    the owner is stopped (caused by some movement effects)
+        if (newPathCalculated || m_pathPointsSent < 2 || i_recalculateTravel || owner.IsStopped())
+        {
+            // send 10 nodes, or send all nodes if there are less than 10 left
+            m_pathPointsSent = std::min<uint32>(10, pointPath.size() - 1);
+            uint32 endIndex = m_pathPointsSent + 1;
+
+            // dist to next node + world-unit length of the path
+            x -= owner.GetPositionX();
+            y -= owner.GetPositionY();
+            z -= owner.GetPositionZ();
+            float dist = sqrt(x*x + y*y + z*z) + pointPath.GetTotalLength(1, endIndex);
+
+            // calculate travel time, set spline, then send path
+            uint32 traveltime = uint32(dist / (traveller.Speed()*0.001f));
+
+			if (!owner.IsStopped())
+				owner.StopMoving();
+
+            owner.SendMonsterMoveByPath(pointPath, 1, endIndex, traveltime);
+
+            i_destinationHolder.StartTravel(traveller, false);
+        }
+        owner.AddUnitState(UNIT_STAT_CHASE);
+    }
+    else
+    {
+        i_destinationHolder.SetDestination(traveller, x, y, z);
+        owner.AddUnitState(UNIT_STAT_CHASE);
+        i_destinationHolder.StartTravel(traveller);
+    }
+    
+
     return true;
 }
 
@@ -189,6 +297,7 @@ TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
     {
         if (!owner.IsStopped())
             owner.StopMoving();
+
         return true;
     }
 
@@ -196,41 +305,108 @@ TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
     if (!owner.HasUnitState(UNIT_STAT_FOLLOW) && owner.getVictim() != i_target.getTarget())
         return true;
 
-    Traveller<T> traveller(owner);
-
-    if (!i_destinationHolder.HasDestination())
-        _setTargetLocation(owner);
-    else if (owner.IsStopped() && !i_destinationHolder.HasArrived())
+    if(m_usePathfinding)
     {
-        owner.AddUnitState(UNIT_STAT_CHASE);
-        i_destinationHolder.StartTravel(traveller);
-        return true;
-    }
+        if (i_path && (i_path->getPathType() & PATHFIND_NOPATH))
+            return true;
 
-    if (i_destinationHolder.UpdateTraveller(traveller, time_diff))
-    {
-        // put targeted movement generators on a higher priority
-        //if (owner.GetObjectSize())
-        //i_destinationHolder.ResetUpdate(50);
+        Traveller<T> traveller(owner);
 
-        // target moved
-        if (i_targetX != i_target->GetPositionX() || i_targetY != i_target->GetPositionY()
-            || i_targetZ != i_target->GetPositionZ())
+        if (!i_destinationHolder.HasDestination())
+            _setTargetLocation(owner);
+
+        if (i_destinationHolder.UpdateTraveller(traveller, time_diff, i_recalculateTravel || owner.IsStopped()))
         {
-            if (_setTargetLocation(owner) || !owner.HasUnitState(UNIT_STAT_FOLLOW))
+            // put targeted movement generators on a higher priority
+            if (owner.GetObjectSize())
+                i_destinationHolder.ResetUpdate(100);
+
+            float x, y, z;
+            i_target->GetPosition(x, y, z);
+            PathNode next_point(x, y, z);
+
+            bool targetMoved = false, needNewDest = false;
+            if (i_path)
+            {
+                PathNode end_point = i_path->getEndPosition();
+                next_point = i_path->getNextPosition();
+
+                //More distance let have better performance, less distance let have more sensitive reaction at target move.
+                float dist = owner.GetMeleeReach() + sWorld->getRate(RATE_TARGET_POS_RECALCULATION_RANGE);
+
+                needNewDest = i_destinationHolder.HasArrived() && 
+                    ( !inRange(next_point, i_path->getActualEndPosition(), dist, 2*dist) || !i_target->IsWithinLOSInMap(&owner) );
+
+                // GetClosePoint() will always return a point on the ground, so we need to
+                // handle the difference in elevation when the creature is flying
+                if (owner.GetTypeId() == TYPEID_UNIT && (&owner)->ToCreature()->canFly())
+                    targetMoved = i_target->GetDistanceSqr(end_point.x, end_point.y, end_point.z) >= dist*dist;
+                else
+                    targetMoved = i_target->GetDistance2d(end_point.x, end_point.y) >= dist;                
+            }
+
+            if (!i_path || targetMoved || needNewDest || i_recalculateTravel || owner.IsStopped())
+            {
+                // (re)calculate path
+                _setTargetLocation(owner);
+
+                next_point = i_path->getNextPosition();
+
+                // Set new Angle For Map::
+                owner.SetOrientation(owner.GetAngle(next_point.x, next_point.y));
+            }
+            // Update the Angle of the target only for Map::, no need to send packet for player
+            else if (!i_angle && !owner.HasInArc(0.01f, next_point.x, next_point.y))
+                owner.SetOrientation(owner.GetAngle(next_point.x, next_point.y));        
+
+            if ((owner.IsStopped() && !i_destinationHolder.HasArrived()) || i_recalculateTravel)
+            {
+                i_recalculateTravel = false;
+                //Angle update will take place into owner.StopMoving()
                 owner.SetInFront(i_target.getTarget());
-            i_target->GetPosition(i_targetX, i_targetY, i_targetZ);
+
+                owner.StopMoving();
+                if(owner.IsWithinMeleeRange(i_target.getTarget()) && !owner.HasUnitState(UNIT_STAT_FOLLOW))
+                    owner.Attack(i_target.getTarget(), true);
+            }
+        }
+    }
+    else
+    {
+        Traveller<T> traveller(owner);
+
+        if (!i_destinationHolder.HasDestination())
+        {
+            _setTargetLocation(owner);
+        }
+        else if (owner.IsStopped() && !i_destinationHolder.HasArrived())
+        {
+            owner.AddUnitState(UNIT_STAT_CHASE);
+            i_destinationHolder.StartTravel(traveller);
+            return true;
         }
 
-        if ((owner.IsStopped() && !i_destinationHolder.HasArrived()) || i_recalculateTravel)
+        if (i_destinationHolder.UpdateTraveller(traveller, time_diff))
         {
-            i_recalculateTravel = false;
-            //Angle update will take place into owner.StopMoving()
-            owner.SetInFront(i_target.getTarget());
+            // target moved
+            if (i_targetX != i_target->GetPositionX() || i_targetY != i_target->GetPositionY()
+                || i_targetZ != i_target->GetPositionZ())
+            {
+                if(_setTargetLocation(owner) || !owner.HasUnitState(UNIT_STAT_FOLLOW))
+                    owner.SetInFront(i_target.getTarget());
+                i_target->GetPosition(i_targetX, i_targetY, i_targetZ);
+            }
+            
+            if ((owner.IsStopped() && !i_destinationHolder.HasArrived()) || i_recalculateTravel)
+            {
+                i_recalculateTravel = false;
+                //Angle update will take place into owner.StopMoving()
+                owner.SetInFront(i_target.getTarget());
 
-            owner.StopMoving();
-            if (owner.IsWithinMeleeRange(i_target.getTarget()) && !owner.HasUnitState(UNIT_STAT_FOLLOW))
-                owner.Attack(i_target.getTarget(),true);
+                owner.StopMoving();
+                if(owner.IsWithinMeleeRange(i_target.getTarget()) && !owner.HasUnitState(UNIT_STAT_FOLLOW))
+                    owner.Attack(i_target.getTarget(),true);
+            }
         }
     }
 
@@ -260,8 +436,8 @@ template <> void TargetedMovementGenerator<Creature>::MovementInform(Creature &u
 }
 
 template void TargetedMovementGenerator<Player>::MovementInform(Player&); // Not implemented for players
-template TargetedMovementGenerator<Player>::TargetedMovementGenerator(Unit &target, float offset, float angle);
-template TargetedMovementGenerator<Creature>::TargetedMovementGenerator(Unit &target, float offset, float angle);
+template TargetedMovementGenerator<Player>::TargetedMovementGenerator(Unit &target, float offset, float angle, bool _usePathfinding);
+template TargetedMovementGenerator<Creature>::TargetedMovementGenerator(Unit &target, float offset, float angle, bool _usePathfinding);
 template bool TargetedMovementGenerator<Player>::_setTargetLocation(Player &);
 template bool TargetedMovementGenerator<Creature>::_setTargetLocation(Creature &);
 template void TargetedMovementGenerator<Player>::Initialize(Player &);

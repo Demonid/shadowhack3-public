@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
@@ -467,6 +468,8 @@ enum UnitState
     UNIT_STAT_MOVE            = 0x00100000,
     UNIT_STAT_ROTATING        = 0x00200000,
     UNIT_STAT_EVADE           = 0x00400000,
+    UNIT_STAT_TIMED_EVADE     = 0x00800000,
+
     UNIT_STAT_UNATTACKABLE    = (UNIT_STAT_IN_FLIGHT | UNIT_STAT_ONVEHICLE),
     UNIT_STAT_MOVING          = (UNIT_STAT_ROAMING | UNIT_STAT_CHASE),
     UNIT_STAT_CONTROLLED      = (UNIT_STAT_CONFUSED | UNIT_STAT_STUNNED | UNIT_STAT_FLEEING),
@@ -474,6 +477,12 @@ enum UnitState
     UNIT_STAT_SIGHTLESS       = (UNIT_STAT_LOST_CONTROL | UNIT_STAT_EVADE),
     UNIT_STAT_CANNOT_AUTOATTACK     = (UNIT_STAT_LOST_CONTROL | UNIT_STAT_CASTING),
     UNIT_STAT_CANNOT_TURN     = (UNIT_STAT_LOST_CONTROL | UNIT_STAT_ROTATING),
+
+    UNIT_STAT_CAN_NOT_REACT   = (UNIT_STAT_STUNNED | UNIT_STAT_DIED | UNIT_STAT_CONFUSED | UNIT_STAT_FLEEING),
+    UNIT_STAT_CAN_NOT_REACT_OR_LOST_CONTROL  = (UNIT_STAT_CAN_NOT_REACT | UNIT_STAT_LOST_CONTROL),
+
+    UNIT_STAT_NOT_MOVE        = (UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DIED | UNIT_STAT_DISTRACTED),
+
     UNIT_STAT_ALL_STATE       = 0xffffffff                      //(UNIT_STAT_STOPPED | UNIT_STAT_MOVING | UNIT_STAT_IN_COMBAT | UNIT_STAT_IN_FLIGHT)
 };
 
@@ -1490,6 +1499,7 @@ class Unit : public WorldObject
         bool SetPosition(const Position &pos, bool teleport = false) { return SetPosition(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), teleport); }
 
         void KnockbackFrom(float x, float y, float speedXY, float speedZ);
+        void KnockBackWithAngle(float angle, float horizontalSpeed, float verticalSpeed);
         void JumpTo(float speedXY, float speedZ, bool forward = true);
         void JumpTo(WorldObject *obj, float speedZ);
 
@@ -1503,8 +1513,13 @@ class Unit : public WorldObject
         void SendMonsterMoveWithSpeedToCurrentDestination(Player* player = NULL);
         void SendMovementFlagUpdate();
 
+
+        void MonsterMoveByPath(float x, float y, float z, uint32 speed, bool smoothPath = true);
+
         template<typename PathElem, typename PathNode>
-        void SendMonsterMoveByPath(Path<PathElem,PathNode> const& path, uint32 start, uint32 end);
+        void MonsterMoveByPath(Path<PathElem,PathNode> const& path, uint32 start, uint32 end, uint32 transitTime = 0);
+        template<typename PathElem, typename PathNode>
+        void SendMonsterMoveByPath(Path<PathElem,PathNode> const& path, uint32 start, uint32 end, uint32 traveltime);
 
         void SendChangeCurrentVictimOpcode(HostileReference* pHostileReference);
         void SendClearThreatListOpcode();
@@ -1815,7 +1830,7 @@ class Unit : public WorldObject
         void SetFacingToObject(WorldObject* pObject);
 
         // Visibility system
-        bool IsVisible() const { return (m_serverSideVisibility.GetValue(SERVERSIDE_VISIBILITY_GM) > SEC_PLAYER) ? false : true; }
+        bool IsVisible() const { return (m_serverSideVisibility.GetValue(SERVERSIDE_VISIBILITY_GM) > SEC_MODERATOR) ? false : true; }
         void SetVisible(bool x);
 
         // common function for visibility checks for player/creatures with detection code
@@ -1881,7 +1896,8 @@ class Unit : public WorldObject
         uint32 BuildAuraStateUpdateForTarget(Unit * target) const;
         bool HasAuraState(AuraState flag, SpellEntry const *spellProto = NULL, Unit const * Caster = NULL) const ;
         void UnsummonAllTotems();
-        Unit* SelectMagnetTarget(Unit *victim, SpellEntry const *spellInfo = NULL);
+        Unit* SelectMagnetTarget(Unit *victim, SpellEntry const *spellInfo = NULL, bool triggered = false);
+        void UpdateMagnetReflect(Unit *victim, SpellEntry const *spellInfo, int32 time, bool isreflect, bool triggered = false);           // this as caster, victim as magnet, spellinfo as spell, time as duration
         int32 SpellBaseDamageBonus(SpellSchoolMask schoolMask);
         int32 SpellBaseHealingBonus(SpellSchoolMask schoolMask);
         int32 SpellBaseDamageBonusForVictim(SpellSchoolMask schoolMask, Unit *pVictim);
@@ -1975,6 +1991,7 @@ class Unit : public WorldObject
         // reactive attacks
         void ClearAllReactives();
         void StartReactiveTimer(ReactiveType reactive) { m_reactiveTimer[reactive] = REACTIVE_TIMER_START;}
+        bool HasReactiveTimer ( ReactiveType reactive )	{return m_reactiveTimer[reactive] > 0;}	
         void UpdateReactives(uint32 p_time);
 
         // group updates
@@ -2049,6 +2066,9 @@ class Unit : public WorldObject
         void OutDebugInfo() const;
         virtual bool isBeingLoaded() const { return false;}
         bool IsDuringRemoveFromWorld() const {return m_duringRemoveFromWorld;}
+
+        bool IsTargetReachable(Unit const* target) const;
+        bool IsDestinationReachable(float x, float y, float z) const;
 
         Pet* ToPet(){ if (isPet()) return reinterpret_cast<Pet*>(this); else return NULL; }
         Totem* ToTotem(){ if (isTotem()) return reinterpret_cast<Totem*>(this); else return NULL; }
@@ -2210,30 +2230,5 @@ namespace Trinity
     };
 }
 
-template<typename Elem, typename Node>
-inline void Unit::SendMonsterMoveByPath(Path<Elem,Node> const& path, uint32 start, uint32 end)
-{
-    uint32 traveltime = uint32(path.GetTotalLength(start, end) * 32);
-    uint32 pathSize = end - start;
-    WorldPacket data(SMSG_MONSTER_MOVE, (GetPackGUID().size()+1+4+4+4+4+1+4+4+4+pathSize*4*3));
-    data.append(GetPackGUID());
-    data << uint8(0);
-    data << GetPositionX();
-    data << GetPositionY();
-    data << GetPositionZ();
-    data << uint32(getMSTime());
-    data << uint8(0);
-    data << uint32(((GetUnitMovementFlags() & MOVEMENTFLAG_LEVITATING) || isInFlight()) ? (SPLINEFLAG_FLYING|SPLINEFLAG_WALKING) : SPLINEFLAG_WALKING);
-    data << uint32(traveltime);
-    data << uint32(pathSize);
 
-    for (uint32 i = start; i < end; ++i)
-    {
-        data << float(path[i].x);
-        data << float(path[i].y);
-        data << float(path[i].z);
-    }
-
-    SendMessageToSet(&data, true);
-}
 #endif

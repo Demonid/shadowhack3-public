@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
@@ -68,6 +69,8 @@ enum CreatureFlagsExtra
 #define CREATURE_REGEN_INTERVAL 2 * IN_MILLISECONDS
 
 #define MAX_CREATURE_QUEST_ITEMS 6
+
+#define EVADE_WAIT_TIME 26 //seconds before evade if target is unaccessible
 
 // from `creature_template` table
 struct CreatureInfo
@@ -431,7 +434,6 @@ class Creature : public Unit, public GridObject<Creature>
         bool isTrigger() const { return GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER; }
         bool canWalk() const { return GetCreatureInfo()->InhabitType & INHABIT_GROUND; }
         bool canSwim() const { return GetCreatureInfo()->InhabitType & INHABIT_WATER; }
-        //bool canFly()  const { return GetCreatureInfo()->InhabitType & INHABIT_AIR; }
 
         void SetReactState(ReactStates st) { m_reactState = st; }
         ReactStates GetReactState() { return m_reactState; }
@@ -442,8 +444,6 @@ class Creature : public Unit, public GridObject<Creature>
                 SetReactState(REACT_PASSIVE);
             else
                 SetReactState(REACT_AGGRESSIVE);
-            /*else if (isCivilian())
-            SetReactState(REACT_DEFENSIVE);*/;
         }
 
         ///// TODO RENAME THIS!!!!!
@@ -475,6 +475,7 @@ class Creature : public Unit, public GridObject<Creature>
         uint8 getLevelForTarget(WorldObject const* target) const; // overwrite Unit::getLevelForTarget for boss level support
 
         bool IsInEvadeMode() const { return HasUnitState(UNIT_STAT_EVADE); }
+        bool IsInTimedEvadeMode() const { return HasUnitState(UNIT_STAT_TIMED_EVADE); }
 
         bool AIM_Initialize(CreatureAI* ai = NULL);
         void Motion_Initialize();
@@ -484,7 +485,7 @@ class Creature : public Unit, public GridObject<Creature>
 
         uint32 GetShieldBlockValue() const                  //dunno mob block value
         {
-            return (getLevel()/2 + uint32(GetStat(STAT_STRENGTH)/20));
+            return (getLevel()*0.5f + uint32(GetStat(STAT_STRENGTH)*0.05f));
         }
 
         SpellSchoolMask GetMeleeDamageSchoolMask() const { return m_meleeDamageSchoolMask; }
@@ -659,7 +660,7 @@ class Creature : public Unit, public GridObject<Creature>
             if (m_PlayerDamageReq)
                 m_PlayerDamageReq > unDamage ? m_PlayerDamageReq -= unDamage : m_PlayerDamageReq = 0;
         }
-        void ResetPlayerDamageReq() { m_PlayerDamageReq = GetHealth() / 2; }
+        void ResetPlayerDamageReq() { m_PlayerDamageReq = GetHealth() * 0.5f; }
         uint32 m_PlayerDamageReq;
 
         void SetOriginalEntry(uint32 entry) { m_originalEntry = entry; }
@@ -670,6 +671,8 @@ class Creature : public Unit, public GridObject<Creature>
 
         void SetGUIDTransport(uint32 guid) { guid_transport=guid; }
         uint32 GetGUIDTransport() { return guid_transport; }
+
+        bool IsTargetReachabilityCheckFailed(Unit* target);
 
         void FarTeleportTo(Map* map, float X, float Y, float Z, float O);
     protected:
@@ -723,6 +726,11 @@ class Creature : public Unit, public GridObject<Creature>
         uint32 guid_transport;
 
         bool isVisibleForInState(WorldObject const* seer) const;
+
+        uint32 m_lastEvadeCheck;
+
+        bool singleAndUnreachableTarget;
+
     private:
         //WaypointMovementGenerator vars
         uint32 m_waypointID;
