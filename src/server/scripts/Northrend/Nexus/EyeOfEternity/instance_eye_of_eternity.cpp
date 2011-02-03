@@ -1,6 +1,5 @@
 #include "ScriptPCH.h"
 #include "eye_of_eternity.h"
-//#include "WorldPacket.h"
 
 #define DISABLED_ENTER_MESSAGE "You cannot enter Eye of Eternity now"
 #define EXIT_MAP 571
@@ -215,7 +214,7 @@ public:
                         if (Unit* pDisk = pPlayer->GetVehicleBase())
                         {
                             pPlayer->ExitVehicle();
-                            pDisk->ToCreature()->ForcedDespawn();
+                            pDisk->ToCreature()->DespawnOrUnsummon();
                         }
         }
 
