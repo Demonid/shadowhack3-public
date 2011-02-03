@@ -54,7 +54,6 @@ Phase 3:
 #include "ScriptPCH.h"
 #include "eye_of_eternity.h"
 #include "WorldPacket.h"
-//#include "ObjectAccessor.h"
  
 enum EyeOfEternityIDs
 {

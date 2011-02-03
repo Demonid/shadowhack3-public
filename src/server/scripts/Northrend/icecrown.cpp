@@ -1266,16 +1266,16 @@ CreatureAI* GetAI_questgiver_argent_tournament(Creature* pCreature)
 
 void AddSC_icecrown()
 {
-    new npc_arete;
-    new npc_dame_evniki_kapsalis;
-    new npc_argent_tournament_post;
-    new npc_alorah_and_grimmin;
-    new npc_guardian_pavilion;
-    new npc_argent_tournament_mount;
-    new npc_tournament_melee_target;
-    new npc_tournament_other_target;
-    new npc_tournament_adviser;
-    new npc_squire_david;
-    new npc_squire_danny;
-    new npc_tournament_duellist;
+    new npc_arete();
+    new npc_dame_evniki_kapsalis();
+    new npc_argent_tournament_post();
+    new npc_alorah_and_grimmin();
+    new npc_guardian_pavilion();
+    new npc_argent_tournament_mount();
+    new npc_tournament_melee_target();
+    new npc_tournament_other_target();
+    new npc_tournament_adviser();
+    new npc_squire_david();
+    new npc_squire_danny();
+    new npc_tournament_duellist();
 }
