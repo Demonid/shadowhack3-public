@@ -1,6 +1,6 @@
 #include "ScriptPCH.h"
 #include "eye_of_eternity.h"
-#include "WorldPacket.h"
+//#include "WorldPacket.h"
 
 #define DISABLED_ENTER_MESSAGE "You cannot enter Eye of Eternity now"
 #define EXIT_MAP 571
@@ -92,6 +92,7 @@ public:
                     {
                         if(GameObject* m_uiExitPortal = instance->GetGameObject(m_uiExitPortalGUID))
                             m_uiExitPortal->SetPhaseMask(0, true);
+
                         if(GameObject* m_uiFocusingIris = instance->GetGameObject(m_uiFocusingIrisGUID))
                             m_uiFocusingIris->SetPhaseMask(0, true);
                     }
@@ -242,5 +243,5 @@ public:
 
 void AddSC_instance_eye_of_eternity()
 {
-    new instance_eye_of_eternity;
+    new instance_eye_of_eternity();
 }
