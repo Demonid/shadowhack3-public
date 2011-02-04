@@ -2747,7 +2747,7 @@ public:
                 if (pl->HasAura(61844)) pl->RemoveAurasDueToSpell(61844);
                 if (pl->HasAura(61845)) pl->RemoveAurasDueToSpell(61845);
                 if (pl->HasAura(65403)) pl->RemoveAurasDueToSpell(65403); // Ride Vehicle
-                if (! rand()%5) pl->CastSpell(pl,65400,true);
+                if (!urand(0, 5)) pl->CastSpell(pl,65400,true);
             }
         }
 

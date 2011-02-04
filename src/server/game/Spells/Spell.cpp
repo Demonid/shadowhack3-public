@@ -54,7 +54,7 @@
 #include "SpellScript.h"
 #include "InstanceScript.h"
 #include "OutdoorPvPMgr.h"
-#include "OutdoorPvPMgr.h"
+#include "OutdoorPvPWG.h"
 
 #define SPELL_CHANNEL_UPDATE_INTERVAL (1 * IN_MILLISECONDS)
 
@@ -3031,8 +3031,7 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const * triggere
         m_caster->SetCurrentCastedSpell(this);
         SendSpellStart();
 
-        if (m_caster->GetTypeId() == TYPEID_PLAYER)
-            m_caster->ToPlayer()->AddGlobalCooldown(m_spellInfo,this);
+        TriggerGlobalCooldown();
 
         if (!m_casttime && !m_spellInfo->StartRecoveryTime
             && !m_castItemGUID     //item: first cast may destroy item and second cast causes crash
@@ -3057,6 +3056,7 @@ void Spell::cancel()
     switch (oldState)
     {
         case SPELL_STATE_PREPARING:
+            CancelGlobalCooldown();
         case SPELL_STATE_DELAYED:
             SendInterrupted(0);
             SendCastResult(SPELL_FAILED_INTERRUPTED);
@@ -3082,9 +3082,6 @@ void Spell::cancel()
         default:
             break;
     }
-
-    if (m_caster->GetTypeId() == TYPEID_PLAYER)
-        m_caster->ToPlayer()->RemoveGlobalCooldown(m_spellInfo);
 
     m_caster->RemoveDynObject(m_spellInfo->Id);
     m_caster->RemoveGameObject(m_spellInfo->Id,true);
@@ -4700,8 +4697,7 @@ SpellCastResult Spell::CheckCast(bool strict)
         if (!m_IsTriggeredSpell && m_caster->ToPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_ALLOW_ONLY_ABILITY))
             return SPELL_FAILED_SPELL_IN_PROGRESS;
 
-        if (m_caster->ToPlayer()->HasSpellCooldown(m_spellInfo->Id) ||
-            (strict && !m_IsTriggeredSpell && m_caster->ToPlayer()->HasGlobalCooldown(m_spellInfo)))
+        if (m_caster->ToPlayer()->HasSpellCooldown(m_spellInfo->Id))
         {
             if (m_triggeredByAuraSpell)
                 return SPELL_FAILED_DONT_REPORT;
@@ -4709,6 +4705,10 @@ SpellCastResult Spell::CheckCast(bool strict)
                 return SPELL_FAILED_NOT_READY;
         }
     }
+
+    // check global cooldown
+    if (strict && !m_IsTriggeredSpell && HasGlobalCooldown())
+        return SPELL_FAILED_NOT_READY;
 
     // only allow triggered spells if at an ended battleground
     if (!m_IsTriggeredSpell && m_caster->GetTypeId() == TYPEID_PLAYER)
@@ -7462,3 +7462,62 @@ void Spell::CallScriptAfterUnitTargetSelectHandlers(std::list<Unit*>& unitTarget
         (*scritr)->_FinishScriptCall();
     }
 }
+
+bool Spell::HasGlobalCooldown()
+{
+    // global cooldown have only player or controlled units
+    if (m_caster->GetCharmInfo())
+        return m_caster->GetCharmInfo()->GetGlobalCooldownMgr().HasGlobalCooldown(m_spellInfo);
+    else if (m_caster->GetTypeId() == TYPEID_PLAYER)
+        return m_caster->ToPlayer()->GetGlobalCooldownMgr().HasGlobalCooldown(m_spellInfo);
+    else
+        return false;
+}
+
+void Spell::TriggerGlobalCooldown()
+{
+    int32 gcd = m_spellInfo->StartRecoveryTime;
+    if (!gcd)
+        return;
+
+    // global cooldown can't leave range 1..1.5 secs (if it it)
+    // exist some spells (mostly not player directly casted) that have < 1 sec and > 1.5 sec global cooldowns
+    // but its as test show not affected any spell mods.
+    if (m_spellInfo->StartRecoveryTime >= 1000 && m_spellInfo->StartRecoveryTime <= 1500)
+    {
+        // gcd modifier auras applied only to self spells and only player have mods for this
+        if (m_caster->GetTypeId() == TYPEID_PLAYER)
+            ((Player*)m_caster)->ApplySpellMod(m_spellInfo->Id, SPELLMOD_GLOBAL_COOLDOWN, gcd, this);
+
+        // apply haste rating
+        gcd = int32(float(gcd) * m_caster->GetFloatValue(UNIT_MOD_CAST_SPEED));
+
+        if (gcd < 1000)
+            gcd = 1000;
+        else if (gcd > 1500)
+            gcd = 1500;
+    }
+
+    // global cooldown have only player or controlled units
+    if (m_caster->GetCharmInfo())
+        m_caster->GetCharmInfo()->GetGlobalCooldownMgr().AddGlobalCooldown(m_spellInfo, gcd);
+    else if (m_caster->GetTypeId() == TYPEID_PLAYER)
+        m_caster->ToPlayer()->GetGlobalCooldownMgr().AddGlobalCooldown(m_spellInfo, gcd);
+}
+
+void Spell::CancelGlobalCooldown()
+{
+    if (!m_spellInfo->StartRecoveryTime)
+        return;
+
+    // cancel global cooldown when interrupting current cast
+    if (m_caster->GetCurrentSpell(CURRENT_GENERIC_SPELL) != this)
+        return;
+
+    // global cooldown have only player or controlled units
+    if (m_caster->GetCharmInfo())
+        m_caster->GetCharmInfo()->GetGlobalCooldownMgr().CancelGlobalCooldown(m_spellInfo);
+    else if (m_caster->GetTypeId() == TYPEID_PLAYER)
+        m_caster->ToPlayer()->GetGlobalCooldownMgr().CancelGlobalCooldown(m_spellInfo);
+}
+

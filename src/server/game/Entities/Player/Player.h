@@ -1644,6 +1644,8 @@ class Player : public Unit, public GridObject<Player>
         void RemoveSpellCategoryCooldown(uint32 cat, bool update = false);
         void SendClearCooldown(uint32 spell_id, Unit* target);
 
+        GlobalCooldownMgr& GetGlobalCooldownMgr() { return m_GlobalCooldownMgr; }
+
         void RemoveCategoryCooldown(uint32 cat);
         void RemoveArenaSpellCooldowns(bool removeActivePetCooldowns = false);
         void RemoveAllSpellCooldown();
@@ -1651,11 +1653,6 @@ class Player : public Unit, public GridObject<Player>
         void _SaveSpellCooldowns(SQLTransaction& trans);
         void SetLastPotionId(uint32 item_id) { m_lastPotionId = item_id; }
         void UpdatePotionCooldown(Spell* spell = NULL);
-
-        // global cooldown
-        void AddGlobalCooldown(SpellEntry const *spellInfo, Spell *spell);
-        bool HasGlobalCooldown(SpellEntry const *spellInfo) const;
-        void RemoveGlobalCooldown(SpellEntry const *spellInfo);
 
         void setResurrectRequestData(uint64 guid, uint32 mapId, float X, float Y, float Z, uint32 health, uint32 mana)
         {
@@ -2559,6 +2556,8 @@ class Player : public Unit, public GridObject<Player>
 
         uint32 m_Glyphs[MAX_TALENT_SPECS][MAX_GLYPH_SLOT_INDEX];
 
+        GlobalCooldownMgr m_GlobalCooldownMgr;
+
         ActionButtonList m_actionButtons;
 
         float m_auraBaseMod[BASEMOD_END][MOD_END];
@@ -2743,7 +2742,6 @@ class Player : public Unit, public GridObject<Player>
         ReputationMgr  m_reputationMgr;
 
         SpellCooldowns m_spellCooldowns;
-        std::map<uint32, uint32> m_globalCooldowns; // whole start recovery category stored in one
 
         uint32 m_ChampioningFaction;
 
