@@ -1899,7 +1899,13 @@ void OutdoorPvPWG::StartBattle()
 			return;
 
 		uint8 attackerstowerid = urand(0,2);
-		(*itr)->TeleportTo(571, OutdoorPvPAttackersTower[attackerstowerid][0]+irand(-4,4), OutdoorPvPAttackersTower[attackerstowerid][1]+irand(-4,4), OutdoorPvPAttackersTower[attackerstowerid][2], OutdoorPvPAttackersTower[attackerstowerid][3]);
+
+        float x, y, z;
+        x = OutdoorPvPAttackersTower[attackerstowerid][0] + float(irand(-4, 4));
+        y = OutdoorPvPAttackersTower[attackerstowerid][1] + float(irand(-4, 4));
+        z = (*itr)->GetBaseMap()->GetHeight(x, y, OutdoorPvPAttackersTower[attackerstowerid][2] + 5);
+
+		(*itr)->TeleportTo(571, x, y, z, OutdoorPvPAttackersTower[attackerstowerid][3]);
 	}
 
 	for (PlayerSet::iterator itr = m_players[getDefenderTeam()].begin(); itr != m_players[getDefenderTeam()].end(); ++itr)
@@ -1907,7 +1913,12 @@ void OutdoorPvPWG::StartBattle()
 		if (!(*itr))
 			return;
 
-		(*itr)->TeleportTo(571, 5330.0f+irand(-6, 6), 2842.0f+irand(-6, 6), 409.939807f, urand(0, 3)); 
+        float x, y, z;
+        x = 5330.0f + float(irand(-6, 6));
+        y = 2842.0f + float(irand(-6, 6));
+        z = (*itr)->GetBaseMap()->GetHeight(x, y, 409.939807f + 5);
+
+		(*itr)->TeleportTo(571, x, y, z, 0); 
 	}
 
     // Remove All Wintergrasp auras. Add Recruit rank and Tower Control
