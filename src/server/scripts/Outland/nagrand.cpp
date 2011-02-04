@@ -73,9 +73,9 @@ public:
                 float y = me->GetPositionY();
                 float z = me->GetPositionZ();
 
-                Hitter->SummonCreature(18181,x+(0.7f * (rand()%30)),y+(rand()%5),z,0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,60000);
-                Hitter->SummonCreature(18181,x+(rand()%5),y-(rand()%5),z,0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,60000);
-                Hitter->SummonCreature(18181,x-(rand()%5),y+(0.5f *(rand()%60)),z,0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,60000);
+                Hitter->SummonCreature(18181,x+(0.7f * (rand()%30)),y+(rand()%5),z,0.0f,TEMPSUMMON_CORPSE_TIMED_DESPAWN,60000);
+                Hitter->SummonCreature(18181,x+(rand()%5),y-(rand()%5),z,0.0f,TEMPSUMMON_CORPSE_TIMED_DESPAWN,60000);
+                Hitter->SummonCreature(18181,x-(rand()%5),y+(0.5f *(rand()%60)),z,0.0f,TEMPSUMMON_CORPSE_TIMED_DESPAWN,60000);
                 me->setDeathState(CORPSE);
                 Spawn = true;
             }
@@ -92,7 +92,7 @@ public:
 #define SPELL_VISUAL_SLEEP  16093
 #define SPELL_SPEAR_THROW   32248
 
-#define LUMP_SAY0 -1000190
+#define LUMP_SAY0 -1000190  //DB: old at -1000293
 #define LUMP_SAY1 -1000191
 
 #define LUMP_DEFEAT -1000192

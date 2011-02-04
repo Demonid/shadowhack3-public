@@ -34,7 +34,9 @@ set(scripts_STAT_SRCS
   Kalimdor/CavernsOfTime/CullingOfStratholme/boss_mal_ganis.cpp
   Kalimdor/CavernsOfTime/CullingOfStratholme/boss_epoch.cpp
   Kalimdor/CavernsOfTime/CullingOfStratholme/culling_of_stratholme.cpp
+  Kalimdor/CavernsOfTime/CullingOfStratholme/culling_of_stratholmeAI.cpp
   Kalimdor/CavernsOfTime/CullingOfStratholme/instance_culling_of_stratholme.cpp
+  Kalimdor/CavernsOfTime/CullingOfStratholme/trash_culling_of_stratholme.cpp
   Kalimdor/CavernsOfTime/CullingOfStratholme/culling_of_stratholme.h
   Kalimdor/CavernsOfTime/DarkPortal/dark_portal.h
   Kalimdor/CavernsOfTime/DarkPortal/instance_dark_portal.cpp

@@ -1669,11 +1669,13 @@ public:
 
         uint32 SpellTimer;
         bool IsViper;
+        bool Spawn;
 
         void EnterCombat(Unit * /*who*/) {}
 
         void Reset()
         {
+            Spawn = true;
             SpellTimer = 0;
 
             CreatureInfo const *Info = me->GetCreatureInfo();
@@ -1719,8 +1721,22 @@ public:
 
         void UpdateAI(const uint32 diff)
         {
-            if (!UpdateVictim())
+            if (Spawn)
+            {
+                Spawn = false;
+                // Start attacking attacker of owner on first ai update after spawn - move in line of sight may choose better target
+                if (!me->getVictim() && me->isSummon())
+                    if (Unit * Owner = CAST_SUM(me)->GetSummoner())
+                        if (Owner->getAttackerForHelper())
+                            AttackStart(Owner->getAttackerForHelper());
+            }
+
+            if (!me->getVictim())
+            {
+                if (me->isInCombat())
+                    DoStopAttack();
                 return;
+            }
 
             if (SpellTimer <= diff)
             {
@@ -2548,8 +2564,10 @@ public:
 
 #define EXP_COST                100000//10 00 00 copper (10golds)
 #define GOSSIP_TEXT_EXP         14736
-#define GOSSIP_XP_OFF            "I no longer wish to gain experience."
-#define GOSSIP_XP_ON           "I wish to start gaining experience again."
+#define GOSSIP_XP_OFF           "I no longer wish to gain experience."
+#define GOSSIP_XP_OFF_RU        "Я пока что не хочу получать опыт."
+#define GOSSIP_XP_ON            "I wish to start gaining experience again."
+#define GOSSIP_XP_ON_RU         "Я снова хочу получать опыт."
 
 class npc_experience : public CreatureScript
 {
@@ -2558,8 +2576,8 @@ public:
 
     bool OnGossipHello(Player* pPlayer, Creature* pCreature)
     {
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_XP_OFF, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_XP_ON, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, (pPlayer->isRussianLocale()) ? GOSSIP_XP_OFF_RU:GOSSIP_XP_OFF, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, (pPlayer->isRussianLocale()) ? GOSSIP_XP_ON_RU:GOSSIP_XP_ON, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
         pPlayer->PlayerTalkClass->SendGossipMenu(GOSSIP_TEXT_EXP, pCreature->GetGUID());
         return true;
     }
@@ -2605,8 +2623,225 @@ public:
     }
 };
 
+class npc_stranger : public CreatureScript
+{
+public:
+    npc_stranger() : CreatureScript("npc_stranger") {}
+
+    struct npc_strangerAI : public ScriptedAI
+    {
+	    npc_strangerAI(Creature *c) : ScriptedAI(c) {}
+
+	    void Reset()
+	    {
+		    me->setActive(true);
+	    }	
+
+    };
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+	    return new npc_strangerAI(pCreature);
+    }
+};
+
+// Pilgrim's Bounty event; may be commented out after
+struct PilgrimBountySpells
+{
+    uint32 Pass, Serving_Ch, Serving_At, CanEat, Helpings, Full, Visual, VisualBounce, PassAchiev, WellFed;
+
+    PilgrimBountySpells(uint32 s1, uint32 s2, uint32 s3, uint32 s4, uint32 s5, uint32 s6, uint32 s7, uint32 s8, uint32 s9, uint32 s10)
+    { Pass=s1; Serving_Ch=s2; Serving_At=s3; CanEat=s4; Helpings=s5; Full=s6; Visual=s7; VisualBounce=s8; PassAchiev=s9; WellFed=s10; }
+
+    PilgrimBountySpells() {}
+};
+
+std::map<uint32,PilgrimBountySpells> foodSpells; // uint32 = spellId of Feast On ..
+
+class npc_bountiful_chair : public CreatureScript
+{
+public:
+    npc_bountiful_chair() : CreatureScript("npc_bountiful_chair") {}
+
+
+    enum ePilgrimsBounty
+    {
+        SPELL_THE_SPIRIT_OF_SHARING = 61849,
+        NPC_STURDY_PLATE        = 32839,
+        ITEM_PILGRIMS_DRESS     = 44785,
+        ITEM_PILGRIMS_ROBE      = 46824,
+        ITEM_PILGRIMS_ATTIRE    = 46800,
+    };
+
+    struct npc_bountiful_chairAI : public Scripted_NoMovementAI
+    {
+        npc_bountiful_chairAI(Creature *pCreature) : Scripted_NoMovementAI(pCreature)
+        {
+            switch(pCreature->GetEntry())
+            {
+            case 34812: // Turkey
+                myFeast = 61784;
+                break;
+            case 34819: // Stuffing
+                myFeast = 61788;
+                break;
+            case 34822: // Pie
+                myFeast = 61787;
+                break;
+            case 34823: // Cranberries
+                myFeast = 61785;
+                break;
+            case 34824: // Sweet Potatoe
+                myFeast = 61786;
+                break;
+            }
+            Creature* plate = pCreature->FindNearestCreature(NPC_STURDY_PLATE, INTERACTION_DISTANCE);
+            if (plate) myPlateGUID = plate->GetGUID();
+            switch (pCreature->GetAreaId())
+            {
+            case 12:
+            case 809:
+            case 1657:
+            case 3557:
+                myTeam = ALLIANCE;
+                break;
+            case 14:
+            case 153:
+            case 1638:
+            case 3430:
+                myTeam = HORDE;
+                break;
+            }
+    //        pCreature->CastSpell(pCreature,spells.CanEat,false);
+    //        pCreature->CastSpell(plate,spells.Serving_At);
+    //        sLog->outBasic("bountiful Chair: entry %u, plate guid %u",pCreature->GetEntry(),myPlateGUID);
+        }
+
+        uint64 playerGUID, targetGUID, myPlateGUID;
+        uint32 myFeast, myTeam;
+
+        void PassengerBoarded(Unit *who, int8 seatId, bool apply)
+        {
+            Player *pl = who->ToPlayer();
+            if (!pl) return;
+            Creature *plate = Unit::GetCreature(*me,myPlateGUID);
+            if (apply)
+            {
+    //            me->SetCharmerGUID(who->GetGUID());
+                me->InitCharmInfo();
+                playerGUID = who->GetGUID();
+                me->SetCharmerGUID(playerGUID);
+                DoCast(foodSpells[myFeast].CanEat);
+                if (plate) DoCast(plate,foodSpells[myFeast].Serving_At);
+                if (pl->GetTeam() == myTeam) return;
+                if (pl->HasItemOrGemWithIdEquipped(ITEM_PILGRIMS_DRESS,1) || pl->HasItemOrGemWithIdEquipped(ITEM_PILGRIMS_ROBE,1) || pl->HasItemOrGemWithIdEquipped(ITEM_PILGRIMS_ATTIRE,1)) DoCast(who,65403,true);
+            }
+            else
+            {
+                me->RemoveAllAuras();
+                if (plate) plate->RemoveAllAuras();
+                Reset();
+                if (!pl) return;
+                if (pl->HasAura(61841)) pl->RemoveAurasDueToSpell(61841); // five auras of *.Helpings
+                if (pl->HasAura(61842)) pl->RemoveAurasDueToSpell(61842);
+                if (pl->HasAura(61843)) pl->RemoveAurasDueToSpell(61843);
+                if (pl->HasAura(61844)) pl->RemoveAurasDueToSpell(61844);
+                if (pl->HasAura(61845)) pl->RemoveAurasDueToSpell(61845);
+                if (pl->HasAura(65403)) pl->RemoveAurasDueToSpell(65403); // Ride Vehicle
+                if (! rand()%5) pl->CastSpell(pl,65400,true);
+            }
+        }
+
+        void OnCharmed(bool apply) {}
+
+        void DoAction(const int32 param)
+        {
+            Player* sPlayer = Player::GetPlayer(*me,playerGUID);
+            if (!sPlayer) return;
+            switch (param) // targetGUID is target player
+            {
+                case 66250: // Pass the Turkey
+                case 66259: // Pass the Stuffing
+                case 66260: // Pass the Pie
+                case 66261: // Pass the Cranberries
+                case 66262: // Pass the Sweet Potatoes
+                {
+                    Player* tPlayer = Player::GetPlayer(*me,targetGUID);    // tPlayer is valid because checked in SpellEffects
+                    if (!tPlayer || tPlayer->HasAura(SPELL_THE_SPIRIT_OF_SHARING)) return;
+                    sPlayer->CastSpell(sPlayer,foodSpells[myFeast].PassAchiev,true);
+                    if (tPlayer->HasAura(foodSpells[myFeast].Full))
+                    {
+                        sPlayer->CastSpell(tPlayer,foodSpells[myFeast].VisualBounce,true);
+                        return;
+                    }
+                    Creature* tChair;
+                    if (tPlayer->GetCharm()) tChair = tPlayer->GetCharm()->ToCreature(); // charm surely is a creature
+                    if (!tChair || !tChair->IsVehicle() || !tChair->AI()) return;
+                    tPlayer->CastSpell(tPlayer,foodSpells[myFeast].Serving_Ch,true);
+                    tPlayer->CastSpell(tChair,foodSpells[myFeast].CanEat,true);
+    //                Creature* tPlate = tPlayer->FindNearestCreature(32839,3.);
+                    Creature* tPlate = Unit::GetCreature(*tChair,tChair->AI()->GetGUID());
+                    if (!tPlate) { sLog->outError("BountyChair: no plate near target player!"); return; }
+                    if (tPlayer->HasAura(foodSpells[myFeast].Full) || (tPlate->HasAura(foodSpells[myFeast].Serving_At) && tPlate->GetAura(foodSpells[myFeast].Serving_At)->GetStackAmount() == 5)) sPlayer->CastSpell(tPlayer,foodSpells[myFeast].VisualBounce,true);
+                    else sPlayer->CastSpell(tPlate,foodSpells[myFeast].Visual,true);
+                    tPlayer->CastSpell(tPlate,foodSpells[myFeast].Serving_At,true);
+                    return;
+                }
+                case 61784: // Feast on Turkey
+                case 61788: // Feast on Stuffing
+                case 61787: // Feast on Pie
+                case 61785: // Feast on Cranberries
+                case 61786: // Feast on Sweet Potatoes
+                    if (sPlayer->HasAura(foodSpells[param].Full) || sPlayer->HasAura(SPELL_THE_SPIRIT_OF_SHARING)) return;
+                    if (param != myFeast)
+                    {
+                        sPlayer->RemoveAuraFromStack(foodSpells[param].Serving_Ch);
+                        if (!sPlayer->HasAura(foodSpells[param].Serving_Ch))
+                        {
+                            me->RemoveAurasDueToSpell(foodSpells[param].CanEat);
+                            Creature* myPlate = Unit::GetCreature(*me,myPlateGUID);
+                            if (myPlate && myPlate->HasAura(foodSpells[param].Serving_At)) myPlate->RemoveAurasDueToSpell(foodSpells[param].Serving_At);
+                        }
+                    }
+                    sPlayer->CastSpell(sPlayer,foodSpells[param].Helpings,true);
+                    if (sPlayer->GetAura(foodSpells[param].Helpings)->GetStackAmount() == 5)
+                    {
+                        sPlayer->RemoveAurasDueToSpell(foodSpells[param].Helpings);
+                        sPlayer->CastSpell(sPlayer,foodSpells[param].Full,true);
+                        sPlayer->CastSpell(sPlayer,foodSpells[param].WellFed,true);
+                        if (sPlayer->HasAura(66291) && sPlayer->HasAura(66293) && sPlayer->HasAura(66294) && sPlayer->HasAura(66295) && sPlayer->HasAura(66292))
+                        {
+                            sPlayer->RemoveAurasDueToSpell(66291);
+                            sPlayer->RemoveAurasDueToSpell(66293);
+                            sPlayer->RemoveAurasDueToSpell(66294);
+                            sPlayer->RemoveAurasDueToSpell(66295);
+                            sPlayer->RemoveAurasDueToSpell(66292);
+                            sPlayer->CastSpell(sPlayer,SPELL_THE_SPIRIT_OF_SHARING,true);
+                        }
+                    }
+                    return;
+            }
+        }
+
+        void SetGUID(const uint64 &guid, int32 /*whose*/) { targetGUID = guid; }
+        uint64 GetGUID(int32 /*whose*/) { return myPlateGUID; }
+
+        void Reset() { playerGUID = 0; targetGUID = 0; }
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+	    return new npc_bountiful_chairAI(pCreature);
+    }
+};
+
 void AddSC_npcs_special()
 {
+// init static map foodSpells
+    foodSpells[61784] = PilgrimBountySpells(66250,61807,61835,61801,61842,66291,66373,61822,61928,65414);
+    foodSpells[61785] = PilgrimBountySpells(66261,61804,61833,61798,61841,66295,66372,61821,61925,65412);
+    foodSpells[61786] = PilgrimBountySpells(66262,61808,61837,61802,61844,66292,66376,61824,61929,65410);
+    foodSpells[61787] = PilgrimBountySpells(66260,61805,61838,61799,61845,66294,66374,61825,61926,65415);
+    foodSpells[61788] = PilgrimBountySpells(66259,61806,61836,61800,61843,66293,66375,61823,61927,65416);
     new npc_air_force_bots;
     new npc_lunaclaw_spirit;
     new npc_chicken_cluck;
@@ -2635,5 +2870,7 @@ void AddSC_npcs_special()
     new npc_locksmith;
     new npc_tabard_vendor;
     new npc_experience;
+    new npc_stranger;
+    new npc_bountiful_chair;
 }
 

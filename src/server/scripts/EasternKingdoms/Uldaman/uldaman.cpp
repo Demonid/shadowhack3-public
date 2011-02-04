@@ -84,7 +84,7 @@ class mob_jadespine_basilisk : public CreatureScript
                     Unit* pTarget = SelectUnit(SELECT_TARGET_TOPAGGRO, 0);
 
                     if (!pTarget || pTarget == me->getVictim())
-                        pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true);
+                        pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true);
 
                     if (pTarget)
                         me->TauntApply(pTarget);
@@ -104,7 +104,7 @@ class mob_jadespine_basilisk : public CreatureScript
 
 
 /*######
-## go_keystone_chamber
+## go_keystone_chamber  //Q: to EAI?
 ######*/
 
 class go_keystone_chamber : public GameObjectScript

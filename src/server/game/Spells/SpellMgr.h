@@ -178,6 +178,9 @@ enum SpellLinkedType
 
 Unit * GetTriggeredSpellCaster(SpellEntry const * spellInfo, Unit * caster, Unit * target);
 SpellSpecific GetSpellSpecific(SpellEntry const * spellInfo);
+bool IsNondamageAuraSpell(SpellEntry const * spellInfo);
+bool IsCCSpell(SpellEntry const *spellProto, uint8 EffMask= 0);
+bool IsNoCombatSpells (uint32 spellId);
 AuraState GetSpellAuraState(SpellEntry const * spellInfo);
 
 // Different spell properties
@@ -338,6 +341,9 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex);
 bool IsPositiveTarget(uint32 targetA, uint32 targetB);
 bool CanSpellDispelAura(SpellEntry const * dispelSpell, SpellEntry const * aura);
 bool CanSpellPierceImmuneAura(SpellEntry const * pierceSpell, SpellEntry const * aura);
+
+bool IsExplicitPositiveTarget(uint32 targetA);
+bool IsExplicitNegativeTarget(uint32 targetA);
 
 bool IsSingleTargetSpell(SpellEntry const *spellInfo);
 bool IsSingleTargetSpells(SpellEntry const *spellInfo1, SpellEntry const *spellInfo2);
@@ -1216,6 +1222,7 @@ class SpellMgr
             return false;
         }
 
+        bool _isPositiveSpell(uint32 spellId, bool deep) const;
         bool IsRankSpellDueToSpell(SpellEntry const *spellInfo_1,uint32 spellId_2) const;
         static bool canStackSpellRanks(SpellEntry const *spellInfo);
         bool CanAurasStack(Aura const *aura1, Aura const *aura2, bool sameCaster) const;
@@ -1412,7 +1419,6 @@ class SpellMgr
         void LoadSpellGroupStackRules();
 
     private:
-        bool _isPositiveSpell(uint32 spellId, bool deep) const;
         bool _isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) const;
 
         SpellChainMap      mSpellChains;

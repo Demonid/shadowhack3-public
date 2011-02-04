@@ -93,7 +93,7 @@ public:
 
         void SummonCreatureWithRandomTarget(uint32 creatureId)
         {
-            Unit* Summoned = me->SummonCreature(creatureId, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 240000);
+            Unit* Summoned = me->SummonCreature(creatureId, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 240000);
             if (Summoned)
             {
                 Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0);
@@ -191,7 +191,7 @@ public:
                     me->InterruptNonMeleeSpells(false);
                     //Gyth model
                     me->SetDisplayId(9806);
-                    me->SummonCreature(10429, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 900000);
+                    me->SummonCreature(10429, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 900000);
                     SummonedRend = true;
                 }
 

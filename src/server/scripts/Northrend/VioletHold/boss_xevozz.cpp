@@ -291,7 +291,7 @@ public:
                     if (!PlayerList.isEmpty())
                         for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                             if (i->getSource()->isAlive())
-                                DoTeleportPlayer(i->getSource(), me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), i->getSource()->GetOrientation());
+                                DoTeleportPlayer(i->getSource(), me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()+2.0f, i->getSource()->GetOrientation());
                 }
 
                 uiSummonPlayers_Timer = urand(33000, 35000);

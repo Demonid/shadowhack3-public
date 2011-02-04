@@ -138,6 +138,8 @@ class CreatureAI : public UnitAI
 
         void DoZoneInCombat(Creature* pUnit = NULL);
 
+		void AggroAllPlayersInRange(float fMaxSearchRange = 100.0f, Creature* creature = NULL);
+
         // Called at text emote receive from player
         virtual void ReceiveEmote(Player* /*pPlayer*/, uint32 /*text_emote*/) {}
 

@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
@@ -21,17 +22,31 @@
 #include "Creature.h"
 #include "CreatureAI.h"
 #include "DestinationHolderImp.h"
+#include "TemporarySummon.h"
 #include "World.h"
 
 //----- Point Movement Generator
 template<class T>
 void PointMovementGenerator<T>::Initialize(T &unit)
 {
-    unit.StopMoving();
+    if (!unit.IsStopped())
+        unit.StopMoving();
+
     Traveller<T> traveller(unit);
-    // knockback effect has UNIT_STAT_JUMPING set,so if here we disable sentmonstermove there will be creature position sync problem between client and server
-    i_destinationHolder.SetDestination(traveller,i_x,i_y,i_z, true /* !unit.HasUnitState(UNIT_STAT_JUMPING)*/);
+    i_destinationHolder.SetDestination(traveller, i_x, i_y, i_z, !m_usePathfinding);
+
+    if(m_usePathfinding)
+    {
+        PathInfo path(&unit, i_x, i_y, i_z, m_straightPath);
+        PointPath pointPath = path.getFullPath();
+
+        float speed = traveller.Speed() * 0.001f; // in ms
+        uint32 traveltime = uint32(pointPath.GetTotalLength() / speed);
+        unit.SendMonsterMoveByPath(pointPath, 1, pointPath.size(), traveltime);
+    }
+
 }
+
 
 template<class T>
 bool PointMovementGenerator<T>::Update(T &unit, const uint32 &diff)
@@ -49,7 +64,7 @@ bool PointMovementGenerator<T>::Update(T &unit, const uint32 &diff)
 
     Traveller<T> traveller(unit);
 
-    i_destinationHolder.UpdateTraveller(traveller, diff);
+    i_destinationHolder.UpdateTraveller(traveller, diff, false);
 
     if (i_destinationHolder.HasArrived())
     {
