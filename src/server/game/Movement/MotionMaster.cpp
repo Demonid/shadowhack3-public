@@ -312,7 +312,7 @@ void MotionMaster::MoveJumpTo(float angle, float speedXY, float speedZ)
 
     float x, y, z;
     float dist = speedXY * speedZ * 0.1f;
-    i_owner->GetClosePoint(x, y, z, i_owner->GetObjectSize(), dist, angle);
+    i_owner->GetClosePoint(x, y, z, i_owner->GetObjectSize(), dist, angle, i_owner);
     MoveJump(x, y, z, speedXY, speedZ);
 }
 

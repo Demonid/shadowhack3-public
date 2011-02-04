@@ -297,7 +297,7 @@ bool ChatHandler::HandleSummonCommand(const char* args)
 
         // before GM
         float x,y,z;
-        m_session->GetPlayer()->GetClosePoint(x,y,z,target->GetObjectSize());
+        m_session->GetPlayer()->GetClosePoint(x, y, z, target->GetObjectSize(), 0.0f, 0.0f, m_session->GetPlayer());
         target->TeleportTo(m_session->GetPlayer()->GetMapId(),x,y,z,target->GetOrientation());
         target->SetPhaseMask(m_session->GetPlayer()->GetPhaseMask(), true);
     }
@@ -845,7 +845,7 @@ bool ChatHandler::HandleGroupSummonCommand(const char* args)
 
         // before GM
         float x,y,z;
-        m_session->GetPlayer()->GetClosePoint(x,y,z,pl->GetObjectSize());
+        m_session->GetPlayer()->GetClosePoint(x, y, z, pl->GetObjectSize(), 0.0f, 0.0f, m_session->GetPlayer());
         pl->TeleportTo(m_session->GetPlayer()->GetMapId(),x,y,z,pl->GetOrientation());
     }
 

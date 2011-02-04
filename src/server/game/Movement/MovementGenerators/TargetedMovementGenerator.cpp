@@ -171,7 +171,7 @@ TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
     else
     {
         // to at i_offset distance from target and i_angle from target facing
-        i_target->GetClosePoint(x, y, z, owner.GetObjectSize(), i_offset, i_angle);
+        i_target->GetClosePoint(x, y, z, owner.GetObjectSize(), i_offset, i_angle, &owner);
     }
     
 
@@ -191,9 +191,6 @@ TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
         if( i_destinationHolder.HasDestination() && i_destinationHolder.GetDestinationDiff(x,y,z) < bothObjectSize )
             return;
     */
-
-    if (owner.GetTypeId() == TYPEID_UNIT && (owner.canFly() || owner.IsInWater() || i_target->IsInWater()))
-            z = i_target->GetPositionZ();
 
     if(m_usePathfinding)
     {
