@@ -916,6 +916,48 @@ public:
 	}
 };
 
+class spell_gen_dungeon_credit : public SpellScriptLoader
+{
+    public:
+        spell_gen_dungeon_credit() : SpellScriptLoader("spell_gen_dungeon_credit") { }
+
+        class spell_gen_dungeon_credit_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_gen_dungeon_credit_SpellScript);
+
+            bool Load()
+            {
+                _handled = false;
+                return true;
+            }
+
+            void CreditEncounter()
+            {
+                // This hook is executed for every target, make sure we only credit instance once
+                if (_handled)
+                    return;
+
+                _handled = true;
+                if (GetCaster()->GetTypeId() == TYPEID_UNIT)
+                    if (InstanceScript* instance = GetCaster()->GetInstanceScript())
+                        instance->UpdateEncounterState(ENCOUNTER_CREDIT_CAST_SPELL, GetSpellInfo()->Id, GetCaster());
+            }
+
+            void Register()
+            {
+                AfterHit += SpellHitFn(spell_gen_dungeon_credit_SpellScript::CreditEncounter);
+            }
+
+            bool _handled;
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_gen_dungeon_credit_SpellScript();
+        }
+};
+
+
 void AddSC_generic_spell_scripts()
 {
     new spell_gen_absorb0_hitlimit1();
@@ -934,8 +976,9 @@ void AddSC_generic_spell_scripts()
     new spell_gen_divine_storm_cd_reset();
     new spell_gen_parachute_ic();
     new spell_gen_gunship_portal();
-	new spell_gen_fire_bomb();
-	new spell_gen_rapid_burst();
-	new spell_gen_biting_cold();
-	new spell_gen_biting_cold_dot();
+    new spell_gen_fire_bomb();
+    new spell_gen_rapid_burst();
+    new spell_gen_biting_cold();
+    new spell_gen_biting_cold_dot();
+    new spell_gen_dungeon_credit();
 }
