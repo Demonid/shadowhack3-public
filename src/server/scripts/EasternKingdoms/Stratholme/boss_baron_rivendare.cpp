@@ -140,7 +140,7 @@ public:
             //ShadowBolt
             if (ShadowBolt_Timer <= diff)
             {
-                if (SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (SelectUnit(SELECT_TARGET_RANDOM, 0))    //Q: WTF? to cast upon random target
                     DoCast(me->getVictim(), SPELL_SHADOWBOLT);
 
                 ShadowBolt_Timer = 10000;

@@ -81,7 +81,7 @@ public:
             //PyroBlast_Timer
             if (PyroBlast_Timer <= diff)
             {
-                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.f, true))
                     DoCast(pTarget, SPELL_PYROBLAST);
                 PyroBlast_Timer = 15000;
             } else PyroBlast_Timer -= diff;

@@ -246,6 +246,13 @@ class ChatHandler
         bool HandleUnBanCharacterCommand(const char* args);
         bool HandleUnBanIPCommand(const char* args);
 
+        bool HandleWintergraspStatusCommand(const char *args);
+        bool HandleWintergraspStartCommand(const char *args);
+        bool HandleWintergraspStopCommand(const char *args);
+        bool HandleWintergraspEnableCommand(const char *args);
+        bool HandleWintergraspSwitchTeamCommand(const char *args);
+        bool HandleWintergraspTimerCommand(const char *args);
+
         bool HandleHelpCommand(const char* args);
         bool HandleCommandsCommand(const char* args);
         bool HandleStartCommand(const char* args);
@@ -341,6 +348,13 @@ class ChatHandler
         bool HandleTempGameObjectCommand(const char* args);
 
         //! Development Commands
+
+        bool HandleMmapPathCommand(const char* args);
+        bool HandleMmapLocCommand(const char* args);
+        bool HandleMmapLoadedTilesCommand(const char* args);
+        bool HandleMmapStatsCommand(const char* args);
+        bool HandleMmap(const char* args);
+        bool HandleMmapTestArea(const char* args);
 
         /*bool HandleQuestAdd(const char * args);
         bool HandleQuestRemove(const char * args);

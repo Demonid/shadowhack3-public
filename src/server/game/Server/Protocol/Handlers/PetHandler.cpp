@@ -153,6 +153,7 @@ void WorldSession::HandlePetActionHelper(Unit *pet, uint64 guid1, uint16 spellid
                 case COMMAND_STAY:                          //flat=1792  //STAY
                     pet->AttackStop();
                     pet->InterruptNonMeleeSpells(false);
+					pet->StopMoving();
                     pet->GetMotionMaster()->MoveIdle();
                     charmInfo->SetCommandState(COMMAND_STAY);
 
@@ -294,9 +295,8 @@ void WorldSession::HandlePetActionHelper(Unit *pet, uint64 guid1, uint16 spellid
                 return;
             }
 
-            if (spellInfo->StartRecoveryCategory > 0)
-                if (pet->ToCreature()->GetGlobalCooldown() > 0)
-                    return;
+            if (pet->GetCharmInfo() && pet->GetCharmInfo()->GetGlobalCooldownMgr().HasGlobalCooldown(spellInfo))
+                return;
 
             for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
             {
@@ -752,16 +752,15 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    if (spellInfo->StartRecoveryCategory > 0) // Check if spell is affected by GCD
-        if (caster->GetTypeId() == TYPEID_UNIT && caster->ToCreature()->GetGlobalCooldown() > 0)
-        {
-            caster->SendPetCastFail(spellId, SPELL_FAILED_NOT_READY);
-            return;
-        }
-
     // do not cast not learned spells
     if (!caster->HasSpell(spellId) || IsPassiveSpell(spellId))
         return;
+
+    if (caster->GetTypeId() == TYPEID_UNIT && caster->GetCharmInfo() && caster->GetCharmInfo()->GetGlobalCooldownMgr().HasGlobalCooldown(spellInfo))
+    {
+        caster->SendPetCastFail(spellId, SPELL_FAILED_NOT_READY);
+        return;
+    }
 
     SpellCastTargets targets;
     targets.read(recvPacket, caster);

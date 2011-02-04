@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
@@ -178,7 +179,13 @@ namespace Trinity
                         gain *= 2;
                 }
 
-                gain = uint32(gain * sWorld->getRate(RATE_XP_KILL));
+				float rate_multiplier = (pl->GetSession()->HasPremiumByType(PREMIUM_TYPE_XP_KILL) && pl->CanGainPremiumXP()) ? sWorld->getRate(RATE_PREMIUM_XP_KILL) :  sWorld->getRate(RATE_XP_KILL);
+
+				if (pl->GetsRecruitAFriendBonus(true))
+					rate_multiplier = rate_multiplier + 3.0f;
+
+				gain = uint32(gain * rate_multiplier); 
+
             }
 
             sScriptMgr->OnGainCalculation(gain, pl, u);

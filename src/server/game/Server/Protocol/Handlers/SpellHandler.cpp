@@ -423,11 +423,14 @@ void WorldSession::HandleCancelAuraOpcode(WorldPacket& recvPacket)
         return;
 
     // not allow remove non positive spells and spells with attr SPELL_ATTR0_CANT_CANCEL
-    if (!IsPositiveSpell(spellId) || (spellInfo->Attributes & SPELL_ATTR0_CANT_CANCEL))
+    if ((!IsPositiveSpell(spellId) && spellId !=605) || (spellInfo->Attributes & SPELL_ATTR0_CANT_CANCEL))
         return;
 
     // don't allow cancelling passive auras (some of them are visible)
     if (IsPassiveSpell(spellInfo))
+        return;
+
+    if (_player->isDead() && IsPositiveSpell(spellId))
         return;
 
     // channeled spell case (it currently casted then)
@@ -439,9 +442,19 @@ void WorldSession::HandleCancelAuraOpcode(WorldPacket& recvPacket)
         return;
     }
 
+	for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+	{
+		if (spellInfo->EffectApplyAuraName[i] == SPELL_AURA_FLY || spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED ||
+			spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED || spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED ||
+			spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS)
+				_player->m_anti_JustDismounted++;
+	}
+
     // non channeled case
     // maybe should only remove one buff when there are multiple?
     _player->RemoveOwnedAura(spellId, 0, 0, AURA_REMOVE_BY_CANCEL);
+
+	
 }
 
 void WorldSession::HandlePetCancelAuraOpcode(WorldPacket& recvPacket)
