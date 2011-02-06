@@ -140,21 +140,21 @@ class boss_jeklik : public CreatureScript
 
                             Creature* Bat = NULL;
                             Bat = me->SummonCreature(11368,-12291.6220f,-1380.2640f,144.8304f,5.483f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
-                            if (pTarget && Bat) Bat ->AI()->AttackStart(pTarget);
+                            if (pTarget && Bat && Bat ->AI()) Bat ->AI()->AttackStart(pTarget);
 
                             Bat = me->SummonCreature(11368,-12289.6220f,-1380.2640f,144.8304f,5.483f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
-                            if (pTarget && Bat) Bat ->AI()->AttackStart(pTarget);
+                            if (pTarget && Bat && Bat ->AI()) Bat ->AI()->AttackStart(pTarget);
 
                             Bat = me->SummonCreature(11368,-12293.6220f,-1380.2640f,144.8304f,5.483f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
-                            if (pTarget && Bat) Bat ->AI()->AttackStart(pTarget);
+                            if (pTarget && Bat && Bat ->AI()) Bat ->AI()->AttackStart(pTarget);
 
                             Bat = me->SummonCreature(11368,-12291.6220f,-1380.2640f,144.8304f,5.483f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
-                            if (pTarget && Bat) Bat ->AI()->AttackStart(pTarget);
+                            if (pTarget && Bat && Bat ->AI()) Bat ->AI()->AttackStart(pTarget);
 
                             Bat = me->SummonCreature(11368,-12289.6220f,-1380.2640f,144.8304f,5.483f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
-                            if (pTarget && Bat) Bat ->AI()->AttackStart(pTarget);
+                            if (pTarget && Bat && Bat ->AI()) Bat ->AI()->AttackStart(pTarget);
                             Bat = me->SummonCreature(11368,-12293.6220f,-1380.2640f,144.8304f,5.483f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
-                            if (pTarget && Bat) Bat ->AI()->AttackStart(pTarget);
+                            if (pTarget && Bat && Bat ->AI()) Bat ->AI()->AttackStart(pTarget);
 
                             SpawnBats_Timer = 60000;
                         } else SpawnBats_Timer -= diff;
@@ -198,8 +198,8 @@ class boss_jeklik : public CreatureScript
                                 if (!pTarget)
                                     return;
 
-                                Creature* FlyingBat = me->SummonCreature(14965, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ()+15, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
-                                if (FlyingBat)
+                                Creature* FlyingBat = me->SummonCreature(14965, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ()+15, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
+                                if (FlyingBat && FlyingBat->AI())
                                     FlyingBat->AI()->AttackStart(pTarget);
 
                                 SpawnFlyingBats_Timer = 10000 + rand()%5000;

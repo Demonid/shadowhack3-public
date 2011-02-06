@@ -18,33 +18,69 @@
 #ifndef DEF_ULDUAR_H
 #define DEF_ULDUAR_H
 
-enum eTypes
+enum Encounter
 {
-    MAX_ENCOUNTER               = 15,
+    BOSS_LEVIATHAN,
+    BOSS_IGNIS,
+    BOSS_RAZORSCALE,
+    BOSS_XT002,
+    BOSS_ASSEMBLY,
+    BOSS_KOLOGARN,
+    BOSS_AURIAYA,
+    BOSS_MIMIRON,
+    BOSS_HODIR,
+    BOSS_THORIM,
+    BOSS_FREYA,
+    BOSS_VEZAX,
+    BOSS_YOGGSARON,
+    BOSS_ALGALON,
+	BOSS_MINIBOSS,
+    MAX_ENCOUNTER
+};
 
-    TYPE_LEVIATHAN              = 0,
-    TYPE_IGNIS                  = 1,
-    TYPE_RAZORSCALE             = 2,
-    TYPE_XT002                  = 3,
-    TYPE_ASSEMBLY               = 4,
-    TYPE_KOLOGARN               = 5,
-    TYPE_AURIAYA                = 6,
-    TYPE_MIMIRON                = 7,
-    TYPE_HODIR                  = 8,
-    TYPE_THORIM                 = 9,
-    TYPE_FREYA                  = 10,
-    TYPE_VEZAX                  = 11,
-    TYPE_YOGGSARON              = 12,
-    TYPE_ALGALON                = 13,
-    TYPE_COLOSSUS               = 14,
-
+enum Data64
+{
+    DATA_LEVIATHAN,
+    DATA_NORGANNON,
+    DATA_IGNIS,
+    DATA_RAZORSCALE,
+    DATA_EXP_COMMANDER,
+    DATA_XT002,
     DATA_STEELBREAKER,
     DATA_MOLGEIM,
     DATA_BRUNDIR,
+    DATA_KOLOGARN,
+    DATA_AURIAYA,
+    DATA_BRIGHTLEAF,
+    DATA_IRONBRANCH,
+    DATA_STONEBARK,
+    DATA_FREYA,
+    DATA_THORIM,
+    DATA_RUNIC_COLOSSUS,
+    DATA_RUNE_GIANT,
+    DATA_MIMIRON,
+    DATA_LEVIATHAN_MK_II,
+    DATA_VX_001,
+    DATA_AERIAL_UNIT,
+    DATA_MAGNETIC_CORE,
+    DATA_VEZAX,
+    DATA_YS_FREYA,
+    DATA_YS_THORIM,
+    DATA_YS_MIMIRON,
+    DATA_YS_HODIR,
+    DATA_YOGGSARON_BRAIN,
+    DATA_YOGGSARON
+};
 
-    DATA_EXP_COMMANDER,
-    DATA_RIGHT_ARM,
-    DATA_LEFT_ARM,
+enum Data
+{
+    DATA_LEVIATHAN_DOOR,
+    DATA_TOWER_DESTROYED,
+    DATA_RUNIC_DOOR,
+    DATA_STONE_DOOR,
+    DATA_CALL_TRAM,
+    DATA_MIMIRON_ELEVATOR,
+    DATA_HODIR_RARE_CHEST
 };
 
 enum eBossNPCs
@@ -81,4 +117,5 @@ enum eAchievementCriteria
     ACHIEVEMENT_CRITERIA_HOT_POCKET_10                   = 10430, //ignis
     ACHIEVEMENT_CRITERIA_HOT_POCKET_25                   = 10431,
 };
+
 #endif

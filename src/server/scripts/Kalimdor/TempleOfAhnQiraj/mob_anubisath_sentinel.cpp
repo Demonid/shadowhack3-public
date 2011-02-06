@@ -118,11 +118,13 @@ public:
 
         void GiveBuddyMyList(Creature *c)
         {
-            aqsentinelAI *cai = CAST_AI(aqsentinelAI, (c)->AI());
-            for (int i=0; i<3; ++i)
-                if (NearbyGUID[i] && NearbyGUID[i] != c->GetGUID())
-                    cai->AddBuddyToList(NearbyGUID[i]);
-            cai->AddBuddyToList(me->GetGUID());
+            if (aqsentinelAI *cai = CAST_AI(aqsentinelAI, (c)->AI()))
+            {
+                for (int i=0; i<3; ++i)
+                    if (NearbyGUID[i] && NearbyGUID[i] != c->GetGUID())
+                        cai->AddBuddyToList(NearbyGUID[i]);
+                cai->AddBuddyToList(me->GetGUID());
+            }
         }
 
         void SendMyListToBuddies()
@@ -192,7 +194,7 @@ public:
                     break;
 
                 Creature *pNearby = Unit::GetCreature(*me, NearbyGUID[bli]);
-                if (!pNearby)
+                if (!pNearby || !pNearby->AI())
                     break;
 
                 AddSentinelsNear(pNearby);
@@ -228,7 +230,7 @@ public:
             gatherOthersWhenAggro = true;
         }
 
-        void GainSentinelAbility(uint32 id)
+        void GainSentinelAbility(uint32 id) //Q: WTF not-inline method?
         {
             me->AddAura(id, me);
         }
@@ -252,7 +254,7 @@ public:
                 if (sent->isDead())
                     continue;
                 sent->ModifyHealth(int32(sent->CountPctFromMaxHealth(50)));
-                CAST_AI(aqsentinelAI, sent->AI())->GainSentinelAbility(ability);
+                if (sent->AI()) CAST_AI(aqsentinelAI, sent->AI())->GainSentinelAbility(ability);
             }
         }
 

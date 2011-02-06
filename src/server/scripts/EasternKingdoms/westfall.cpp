@@ -166,7 +166,7 @@ public:
 
         void JustSummoned(Creature* pSummoned)
         {
-            pSummoned->AI()->AttackStart(me);
+            if (pSummoned->AI()) pSummoned->AI()->AttackStart(me);
         }
 
         void Update(const uint32 diff)
@@ -246,10 +246,7 @@ public:
                     break;
                 case 44:
                     DoScriptText(SAY_END, me, pPlayer);
-                    {
-                        if (pPlayer)
-                            pPlayer->GroupEventHappens(QUEST_DEFIAS_BROTHERHOOD,me);
-                    }
+                    pPlayer->GroupEventHappens(QUEST_DEFIAS_BROTHERHOOD,me);
                     break;
             }
         }

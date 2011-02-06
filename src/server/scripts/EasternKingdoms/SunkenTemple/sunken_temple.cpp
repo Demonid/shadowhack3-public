@@ -39,9 +39,9 @@ class at_malfurion_stormrage : public AreaTriggerScript
 public:
     at_malfurion_stormrage() : AreaTriggerScript("at_malfurion_stormrage") { }
 
-    bool OnTrigger(Player* pPlayer, const AreaTriggerEntry * /*at*/)
+    bool OnTrigger(Player* pPlayer, const AreaTriggerEntry * /*at*/)    //Q: should it appear EACH TIME someone nears trigger? or once?
     {
-        if (pPlayer->GetInstanceScript() && !pPlayer->FindNearestCreature(15362, 15))
+        if (pPlayer->GetInstanceScript() && !pPlayer->FindNearestCreature(15362, 15.0f))
             pPlayer->SummonCreature(15362, pPlayer->GetPositionX(), pPlayer->GetPositionY(), pPlayer->GetPositionZ(), -1.52f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 100000);
         return false;
     }
