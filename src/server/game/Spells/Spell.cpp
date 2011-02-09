@@ -953,6 +953,11 @@ void Spell::AddUnitTarget(Unit* pVictim, uint32 effIndex)
     // Check for effect immune skip if immuned
     bool immuned = pVictim->IsImmunedToSpellEffect(m_spellInfo, effIndex);
 
+    // Deep Freeze damage to immuned targets
+    if (immuned && m_spellInfo->Id == 44572 && pVictim->GetTypeId() == TYPEID_UNIT && 
+        pVictim->ToCreature()->GetCreatureInfo()->MechanicImmuneMask & (1 << (m_spellInfo->EffectMechanic[effIndex] - 1)))
+        m_caster->CastSpell(pVictim, 71757, true);
+
     uint64 targetGUID = pVictim->GetGUID();
 
     // Lookup target in already in list
@@ -6741,7 +6746,7 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
     }
 
     //Do not do further checks for triggered spells
-    if (m_IsTriggeredSpell)
+    if (m_IsTriggeredSpell && !IsNeedAdditionalLosChecks(m_spellInfo)) 
         return true;
 
     //Check targets for LOS visibility (except spells without range limitations)
