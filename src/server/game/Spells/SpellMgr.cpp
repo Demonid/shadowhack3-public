@@ -4617,3 +4617,19 @@ bool IsNoCombatSpells (uint32 spellId)
    }
    return false;
 }
+
+bool IsNeedAdditionalLosChecks(SpellEntry const *spellProto)
+{
+    switch(spellProto->Id)
+    {
+        case 3600:  // Earthbind Totem
+        case 50622: 
+        case 44949: // Whirlwind from bladestorm
+            return true;
+        default:break;
+    }
+    // Typhoon
+    if(spellProto->SpellFamilyFlags[1] == 0x01000000 && spellProto->SpellFamilyName == SPELLFAMILY_DRUID)
+        return true;
+    return false;
+}
