@@ -269,7 +269,6 @@ bool Creature::InitEntry(uint32 Entry, uint32 /*team*/, const CreatureData *data
     }
 
     // get difficulty 1 mode entry
-    uint32 actualEntry = Entry;
     CreatureInfo const *cinfo = normalInfo;
     for (uint8 diff = uint8(GetMap()->GetSpawnMode()); diff > 0;)
     {
@@ -2474,3 +2473,10 @@ bool Creature::IsTargetReachabilityCheckFailed(Unit* target)
 	m_lastEvadeCheck = 0;
 	return false;
 }
+
+bool Creature::IsDungeonBoss() const
+{
+    CreatureInfo const *cinfo = ObjectMgr::GetCreatureTemplate(GetEntry());
+    return cinfo && (cinfo->flags_extra & CREATURE_FLAG_EXTRA_DUNGEON_BOSS);
+}
+
