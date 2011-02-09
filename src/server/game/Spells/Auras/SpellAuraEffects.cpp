@@ -4148,6 +4148,10 @@ void AuraEffect::HandleAuraModStun(AuraApplication const * aurApp, uint8 mode, b
 
     Unit * target = aurApp->GetTarget();
 
+    // Repentance remove Righteous Vengeance dot effect
+    if (GetSpellProto()->Id == 20066)
+        target->RemoveAurasDueToSpell(61840, GetCasterGUID());
+
     target->SetControlled(apply, UNIT_STAT_STUNNED);
 
     if (target->HasAuraType(SPELL_AURA_MOD_STEALTH))
