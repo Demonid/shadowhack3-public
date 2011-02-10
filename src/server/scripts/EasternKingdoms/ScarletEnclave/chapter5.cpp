@@ -1069,6 +1069,7 @@ public:
                                 float fLichPositionX = 0,
                                       fLichPositionY = 0,
                                       fLichPositionZ = 0;
+
                                 if (Creature* pTemp = Unit::GetCreature(*me, uiLichKingGUID))
                                 {
                                     fLichPositionX = pTemp->GetPositionX();
@@ -1078,22 +1079,35 @@ public:
 
                                 if (fLichPositionX && fLichPositionY)
                                 {
-                                    Unit* pTemp;
-                                    pTemp = me->SummonCreature(NPC_DEFENDER_OF_THE_LIGHT, LightofDawnLoc[0].x+rand()%10, LightofDawnLoc[0].y+rand()%10, LightofDawnLoc[0].z, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 10000);
-                                    pTemp->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_ATTACK_UNARMED);
-                                    pTemp->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
-                                    pTemp->SetSpeed(MOVE_RUN, 2.0f);
-                                    pTemp->setFaction(me->getFaction());
-                                    pTemp->GetMotionMaster()->MovePoint(0, fLichPositionX, fLichPositionY, fLichPositionZ);
-                                    uiDefenderGUID[0] = pTemp->GetGUID();
+                                    float ts_x, ts_y, ts_z;
 
-                                    pTemp = me->SummonCreature(NPC_RIMBLAT_EARTHSHATTER, LightofDawnLoc[0].x+rand()%10, LightofDawnLoc[0].y+rand()%10, LightofDawnLoc[0].z, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 10000);
-                                    pTemp->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_ATTACK_UNARMED);
-                                    pTemp->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
-                                    pTemp->SetSpeed(MOVE_RUN, 2.0f);
-                                    pTemp->setFaction(me->getFaction());
-                                    pTemp->GetMotionMaster()->MovePoint(0, fLichPositionX, fLichPositionY, fLichPositionZ);
-                                    uiEarthshatterGUID = pTemp->GetGUID();
+                                    ts_x = LightofDawnLoc[0].x + float(irand(-10, 10));
+                                    ts_y = LightofDawnLoc[0].y + float(irand(-10, 10));
+                                    ts_z = me->GetMap()->GetHeight(ts_x, ts_y,  LightofDawnLoc[0].z);
+
+                                    if (Creature* pTemp = me->SummonCreature(NPC_DEFENDER_OF_THE_LIGHT, ts_x, ts_y, ts_z, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 10000))
+                                    {
+                                        pTemp->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_ATTACK_UNARMED);
+                                        pTemp->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
+                                        pTemp->SetSpeed(MOVE_RUN, 2.0f);
+                                        pTemp->setFaction(me->getFaction());
+                                        pTemp->GetMotionMaster()->MovePoint(0, fLichPositionX, fLichPositionY, fLichPositionZ);
+                                        uiDefenderGUID[0] = pTemp->GetGUID();
+                                    }
+
+                                    ts_x = LightofDawnLoc[0].x + float(irand(-10, 10));
+                                    ts_y = LightofDawnLoc[0].y + float(irand(-10, 10));
+                                    ts_z = me->GetMap()->GetHeight(ts_x, ts_y,  LightofDawnLoc[0].z);
+
+                                    if (Creature* pTemp = me->SummonCreature(NPC_RIMBLAT_EARTHSHATTER, ts_x, ts_y, ts_z, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 10000))
+                                    {                                    
+                                        pTemp->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_ATTACK_UNARMED);
+                                        pTemp->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
+                                        pTemp->SetSpeed(MOVE_RUN, 2.0f);
+                                        pTemp->setFaction(me->getFaction());
+                                        pTemp->GetMotionMaster()->MovePoint(0, fLichPositionX, fLichPositionY, fLichPositionZ);
+                                        uiEarthshatterGUID = pTemp->GetGUID();
+                                    }
                                 }
                                 if (Creature* pTemp = Unit::GetCreature(*me, uiMaxwellGUID))
                                 {
@@ -1147,17 +1161,30 @@ public:
                                 pTemp->SetStandState(UNIT_STAND_STATE_DEAD);
                                 pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[17].x, LightofDawnLoc[17].y, LightofDawnLoc[17].z);
                             }
+
                             if (Creature* pTemp = Unit::GetCreature(*me, uiDefenderGUID[0]))
                             {
+                                float ts_x, ts_y, ts_z;
+
+                                ts_x = LightofDawnLoc[0].x + float(irand(-10, 10));
+                                ts_y = LightofDawnLoc[0].y + float(irand(-10, 10));
+                                ts_z = me->GetMap()->GetHeight(ts_x, ts_y,  LightofDawnLoc[0].z);
+
                                 pTemp->SetSpeed(MOVE_RUN, 6.0f);
                                 pTemp->SetStandState(UNIT_STAND_STATE_DEAD);
-                                pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[0].x+rand()%10, LightofDawnLoc[0].y+rand()%10, LightofDawnLoc[0].z);
+                                pTemp->GetMotionMaster()->MovePoint(0, ts_x, ts_y, ts_z);
                             }
                             if (Creature* pTemp = Unit::GetCreature(*me, uiEarthshatterGUID))
                             {
+                                float ts_x, ts_y, ts_z;
+
+                                ts_x = LightofDawnLoc[0].x + float(irand(-10, 10));
+                                ts_y = LightofDawnLoc[0].y + float(irand(-10, 10));
+                                ts_z = me->GetMap()->GetHeight(ts_x, ts_y,  LightofDawnLoc[0].z);
+
                                 pTemp->SetSpeed(MOVE_RUN, 6.0f);
                                 pTemp->SetStandState(UNIT_STAND_STATE_DEAD);
-                                pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[0].x+rand()%10, LightofDawnLoc[0].y+rand()%10, LightofDawnLoc[0].z);
+                                pTemp->GetMotionMaster()->MovePoint(0, ts_x, ts_y, ts_z);
                             }
                             JumpToNextStep(3000);
                             break;
@@ -1420,38 +1447,44 @@ public:
                 {
                     DoCast(me, SPELL_ANTI_MAGIC_ZONE1);
                     uiAnti_magic_zone = 25000 + urand(1, 5000);
-                } else uiAnti_magic_zone -= diff;
+                } 
+                else uiAnti_magic_zone -= diff;
 
 			    if (uiMograineMight <= diff)
                 {
                     if (!me->HasAura(SPELL_THE_MIGHT_OF_MOGRAINE))
 					    DoCast(me, SPELL_THE_MIGHT_OF_MOGRAINE, true);
                     uiMograineMight = 3000;
-                } else uiMograineMight -= diff;			
+                } 
+                else uiMograineMight -= diff;			
 
                 if (uiDeath_strike <= diff)
                 {
                     DoCastVictim(SPELL_DEATH_STRIKE);
                     uiDeath_strike = 5000 + urand(1, 5000);
-                } else uiDeath_strike -= diff;
+                } 
+                else uiDeath_strike -= diff;
 
                 if (uiDeath_embrace <= diff)
                 {
                     DoCastVictim(SPELL_DEATH_EMBRACE);
                     uiDeath_embrace = 5000 + urand(1, 5000);
-                } else uiDeath_embrace -= diff;
+                } 
+                else uiDeath_embrace -= diff;
 
                 if (uiIcy_touch <= diff)
                 {
                     DoCastVictim(SPELL_ICY_TOUCH1);
                     uiIcy_touch = 5000 + urand(1, 5000);
-                } else uiIcy_touch -= diff;
+                } 
+                else uiIcy_touch -= diff;
 
                 if (uiUnholy_blight <= diff)
                 {
                     DoCastVictim(SPELL_UNHOLY_BLIGHT);
                     uiUnholy_blight = 5000 + urand(1, 5000);
-                } else uiUnholy_blight -= diff;
+                } 
+                else uiUnholy_blight -= diff;
 
                 if (uiFight_speech <= diff)
                 {
@@ -1462,14 +1495,16 @@ public:
                                       SAY_LIGHT_OF_DAWN21,SAY_LIGHT_OF_DAWN22,SAY_LIGHT_OF_DAWN23,
                                       SAY_LIGHT_OF_DAWN24), me);
                     uiFight_speech = 15000 + urand(1, 5000);
-                } else uiFight_speech -= diff;
+                } 
+                else uiFight_speech -= diff;
 
                 // Check spawns
                 if (uiSpawncheck <= diff)
                 {
                     SpawnNPC();
                     uiSpawncheck = 4000;
-                } else uiSpawncheck -= diff;
+                }
+                else uiSpawncheck -= diff;
 
                 // Check targets
                 if (uiTargetcheck <= diff)
@@ -1488,7 +1523,8 @@ public:
                     NPCChangeTarget(uiThassarianGUID);
 
                     uiTargetcheck = 10000;
-                } else uiTargetcheck -= diff;
+                } 
+                else uiTargetcheck -= diff;
 
                 // Battle end
                 if (uiFight_duration <= diff + 5000)
@@ -1502,6 +1538,7 @@ public:
                             uiTirionGUID = pTemp->GetGUID();
                         }
                 }
+
                 if (uiFight_duration <= diff)
                 {
                     bIsBattle = false;
@@ -1604,7 +1641,8 @@ public:
 
                     SetHoldState(false);
 
-                } else uiFight_duration -= diff;
+                } 
+                else uiFight_duration -= diff;
 
                 DoMeleeAttackIfReady();
             }
@@ -1621,8 +1659,14 @@ public:
         if (Creature* pTemp = Unit::GetCreature(*me, ui_GUID))
             if (pTemp->isAlive())
 			{
+                float ts_x, ts_y, ts_z;
+
+                ts_x = LightofDawnLoc[0].x + float(irand(-30, 30));
+                ts_y = LightofDawnLoc[0].y + float(irand(-30, 30));
+                ts_z = me->GetMap()->GetHeight(ts_x, ts_y,  LightofDawnLoc[0].z);
+
 				pTemp->SetHomePosition(LightofDawnLoc[0].x, LightofDawnLoc[0].y, LightofDawnLoc[0].z, 0);
-                pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[0].x + irand(-30, 30), LightofDawnLoc[0].y+ irand(-30, 30), LightofDawnLoc[0].z + 5);				
+                pTemp->GetMotionMaster()->MovePoint(0, ts_x, ts_y, ts_z);				
 			}
     }
 
