@@ -340,6 +340,7 @@ public:
         }
 
         bool bIsBattle;
+        bool bloodrain;
         uint32 uiStep;
         uint32 uiPhase_timer;
         uint32 uiFight_duration;
@@ -347,6 +348,7 @@ public:
         uint32 uiTotal_scourge;
         uint32 uiSummon_counter;
     	uint8 uiTargetSeekerCounter;
+        uint32 bloodraintimer;
 
         // Darion Mograine
         uint32 uiAnti_magic_zone;
@@ -396,8 +398,10 @@ public:
             if (!HasEscortState(STATE_ESCORT_ESCORTING))
             {
                 bIsBattle = false;
+                bloodrain = false;
                 uiStep = 0;
                 uiPhase_timer = 3000;
+                bloodraintimer = 1500;
                 uiFight_duration = 300000; // 5 minutes
                 uiTotal_dawn = ENCOUNTER_TOTAL_DAWN;
                 uiTotal_scourge = ENCOUNTER_TOTAL_SCOURGE;
@@ -797,6 +801,7 @@ public:
                             {
                                 DoScriptText(SAY_LIGHT_OF_DAWN06, me);
                                 JumpToNextStep(5000);
+                                bloodrain = true;
                                 if (Player* pPlayer = GetPlayerForEscort())
                                     SetWeather(WEATHER_STATE_MEDIUM_RAIN, 0.65f, pPlayer);
                             } 
@@ -1420,7 +1425,13 @@ public:
                             break;
 
                         case 72:
-                            SetHoldState(false); // Escort ends
+                            bloodrain = false;
+
+                            if (Player* pPlayer = GetPlayerForEscort())
+                                SetWeather(WEATHER_STATE_FINE, 0.0f, pPlayer);
+
+                            SetHoldState(false); // Escort ends                            
+
                             JumpToNextStep(25000);
                             break;
 
@@ -1438,11 +1449,27 @@ public:
                     }
 
                 } else uiPhase_timer -= diff;
+
+                if (bloodrain && (bloodraintimer <= diff || bloodraintimer > 5000))
+                {
+                    if (Player* pPlayer = GetPlayerForEscort())
+                        SetWeather(WEATHER_STATE_MEDIUM_RAIN, 0.65f, pPlayer);
+                    bloodraintimer = 1500;
+                }
+                else bloodraintimer -= diff;
             }
 
             // ******* During battle *****************************************************************
             else
             {
+                if (bloodrain && (bloodraintimer <= diff || bloodraintimer > 5000))
+                {
+                    if (Player* pPlayer = GetPlayerForEscort())
+                        SetWeather(WEATHER_STATE_MEDIUM_RAIN, 0.65f, pPlayer);
+                    bloodraintimer = 1500;
+                }
+                else bloodraintimer -= diff;
+
                 if (uiAnti_magic_zone <= diff)
                 {
                     DoCast(me, SPELL_ANTI_MAGIC_ZONE1);
