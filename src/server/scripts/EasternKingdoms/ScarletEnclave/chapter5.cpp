@@ -18,6 +18,7 @@
 
 #include "ScriptPCH.h"
 #include "ScriptedEscortAI.h"
+#include "WorldPacket.h"
 
 //#define LESS_MOB // if you do not have a good server and do not want it to be laggy as hell
 //Light of Dawn
@@ -380,6 +381,14 @@ public:
         uint64 uiBehemothGUID[ENCOUNTER_BEHEMOTH_NUMBER];
         uint64 uiGhoulGUID[ENCOUNTER_GHOUL_NUMBER];
         uint64 uiWarriorGUID[ENCOUNTER_WARRIOR_NUMBER];
+
+        void SetWeather(uint32 weather, float grade, Player* pPlayer)
+        {
+            WorldPacket data(SMSG_WEATHER, (4+4+4));
+            data << uint32(weather) << float(grade) << uint8(0);
+
+            pPlayer->SendMessageToSet(&data, true);
+        }
 
         void Reset()
         {
@@ -785,8 +794,12 @@ public:
                             break;
 
                         case 8: // announce
-                            DoScriptText(SAY_LIGHT_OF_DAWN06, me);
-                            JumpToNextStep(5000);
+                            {
+                                DoScriptText(SAY_LIGHT_OF_DAWN06, me);
+                                JumpToNextStep(5000);
+                                if (Player* pPlayer = GetPlayerForEscort())
+                                    SetWeather(WEATHER_STATE_MEDIUM_RAIN, 0.65f, pPlayer);
+                            } 
                             break;
 
                         case 9: // charge begins
