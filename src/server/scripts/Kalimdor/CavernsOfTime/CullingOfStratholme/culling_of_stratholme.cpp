@@ -20,7 +20,6 @@
 #include "culling_of_stratholme.h"
 #include "ScriptedEscortAI.h"
 #include "WorldPacket.h"
-#include "Weather.h"
  
 /*###
 ## npc_arthas
@@ -1359,13 +1358,27 @@ public:
 			me->SetVisible(false);
 			m_uiStep = 0;
 			m_uiStepTimer = 100;
+            SetWeather(WEATHER_STATE_FINE, 0.0f);
 		}
+
+        void SetWeather(uint32 weather, float grade)
+        {
+            Map* pMap = me->GetMap();
+
+            if (!pMap || !pMap->IsDungeon())
+                return;
+
+            WorldPacket data(SMSG_WEATHER, (4+4+4));
+            data << uint32(weather) << float(grade) << uint8(0);
+
+            pMap->SendToPlayers(&data);
+        }
 
 		void DoAction(const int32 uiAction)
 		{
 			if (uiAction == 1)
 			{
-				//m_pInstance->SetWeather(WEATHER_STATE_MEDIUM_RAIN, 0.9999f);
+				SetWeather(WEATHER_STATE_MEDIUM_RAIN, 0.65f);
 				StartEvent = true;
 				me->SetVisible(true);
 				CAST_AI(npc_utherAI, me->AI())->Start(false, true);
