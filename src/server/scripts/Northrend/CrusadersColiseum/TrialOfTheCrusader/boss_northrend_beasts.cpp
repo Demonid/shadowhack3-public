@@ -863,7 +863,7 @@ public:
                     break;
                 case 4:
                     DoScriptText(SAY_TRAMPLE_START, me);
-                    me->GetMotionMaster()->MoveCharge(m_fTrampleTargetX, m_fTrampleTargetY, m_fTrampleTargetZ+2, 42, 1);
+                    me->GetMotionMaster()->MoveCharge(m_fTrampleTargetX, m_fTrampleTargetY, m_fTrampleTargetZ+2.0f, 42.0f, 1);
                     me->SetUInt64Value(UNIT_FIELD_TARGET, 0);
                     m_uiStage = 5;
                     break;

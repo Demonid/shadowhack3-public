@@ -350,6 +350,7 @@ MotionMaster::MoveCharge(float x, float y, float z, float speed, uint32 id, bool
 
     i_owner->AddUnitState(UNIT_STAT_CHARGING);
     i_owner->m_TempSpeed = speed;
+
     if (i_owner->GetTypeId() == TYPEID_PLAYER)
     {
         sLog->outStaticDebug("Player (GUID: %u) charge point (X: %f Y: %f Z: %f)", i_owner->GetGUIDLow(), x, y, z);
