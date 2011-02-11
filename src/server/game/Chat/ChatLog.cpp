@@ -81,8 +81,6 @@ void ChatLog::Initialize()
         screenflag[CHAT_LOG_CHANNEL] = sConfig->GetBoolDefault("ChatLogChannelScreen", false);
         screenflag[CHAT_LOG_RAID] = sConfig->GetBoolDefault("ChatLogRaidScreen", false);
         screenflag[CHAT_LOG_BATTLEGROUND] = sConfig->GetBoolDefault("ChatLogBattleGroundScreen", false);
-
-        protectedChannel = sConfig->GetStringDefault("ChatLogProtectLexicsInChannel", "talk");
     }
 
     // lexics cutter
@@ -138,14 +136,11 @@ void ChatLog::Initialize()
     WriteInitStamps();
 }
 
-bool ChatLog::_ChatCommon(int ChatType, Player *player, std::string &msg, std::string channel)
+bool ChatLog::_ChatCommon(int ChatType, Player *player, std::string &msg)
 {
-    if (ChatType == CHAT_LOG_CHANNEL && channel != protectedChannel)
-        return true;
-
     if (LexicsCutterEnable && Lexics && cutflag[ChatType] && Lexics->Check_Lexics(msg)) ChatBadLexicsAction(player, msg);
 
-    if (!ChatLogEnable) return false;
+    if (!ChatLogEnable) return(false);
 
     if (ChatLogIgnoreUnprintable)
     {
@@ -161,7 +156,7 @@ bool ChatLog::_ChatCommon(int ChatType, Player *player, std::string &msg, std::s
         }
     }
 
-    return true;
+    return(true);
 }
         
 void ChatLog::ChatMsg(Player *player, std::string &msg, uint32 type)
@@ -349,7 +344,7 @@ void ChatLog::WhisperMsg(Player *player, std::string &to, std::string &msg)
 
 void ChatLog::ChannelMsg(Player *player, std::string &channel, std::string &msg)
 {
-    if (!_ChatCommon(CHAT_LOG_CHANNEL, player, msg, channel)) return;
+    if (!_ChatCommon(CHAT_LOG_CHANNEL, player, msg)) return;
 
     CheckDateSwitch();
 
