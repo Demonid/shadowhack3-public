@@ -91,7 +91,7 @@ public:
         {
         }
 
-        void JustDied(Unit * /*who*/)
+        void JustDied(Unit * /*who*/)   //Q: WTF? remove it?
         {
             me->setFaction(68);
         }
@@ -271,7 +271,7 @@ public:
                 Phase = 0;
                 KillCount = 0;
                 PlayerGUID = 0;
-                Summons.DespawnAll();
+                Summons.DespawnAll();   //Q: memory leak? empty it unconditionally? use desctructor?
             }
         }
 
@@ -376,7 +376,7 @@ public:
                     }
                     QuestInProgress = false;
                     Reset();
-                    break;
+                    return;
             }
             ++Phase; //prepare next phase
         }

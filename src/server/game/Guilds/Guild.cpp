@@ -937,7 +937,7 @@ void Guild::BankMoveItemData::LogBankEvent(SQLTransaction& trans, MoveItemData* 
 void Guild::BankMoveItemData::LogAction(MoveItemData* pFrom) const
 {
     MoveItemData::LogAction(pFrom);
-    if (!pFrom->IsBank() && sWorld->getBoolConfig(CONFIG_GM_LOG_TRADE) && m_pPlayer->GetSession()->GetSecurity() > SEC_PLAYER)       // TODO: move to scripts
+    if (!pFrom->IsBank() && sWorld->getBoolConfig(CONFIG_GM_LOG_TRADE) && m_pPlayer->GetSession()->GetSecurity() > SEC_MODERATOR)       // TODO: move to scripts
         sLog->outCommand(m_pPlayer->GetSession()->GetAccountId(),
             "GM %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u)",
             m_pPlayer->GetName(), m_pPlayer->GetSession()->GetAccountId(),
@@ -1630,7 +1630,7 @@ void Guild::HandleMemberDepositMoney(WorldSession* session, uint32 amount)
     player->ModifyMoney(-int32(amount));
     player->SaveGoldToDB(trans);
     // Log GM action (TODO: move to scripts)
-    if (player->GetSession()->GetSecurity() > SEC_PLAYER && sWorld->getBoolConfig(CONFIG_GM_LOG_TRADE))
+    if (player->GetSession()->GetSecurity() > SEC_MODERATOR && sWorld->getBoolConfig(CONFIG_GM_LOG_TRADE))
     {
         sLog->outCommand(player->GetSession()->GetAccountId(),
             "GM %s (Account: %u) deposit money (Amount: %u) to pGuild bank (Guild ID %u)",
