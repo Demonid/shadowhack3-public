@@ -53,11 +53,10 @@ enum LexicsActions
 
 class ChatLog
 {
-    friend class ACE_Singleton<ChatLog, ACE_Null_Mutex>;
-    ChatLog();
-    ~ChatLog();
-
-    public:    
+		friend class ACE_Singleton<ChatLog, ACE_Null_Mutex>;
+		ChatLog();
+    public:
+        ~ChatLog();
 
         void Initialize();
         
@@ -72,7 +71,7 @@ class ChatLog
         void ChatBadLexicsAction(Player *player, std::string &msg);
         
     private:
-        bool _ChatCommon(int ChatType, Player *player, std::string &msg, std::string channel = NULL);
+        bool _ChatCommon(int ChatType, Player *player, std::string &msg);
 
         bool ChatLogEnable;
         bool ChatLogDateSplit;
@@ -97,7 +96,6 @@ class ChatLog
         int LexicsCutterActionDuration;
         std::string fn_innormative;
         FILE* f_innormative;
-        std::string protectedChannel;
 
         void OpenAllFiles();
         void CloseAllFiles();
@@ -107,5 +105,5 @@ class ChatLog
         void OutTimestamp(FILE *file);
 };
 
-#define sChatLog ACE_Singleton<ChatLog, ACE_Null_Mutex>::instance()
+#define sChatLog (*ACE_Singleton<ChatLog, ACE_Null_Mutex>::instance())
 #endif

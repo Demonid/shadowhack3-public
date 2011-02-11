@@ -136,6 +136,9 @@ TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
                         // calculate travel time, set spline, then send path
                         uint32 traveltime = uint32(dist / (traveller.Speed()*0.001f));
 
+						if (!owner.IsStopped())
+							owner.StopMoving();
+
                         owner.SendMonsterMoveByPath(pointPath, 1, endIndex, traveltime);
 
                         return false;
@@ -228,6 +231,9 @@ TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
 
             // calculate travel time, set spline, then send path
             uint32 traveltime = uint32(dist / (traveller.Speed()*0.001f));
+
+			if (!owner.IsStopped())
+				owner.StopMoving();
 
             owner.SendMonsterMoveByPath(pointPath, 1, endIndex, traveltime);
 
@@ -323,7 +329,7 @@ TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
                 next_point = i_path->getNextPosition();
 
                 //More distance let have better performance, less distance let have more sensitive reaction at target move.
-                float dist = owner.GetMeleeReach() + i_target->GetMeleeReach() + sWorld->getRate(RATE_TARGET_POS_RECALCULATION_RANGE);
+                float dist = owner.GetMeleeReach() + sWorld->getRate(RATE_TARGET_POS_RECALCULATION_RANGE);
 
                 needNewDest = i_destinationHolder.HasArrived() && 
                     ( !inRange(next_point, i_path->getActualEndPosition(), dist, 2*dist) || !i_target->IsWithinLOSInMap(&owner) );
