@@ -2974,6 +2974,9 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
             // Curse of Elements
             else if ((spellproto->SpellFamilyFlags[1] & 0x200) && (spellproto->SpellIconID == 55))
                 return DIMINISHING_LIMITONLY;
+            // Unstable Affliction
+            else if (spellproto->Id == 31117)
+                return DIMINISHING_LIMITONLY;
             break;
         }
         case SPELLFAMILY_DRUID:
