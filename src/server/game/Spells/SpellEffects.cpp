@@ -6194,9 +6194,9 @@ void Spell::EffectCharge(SpellEffIndex /*effIndex*/)
     target->GetContactPoint(m_caster, x, y, z);
 
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
-        m_caster->GetMotionMaster()->MoveCharge(x, y, z, true, false);
+        m_caster->GetMotionMaster()->MoveChargeWithPathfinding(x, y, z, false);
     else
-        m_caster->GetMotionMaster()->MoveCharge(x, y, z, true, true);
+        m_caster->GetMotionMaster()->MoveChargeWithPathfinding(x, y, z, true);
 
     // not all charge effects used in negative spells
     if (!IsPositiveSpell(m_spellInfo->Id) && m_caster->GetTypeId() == TYPEID_PLAYER)
@@ -6211,9 +6211,9 @@ void Spell::EffectChargeDest(SpellEffIndex /*effIndex*/)
         m_targets.m_dstPos.GetPosition(x, y, z);
 
         if (m_caster->GetTypeId() == TYPEID_PLAYER)
-            m_caster->GetMotionMaster()->MoveCharge(x, y, z, true, false);
+            m_caster->GetMotionMaster()->MoveChargeWithPathfinding(x, y, z, false);
         else
-            m_caster->GetMotionMaster()->MoveCharge(x, y, z, true, true);
+            m_caster->GetMotionMaster()->MoveChargeWithPathfinding(x, y, z, true);
     }
 }
 
