@@ -14326,6 +14326,13 @@ void Unit::StopMoving()
 {
     ClearUnitState(UNIT_STAT_MOVING);
 
+    // send explicit stop packet
+    // rely on vmaps here because for example stormwind is in air
+    //float z = sMapMgr->GetBaseMap(GetMapId())->GetHeight(GetPositionX(), GetPositionY(), GetPositionZ(), true);
+    //if (fabs(GetPositionZ() - z) < 2.0f)
+    //    Relocate(GetPositionX(), GetPositionY(), z);
+    //Relocate(GetPositionX(), GetPositionY(),GetPositionZ());
+
     if (!(GetUnitMovementFlags() & MOVEMENTFLAG_ONTRANSPORT))
         SendMonsterStop();
 }
@@ -17089,9 +17096,6 @@ template void Unit::MonsterMoveByPath<PathNode>(const Path<PathNode> &, uint32, 
 template<typename Elem, typename Node>
 void Unit::SendMonsterMoveByPath(Path<Elem,Node> const& path, uint32 start, uint32 end, uint32 traveltime)
 {
-    if (!IsStopped() && !isInFlight())     // If we're already moving by path and we're not on taxi...
-        StopMoving();                      // ... we must send our current position to client to avoid position mismatch
-
     uint32 pathSize = end - start;
 
 	uint32 packSize = ((GetUnitMovementFlags() & MOVEMENTFLAG_LEVITATING) || isInFlight()) ? pathSize*4*3 : 4*3 + (pathSize-1)*4;
