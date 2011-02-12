@@ -31,8 +31,8 @@ class PointMovementGenerator
 : public MovementGeneratorMedium< T, PointMovementGenerator<T> >
 {
     public:
-        PointMovementGenerator(uint32 _id, float _x, float _y, float _z, bool _usePathfinding, bool _straightPath) : id(_id),
-            i_x(_x), i_y(_y), i_z(_z), i_nextMoveTime(0), arrived(false), m_usePathfinding(_usePathfinding), m_straightPath(_straightPath) {}
+        PointMovementGenerator(uint32 _id, float _x, float _y, float _z, bool _usePathfinding, bool _straightPath, Unit* _target, uint32 _chargeSpell) : id(_id),
+            i_x(_x), i_y(_y), i_z(_z), i_nextMoveTime(0), arrived(false), m_usePathfinding(_usePathfinding), m_straightPath(_straightPath), m_target(_target), m_chargeSpell(_chargeSpell) {}
 
         void Initialize(T &);
         void Finalize(T &unit);
@@ -49,6 +49,8 @@ class PointMovementGenerator
         float i_x,i_y,i_z;
         bool m_usePathfinding;
         bool m_straightPath;
+        uint32 m_chargeSpell;
+        Unit* m_target;
         TimeTracker i_nextMoveTime;
         DestinationHolder< Traveller<T> > i_destinationHolder;
         bool arrived;
@@ -59,7 +61,7 @@ class AssistanceMovementGenerator
 {
     public:
         AssistanceMovementGenerator(float _x, float _y, float _z) :
-            PointMovementGenerator<Creature>(0, _x, _y, _z, true, false) {}
+            PointMovementGenerator<Creature>(0, _x, _y, _z, true, false, NULL, NULL) {}
 
         MovementGeneratorType GetMovementGeneratorType() { return ASSISTANCE_MOTION_TYPE; }
         void Finalize(Unit &);

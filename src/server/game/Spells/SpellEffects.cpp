@@ -1696,6 +1696,19 @@ void Spell::EffectTriggerSpell(SpellEffIndex effIndex)
         return;
     }
 
+    switch (m_spellInfo->Id)
+    {
+        case 61490:
+        case 30151:
+        case 61685:
+        case 100:
+        case 6178:
+        case 11578:
+            sLog->outDebug("Spell::EffectTriggerSpell (Spell: %u): It's a charge spell, triggering in PointMovementGenerator", m_spellInfo->Id);
+            return;
+        default: break;
+    }
+
     uint32 triggered_spell_id = m_spellInfo->EffectTriggerSpell[effIndex];
     Unit* originalCaster = NULL;
 
@@ -6194,9 +6207,9 @@ void Spell::EffectCharge(SpellEffIndex /*effIndex*/)
     target->GetContactPoint(m_caster, x, y, z);
 
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
-        m_caster->GetMotionMaster()->MoveChargeWithPathfinding(x, y, z, false);
+        m_caster->GetMotionMaster()->MoveChargeBySpell(x, y, z, target, m_spellInfo->Id, false);
     else
-        m_caster->GetMotionMaster()->MoveChargeWithPathfinding(x, y, z, true);
+        m_caster->GetMotionMaster()->MoveChargeBySpell(x, y, z, target, m_spellInfo->Id, true);
 
     // not all charge effects used in negative spells
     if (!IsPositiveSpell(m_spellInfo->Id) && m_caster->GetTypeId() == TYPEID_PLAYER)
