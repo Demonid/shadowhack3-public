@@ -323,7 +323,7 @@ TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
                 next_point = i_path->getNextPosition();
 
                 //More distance let have better performance, less distance let have more sensitive reaction at target move.
-                float dist = owner.GetMeleeReach() + i_target->GetMeleeReach() + sWorld->getRate(RATE_TARGET_POS_RECALCULATION_RANGE);
+                float dist = owner.GetMeleeReach() + sWorld->getRate(RATE_TARGET_POS_RECALCULATION_RANGE);
 
                 needNewDest = i_destinationHolder.HasArrived() && 
                     ( !inRange(next_point, i_path->getActualEndPosition(), dist, 2*dist) || !i_target->IsWithinLOSInMap(&owner) );
