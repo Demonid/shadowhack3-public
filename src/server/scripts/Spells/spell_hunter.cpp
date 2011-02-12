@@ -86,6 +86,11 @@ public:
                     if (familyFlag[0] & 0x4000)
                     {
                         int32 TickCount = aurEff->GetTotalTicks();
+
+                        // Glyph of Serpent Sting
+                        if(caster->HasSpell(56832))
+                           TickCount += 2;
+
                         spellId = HUNTER_SPELL_CHIMERA_SHOT_SERPENT;
                         basePoint = caster->SpellDamageBonus(unitTarget, aura->GetSpellProto(), aurEff->GetAmount(), DOT, aura->GetStackAmount());
                         ApplyPctN(basePoint, TickCount * 40);

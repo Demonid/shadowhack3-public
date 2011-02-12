@@ -1948,7 +1948,7 @@ bool ChatHandler::HandleReviveCommand(const char *args)
 
     if (target)
     {
-        target->ResurrectPlayer(target->GetSession()->GetSecurity() > SEC_PLAYER ? 1.0f : 0.5f);
+        target->ResurrectPlayer(target->GetSession()->GetSecurity() > SEC_MODERATOR ? 1.0f : 0.5f);
         target->SpawnCorpseBones();
         target->SaveToDB();
     }
@@ -3800,7 +3800,12 @@ bool ChatHandler::HandleServerPLimitCommand(const char *args)
     {
         case SEC_PLAYER:        secName = "Player";        break;
         case SEC_MODERATOR:     secName = "Moderator";     break;
-        case SEC_GAMEMASTER:    secName = "Gamemaster";    break;
+		case SEC_GAMEMASTER_LOW:
+		case SEC_GAMEMASTER_MED:
+        case SEC_GAMEMASTER:    
+			secName = "Gamemaster";
+			break;
+		case SEC_DEVELOPER:     secName = "Developer";     break;
         case SEC_ADMINISTRATOR: secName = "Administrator"; break;
         default:                secName = "<unknown>";     break;
     }
@@ -4704,5 +4709,74 @@ bool ChatHandler::HandleUnbindSightCommand(const char * /*args*/)
         return false;
 
     m_session->GetPlayer()->StopCastingBindSight();
+    return true;
+}
+
+bool ChatHandler::HandleMmap(const char* args)
+{
+	bool on;
+    if (strncmp(args, "on", 3) == 0)
+    {
+        sWorld->setBoolConfig(CONFIG_MOVEMAP_ENABLE, true);
+        SendSysMessage("WORLD: PathFinding are now ENABLED (individual map settings still in effect)");
+    }
+    else if (strncmp(args, "off", 4) == 0)
+    {
+        sWorld->setBoolConfig(CONFIG_MOVEMAP_ENABLE, false);
+        SendSysMessage("WORLD: PathFinding are now DISABLED");
+    }
+    else
+    {
+        SendSysMessage(LANG_USE_BOL);
+        return false;
+    }    
+
+    on = sWorld->getBoolConfig(CONFIG_MOVEMAP_ENABLE);
+    PSendSysMessage("PathFinding are %sabled", on ? "en" : "dis");
+
+    return true;
+}
+
+bool ChatHandler::HandleMmapTestArea(const char* args)
+{
+    /*float radius = 40.f;
+    ExtractFloat(&args, radius);
+
+    CellPair pair(MaNGOS::ComputeCellPair( m_session->GetPlayer()->GetPositionX(), m_session->GetPlayer()->GetPositionY()) );
+    Cell cell(pair);
+    cell.SetNoCreate();
+
+    std::list<Creature*> creatureList;
+
+    MaNGOS::AnyUnitInObjectRangeCheck go_check(m_session->GetPlayer(), radius);
+    MaNGOS::CreatureListSearcher<MaNGOS::AnyUnitInObjectRangeCheck> go_search(creatureList, go_check);
+    TypeContainerVisitor<MaNGOS::CreatureListSearcher<MaNGOS::AnyUnitInObjectRangeCheck>, GridTypeMapContainer> go_visit(go_search);
+
+    // Get Creatures
+    cell.Visit(pair, go_visit, *(m_session->GetPlayer()->GetMap()), *(m_session->GetPlayer()), radius);
+
+    if (!creatureList.empty())
+    {
+        PSendSysMessage("Found %i Creatures.", creatureList.size());
+
+        uint32 paths = 0;
+        uint32 uStartTime = getMSTime();
+
+        float gx,gy,gz;
+        m_session->GetPlayer()->GetPosition(gx,gy,gz);
+        for (std::list<Creature*>::iterator itr = creatureList.begin(); itr != creatureList.end(); ++itr)
+        {
+            PathInfo((*itr), gx, gy, gz);
+            ++paths;
+        }
+
+        uint32 uPathLoadTime = getMSTimeDiff(uStartTime, getMSTime());
+        PSendSysMessage("Generated %i paths in %i ms", paths, uPathLoadTime);
+    }
+    else
+    {
+        PSendSysMessage("No creatures in %f yard range.", radius);
+    }*/
+
     return true;
 }

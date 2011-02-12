@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
@@ -136,9 +137,9 @@ ChatCommand * ChatHandler::getCommandTable()
 
     static ChatCommand characterCommandTable[] =
     {
-        { "customize",      SEC_GAMEMASTER,     true,  OldHandler<&ChatHandler::HandleCharacterCustomizeCommand>,     "", NULL },
-        { "changefaction",  SEC_GAMEMASTER,     true,  OldHandler<&ChatHandler::HandleCharacterChangeFactionCommand>, "", NULL },
-        { "changerace",     SEC_GAMEMASTER,     true,  OldHandler<&ChatHandler::HandleCharacterChangeRaceCommand>,    "", NULL },
+        { "customize",      SEC_ADMINISTRATOR,  true,  OldHandler<&ChatHandler::HandleCharacterCustomizeCommand>,     "", NULL },
+		{ "changefaction",  SEC_ADMINISTRATOR,  true,  OldHandler<&ChatHandler::HandleCharacterChangeFactionCommand>, "", NULL },
+		{ "changerace",     SEC_ADMINISTRATOR,  true,  OldHandler<&ChatHandler::HandleCharacterChangeRaceCommand>,    "", NULL },
         { "deleted",        SEC_GAMEMASTER,     true,  NULL,                                              "", characterDeletedCommandTable},
         { "erase",          SEC_CONSOLE,        true,  OldHandler<&ChatHandler::HandleCharacterEraseCommand>,         "", NULL },
         { "level",          SEC_ADMINISTRATOR,  true,  OldHandler<&ChatHandler::HandleCharacterLevelCommand>,         "", NULL },
@@ -218,10 +219,21 @@ ChatCommand * ChatHandler::getCommandTable()
         { "skill",          SEC_ADMINISTRATOR,  true,  OldHandler<&ChatHandler::HandleLookupSkillCommand>,         "", NULL },
         { "spell",          SEC_ADMINISTRATOR,  true,  OldHandler<&ChatHandler::HandleLookupSpellCommand>,         "", NULL },
         { "taxinode",       SEC_ADMINISTRATOR,  true,  OldHandler<&ChatHandler::HandleLookupTaxiNodeCommand>,      "", NULL },
-        { "tele",           SEC_MODERATOR,      true,  OldHandler<&ChatHandler::HandleLookupTeleCommand>,          "", NULL },
-        { "title",          SEC_GAMEMASTER,     true,  OldHandler<&ChatHandler::HandleLookupTitleCommand>,         "", NULL },
+        { "tele",           SEC_GAMEMASTER_LOW, true,  OldHandler<&ChatHandler::HandleLookupTeleCommand>,          "", NULL },
+        { "title",          SEC_GAMEMASTER_MED, true,  OldHandler<&ChatHandler::HandleLookupTitleCommand>,         "", NULL },
         { "map",            SEC_ADMINISTRATOR,  true,  OldHandler<&ChatHandler::HandleLookupMapCommand>,           "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
+    };
+
+    static ChatCommand mmapCommandTable[] =
+    {
+        { "path",           SEC_ADMINISTRATOR,     false, OldHandler<&ChatHandler::HandleMmapPathCommand>,            "", NULL },
+        { "loc",            SEC_ADMINISTRATOR,     false, OldHandler<&ChatHandler::HandleMmapLocCommand>,             "", NULL },
+        { "loadedtiles",    SEC_ADMINISTRATOR,     false, OldHandler<&ChatHandler::HandleMmapLoadedTilesCommand>,     "", NULL },
+        { "stats",          SEC_ADMINISTRATOR,     false, OldHandler<&ChatHandler::HandleMmapStatsCommand>,           "", NULL },
+        { "testarea",       SEC_ADMINISTRATOR,     false, OldHandler<&ChatHandler::HandleMmapTestArea>,               "", NULL },
+        { "",               SEC_ADMINISTRATOR,     false, OldHandler<&ChatHandler::HandleMmap>,                       "", NULL },
+        { NULL,             0,                     false, NULL,                                           "", NULL }
     };
 
     static ChatCommand petCommandTable[] =
@@ -255,7 +267,7 @@ ChatCommand * ChatHandler::getCommandTable()
     static ChatCommand sendCommandTable[] =
     {
         { "items",          SEC_ADMINISTRATOR,  true,  OldHandler<&ChatHandler::HandleSendItemsCommand>,           "", NULL },
-        { "mail",           SEC_MODERATOR,      true,  OldHandler<&ChatHandler::HandleSendMailCommand>,            "", NULL },
+        { "mail",           SEC_GAMEMASTER_LOW, true,  OldHandler<&ChatHandler::HandleSendMailCommand>,            "", NULL },
         { "message",        SEC_ADMINISTRATOR,  true,  OldHandler<&ChatHandler::HandleSendMessageCommand>,         "", NULL },
         { "money",          SEC_ADMINISTRATOR,  true,  OldHandler<&ChatHandler::HandleSendMoneyCommand>,           "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
@@ -305,8 +317,8 @@ ChatCommand * ChatHandler::getCommandTable()
         { "exit",           SEC_CONSOLE,        true,  OldHandler<&ChatHandler::HandleServerExitCommand>,        "", NULL },
         { "idlerestart",    SEC_ADMINISTRATOR,  true,  NULL,                                                     "", serverIdleRestartCommandTable },
         { "idleshutdown",   SEC_ADMINISTRATOR,  true,  NULL,                                                     "", serverShutdownCommandTable },
-        { "info",           SEC_PLAYER,         true,  OldHandler<&ChatHandler::HandleServerInfoCommand>,        "", NULL },
-        { "motd",           SEC_PLAYER,         true,  OldHandler<&ChatHandler::HandleServerMotdCommand>,        "", NULL },
+        { "info",           SEC_MODERATOR,      true,  OldHandler<&ChatHandler::HandleServerInfoCommand>,        "", NULL },
+        { "motd",           SEC_MODERATOR_NOANN,true,  OldHandler<&ChatHandler::HandleServerMotdCommand>,        "", NULL },
         { "plimit",         SEC_ADMINISTRATOR,  true,  OldHandler<&ChatHandler::HandleServerPLimitCommand>,      "", NULL },
         { "restart",        SEC_ADMINISTRATOR,  true,  NULL,                                                     "", serverRestartCommandTable },
         { "shutdown",       SEC_ADMINISTRATOR,  true,  NULL,                                                     "", serverShutdownCommandTable },
@@ -324,49 +336,60 @@ ChatCommand * ChatHandler::getCommandTable()
         { NULL,             0,                  false, NULL,                                          "", NULL }
     };
 
+    static ChatCommand wintergraspCommandTable[] =
+    {
+        { "status",         SEC_GAMEMASTER,     false, OldHandler<&ChatHandler::HandleWintergraspStatusCommand>,       "", NULL },
+        { "enable",         SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleWintergraspEnableCommand>,       "", NULL },
+        { "start",          SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleWintergraspStartCommand>,        "", NULL },
+        { "stop",           SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleWintergraspStopCommand>,         "", NULL },
+        { "switch",         SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleWintergraspSwitchTeamCommand>,   "", NULL },
+        { "timer",          SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleWintergraspTimerCommand>,        "", NULL },
+        { NULL,             0,                  false, NULL,                                               "", NULL }
+    };
+
     static ChatCommand ticketResponseCommandTable[] =
     {
-        { "append",         SEC_MODERATOR,      false, OldHandler<&ChatHandler::HandleGMTicketResponseAppendCommand>,   "", NULL },
-        { "appendln",       SEC_MODERATOR,      false, OldHandler<&ChatHandler::HandleGMTicketResponseAppendLnCommand>, "", NULL },
+        { "append",         SEC_GAMEMASTER_LOW, false, OldHandler<&ChatHandler::HandleGMTicketResponseAppendCommand>,   "", NULL },
+        { "appendln",       SEC_GAMEMASTER_LOW, false, OldHandler<&ChatHandler::HandleGMTicketResponseAppendLnCommand>, "", NULL },
         { NULL,             0,                  false, NULL,                                                "", NULL }
     };
 
     static ChatCommand ticketCommandTable[] =
     {
-        { "list",           SEC_MODERATOR,      false, OldHandler<&ChatHandler::HandleGMTicketListCommand>,             "", NULL },
-        { "onlinelist",     SEC_MODERATOR,      false, OldHandler<&ChatHandler::HandleGMTicketListOnlineCommand>,       "", NULL },
-        { "viewname",       SEC_MODERATOR,      false, OldHandler<&ChatHandler::HandleGMTicketGetByNameCommand>,        "", NULL },
-        { "viewid",         SEC_MODERATOR,      false, OldHandler<&ChatHandler::HandleGMTicketGetByIdCommand>,          "", NULL },
-        { "close",          SEC_MODERATOR,      false, OldHandler<&ChatHandler::HandleGMTicketCloseByIdCommand>,        "", NULL },
-        { "closedlist",     SEC_MODERATOR,      false, OldHandler<&ChatHandler::HandleGMTicketListClosedCommand>,       "", NULL },
-        { "escalatedlist",  SEC_GAMEMASTER,     false, OldHandler<&ChatHandler::HandleGMTicketListEscalatedCommand>,    "", NULL },
+        { "list",           SEC_GAMEMASTER_LOW, false, OldHandler<&ChatHandler::HandleGMTicketListCommand>,             "", NULL },
+        { "onlinelist",     SEC_GAMEMASTER_LOW, false, OldHandler<&ChatHandler::HandleGMTicketListOnlineCommand>,       "", NULL },
+        { "viewname",       SEC_GAMEMASTER_LOW, false, OldHandler<&ChatHandler::HandleGMTicketGetByNameCommand>,        "", NULL },
+        { "viewid",         SEC_GAMEMASTER_LOW, false, OldHandler<&ChatHandler::HandleGMTicketGetByIdCommand>,          "", NULL },
+        { "close",          SEC_GAMEMASTER_LOW, false, OldHandler<&ChatHandler::HandleGMTicketCloseByIdCommand>,        "", NULL },
+        { "closedlist",     SEC_GAMEMASTER_LOW, false, OldHandler<&ChatHandler::HandleGMTicketListClosedCommand>,       "", NULL },
+        { "escalatedlist",  SEC_GAMEMASTER_LOW, false, OldHandler<&ChatHandler::HandleGMTicketListEscalatedCommand>,    "", NULL },
         { "delete",         SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleGMTicketDeleteByIdCommand>,       "", NULL },
-        { "assign",         SEC_GAMEMASTER,     false, OldHandler<&ChatHandler::HandleGMTicketAssignToCommand>,         "", NULL },
-        { "unassign",       SEC_GAMEMASTER,     false, OldHandler<&ChatHandler::HandleGMTicketUnAssignCommand>,         "", NULL },
-        { "comment",        SEC_MODERATOR,      false, OldHandler<&ChatHandler::HandleGMTicketCommentCommand>,          "", NULL },
+        { "assign",         SEC_GAMEMASTER_LOW, false, OldHandler<&ChatHandler::HandleGMTicketAssignToCommand>,         "", NULL },
+        { "unassign",       SEC_GAMEMASTER_LOW, false, OldHandler<&ChatHandler::HandleGMTicketUnAssignCommand>,         "", NULL },
+        { "comment",        SEC_GAMEMASTER_LOW, false, OldHandler<&ChatHandler::HandleGMTicketCommentCommand>,          "", NULL },
         { "togglesystem",   SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleToggleGMTicketSystem>,            "", NULL },
-        { "escalate",       SEC_MODERATOR,      false, OldHandler<&ChatHandler::HandleGMTicketEscalateCommand>,         "", NULL },
-        { "response",       SEC_MODERATOR,      false, NULL,                                                "", ticketResponseCommandTable },
-        { "complete",       SEC_MODERATOR,      false, OldHandler<&ChatHandler::HandleGMTicketCompleteCommand>,         "", NULL },
-        { NULL,             0,                  false, NULL,                                                "", NULL }
+        { "escalate",       SEC_GAMEMASTER_LOW, false, OldHandler<&ChatHandler::HandleGMTicketEscalateCommand>,         "", NULL },
+        { "response",       SEC_GAMEMASTER_LOW, false, NULL,                                      "", ticketResponseCommandTable },
+        { "complete",       SEC_GAMEMASTER_LOW, false, OldHandler<&ChatHandler::HandleGMTicketCompleteCommand>,         "", NULL },
+        { NULL,             0,                  false, NULL,                                                            "", NULL }
     };
 
     static ChatCommand commandTable[] =
     {
-        { "character",      SEC_GAMEMASTER,     true,  NULL,                                           "", characterCommandTable},
-        { "list",           SEC_ADMINISTRATOR,  true,  NULL,                                           "", listCommandTable     },
-        { "lookup",         SEC_ADMINISTRATOR,  true,  NULL,                                           "", lookupCommandTable   },
-        { "pdump",          SEC_ADMINISTRATOR,  true,  NULL,                                           "", pdumpCommandTable    },
-        { "guild",          SEC_ADMINISTRATOR,  true,  NULL,                                           "", guildCommandTable    },
-        { "cast",           SEC_ADMINISTRATOR,  false, NULL,                                           "", castCommandTable     },
-        { "reset",          SEC_ADMINISTRATOR,  true,  NULL,                                           "", resetCommandTable    },
-        { "instance",       SEC_ADMINISTRATOR,  true,  NULL,                                           "", instanceCommandTable },
-        { "server",         SEC_ADMINISTRATOR,  true,  NULL,                                           "", serverCommandTable   },
+        { "character",      SEC_GAMEMASTER,     true,  NULL,                                       "", characterCommandTable},
+        { "list",           SEC_ADMINISTRATOR,  true,  NULL,                                       "", listCommandTable     },
+        { "lookup",         SEC_ADMINISTRATOR,  true,  NULL,                                       "", lookupCommandTable   },
+        { "pdump",          SEC_ADMINISTRATOR,  true,  NULL,                                       "", pdumpCommandTable    },
+        { "guild",          SEC_ADMINISTRATOR,  true,  NULL,                                       "", guildCommandTable    },
+        { "cast",           SEC_ADMINISTRATOR,  false, NULL,                                       "", castCommandTable     },
+        { "reset",          SEC_ADMINISTRATOR,  true,  NULL,                                       "", resetCommandTable    },
+        { "instance",       SEC_ADMINISTRATOR,  true,  NULL,                                       "", instanceCommandTable },
+        { "server",         SEC_ADMINISTRATOR,  true,  NULL,                                       "", serverCommandTable   },
 
-        { "channel",        SEC_ADMINISTRATOR, true, NULL,                                             "", channelCommandTable  },
+        { "channel",        SEC_ADMINISTRATOR,  true, NULL,                                        "", channelCommandTable  },
 
-        { "pet",            SEC_GAMEMASTER,     false, NULL,                                           "", petCommandTable },
-        { "ticket",         SEC_MODERATOR,      false,  NULL,                                          "", ticketCommandTable },
+        { "pet",            SEC_GAMEMASTER,     false, NULL,                                       "",      petCommandTable },
+        { "ticket",         SEC_GAMEMASTER_LOW, false,  NULL,                                      "",   ticketCommandTable },
 
         { "aura",           SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleAuraCommand>,                "", NULL },
         { "unaura",         SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleUnAuraCommand>,              "", NULL },
@@ -376,31 +399,31 @@ ChatCommand * ChatHandler::getCommandTable()
         { "gmannounce",     SEC_MODERATOR,      true,  OldHandler<&ChatHandler::HandleGMAnnounceCommand>,          "", NULL },
         { "notify",         SEC_MODERATOR,      true,  OldHandler<&ChatHandler::HandleNotifyCommand>,              "", NULL },
         { "gmnotify",       SEC_MODERATOR,      true,  OldHandler<&ChatHandler::HandleGMNotifyCommand>,            "", NULL },
-        { "appear",         SEC_MODERATOR,      false, OldHandler<&ChatHandler::HandleAppearCommand>,              "", NULL },
-        { "summon",         SEC_MODERATOR,      false, OldHandler<&ChatHandler::HandleSummonCommand>,              "", NULL },
-        { "groupsummon",    SEC_MODERATOR,      false, OldHandler<&ChatHandler::HandleGroupSummonCommand>,         "", NULL },
-        { "commands",       SEC_PLAYER,         true,  OldHandler<&ChatHandler::HandleCommandsCommand>,            "", NULL },
+        { "appear",         SEC_GAMEMASTER_LOW, false, OldHandler<&ChatHandler::HandleAppearCommand>,              "", NULL },
+        { "summon",         SEC_GAMEMASTER_LOW, false, OldHandler<&ChatHandler::HandleSummonCommand>,              "", NULL },
+        { "groupsummon",    SEC_GAMEMASTER_MED, false, OldHandler<&ChatHandler::HandleGroupSummonCommand>,         "", NULL },
+        { "commands",       SEC_MODERATOR_NOANN,true,  OldHandler<&ChatHandler::HandleCommandsCommand>,            "", NULL },
         { "demorph",        SEC_GAMEMASTER,     false, OldHandler<&ChatHandler::HandleDeMorphCommand>,             "", NULL },
         { "die",            SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleDieCommand>,                 "", NULL },
         { "revive",         SEC_ADMINISTRATOR,  true,  OldHandler<&ChatHandler::HandleReviveCommand>,              "", NULL },
         { "dismount",       SEC_PLAYER,         false, OldHandler<&ChatHandler::HandleDismountCommand>,            "", NULL },
-        { "gps",            SEC_MODERATOR,      false, OldHandler<&ChatHandler::HandleGPSCommand>,                 "", NULL },
+        { "gps",            SEC_GAMEMASTER_LOW, false, OldHandler<&ChatHandler::HandleGPSCommand>,                 "", NULL },
         { "guid",           SEC_GAMEMASTER,     false, OldHandler<&ChatHandler::HandleGUIDCommand>,                "", NULL },
-        { "help",           SEC_PLAYER,         true,  OldHandler<&ChatHandler::HandleHelpCommand>,                "", NULL },
+        { "help",           SEC_MODERATOR_NOANN,true,  OldHandler<&ChatHandler::HandleHelpCommand>,                "", NULL },
         { "itemmove",       SEC_GAMEMASTER,     false, OldHandler<&ChatHandler::HandleItemMoveCommand>,            "", NULL },
         { "cooldown",       SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleCooldownCommand>,            "", NULL },
         { "unlearn",        SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleUnLearnCommand>,             "", NULL },
         { "distance",       SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleGetDistanceCommand>,         "", NULL },
-        { "recall",         SEC_MODERATOR,      false, OldHandler<&ChatHandler::HandleRecallCommand>,              "", NULL },
-        { "save",           SEC_PLAYER,         false, OldHandler<&ChatHandler::HandleSaveCommand>,                "", NULL },
-        { "saveall",        SEC_MODERATOR,      true,  OldHandler<&ChatHandler::HandleSaveAllCommand>,             "", NULL },
-        { "kick",           SEC_GAMEMASTER,     true,  OldHandler<&ChatHandler::HandleKickPlayerCommand>,          "", NULL },
-        { "ban",            SEC_ADMINISTRATOR,  true,  NULL,                                           "", banCommandTable      },
-        { "unban",          SEC_ADMINISTRATOR,  true,  NULL,                                           "", unbanCommandTable    },
-        { "baninfo",        SEC_ADMINISTRATOR,  false, NULL,                                           "", baninfoCommandTable  },
-        { "banlist",        SEC_ADMINISTRATOR,  true,  NULL,                                           "", banlistCommandTable  },
-        { "start",          SEC_PLAYER,         false, OldHandler<&ChatHandler::HandleStartCommand>,               "", NULL },
-        { "taxicheat",      SEC_MODERATOR,      false, OldHandler<&ChatHandler::HandleTaxiCheatCommand>,           "", NULL },
+        { "recall",         SEC_GAMEMASTER_LOW, false, OldHandler<&ChatHandler::HandleRecallCommand>,              "", NULL },
+        { "save",           SEC_MODERATOR_NOANN,false, OldHandler<&ChatHandler::HandleSaveCommand>,                "", NULL },
+        { "saveall",        SEC_GAMEMASTER,     true,  OldHandler<&ChatHandler::HandleSaveAllCommand>,             "", NULL },
+        { "kick",           SEC_GAMEMASTER_LOW, true,  OldHandler<&ChatHandler::HandleKickPlayerCommand>,          "", NULL },
+        { "ban",            SEC_ADMINISTRATOR,  true,  NULL,                                       "", banCommandTable      },
+        { "unban",          SEC_ADMINISTRATOR,  true,  NULL,                                       "", unbanCommandTable    },
+        { "baninfo",        SEC_ADMINISTRATOR,  false, NULL,                                       "", baninfoCommandTable  },
+        { "banlist",        SEC_ADMINISTRATOR,  true,  NULL,                                       "", banlistCommandTable  },
+        { "start",          SEC_MODERATOR_NOANN,false, OldHandler<&ChatHandler::HandleStartCommand>,               "", NULL },
+        { "taxicheat",      SEC_GAMEMASTER_LOW, false, OldHandler<&ChatHandler::HandleTaxiCheatCommand>,           "", NULL },
         { "linkgrave",      SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleLinkGraveCommand>,           "", NULL },
         { "neargrave",      SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleNearGraveCommand>,           "", NULL },
         { "explorecheat",   SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleExploreCheatCommand>,        "", NULL },
@@ -414,29 +437,31 @@ ChatCommand * ChatHandler::getCommandTable()
         { "wchange",        SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleChangeWeather>,              "", NULL },
         { "maxskill",       SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleMaxSkillCommand>,            "", NULL },
         { "setskill",       SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleSetSkillCommand>,            "", NULL },
-        { "whispers",       SEC_MODERATOR,      false, OldHandler<&ChatHandler::HandleWhispersCommand>,            "", NULL },
-        { "pinfo",          SEC_GAMEMASTER,     true,  OldHandler<&ChatHandler::HandlePInfoCommand>,               "", NULL },
+        { "whispers",       SEC_MODERATOR_NOANN,false, OldHandler<&ChatHandler::HandleWhispersCommand>,            "", NULL },
+        { "pinfo",          SEC_GAMEMASTER_LOW, true,  OldHandler<&ChatHandler::HandlePInfoCommand>,               "", NULL },
         { "respawn",        SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleRespawnCommand>,             "", NULL },
-        { "send",           SEC_MODERATOR,      true,  NULL,                                           "", sendCommandTable     },
-        { "mute",           SEC_MODERATOR,      true,  OldHandler<&ChatHandler::HandleMuteCommand>,                "", NULL },
-        { "unmute",         SEC_MODERATOR,      true,  OldHandler<&ChatHandler::HandleUnmuteCommand>,              "", NULL },
+        { "send",           SEC_GAMEMASTER_LOW, true,  NULL,                                           "", sendCommandTable },
+        { "mute",           SEC_MODERATOR_NOANN,true,  OldHandler<&ChatHandler::HandleMuteCommand>,                "", NULL },
+        { "unmute",         SEC_MODERATOR_NOANN,true,  OldHandler<&ChatHandler::HandleUnmuteCommand>,              "", NULL },
         { "movegens",       SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleMovegensCommand>,            "", NULL },
         { "cometome",       SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleComeToMeCommand>,            "", NULL },
         { "damage",         SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleDamageCommand>,              "", NULL },
-        { "combatstop",     SEC_GAMEMASTER,     false, OldHandler<&ChatHandler::HandleCombatStopCommand>,          "", NULL },
+        { "combatstop",     SEC_GAMEMASTER_LOW, false, OldHandler<&ChatHandler::HandleCombatStopCommand>,          "", NULL },
         { "flusharenapoints",SEC_ADMINISTRATOR, false, OldHandler<&ChatHandler::HandleFlushArenaPointsCommand>,    "", NULL },
         { "repairitems",    SEC_GAMEMASTER,     true,  OldHandler<&ChatHandler::HandleRepairitemsCommand>,         "", NULL },
-        { "waterwalk",      SEC_GAMEMASTER,     false, OldHandler<&ChatHandler::HandleWaterwalkCommand>,           "", NULL },
+        { "waterwalk",      SEC_GAMEMASTER_LOW, false, OldHandler<&ChatHandler::HandleWaterwalkCommand>,           "", NULL },
 
-        { "freeze",         SEC_MODERATOR,  false, OldHandler<&ChatHandler::HandleFreezeCommand>,              "", NULL },
-        { "unfreeze",       SEC_MODERATOR,  false, OldHandler<&ChatHandler::HandleUnFreezeCommand>,            "", NULL },
-        { "listfreeze",     SEC_MODERATOR,  false, OldHandler<&ChatHandler::HandleListFreezeCommand>,          "", NULL },
+        { "freeze",         SEC_GAMEMASTER_LOW, false, OldHandler<&ChatHandler::HandleFreezeCommand>,              "", NULL },
+        { "unfreeze",       SEC_GAMEMASTER_LOW, false, OldHandler<&ChatHandler::HandleUnFreezeCommand>,            "", NULL },
+        { "listfreeze",     SEC_GAMEMASTER_LOW, false, OldHandler<&ChatHandler::HandleListFreezeCommand>,          "", NULL },
 
         { "possess",        SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandlePossessCommand>,             "", NULL },
         { "unpossess",      SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleUnPossessCommand>,           "", NULL },
         { "bindsight",      SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleBindSightCommand>,           "", NULL },
         { "unbindsight",    SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleUnbindSightCommand>,         "", NULL },
-        { "playall",        SEC_GAMEMASTER,  false, OldHandler<&ChatHandler::HandlePlayAllCommand>,             "", NULL },
+        { "playall",        SEC_GAMEMASTER,     false, OldHandler<&ChatHandler::HandlePlayAllCommand>,             "", NULL },
+        { "mmap",           SEC_ADMINISTRATOR,  false, NULL,                                           "", mmapCommandTable },
+		{ "wg",             SEC_GAMEMASTER,     false, NULL,                                    "", wintergraspCommandTable },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
@@ -523,7 +548,7 @@ bool ChatHandler::HasLowerSecurityAccount(WorldSession* target, uint32 target_ac
         return false;
 
     // ignore only for non-players for non strong checks (when allow apply command at least to same sec level)
-    if (m_session->GetSecurity() > SEC_PLAYER && !strong && !sWorld->getBoolConfig(CONFIG_GM_LOWER_SECURITY))
+    if (m_session->GetSecurity() > SEC_MODERATOR && !strong && !sWorld->getBoolConfig(CONFIG_GM_LOWER_SECURITY))
         return false;
 
     if (target)
