@@ -13,7 +13,8 @@ DELETE FROM `waypoint_data` WHERE `id` NOT IN (SELECT `path_id` FROM `creature_a
 INSERT INTO `creature` (SELECT * FROM `tdb`.`creature`);
 INSERT INTO `creature_addon` (SELECT * FROM `tdb`.`creature_addon`);
 INSERT INTO `creature_formations` (SELECT * FROM `tdb`.`creature_formations`);
-INSERT INTO `linked_respawn` (SELECT * FROM `tdb`.`linked_respawn` WHERE `linkType` = 0);
+INSERT INTO `linked_respawn` (SELECT * FROM `tdb`.`linked_respawn`);
+INSERT INTO `smart_scripts` (SELECT * FROM `tdb`.`smart_scripts`);
 
 REPLACE INTO `creature_template` (SELECT * FROM `tdb`.`creature_template` WHERE `entry` IN (SELECT DISTINCT `id` FROM `creature` WHERE `map` = @MAPID));
 REPLACE INTO `creature_template_addon` (SELECT * FROM `tdb`.`creature_template_addon` WHERE `entry` IN (SELECT DISTINCT `id` FROM `creature` WHERE `map` = @MAPID));
