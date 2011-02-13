@@ -133,8 +133,11 @@ public:
 		void KillCreditMalganis()
 		{
 			Map *map = me->GetMap();
+            if (!map || !map->IsDungeon())
+                return;
+
 			Map::PlayerList const& players = map->GetPlayers();
-			if (!players.isEmpty() && map->IsDungeon())
+			if (!players.isEmpty())
 			{
 				for(Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
 				{
@@ -183,13 +186,13 @@ public:
 		{
 			switch(rand()%7)
 			{
-			case 0: DoScriptText(SAY_MALGANIS_SLAY01, me); break;
-			case 1: DoScriptText(SAY_MALGANIS_SLAY02, me); break;
-			case 2: DoScriptText(SAY_MALGANIS_SLAY03, me); break;
-			case 3: DoScriptText(SAY_MALGANIS_SLAY04, me); break;
-			case 4: DoScriptText(SAY_MALGANIS_SLAY05, me); break;
-			case 5: DoScriptText(SAY_MALGANIS_SLAY06, me); break;
-			case 6: DoScriptText(SAY_MALGANIS_SLAY07, me); break;
+			    case 0: DoScriptText(SAY_MALGANIS_SLAY01, me); break;
+			    case 1: DoScriptText(SAY_MALGANIS_SLAY02, me); break;
+			    case 2: DoScriptText(SAY_MALGANIS_SLAY03, me); break;
+			    case 3: DoScriptText(SAY_MALGANIS_SLAY04, me); break;
+			    case 4: DoScriptText(SAY_MALGANIS_SLAY05, me); break;
+			    case 5: DoScriptText(SAY_MALGANIS_SLAY06, me); break;
+			    case 6: DoScriptText(SAY_MALGANIS_SLAY07, me); break;
 			}
 			if (pVictim->GetGUID() == pInstance->GetData64(NPC_ARTHAS))
 			{
@@ -215,7 +218,8 @@ public:
 					DoCast(target, DUNGEON_MODE(SPELL_SWAMP_N, SPELL_SWAMP_H));
 
 				Swamp_Timer = 7300;
-			}else Swamp_Timer -= diff;
+			}
+            else Swamp_Timer -= diff;
 
 			if (MindBlast_Timer < diff)
 			{
@@ -223,7 +227,8 @@ public:
 					DoCast(target, DUNGEON_MODE(SPELL_MIND_BLAST_N, SPELL_MIND_BLAST_H));
 
 				MindBlast_Timer = 11300;
-			}else MindBlast_Timer -= diff;
+			}
+            else MindBlast_Timer -= diff;
 
 			if(HealthBelowPct(40.0f))
 			{
@@ -237,14 +242,12 @@ public:
 				{
 					if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 45.0f, true))
 						DoCast(target, DUNGEON_MODE(SPELL_SLEEP_N, SPELL_SLEEP_H));
-					switch(rand()%2)
-					{
-					case 0: DoScriptText(SAY_MALGANIS_SLEEP01, me); break;
-					case 1: DoScriptText(SAY_MALGANIS_SLEEP02, me); break;
-					}
+
+                    DoScriptText(RAND(SAY_MALGANIS_SLEEP01, SAY_MALGANIS_SLEEP02), me);
 
 					Sleep_Timer = 17300;
-				}else Sleep_Timer -= diff;
+				}
+                else Sleep_Timer -= diff;
 			}
 
 			if(HealthBelowPct(25.0f))
@@ -261,7 +264,8 @@ public:
 					DoCast(me, SPELL_VAMPIRE);
 
 					Vampire_Timer = 30000;
-				}else Vampire_Timer -= diff;
+				}
+                else Vampire_Timer -= diff;
 
 			}
 
