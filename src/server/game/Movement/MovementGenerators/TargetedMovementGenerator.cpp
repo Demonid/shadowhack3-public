@@ -201,8 +201,6 @@ TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
         if(i_path->getPathType() & PATHFIND_NOPATH)
             return true;
 
-        PointPath pointPath = i_path->getFullPath();
-
         if (i_destinationHolder.HasArrived() && m_pathPointsSent)
             --m_pathPointsSent;
 
@@ -216,6 +214,7 @@ TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
         //    the owner is stopped (caused by some movement effects)
         if (newPathCalculated || m_pathPointsSent < 2 || i_recalculateTravel || owner.IsStopped())
         {
+            PointPath pointPath = i_path->getFullPath();
             // send 10 nodes, or send all nodes if there are less than 10 left
             m_pathPointsSent = std::min<uint32>(10, pointPath.size() - 1);
             uint32 endIndex = m_pathPointsSent + 1;
@@ -230,8 +229,6 @@ TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
             uint32 traveltime = uint32(dist / (traveller.Speed()*0.001f));
 
             owner.SendMonsterMoveByPath(pointPath, 1, endIndex, traveltime);
-
-            i_destinationHolder.StartTravel(traveller, false);
         }
         owner.AddUnitState(UNIT_STAT_CHASE);
     }
