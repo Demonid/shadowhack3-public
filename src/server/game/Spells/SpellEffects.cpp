@@ -1699,6 +1699,7 @@ void Spell::EffectTriggerSpell(SpellEffIndex effIndex)
     switch (m_spellInfo->Id)
     {
         case 61490:
+        case 20252:
         case 30151:
         case 61685:
         case 100:

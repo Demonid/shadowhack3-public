@@ -90,6 +90,7 @@ void PointMovementGenerator<T>:: Finalize(T &unit)
             {
                 case 61490:
                 case 30151:
+                case 20252:
                 case 61685:
                 case 100:
                 case 6178:
@@ -120,7 +121,9 @@ void PointMovementGenerator<T>:: Finalize(T &unit)
                             && spellInfo->Category == trigger_spellInfo->Category)
                             unit.ToPlayer()->RemoveSpellCooldown(trigger_spellInfo->Id);
 
-                        if (unit.IsWithinMeleeRange(m_target))
+                        float melee_distance = unit.GetMeleeReach() + 1.5f;
+
+                        if (unit.GetDistance2d(m_target->GetPositionX(), m_target->GetPositionY()) <= melee_distance)
                             unit.CastSpell(m_target, trigger_spellInfo, true, 0, 0, 0);
                     }
                     break;                
