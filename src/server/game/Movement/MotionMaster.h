@@ -150,10 +150,17 @@ class MotionMaster //: private std::stack<MovementGenerator *>
         void MoveChase(Unit* target, float dist = 0.0f, float angle = 0.0f);
         void MoveConfused();
         void MoveFleeing(Unit* enemy, uint32 time = 0);
+
         void MovePoint(uint32 id, const Position &pos)
             { MovePoint(id, pos.m_positionX, pos.m_positionY, pos.m_positionZ); }
         void MovePoint(uint32 id, float x,float y,float z, bool usePathfinding = true);
-        void MoveCharge(float x, float y, float z, float speed = SPEED_CHARGE, uint32 id = EVENT_CHARGE, bool usePathfinding = true, bool straightPath = true);
+
+        void MoveChargeWithPathfinding(float x, float y, float z, bool straightPath)
+            { MoveCharge(x, y, z, SPEED_CHARGE, EVENT_CHARGE, true, straightPath); }
+        void MoveChargeBySpell(float x, float y, float z, Unit* target, uint32 chargeSpell, bool straightPath)
+            { MoveCharge(x, y, z, SPEED_CHARGE, EVENT_CHARGE, true, straightPath, target, chargeSpell); }
+        void MoveCharge(float x, float y, float z, float speed = SPEED_CHARGE, uint32 id = EVENT_CHARGE, bool usePathfinding = true, bool straightPath = true, Unit* target = NULL, uint32 chargeSpell = NULL);
+
         void MoveFall(float z, uint32 id = 0);
         void MoveKnockbackFrom(float srcX, float srcY, float speedXY, float speedZ);
         void MoveJumpTo(float angle, float speedXY, float speedZ);

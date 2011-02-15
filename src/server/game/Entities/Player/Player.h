@@ -2406,6 +2406,8 @@ class Player : public Unit, public GridObject<Player>
         float GetAverageItemLevel();
         bool isDebugAreaTriggers;
 
+        void setJustDismounted() {m_anti_JustDismounted++;}
+
     protected:
         uint32 m_AreaID;
         uint32 m_regenTimerCount;
