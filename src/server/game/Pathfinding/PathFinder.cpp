@@ -90,7 +90,7 @@ bool PathInfo::Update(const float destX, const float destY, const float destZ, b
         return true;
     }
 
-    float dist = m_sourceUnit->GetCombatReach();
+    float dist = m_sourceUnit->GetObjectSize();
     bool oldDestInRange = inRange(oldDest, newDest, dist, dist);
 
     // this can happen only if caller did a bad job calculating the need for path update

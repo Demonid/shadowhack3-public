@@ -4027,8 +4027,6 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 12323:    // Piercing Howl isn't magic.
         case 45334:    // Feral Charge Root isn't magic.
-        case 20253:    // Intercept Stun isn't magic.
-        case 7922:     // Charge Stun isn't magic.
         case 6770:     // Sap shoudn't proc Damage Shield
         case 2070:
         case 11297:
@@ -4420,6 +4418,17 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetA[0] = TARGET_DEST_TARGET_ANY;
             spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_TARGET_ANY;
             spellInfo->Effect[1] = 0;
+            count++;
+            break;
+        case 7922:
+        case 20253:
+            spellInfo->DmgClass = SPELL_DAMAGE_CLASS_NONE;
+            spellInfo->rangeIndex = 3;
+            count++;
+            break;
+        case 53148:
+        case 61491: // Intercept triggered disable range check
+            spellInfo->rangeIndex = 3;
             count++;
             break;
         default:

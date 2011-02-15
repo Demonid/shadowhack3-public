@@ -2437,6 +2437,11 @@ bool Creature::IsTargetReachabilityCheckFailed(Unit* target)
 	if (!target)
 		return true;
 
+    /*switch (GetEntry())
+    {
+        default:break;
+    }*/
+
 	// check if currently selected target is reachable
     if((GetMotionMaster()->GetCurrentMovementGeneratorType() == TARGETED_MOTION_TYPE && !GetMotionMaster()->top()->IsReachable()) || 
 		(GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE && !IsTargetReachable(target)))

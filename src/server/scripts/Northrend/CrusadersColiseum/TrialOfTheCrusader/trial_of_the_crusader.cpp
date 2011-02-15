@@ -463,7 +463,7 @@ class npc_fizzlebang_toc : public CreatureScript
                             {
                                 pTemp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                                 pTemp->SetReactState(REACT_PASSIVE);
-                                pTemp->GetMotionMaster()->MovePoint(0, ToCCommonLoc[1].GetPositionX(), ToCCommonLoc[1].GetPositionY()-10, ToCCommonLoc[1].GetPositionZ());
+                                pTemp->GetMotionMaster()->MovePoint(0, ToCCommonLoc[1].GetPositionX(), ToCCommonLoc[1].GetPositionY()-10, ToCCommonLoc[1].GetPositionZ(), false);
                             }
                             m_pInstance->SetData(TYPE_EVENT, 1142);
                             m_uiUpdateTimer = 5000;
