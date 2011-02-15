@@ -1988,17 +1988,6 @@ void UnitAura::FillTargetMap(std::map<Unit *, uint8> & targets, Unit * caster)
     }
 }
 
-void Aura::SetAuraTimer(int32 time, uint64 guid)
-{
-    if(GetDuration() > time)
-    {
-        SetDuration(time);
-        SetMaxDuration(time);
-        if(AuraApplication *aur= GetApplicationOfTarget(guid ? guid : m_casterGuid))
-            aur->ClientUpdate();
-    }
-}
-
 DynObjAura::DynObjAura(SpellEntry const* spellproto, uint8 effMask, WorldObject * owner, Unit * caster, int32 *baseAmount, Item * castItem, uint64 casterGUID)
     : Aura(spellproto, effMask, owner, caster, baseAmount, castItem, casterGUID)
 {

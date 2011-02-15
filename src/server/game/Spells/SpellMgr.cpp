@@ -4056,6 +4056,15 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->InterruptFlags = 0x0000000F;
             count++;
             break;
+        case 18174:    // Suppression
+        case 18175:
+        case 18176:
+        case 33592:    // Balance of Power
+        case 33596:
+            spellInfo->EffectApplyAuraName[0] = SPELL_AURA_MOD_SPELL_HIT_CHANCE;
+            spellInfo->EffectMiscValue[0] = 0;
+            count++;
+            break;
         case 63944:    // Renewed Hope
         case 20911:    // Blessing of Sanctuary
         case 25899:    // Greater Blessing of Sanctuary
@@ -4064,6 +4073,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->Effect[1] = SPELL_EFFECT_APPLY_AURA;
             spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_TARGET_RAID;
             spellInfo->EffectApplyAuraName[1] = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
+            spellInfo->EffectBasePoints[1] = -3;
             spellInfo->EffectMiscValue[1] = 127;
             count++;
             break;
@@ -4122,6 +4132,7 @@ void SpellMgr::LoadSpellCustomAttr()
             count++;
             break;
         case 49576:    // Death Grip
+        case 49560:
             spellInfo->AttributesEx2 |= SPELL_ATTR2_CANT_REFLECTED;
             count++;
             break; 

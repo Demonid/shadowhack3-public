@@ -2583,18 +2583,15 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
         return SPELL_MISS_NONE;
 
     // Try victim reflect spell
-    bool isdeathgrip = spell->Id == 49576 || spell->Id == 49560 || spell->Id == 49575;
-    if (CanReflect || isdeathgrip)
+    if (CanReflect)
     {
         int32 reflectchance = pVictim->GetTotalAuraModifier(SPELL_AURA_REFLECT_SPELLS);
         Unit::AuraEffectList const& mReflectSpellsSchool = pVictim->GetAuraEffectsByType(SPELL_AURA_REFLECT_SPELLS_SCHOOL);
         for (Unit::AuraEffectList::const_iterator i = mReflectSpellsSchool.begin(); i != mReflectSpellsSchool.end(); ++i)
-            if ((*i)->GetMiscValue() & GetSpellSchoolMask(spell) || isdeathgrip)
+            if ((*i)->GetMiscValue() & GetSpellSchoolMask(spell))
                 reflectchance += (*i)->GetAmount();
         if (reflectchance > 0 && roll_chance_i(reflectchance))
         {
-            // Start triggers for remove charges if need (trigger only for victim, and mark as active spell)
-            ProcDamageAndSpell(pVictim, PROC_FLAG_NONE, PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG, PROC_EX_REFLECT, 1, BASE_ATTACK, spell);
             return SPELL_MISS_REFLECT;
         }
     }
@@ -2605,7 +2602,6 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
         case SPELL_DAMAGE_CLASS_MELEE:
             return MeleeSpellHitResult(pVictim, spell);
         case SPELL_DAMAGE_CLASS_NONE:
-            if(!isdeathgrip && spell->Id != 55095)
                 return SPELL_MISS_NONE;
         case SPELL_DAMAGE_CLASS_MAGIC:
             return MagicSpellHitResult(pVictim, spell);
@@ -3653,11 +3649,29 @@ void Unit::RemoveAurasDueToSpellByDispel(uint32 spellId, uint64 casterGUID, Unit
             // Unstable Affliction (crash if before removeaura?)
             if (aura->GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && (aura->GetSpellProto()->SpellFamilyFlags[1] & 0x0100))
             {
+                Unit * caster = aura->GetCaster();
+                if (!caster)
+                    caster = dispeller;
+
                 if (AuraEffect const * aurEff = aura->GetEffect(0))
                 {
                     int32 damage = aurEff->GetAmount()*9;
                     // backfire damage and silence
-                    dispeller->CastCustomSpell(dispeller, 31117, &damage, NULL, NULL, true, NULL, NULL, aura->GetCasterGUID());
+                    caster->CastCustomSpell(dispeller, 31117, &damage, NULL, NULL, true, NULL, NULL, aura->GetCasterGUID());
+                }
+            }
+            // Vampiric Touch
+            if (aura->GetSpellProto()->SpellFamilyName == SPELLFAMILY_PRIEST && (aura->GetSpellProto()->SpellFamilyFlags[1] & 0x0400))
+            {
+                Unit * caster = aura->GetCaster();
+                if (!caster)
+                    caster = dispeller;
+
+                if (AuraEffect const * aurEff = aura->GetEffect(1))
+                {
+                    int32 damage = aurEff->GetAmount()*8;
+                    // backfire damage
+                    caster->CastCustomSpell(dispeller, 64085, &damage, NULL, NULL, true, NULL, NULL, aura->GetCasterGUID());
                 }
             }
             // Flame Shock
@@ -9841,7 +9855,7 @@ int32 Unit::DealHeal(Unit *pVictim, uint32 addhealth)
     return gain;
 }
 
-Unit* Unit::SelectMagnetTarget(Unit *victim, SpellEntry const *spellInfo, bool triggered)
+Unit* Unit::SelectMagnetTarget(Unit *victim, SpellEntry const *spellInfo)
 {
     if (!victim)
         return NULL;
@@ -9851,29 +9865,18 @@ Unit* Unit::SelectMagnetTarget(Unit *victim, SpellEntry const *spellInfo, bool t
     if (spellInfo && ( isdeathgrip || (spellInfo->SchoolMask != SPELL_SCHOOL_MASK_NORMAL && spellInfo->Dispel !=DISPEL_POISON && 
         !sSpellMgr->_isPositiveSpell(spellInfo->Id, true) && !IsAreaOfEffectSpell(spellInfo) && IsHostileTo(victim))))
     {
-        if(triggered)
+        //I am not sure if this should be redirected.
+        if (spellInfo->DmgClass == SPELL_DAMAGE_CLASS_NONE)
             return victim;
-        bool cont=IsHostileTo(victim);
-        switch(spellInfo->SpellIconID)
-        {
-            case 180:   // freezing trap
-                cont=true;
-                break;
-            case 2237:  // envenom
-            case 538:   // Hunter's Mark
-            case 3412:  // Chimera Shot
-            case 218:   // Arcane Shot
-                cont=false;
-                break;
-            default:break;
-        }
-        if(cont)
-        {
-            AuraEffectList const& magnetAuras = victim->GetAuraEffectsByType(SPELL_AURA_SPELL_MAGNET);
-            for (Unit::AuraEffectList::const_iterator itr = magnetAuras.begin(); itr != magnetAuras.end(); ++itr)
-                if (Unit* magnet = (*itr)->GetBase()->GetUnitOwner())
+
+        Unit::AuraEffectList const& magnetAuras = victim->GetAuraEffectsByType(SPELL_AURA_SPELL_MAGNET);
+        for (Unit::AuraEffectList::const_iterator itr = magnetAuras.begin(); itr != magnetAuras.end(); ++itr)
+            if (Unit* magnet = (*itr)->GetBase()->GetUnitOwner())
+                if (magnet->isAlive())
+                {
+                    (*itr)->GetBase()->DropCharge();
                     return magnet;
-        }
+                }
     }
     // Melee && ranged case
     else
@@ -9882,66 +9885,14 @@ Unit* Unit::SelectMagnetTarget(Unit *victim, SpellEntry const *spellInfo, bool t
         for (AuraEffectList::const_iterator i = hitTriggerAuras.begin(); i != hitTriggerAuras.end(); ++i)
             if (Unit* magnet = (*i)->GetBase()->GetCaster())
                 if (magnet->isAlive() && magnet->IsWithinLOSInMap(this))
-                {
-                    (*i)->GetBase()->DropCharge();
-                    return magnet;
-                }
+                    if (roll_chance_i((*i)->GetAmount()))
+                    {
+                        (*i)->GetBase()->DropCharge();
+                        return magnet;
+                    }
     }
 
     return victim;
-}
-
-void Unit::UpdateMagnetReflect(Unit *victim, SpellEntry const *spellInfo, int32 time, bool isreflect, bool triggered)
-{
-    if(isreflect)
-    {
-        if(Aura *aur = victim->GetAura(23920, victim->GetGUID()))
-        {
-            time/=2;
-            if(!time)
-                aur->DropCharge();
-            else if(aur->GetDuration() > time)
-                aur->SetAuraTimer(time, victim->GetGUID());
-        }
-    }
-    // Magic case
-    else if (spellInfo && ( spellInfo->Id == 49560 || // deathgrip as exeption http://www.wow-europe.com/ru/patchnotes/patch-322.html
-        (spellInfo->SchoolMask != SPELL_SCHOOL_MASK_NORMAL && spellInfo->Dispel !=DISPEL_POISON && 
-        !sSpellMgr->_isPositiveSpell(spellInfo->Id, true) && !IsAreaOfEffectSpell(spellInfo))))
-    {
-        if(!victim->isTotem())
-            return;
-        bool cont=IsHostileTo(victim);
-        switch(spellInfo->SpellIconID)
-        {
-            case 180:   // freezing trap
-                cont=true;
-                break;
-            case 2237:  // envenom
-            case 538:   // Hunter's Mark
-            case 3412:  // Chimera Shot
-            case 218:   // Arcane Shot
-            case 3407:  // Explosive Shot
-            case 49576: // Death Grip
-            case 49560:
-                cont=false;
-                break;
-            default:break;
-        }
-        if(cont)
-        {
-            AuraEffectList const& magnetAuras = victim->GetAuraEffectsByType(SPELL_AURA_SPELL_MAGNET);
-            for (Unit::AuraEffectList::const_iterator itr = magnetAuras.begin(); itr != magnetAuras.end(); ++itr)
-            {
-                Aura * aur = (*itr)->GetBase();
-                if(!time)
-                    aur->DropCharge();
-                else if(aur->GetDuration() > time)
-                    aur->SetAuraTimer(time, victim->GetGUID());
-                break;
-            }
-        }
-    }
 }
 
 Unit* Unit::GetFirstControlled() const
@@ -11861,6 +11812,10 @@ void Unit::Unmount()
 
 void Unit::SetInCombatWith(Unit* enemy)
 {
+    if(IsGuardianPetStuff())
+        if(Unit * owner = this->ToCreature()->GetOwner())
+            owner->SetInCombatWith(enemy);
+
     Unit* eOwner = enemy->GetCharmerOrOwnerOrSelf();
     if (eOwner->IsPvP())
     {
@@ -13852,6 +13807,7 @@ bool InitTriggerAuraData()
     isTriggerAura[SPELL_AURA_MOD_FEAR] = true; // Aura not have charges but need remove him on trigger
     isTriggerAura[SPELL_AURA_MOD_ROOT] = true;
     isTriggerAura[SPELL_AURA_TRANSFORM] = true;
+    isTriggerAura[SPELL_AURA_REFLECT_SPELLS] = true;
     isTriggerAura[SPELL_AURA_DAMAGE_IMMUNITY] = true;
     isTriggerAura[SPELL_AURA_PROC_TRIGGER_SPELL] = true;
     isTriggerAura[SPELL_AURA_PROC_TRIGGER_DAMAGE] = true;
@@ -13862,6 +13818,7 @@ bool InitTriggerAuraData()
     isTriggerAura[SPELL_AURA_REFLECT_SPELLS_SCHOOL] = true;
     isTriggerAura[SPELL_AURA_MECHANIC_IMMUNITY] = true;
     isTriggerAura[SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN] = true;
+    isTriggerAura[SPELL_AURA_SPELL_MAGNET] = true;
     isTriggerAura[SPELL_AURA_MOD_ATTACK_POWER] = true;
     isTriggerAura[SPELL_AURA_ADD_CASTER_HIT_TRIGGER] = true;
     isTriggerAura[SPELL_AURA_OVERRIDE_CLASS_SCRIPTS] = true;
@@ -13880,14 +13837,13 @@ bool InitTriggerAuraData()
     isNonTriggerAura[SPELL_AURA_REDUCE_PUSHBACK]=true;
     isNonTriggerAura[SPELL_AURA_MOD_POWER_REGEN] = true;
     isNonTriggerAura[SPELL_AURA_REDUCE_PUSHBACK] = true;
-    isNonTriggerAura[SPELL_AURA_SPELL_MAGNET]    = true;
-    isNonTriggerAura[SPELL_AURA_REFLECT_SPELLS]  = true;
 
     isAlwaysTriggeredAura[SPELL_AURA_OVERRIDE_CLASS_SCRIPTS] = true;
     isAlwaysTriggeredAura[SPELL_AURA_MOD_FEAR] = true;
     isAlwaysTriggeredAura[SPELL_AURA_MOD_ROOT] = true;
     isAlwaysTriggeredAura[SPELL_AURA_MOD_STUN] = true;
     isAlwaysTriggeredAura[SPELL_AURA_TRANSFORM] = true;
+    isAlwaysTriggeredAura[SPELL_AURA_SPELL_MAGNET] = true;
     isAlwaysTriggeredAura[SPELL_AURA_SCHOOL_ABSORB] = true;
     isAlwaysTriggeredAura[SPELL_AURA_MOD_STEALTH] = true;
 

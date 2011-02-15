@@ -524,7 +524,7 @@ m_caster(Caster), m_spellValue(new SpellValue(m_spellInfo))
         m_canReflect = true;
 
     // Death Grip
-    if (m_spellInfo->Id == 49560 || m_spellInfo->Id == 49575)
+    if (m_spellInfo->Id == 49575)
         m_canReflect = true;
 
     if (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC && !IsAreaOfEffectSpell(m_spellInfo) && !(m_spellInfo->AttributesEx2 & SPELL_ATTR2_CANT_REFLECTED))
@@ -1039,7 +1039,6 @@ void Spell::AddUnitTarget(Unit* pVictim, uint32 effIndex)
     else
         target.reflectResult = SPELL_MISS_NONE;
 
-    m_caster->UpdateMagnetReflect(pVictim, m_spellInfo, target.timeDelay, target.missCondition == SPELL_MISS_REFLECT);
     // Add target to list
     m_UniqueTargetInfo.push_back(target);
 }
@@ -1200,6 +1199,8 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         if (target->reflectResult == SPELL_MISS_NONE)       // If reflected spell hit caster -> do all effect on him
         {
             spellHitTarget = m_caster;
+            // Start triggers for remove charges if need (trigger only for victim, and mark as active spell)
+            m_caster->ProcDamageAndSpell(unit, PROC_FLAG_NONE, PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG, PROC_EX_REFLECT, 1, BASE_ATTACK, m_spellInfo);
             if (m_caster->GetTypeId() == TYPEID_UNIT)
                 m_caster->ToCreature()->LowerPlayerDamageReq(target->damage);
         }
@@ -1309,6 +1310,8 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         caster->DealDamageMods(damageInfo.target,damageInfo.damage,&damageInfo.absorb);
 
         // Send log damage message to client
+        if (missInfo == SPELL_MISS_REFLECT)
+            damageInfo.attacker = unit;
         caster->SendSpellNonMeleeDamageLog(&damageInfo);
 
         procEx |= createProcExtendMask(&damageInfo, missInfo);
@@ -2080,14 +2083,14 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
             switch(cur)
             {
                 case TARGET_UNIT_TARGET_ENEMY:
-                    if (Unit *magnet = m_caster->SelectMagnetTarget(target, m_spellInfo, m_triggeredByAuraSpell!= 0))
+                    if (Unit *magnet = m_caster->SelectMagnetTarget(target, m_spellInfo))
                         if (magnet != target)
                             m_targets.setUnitTarget(magnet);
                     pushType = PUSH_CHAIN;
                     break;
                 case TARGET_UNIT_TARGET_ANY:
                     if (!IsPositiveSpell(m_spellInfo->Id))
-                        if (Unit *magnet = m_caster->SelectMagnetTarget(target, m_spellInfo, m_triggeredByAuraSpell!=0))
+                        if (Unit *magnet = m_caster->SelectMagnetTarget(target, m_spellInfo))
                             if (magnet != target)
                                 m_targets.setUnitTarget(magnet);
                     pushType = PUSH_CHAIN;
@@ -5778,10 +5781,6 @@ SpellCastResult Spell::CheckPetCast(Unit* target)
                                                             //cooldown
         if (m_caster->ToCreature()->HasSpellCooldown(m_spellInfo->Id))
             return SPELL_FAILED_NOT_READY;
-
-        if(SpellCastResult res = CheckRange(true))
-            if(res != SPELL_CAST_OK)
-                return res;
 
 
     return CheckCast(true);

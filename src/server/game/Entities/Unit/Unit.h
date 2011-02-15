@@ -1261,6 +1261,7 @@ class Unit : public WorldObject
         bool isHunterPet() const{ return m_unitTypeMask & UNIT_MASK_HUNTER_PET; }
         bool isTotem() const    { return m_unitTypeMask & UNIT_MASK_TOTEM; }
         bool IsVehicle() const  { return m_unitTypeMask & UNIT_MASK_VEHICLE; }
+        bool IsGuardianPetStuff() const { return m_unitTypeMask & (UNIT_MASK_SUMMON|UNIT_MASK_GUARDIAN|UNIT_MASK_PET|UNIT_MASK_HUNTER_PET|UNIT_MASK_TOTEM); } 
 
         uint8 getLevel() const { return uint8(GetUInt32Value(UNIT_FIELD_LEVEL)); }
         uint8 getLevelForTarget(WorldObject const* /*target*/) const { return getLevel(); }
@@ -1918,8 +1919,7 @@ class Unit : public WorldObject
         uint32 BuildAuraStateUpdateForTarget(Unit * target) const;
         bool HasAuraState(AuraState flag, SpellEntry const *spellProto = NULL, Unit const * Caster = NULL) const ;
         void UnsummonAllTotems();
-        Unit* SelectMagnetTarget(Unit *victim, SpellEntry const *spellInfo = NULL, bool triggered = false);
-        void UpdateMagnetReflect(Unit *victim, SpellEntry const *spellInfo, int32 time, bool isreflect, bool triggered = false);           // this as caster, victim as magnet, spellinfo as spell, time as duration
+        Unit* SelectMagnetTarget(Unit *victim, SpellEntry const *spellInfo = NULL);
         int32 SpellBaseDamageBonus(SpellSchoolMask schoolMask);
         int32 SpellBaseHealingBonus(SpellSchoolMask schoolMask);
         int32 SpellBaseDamageBonusForVictim(SpellSchoolMask schoolMask, Unit *pVictim);

@@ -124,8 +124,6 @@ class Aura
         bool IsExpired() const { return !GetDuration();}
         bool IsPermanent() const { return GetMaxDuration() == -1; }
 
-		void SetAuraTimer(int32 time, uint64 guid = 0);
-
         uint8 GetCharges() const { return m_procCharges; }
         void SetCharges(uint8 charges);
         bool DropCharge();
