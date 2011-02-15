@@ -577,11 +577,14 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             //speed hack checks
             if ( (real_delta > allowed_delta) && (delta_z < (plMover->m_anti_Last_VSpeed * time_delta) || delta_z < 1) )
             {
-                #ifdef MOVEMENT_ANTICHEAT_ALARM_LOG
-                sLog->outCheater("IAC-%s, speed exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f",
-                                plMover->GetName(), real_delta, allowed_delta, current_speed, plMover->m_anti_Last_HSpeed,time_delta);
-                #endif
-                check_passed = false;
+                if (plMover->m_anti_JustDismounted == 0)
+                {
+                    #ifdef MOVEMENT_ANTICHEAT_ALARM_LOG
+                    sLog->outCheater("IAC-%s, speed exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f",
+                        plMover->GetName(), real_delta, allowed_delta, current_speed, plMover->m_anti_Last_HSpeed, time_delta);
+                    #endif
+                    check_passed = false;
+                }                    
             }
 
             //teleport hack checks
@@ -616,8 +619,6 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
 					#endif
 					check_passed = false;
 				}
-				else if (plMover->m_anti_JustDismounted >= 1)
-					plMover->m_anti_JustDismounted = 0;
             }
 			
 
@@ -755,6 +756,8 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             }
             if (!check_passed)
 			{
+                plMover->m_anti_JustDismounted = 0;
+
 				if ( plMover->GetTransport() && !plMover->GetVehicle() )
                 {
                     plMover->m_transport->RemovePassenger(plMover);
@@ -788,6 +791,8 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     /* process position-change */
    	if (check_passed)
 	{
+        plMover->m_anti_JustDismounted = 0;
+
         WorldPacket data(opcode, recv_data.size());
         movementInfo.time = getMSTime();
         movementInfo.guid = mover->GetGUID();
