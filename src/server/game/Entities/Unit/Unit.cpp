@@ -3791,6 +3791,9 @@ void Unit::RemoveAurasByType(AuraType auraType, uint64 casterGUID, Aura * except
             RemoveAura(aurApp);
             if (m_removedAurasCount > removedAuras + 1)
                 iter = m_modAuras[auraType].begin();
+
+            if (auraType == SPELL_AURA_MOUNTED && GetTypeId() == TYPEID_PLAYER)
+                ToPlayer()->setJustDismounted();
         }
     }
 }
