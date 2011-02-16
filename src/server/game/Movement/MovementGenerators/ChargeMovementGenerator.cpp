@@ -86,7 +86,7 @@ bool ChargeMovementGenerator<T>::Update(T &unit, const uint32 &diff)
 
     i_destinationHolder.UpdateTraveller(traveller, diff, false);
 
-    if (m_target && !casted)
+    if (!casted && m_target && m_target->IsInWorld() && m_target->isAlive())
     {
         if (IsChargeTriggerSpell(m_chargeSpell))
         {
