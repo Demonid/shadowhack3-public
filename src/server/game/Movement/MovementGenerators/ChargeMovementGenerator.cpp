@@ -90,7 +90,8 @@ bool ChargeMovementGenerator<T>::Update(T &unit, const uint32 &diff)
     {
         if (IsChargeTriggerSpell(m_chargeSpell))
         {
-            const float melee_distance = unit.GetMeleeReach() + 8.0f;
+            const float melee_distance = unit.GetMeleeReach() + sWorld->getRate(RATE_MAX_CHARGE_PROC_RANGE);
+
             float x, y, z;
 
             m_target->GetPosition(x, y, z);
