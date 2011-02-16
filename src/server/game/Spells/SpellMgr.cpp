@@ -4129,11 +4129,6 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_TAKE_DAMAGE;
             count++;
             break;
-        case 49576:    // Death Grip
-        case 49560:
-            spellInfo->AttributesEx2 |= SPELL_ATTR2_CANT_REFLECTED;
-            count++;
-            break; 
         case 47201:    // Everlasting Affliction
         case 47202:
         case 47203:
