@@ -6214,7 +6214,7 @@ void Spell::EffectCharge(SpellEffIndex /*effIndex*/)
 
     // not all charge effects used in negative spells
     if (!IsPositiveSpell(m_spellInfo->Id) && m_caster->GetTypeId() == TYPEID_PLAYER)
-        m_caster->Attack(target, true);
+        m_caster->Attack(target, true); 
 }
 
 void Spell::EffectChargeDest(SpellEffIndex /*effIndex*/)
