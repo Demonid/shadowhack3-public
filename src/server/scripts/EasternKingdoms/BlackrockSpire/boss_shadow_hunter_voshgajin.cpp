@@ -74,7 +74,7 @@ public:
             //Hex_Timer
             if (Hex_Timer <= diff)
             {
-                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.f, true))
                     DoCast(pTarget, SPELL_HEX);
                 Hex_Timer = 15000;
             } else Hex_Timer -= diff;

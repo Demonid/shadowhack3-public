@@ -8,33 +8,17 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-include(${CMAKE_SOURCE_DIR}/cmake/macros/EnsureVersion.cmake)
-
-set(_REQUIRED_GIT_VERSION "1.7")
-
-find_program(_GIT_EXEC
+find_program(_HG_EXEC
   NAMES
-    git git.cmd
+    hg
   HINTS
     ENV PATH
-  DOC "git installation path"
+  DOC "hg installation path"
 )
 
-if(_GIT_EXEC)
+if(_HG_EXEC)
   execute_process(
-    COMMAND "${_GIT_EXEC}" --version
-    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-    OUTPUT_VARIABLE _GIT_VERSION
-    ERROR_QUIET
-  )
-
-  # make sure we're using minimum the required version of git, so the "dirty-testing" will work properly
-  ensure_version( "${_REQUIRED_GIT_VERSION}" "${_GIT_VERSION}" _GIT_VERSION_OK)
-endif()
-
-if(_GIT_VERSION_OK)
-  execute_process(
-    COMMAND "${_GIT_EXEC}" describe --match init --dirty=+ --abbrev=12
+    COMMAND "${_HG_EXEC}" log -l 1
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
     OUTPUT_VARIABLE rev_info
     OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -52,15 +36,12 @@ endif()
 # If everything above fails (means the user has erased the git revision control directory or removed the origin/HEAD tag)
 if(NOT rev_info)
   # No valid ways available to find/set the revision/hash, so let's force some defaults
-  set(rev_hash_str "Archive")
-  set(rev_hash "0")
   set(rev_id_str "0")
   set(rev_id "0")
 else()
   # Extract revision and hash from git
-  string(REGEX REPLACE init-|[0-9]+-g "" rev_hash_str ${rev_info})
-  string(REGEX REPLACE [+]+ "" rev_hash ${rev_hash_str})
-  string(REGEX REPLACE init-|-g[^+]+ "" rev_id_str ${rev_info})
+  string(REGEX REPLACE changeset:\t[^0-9]+: "" rev_id_str ${rev_info})
+  string(REGEX MATCH [0-9]+  rev_id_str ${rev_id_str})
   string(REGEX REPLACE [+]+ "" rev_id ${rev_id_str})
 endif()
 

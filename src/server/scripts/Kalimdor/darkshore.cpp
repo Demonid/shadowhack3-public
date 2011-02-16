@@ -185,7 +185,7 @@ public:
 
 enum eRemtravel
 {
-    SAY_REM_START               = -1000327,
+    SAY_REM_START               = -1000327, //DB: check all ids, old at -1000415
     SAY_REM_AGGRO               = -1000328,
     SAY_REM_RAMP1_1             = -1000329,
     SAY_REM_RAMP1_2             = -1000330,
@@ -291,6 +291,7 @@ public:
                     break;
                 case 42:
                     DoScriptText(EMOTE_REM_END, me, pPlayer);
+                    me->RestoreFaction();
                     pPlayer->GroupEventHappens(QUEST_ABSENT_MINDED_PT2, me);
                     break;
             }
@@ -321,7 +322,7 @@ public:
 
 enum eThreshwackonator
 {
-    EMOTE_START             = -1000325, //signed for 4966
+    EMOTE_START             = -1000325, //signed for 4966   //DB: check both, old at -1000413
     SAY_AT_CLOSE            = -1000326, //signed for 4966
     QUEST_GYROMAST_REV      = 2078,
     NPC_GELKAK              = 6667,

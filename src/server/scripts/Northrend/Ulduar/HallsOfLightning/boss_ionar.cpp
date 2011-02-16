@@ -289,10 +289,7 @@ public:
             DoMeleeAttackIfReady();
         }
     };
-
 };
-
-
 
 /*######
 ## mob_spark_of_ionar

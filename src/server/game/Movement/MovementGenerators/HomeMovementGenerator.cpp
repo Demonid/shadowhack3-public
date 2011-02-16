@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
@@ -22,6 +23,7 @@
 #include "Traveller.h"
 #include "DestinationHolderImp.h"
 #include "WorldPacket.h"
+#include "World.h"
 
 void
 HomeMovementGenerator<Creature>::Initialize(Creature & owner)
@@ -58,8 +60,15 @@ HomeMovementGenerator<Creature>::_setTargetLocation(Creature & owner)
 
     CreatureTraveller traveller(owner);
 
-    uint32 travel_time = i_destinationHolder.SetDestination(traveller, x, y, z);
-    modifyTravelTime(travel_time);
+    i_destinationHolder.SetDestination(traveller, x, y, z, false);
+
+    PathInfo path(&owner, x, y, z);
+    PointPath pointPath = path.getFullPath();
+
+    float speed = traveller.Speed() * 0.001f; // in ms
+    uint32 traveltime = uint32(pointPath.GetTotalLength() / speed);
+    modifyTravelTime(traveltime);
+    owner.SendMonsterMoveByPath(pointPath, 1, pointPath.size(), traveltime);
     owner.ClearUnitState(UNIT_STAT_ALL_STATE & ~UNIT_STAT_EVADE);
 }
 
@@ -67,6 +76,7 @@ bool
 HomeMovementGenerator<Creature>::Update(Creature &owner, const uint32& time_diff)
 {
     CreatureTraveller traveller(owner);
+
     i_destinationHolder.UpdateTraveller(traveller, time_diff);
 
     if (time_diff > i_travel_timer)
@@ -76,7 +86,6 @@ HomeMovementGenerator<Creature>::Update(Creature &owner, const uint32& time_diff
         // restore orientation of not moving creature at returning to home
         if (owner.GetDefaultMovementType() == IDLE_MOTION_TYPE)
         {
-            //sLog->outDebug("Entering HomeMovement::GetDestination(z,y,z)");
             owner.SetOrientation(ori);
             WorldPacket packet;
             owner.BuildHeartBeatMsg(&packet);
@@ -93,5 +102,4 @@ HomeMovementGenerator<Creature>::Update(Creature &owner, const uint32& time_diff
 
     return true;
 }
-
 

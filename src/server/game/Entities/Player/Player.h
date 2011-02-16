@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
@@ -1301,6 +1302,8 @@ class Player : public Unit, public GridObject<Player>
         uint32 GetGossipTextId(WorldObject *pSource);
         uint32 GetDefaultGossipMenuForSource(WorldObject *pSource);
 
+        bool isRussianLocale() const { return GetSession()->GetSessionDbcLocale() == LOCALE_ruRU;}
+
         /*********************************************************/
         /***                    QUEST SYSTEM                   ***/
         /*********************************************************/
@@ -1387,6 +1390,7 @@ class Player : public Unit, public GridObject<Player>
         uint16 GetReqKillOrCastCurrentCount(uint32 quest_id, int32 entry);
         void AreaExploredOrEventHappens(uint32 questId);
         void GroupEventHappens(uint32 questId, WorldObject const* pEventObject);
+        void GroupKillHappens(uint32 entry, WorldObject const* pEventObject, uint64 creatureGUID = 0);
         void ItemAddedQuestCheck(uint32 entry, uint32 count);
         void ItemRemovedQuestCheck(uint32 entry, uint32 count);
         void KilledMonster(CreatureInfo const* cInfo, uint64 guid);
@@ -1640,6 +1644,8 @@ class Player : public Unit, public GridObject<Player>
         void RemoveSpellCategoryCooldown(uint32 cat, bool update = false);
         void SendClearCooldown(uint32 spell_id, Unit* target);
 
+        GlobalCooldownMgr& GetGlobalCooldownMgr() { return m_GlobalCooldownMgr; }
+
         void RemoveCategoryCooldown(uint32 cat);
         void RemoveArenaSpellCooldowns(bool removeActivePetCooldowns = false);
         void RemoveAllSpellCooldown();
@@ -1647,11 +1653,6 @@ class Player : public Unit, public GridObject<Player>
         void _SaveSpellCooldowns(SQLTransaction& trans);
         void SetLastPotionId(uint32 item_id) { m_lastPotionId = item_id; }
         void UpdatePotionCooldown(Spell* spell = NULL);
-
-        // global cooldown
-        void AddGlobalCooldown(SpellEntry const *spellInfo, Spell *spell);
-        bool HasGlobalCooldown(SpellEntry const *spellInfo) const;
-        void RemoveGlobalCooldown(SpellEntry const *spellInfo);
 
         void setResurrectRequestData(uint64 guid, uint32 mapId, float X, float Y, float Z, uint32 health, uint32 mana)
         {
@@ -2283,6 +2284,9 @@ class Player : public Unit, public GridObject<Player>
         void SendMovieStart(uint32 MovieId);
         void SendClearFocus(Unit* target);
 
+		bool CanGainPremiumXP() {return getLevel() <= sWorld->getIntConfig(CONFIG_PREMIUM_XP_LEVELLIMIT);}
+		bool CanGainPremiumSkill(uint32 SkillId) {return GetSkillValue(SkillId) <= sWorld->getIntConfig(CONFIG_PREMIUM_SKILL_GAIN_LIMIT);}
+
         /*********************************************************/
         /***                 INSTANCE SYSTEM                   ***/
         /*********************************************************/
@@ -2401,6 +2405,8 @@ class Player : public Unit, public GridObject<Player>
 
         float GetAverageItemLevel();
         bool isDebugAreaTriggers;
+
+        void setJustDismounted() {m_anti_JustDismounted++;}
 
     protected:
         uint32 m_AreaID;
@@ -2552,6 +2558,8 @@ class Player : public Unit, public GridObject<Player>
 
         uint32 m_Glyphs[MAX_TALENT_SPECS][MAX_GLYPH_SLOT_INDEX];
 
+        GlobalCooldownMgr m_GlobalCooldownMgr;
+
         ActionButtonList m_actionButtons;
 
         float m_auraBaseMod[BASEMOD_END][MOD_END];
@@ -2621,6 +2629,30 @@ class Player : public Unit, public GridObject<Player>
         float m_rest_bonus;
         RestType rest_type;
         ////////////////////Rest System/////////////////////
+
+		//movement anticheat
+        uint32 m_anti_LastClientTime;     //last movement client time
+        uint32 m_anti_LastServerTime;     //last movement server time
+        uint32 m_anti_DeltaClientTime;    //client side session time
+        uint32 m_anti_DeltaServerTime;    //server side session time
+        uint32 m_anti_MistimingCount;     //mistiming counts before kick
+
+        uint32 m_anti_LastSpeedChangeTime;//last speed change time
+
+        float  m_anti_Last_HSpeed;        //horizontal speed, default RUN speed
+        float  m_anti_Last_VSpeed;        //vertical speed, default max jump height
+
+        uint64 m_anti_TransportGUID;      //current transport GUID
+
+        uint32 m_anti_TeleToPlane_Count;  //Teleport To Plane alarm counter
+
+        uint64 m_anti_AlarmCount;         //alarm counter
+
+        uint32 m_anti_JustJumped;         //Jump already began, anti air jump check
+		uint32 m_anti_JustDismounted;     //Dismounted
+        float  m_anti_JumpBaseZ;          //Z coord before jump
+        // << movement anticheat
+
         uint32 m_resetTalentsCost;
         time_t m_resetTalentsTime;
         uint32 m_usedTalentCount;
@@ -2712,7 +2744,6 @@ class Player : public Unit, public GridObject<Player>
         ReputationMgr  m_reputationMgr;
 
         SpellCooldowns m_spellCooldowns;
-        std::map<uint32, uint32> m_globalCooldowns; // whole start recovery category stored in one
 
         uint32 m_ChampioningFaction;
 

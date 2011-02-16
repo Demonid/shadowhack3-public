@@ -104,6 +104,7 @@ class instance_serpent_shrine : public InstanceMapScript
                 ShieldGeneratorDeactivated[2] = false;
                 ShieldGeneratorDeactivated[3] = false;
                 FishingTimer = 1000;
+                LurkerSubEvent = 0;
                 WaterCheckTimer = 500;
                 FrenzySpawnTimer = 2000;
                 DoSpawnFrenzy = false;
@@ -122,6 +123,15 @@ class instance_serpent_shrine : public InstanceMapScript
 
             void Update(uint32 diff)
             {
+                //Lurker Fishing event
+                if(LurkerSubEvent == LURKER_FISHING)
+                {
+                    if (FishingTimer <= diff)
+                    {
+                        LurkerSubEvent = LURKER_HOOKED;
+                        SetData(DATA_STRANGE_POOL, IN_PROGRESS);//just fished, signal Lurker script to emerge and start fight, we use IN_PROGRESS so it won't get saved and lurker will be alway invis at start if server restarted
+                    } else FishingTimer -= diff;
+                }
                 //Water checks
                 if (WaterCheckTimer <= diff)
                 {
@@ -198,6 +208,13 @@ class instance_serpent_shrine : public InstanceMapScript
                     case 184205:
                         BridgePart[2] = go->GetGUID();
                         go->setActive(true);
+                        break;
+                    case GAMEOBJECT_FISHINGNODE_ENTRY: //no way checking if fish is hooked, so we create a timed event
+                        if (LurkerSubEvent == LURKER_NOT_STARTED)
+                        {
+                            FishingTimer = urand(10*IN_MILLISECONDS, 40*IN_MILLISECONDS); //random time before lurker emerges
+                            LurkerSubEvent = LURKER_FISHING;
+                        }
                         break;
                     default:
                         break;
@@ -276,6 +293,8 @@ class instance_serpent_shrine : public InstanceMapScript
                 {
                     case DATA_STRANGE_POOL:
                         StrangePool = data;
+                        if(data == NOT_STARTED)
+                            LurkerSubEvent = LURKER_NOT_STARTED;
                         break;
                     case DATA_CONTROL_CONSOLE:
                         if (data == DONE)
@@ -425,6 +444,7 @@ class instance_serpent_shrine : public InstanceMapScript
             uint64 BridgePart[3];
             uint32 StrangePool;
             uint32 FishingTimer;
+            uint32 LurkerSubEvent;
             uint32 WaterCheckTimer;
             uint32 FrenzySpawnTimer;
             uint32 Water;

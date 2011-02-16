@@ -14,6 +14,7 @@
 
 // Gossip Item Text
 #define GOSSIP_TEXT_BROWSE_GOODS        "I'd like to browse your goods."
+#define GOSSIP_TEXT_BROWSE_GOODS_RU     "Покажи мне свои товары."
 #define GOSSIP_TEXT_TRAIN               "Train me!"
 
 #define GOSSIP_TEXT_BANK                "The bank"

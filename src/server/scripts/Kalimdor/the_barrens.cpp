@@ -221,9 +221,10 @@ public:
 
 enum eEnums
 {
-    FACTION_FRIENDLY_F  = 35,
+    FACTION_FRIENDLY_F  = 430,
     SPELL_FLARE         = 10113,
     SPELL_FOLLY         = 10137,
+    QUEST_DEEP_COVER    = 2458,
 };
 
 class npc_taskmaster_fizzule : public CreatureScript
@@ -240,10 +241,9 @@ public:
     {
         npc_taskmaster_fizzuleAI(Creature* c) : ScriptedAI(c)
         {
-            factionNorm = c->getFaction();
+            Reset();
         }
 
-        uint32 factionNorm;
         bool IsFriend;
         uint32 Reset_Timer;
         uint8 FlareCount;
@@ -253,10 +253,10 @@ public:
             IsFriend = false;
             Reset_Timer = 120000;
             FlareCount = 0;
-            me->setFaction(factionNorm);
+            me->RestoreFaction();
         }
 
-        void DoFriend()
+        void DoFriend(Player* pPlayer)
         {
             me->RemoveAllAuras();
             me->DeleteThreatList();
@@ -266,17 +266,26 @@ public:
             me->GetMotionMaster()->MoveIdle();
 
             me->setFaction(FACTION_FRIENDLY_F);
+            me->SetFacingToObject(pPlayer);
             me->HandleEmoteCommand(EMOTE_ONESHOT_SALUTE);
+            if(pPlayer->GetQuestStatus(QUEST_DEEP_COVER) == QUEST_STATUS_INCOMPLETE)
+		        pPlayer->AreaExploredOrEventHappens(QUEST_DEEP_COVER);
         }
 
-        void SpellHit(Unit * /*caster*/, const SpellEntry *spell)
+        void SpellHit(Unit* caster, const SpellEntry *spell)
         {
-            if (spell->Id == SPELL_FLARE || spell->Id == SPELL_FOLLY)
+            Player *p = caster->ToPlayer();
+            if (!p) return;
+            switch (spell->Id)
             {
-                ++FlareCount;
-
-                if (FlareCount >= 2)
-                    IsFriend = true;
+            case SPELL_FLARE:
+                if (++FlareCount >1) IsFriend = true;
+                break;
+            case SPELL_FOLLY:
+                FlareCount = 2;
+                IsFriend = true;
+                DoFriend(p);
+                break;
             }
         }
 
@@ -292,25 +301,13 @@ public:
                     return;
                 } else Reset_Timer -= diff;
             }
-
-            if (!UpdateVictim())
-                return;
-
-            DoMeleeAttackIfReady();
+            else if (UpdateVictim()) DoMeleeAttackIfReady();
         }
 
-        void ReceiveEmote(Player* /*pPlayer*/, uint32 emote)
+        void ReceiveEmote(Player* pPlayer, uint32 emote)
         {
             if (emote == TEXTEMOTE_SALUTE)
-            {
-                if (FlareCount >= 2)
-                {
-                    if (me->getFaction() == FACTION_FRIENDLY_F)
-                        return;
-
-                    DoFriend();
-                }
-            }
+                if (IsFriend) DoFriend(pPlayer);
         }
     };
 
@@ -464,8 +461,7 @@ public:
                             if (!pCreature)
                                 continue;
                             pCreature->setFaction(35);
-                            pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                            pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                            pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                             pCreature->HandleEmoteCommand(EMOTE_ONESHOT_ROAR);
                             AffrayChallenger[i] = pCreature->GetGUID();
                         }
@@ -501,8 +497,7 @@ public:
                             Creature* pCreature = Unit::GetCreature((*me), AffrayChallenger[Wave]);
                             if (pCreature && (pCreature->isAlive()))
                             {
-                                pCreature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                                pCreature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                                pCreature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                                 pCreature->HandleEmoteCommand(EMOTE_ONESHOT_ROAR);
                                 pCreature->setFaction(14);
                                 pCreature->AI()->AttackStart(pWarrior);
@@ -550,7 +545,7 @@ public:
 
 enum eEnums_Wizzlecrank
 {
-    SAY_START           = -1000298,
+    SAY_START           = -1000298, //DB: old were at -1000272
     SAY_STARTUP1        = -1000299,
     SAY_STARTUP2        = -1000300,
     SAY_MERCENARY       = -1000301,
@@ -648,7 +643,7 @@ public:
             if (pSummoned->GetEntry() == NPC_PILOT_WIZZ)
                 me->SetStandState(UNIT_STAND_STATE_DEAD);
 
-            if (pSummoned->GetEntry() == NPC_MERCENARY)
+            if (pSummoned->GetEntry() == NPC_MERCENARY && pSummoned->AI())
                 pSummoned->AI()->AttackStart(me);
         }
 
