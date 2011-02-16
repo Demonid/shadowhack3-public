@@ -1698,7 +1698,7 @@ void Spell::EffectTriggerSpell(SpellEffIndex effIndex)
 
     if (IsChargeTriggerSpell(m_spellInfo->Id))
     {
-        sLog->outDebug("Spell::EffectTriggerSpell (Spell: %u): It's a charge spell, triggering in PointMovementGenerator", m_spellInfo->Id);
+        sLog->outDebug("Spell::EffectTriggerSpell (Spell: %u): It's a charge spell, must be casted from ChargeMovementGenerator", m_spellInfo->Id);
         return;
     }
 
