@@ -534,6 +534,19 @@ void World::LoadConfigSettings(bool reload)
         rate_values[RATE_TARGET_POS_RECALCULATION_RANGE] = NOMINAL_MELEE_RANGE;
     }
 
+    rate_values[RATE_MAX_CHARGE_PROC_RANGE] = sConfig->GetFloatDefault("MaxChargeProcRange", 8.0f);
+    if (rate_values[RATE_MAX_CHARGE_PROC_RANGE] < 7.0f)
+    {
+        sLog->outError("MaxChargeProcRange (%f) must be >= %f. Using %f instead.", rate_values[RATE_MAX_CHARGE_PROC_RANGE], 7.0f, 7.0f);
+        rate_values[RATE_MAX_CHARGE_PROC_RANGE] = 7.0f;
+    }
+    else if (rate_values[RATE_MAX_CHARGE_PROC_RANGE] > 25.0f)
+    {
+        sLog->outError("MaxChargeProcRange (%f) must be <= %f. Using %f instead.",
+            rate_values[RATE_MAX_CHARGE_PROC_RANGE], 25.0f, 25.0f);
+        rate_values[RATE_MAX_CHARGE_PROC_RANGE] = 25.0f;
+    }
+
     rate_values[RATE_DURABILITY_LOSS_ON_DEATH]  = sConfig->GetFloatDefault("DurabilityLoss.OnDeath", 10.0f);
     if (rate_values[RATE_DURABILITY_LOSS_ON_DEATH] < 0.0f)
     {
