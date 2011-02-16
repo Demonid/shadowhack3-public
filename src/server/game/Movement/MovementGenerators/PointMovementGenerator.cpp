@@ -24,9 +24,9 @@
 #include "DestinationHolderImp.h"
 #include "TemporarySummon.h"
 #include "World.h"
-#include "Spell.h"
 
 //----- Point Movement Generator
+
 template<class T>
 void PointMovementGenerator<T>::Initialize(T &unit)
 {
@@ -45,7 +45,6 @@ void PointMovementGenerator<T>::Initialize(T &unit)
         uint32 traveltime = uint32(pointPath.GetTotalLength() / speed);
         unit.SendMonsterMoveByPath(pointPath, 1, pointPath.size(), traveltime);
     }
-
 }
 
 
@@ -83,57 +82,11 @@ void PointMovementGenerator<T>:: Finalize(T &unit)
     if (unit.HasUnitState(UNIT_STAT_CHARGING))
     {
         unit.ClearUnitState(UNIT_STAT_CHARGING | UNIT_STAT_JUMPING);
-
-        if (m_target)
-        {
-            switch (m_chargeSpell)
-            {
-                case 61490:
-                case 30151:
-                case 20252:
-                case 61685:
-                case 100:
-                case 6178:
-                case 11578:
-                {
-                    SpellEntry const *spellInfo = sSpellStore.LookupEntry(m_chargeSpell);
-                    if (!spellInfo)
-                    {
-                        sLog->outError("EffectCharge: unknown spell %u", m_chargeSpell);
-                        break;
-                    }
-
-                    for (uint8 j = 0; j < MAX_SPELL_EFFECTS; ++j)
-                    {
-                        if (spellInfo->Effect[j] != SPELL_EFFECT_TRIGGER_SPELL)
-                            continue;
-
-                        uint32 triggered_spell_id = spellInfo->EffectTriggerSpell[j];
-
-                        SpellEntry const *trigger_spellInfo = sSpellStore.LookupEntry(triggered_spell_id);
-                        if (!trigger_spellInfo)
-                        {
-                            sLog->outError("EffectTriggerSpell of spell %u: triggering unknown spell id %i", spellInfo->Id, triggered_spell_id);
-                            continue;
-                        }
-
-                        if (unit.GetTypeId() == TYPEID_PLAYER && spellInfo->CategoryRecoveryTime && trigger_spellInfo->CategoryRecoveryTime
-                            && spellInfo->Category == trigger_spellInfo->Category)
-                            unit.ToPlayer()->RemoveSpellCooldown(trigger_spellInfo->Id);
-
-                        float melee_distance = unit.GetMeleeReach() + 1.5f;
-
-                        if (unit.GetDistance2d(m_target->GetPositionX(), m_target->GetPositionY()) <= melee_distance)
-                            unit.CastSpell(m_target, trigger_spellInfo, true, 0, 0, 0);
-                    }
-                    break;                
-                }
-                default: break;
-            }
-        }
     }
     if (arrived) // without this crash!
+    {
         MovementInform(unit);
+    }
 }
 
 template<class T>
