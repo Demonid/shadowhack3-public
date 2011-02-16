@@ -4437,6 +4437,12 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         }
 
+        if (IsChargeTriggerSpell(i))
+        {
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
+            count++;
+        }
+
         switch (spellInfo->SpellFamilyName)
         {
             case SPELLFAMILY_WARRIOR:

@@ -27,7 +27,7 @@ class ChargeMovementGenerator
 {
     public:
         ChargeMovementGenerator(uint32 _id, float _x, float _y, float _z, bool _usePathfinding, bool _straightPath, Unit* _target, uint32 _chargeSpell) : PathMovementBase(), id(_id),
-            i_x(_x), i_y(_y), i_z(_z), arrived(false), m_usePathfinding(_usePathfinding), m_straightPath(_straightPath),
+            i_x(_x), i_y(_y), i_z(_z), arrived(false), casted(false), m_usePathfinding(_usePathfinding), m_straightPath(_straightPath),
             m_target(_target), m_chargeSpell(_chargeSpell) {}
 
         void Initialize(T &);
@@ -49,6 +49,7 @@ class ChargeMovementGenerator
         Unit* m_target;
         DestinationHolder< Traveller<T> > i_destinationHolder;
         bool arrived;
+        bool casted;
         void MoveToNextNode(T &);
         void _setTargetPosition(T &);
 };
