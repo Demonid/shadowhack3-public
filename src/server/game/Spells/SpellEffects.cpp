@@ -1692,22 +1692,14 @@ void Spell::EffectTriggerSpell(SpellEffIndex effIndex)
     if (!unitTarget)
     {
         if (gameObjTarget || itemTarget)
-            sLog->outError("Spell::EffectTriggerSpell (Spell: %u): Unsupported non-unit case!",m_spellInfo->Id);
+            sLog->outError("Spell::EffectTriggerSpell (Spell: %u): Unsupported non-unit case!", m_spellInfo->Id);
         return;
     }
 
-    switch (m_spellInfo->Id)
+    if (IsChargeTriggerSpell(m_spellInfo->Id))
     {
-        case 61490:
-        case 20252:
-        case 30151:
-        case 61685:
-        case 100:
-        case 6178:
-        case 11578:
-            sLog->outDebug("Spell::EffectTriggerSpell (Spell: %u): It's a charge spell, triggering in PointMovementGenerator", m_spellInfo->Id);
-            return;
-        default: break;
+        sLog->outDebug("Spell::EffectTriggerSpell (Spell: %u): It's a charge spell, triggering in PointMovementGenerator", m_spellInfo->Id);
+        return;
     }
 
     uint32 triggered_spell_id = m_spellInfo->EffectTriggerSpell[effIndex];

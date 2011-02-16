@@ -353,6 +353,24 @@ extern bool IsAreaEffectTarget[TOTAL_SPELL_TARGETS];
 extern SpellEffectTargetTypes EffectTargetType[TOTAL_SPELL_EFFECTS];
 extern SpellSelectTargetTypes SpellTargetType[TOTAL_SPELL_TARGETS];
 
+inline bool IsChargeTriggerSpell(uint32 spellId)
+{
+    switch (spellId)
+    {
+        case 61490:
+        case 30151:
+        case 20252:
+        case 61685:
+        case 100:
+        case 6178:
+        case 11578:
+            return true;
+        default:
+            break;
+    }
+    return false;
+}
+
 inline bool IsCasterSourceTarget(uint32 target)
 {
     switch (SpellTargetType[target])

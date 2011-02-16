@@ -86,6 +86,52 @@ bool ChargeMovementGenerator<T>::Update(T &unit, const uint32 &diff)
 
     i_destinationHolder.UpdateTraveller(traveller, diff, false);
 
+    if (m_target && !casted)
+    {
+        if (IsChargeTriggerSpell(m_chargeSpell))
+        {
+            const float melee_distance = unit.GetMeleeReach() + 8.0f;
+            float x, y, z;
+
+            m_target->GetPosition(x, y, z);
+            bool canCastTrigger = (unit.IsWithinDist3d(x, y, z, melee_distance) 
+                && m_target->IsWithinLOSInMap(&unit));
+
+            SpellEntry const *spellInfo = sSpellStore.LookupEntry(m_chargeSpell);
+            if (!spellInfo)
+            {
+                sLog->outError("EffectCharge: unknown spell %u", m_chargeSpell);
+                canCastTrigger = false;
+                casted = true;
+            }                
+
+            if (canCastTrigger)
+            {
+                casted = true;
+                for (uint8 j = 0; j < MAX_SPELL_EFFECTS; ++j)
+                {
+                    if (spellInfo->Effect[j] != SPELL_EFFECT_TRIGGER_SPELL)
+                        continue;
+
+                    uint32 triggered_spell_id = spellInfo->EffectTriggerSpell[j];
+
+                    SpellEntry const *trigger_spellInfo = sSpellStore.LookupEntry(triggered_spell_id);
+                    if (!trigger_spellInfo)
+                    {
+                        sLog->outError("EffectTriggerSpell of spell %u: triggering unknown spell id %i", spellInfo->Id, triggered_spell_id);
+                        continue;
+                    }
+
+                    if (unit.GetTypeId() == TYPEID_PLAYER && spellInfo->CategoryRecoveryTime && trigger_spellInfo->CategoryRecoveryTime
+                        && spellInfo->Category == trigger_spellInfo->Category)
+                        unit.ToPlayer()->RemoveSpellCooldown(trigger_spellInfo->Id);
+
+                    unit.CastSpell(m_target, trigger_spellInfo, true, 0, 0, 0);
+                }
+            }
+        }
+    }
+
     if (i_destinationHolder.HasArrived())
     {
         ++i_currentNode;
@@ -111,53 +157,6 @@ void ChargeMovementGenerator<T>:: Finalize(T &unit)
     if (arrived) // without this crash!
     {
         MovementInform(unit);
-        if (m_target)
-        {
-            switch (m_chargeSpell)
-            {
-            case 61490:
-            case 30151:
-            case 20252:
-            case 61685:
-            case 100:
-            case 6178:
-            case 11578:
-                {
-                    SpellEntry const *spellInfo = sSpellStore.LookupEntry(m_chargeSpell);
-                    if (!spellInfo)
-                    {
-                        sLog->outError("EffectCharge: unknown spell %u", m_chargeSpell);
-                        break;
-                    }
-
-                    for (uint8 j = 0; j < MAX_SPELL_EFFECTS; ++j)
-                    {
-                        if (spellInfo->Effect[j] != SPELL_EFFECT_TRIGGER_SPELL)
-                            continue;
-
-                        uint32 triggered_spell_id = spellInfo->EffectTriggerSpell[j];
-
-                        SpellEntry const *trigger_spellInfo = sSpellStore.LookupEntry(triggered_spell_id);
-                        if (!trigger_spellInfo)
-                        {
-                            sLog->outError("EffectTriggerSpell of spell %u: triggering unknown spell id %i", spellInfo->Id, triggered_spell_id);
-                            continue;
-                        }
-
-                        if (unit.GetTypeId() == TYPEID_PLAYER && spellInfo->CategoryRecoveryTime && trigger_spellInfo->CategoryRecoveryTime
-                            && spellInfo->Category == trigger_spellInfo->Category)
-                            unit.ToPlayer()->RemoveSpellCooldown(trigger_spellInfo->Id);
-
-                        float melee_distance = unit.GetMeleeReach() + 2.0f;
-
-                        if (unit.GetDistance2d(m_target->GetPositionX(), m_target->GetPositionY()) <= melee_distance)
-                            unit.CastSpell(m_target, trigger_spellInfo, true, 0, 0, 0);
-                    }
-                    break;                
-                }
-            default: break;
-            }
-        }
     }
 }
 
