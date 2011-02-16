@@ -121,7 +121,7 @@ void PointMovementGenerator<T>:: Finalize(T &unit)
                             && spellInfo->Category == trigger_spellInfo->Category)
                             unit.ToPlayer()->RemoveSpellCooldown(trigger_spellInfo->Id);
 
-                        float melee_distance = unit.GetMeleeReach() + 1.5f;
+                        float melee_distance = unit.GetMeleeReach() + 7.0f;
 
                         if (unit.GetDistance2d(m_target->GetPositionX(), m_target->GetPositionY()) <= melee_distance)
                             unit.CastSpell(m_target, trigger_spellInfo, true, 0, 0, 0);
