@@ -791,7 +791,8 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     /* process position-change */
    	if (check_passed)
 	{
-        plMover->m_anti_JustDismounted = 0;
+        if (plMover)
+            plMover->m_anti_JustDismounted = 0;
 
         WorldPacket data(opcode, recv_data.size());
         movementInfo.time = getMSTime();
