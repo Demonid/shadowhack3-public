@@ -106,6 +106,16 @@ public:
                         if(GameObject* pGo = instance->GetGameObject(m_uiExitPortalGUID))
                             pGo->SetPhaseMask(1, true);
                     }
+                    if (uiData == DONE)
+                    {
+                        OUT_SAVE_INST_DATA;
+                        std::ostringstream saveStream;
+                        saveStream << m_auiEncounter << " " << m_uiOutroCheck;
+
+                        strInstData = saveStream.str();
+                        SaveToDB();
+                        OUT_SAVE_INST_DATA_COMPLETE;
+                    }
                     m_auiEncounter = uiData;
                     break;
                 case TYPE_OUTRO_CHECK:
@@ -138,18 +148,15 @@ public:
                         dropAllPlayers();
                     break;
             }
+
+            
         }
+
+
 
         std::string GetSaveData()
         {
-            OUT_SAVE_INST_DATA;
-            std::ostringstream saveStream;
-            saveStream << m_auiEncounter << " " << m_uiOutroCheck;
-
-            strInstData = saveStream.str();
-            SaveToDB();
-            OUT_SAVE_INST_DATA_COMPLETE;
-            return strInstData.c_str();
+            return strInstData;
         }
 
         void Load(const char* chrIn)
