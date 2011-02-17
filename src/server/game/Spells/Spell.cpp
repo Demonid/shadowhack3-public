@@ -4981,7 +4981,7 @@ SpellCastResult Spell::CheckCast(bool strict)
 				// check correctness positive/negative cast target (pet cast real check and cheating check)
 				if(IsPositiveSpell(m_spellInfo->Id))
 				{
-					if(m_caster->IsHostileTo(target))
+					if(m_caster->IsHostileTo(target) && !IsDispel(m_spellInfo))
 						return SPELL_FAILED_BAD_TARGETS;
 				}
 				else
