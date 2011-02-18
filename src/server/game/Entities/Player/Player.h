@@ -2406,7 +2406,7 @@ class Player : public Unit, public GridObject<Player>
         float GetAverageItemLevel();
         bool isDebugAreaTriggers;
 
-        void setJustDismounted() {m_anti_JustDismounted++;}
+        void setJustChangedSpeed() {m_anti_JustChangedSpeed++;}
 
     protected:
         uint32 m_AreaID;
@@ -2649,7 +2649,7 @@ class Player : public Unit, public GridObject<Player>
         uint64 m_anti_AlarmCount;         //alarm counter
 
         uint32 m_anti_JustJumped;         //Jump already began, anti air jump check
-		uint32 m_anti_JustDismounted;     //Dismounted
+		uint32 m_anti_JustChangedSpeed;     //Dismounted
         float  m_anti_JumpBaseZ;          //Z coord before jump
         // << movement anticheat
 

@@ -448,7 +448,7 @@ void WorldSession::HandleCancelAuraOpcode(WorldPacket& recvPacket)
 			spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED || spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED ||
 			spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS || spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_SPEED ||
             spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_MOUNTED_SPEED)
-				_player->setJustDismounted();
+				_player->setJustChangedSpeed();
 	}
 
     // non channeled case

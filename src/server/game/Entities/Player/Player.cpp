@@ -542,7 +542,7 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
     m_anti_AlarmCount         = 0;     //alarm counter
 
     m_anti_JustJumped         = 0;     //Jump already began, anti air jump check
-	m_anti_JustDismounted     = 0;        
+	m_anti_JustChangedSpeed     = 0;        
     m_anti_JumpBaseZ          = 0;     //Z coord before jump (AntiGrav)
     // << movement anticheat
     /////////////////////////////////

@@ -59,11 +59,10 @@ void ChargeMovementGenerator<T>::Initialize(T &unit)
     if (!unit.IsStopped())
         unit.StopMoving();
 
-    if (unit.HasUnitState(UNIT_STAT_CHARGING) && m_usePathfinding)
-    {
-        _setTargetPosition(unit);
-        return;
-    }
+    if (unit.GetTypeId() == TYPEID_PLAYER)
+        unit.ToPlayer()->setJustChangedSpeed();
+
+    _setTargetPosition(unit);
 }
 
 
@@ -142,6 +141,8 @@ bool ChargeMovementGenerator<T>::Update(T &unit, const uint32 &diff)
         {
             unit.ClearUnitState(UNIT_STAT_MOVE);
             arrived = true;
+            if (unit.GetTypeId() == TYPEID_PLAYER)
+                unit.ToPlayer()->setJustChangedSpeed();
             return false;
         }
 
