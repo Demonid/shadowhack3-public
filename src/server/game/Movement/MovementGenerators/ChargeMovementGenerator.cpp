@@ -59,9 +59,6 @@ void ChargeMovementGenerator<T>::Initialize(T &unit)
     if (!unit.IsStopped())
         unit.StopMoving();
 
-    if (unit.GetTypeId() == TYPEID_PLAYER)
-        unit.ToPlayer()->setJustChangedSpeed();
-
     _setTargetPosition(unit);
 }
 

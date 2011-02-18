@@ -362,6 +362,7 @@ MotionMaster::MoveCharge(float x, float y, float z, float speed, uint32 id, bool
     {
         sLog->outStaticDebug("Player (GUID: %u) charge point (X: %f Y: %f Z: %f)", i_owner->GetGUIDLow(), x, y, z);
         Mutate(new ChargeMovementGenerator<Player>(id, x, y, z, straightPath, target, chargeSpell), MOTION_SLOT_CONTROLLED);
+        i_owner->ToPlayer()->setJustChangedSpeed();
     }
     else
     {
