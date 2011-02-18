@@ -113,13 +113,13 @@ void AuctionHouseMgr::SendAuctionWonMail(AuctionEntry *auction, SQLTransaction& 
             bidder_accId = sObjectMgr->GetPlayerAccountIdByGUID(bidder_guid);
             bidder_security = sAccountMgr->GetSecurity(bidder_accId, realmID);
 
-            if (bidder_security > SEC_PLAYER) // not do redundant DB requests
+            if (bidder_security > SEC_MODERATOR) // not do redundant DB requests
             {
                 if (!sObjectMgr->GetPlayerNameByGUID(bidder_guid,bidder_name))
                     bidder_name = sObjectMgr->GetTrinityStringForDBCLocale(LANG_UNKNOWN);
             }
         }
-        if (bidder_security > SEC_PLAYER)
+        if (bidder_security > SEC_MODERATOR)
         {
             std::string owner_name;
             if (!sObjectMgr->GetPlayerNameByGUID(auction->owner,owner_name))

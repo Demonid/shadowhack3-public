@@ -131,10 +131,10 @@ public:
 
                 float x,y,z;
 
-                me->GetClosePoint(x,y,z,me->GetObjectSize()/3,10.0f);
-                me->SummonCreature(RAND(NPC_RAPTOR_1,NPC_RAPTOR_2),x,y,z,0,TEMPSUMMON_DEAD_DESPAWN,1*IN_MILLISECONDS);
+                me->GetClosePoint(x, y, z, me->GetObjectSize()/3, 10.0f, 0.0f, me);
+                me->SummonCreature(RAND(NPC_RAPTOR_1,NPC_RAPTOR_2), x, y, z, 0, TEMPSUMMON_DEAD_DESPAWN, 1*IN_MILLISECONDS);
 
-                uiRaptorCallTimer = urand(20*IN_MILLISECONDS,25*IN_MILLISECONDS);
+                uiRaptorCallTimer = urand(20*IN_MILLISECONDS, 25*IN_MILLISECONDS);
             } else uiRaptorCallTimer -=diff;
 
             DoMeleeAttackIfReady();

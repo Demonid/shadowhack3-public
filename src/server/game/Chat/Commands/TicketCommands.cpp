@@ -264,7 +264,7 @@ bool ChatHandler::HandleGMTicketAssignToCommand(const char* args)
     uint64 accid = sObjectMgr->GetPlayerAccountIdByGUID(tarGUID);
     uint32 gmlevel = sAccountMgr->GetSecurity(accid, realmID);
 
-    if (!tarGUID || gmlevel == SEC_PLAYER)
+    if (!tarGUID || gmlevel <= SEC_MODERATOR)
     {
         SendSysMessage(LANG_COMMAND_TICKETASSIGNERROR_A);
         return true;

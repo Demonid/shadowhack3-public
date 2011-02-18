@@ -108,6 +108,9 @@ set(scripts_STAT_SRCS
   EasternKingdoms/Uldaman/instance_uldaman.cpp
   EasternKingdoms/Uldaman/boss_archaedas.cpp
   EasternKingdoms/swamp_of_sorrows.cpp
+  EasternKingdoms/BlackrockSpire/blackrock_spire.h
+  EasternKingdoms/BlackrockSpire/blackrock_spire.cpp
+  EasternKingdoms/BlackrockSpire/instance_blackrock_spire.cpp
   EasternKingdoms/BlackrockSpire/boss_pyroguard_emberseer.cpp
   EasternKingdoms/BlackrockSpire/boss_drakkisath.cpp
   EasternKingdoms/BlackrockSpire/boss_warmaster_voone.cpp

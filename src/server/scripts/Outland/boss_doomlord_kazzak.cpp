@@ -25,7 +25,7 @@ EndScriptData */
 
 #include "ScriptPCH.h"
 
-#define SAY_INTRO                       -1000147
+#define SAY_INTRO                       -1000147    //DB: old were at -1000375
 #define SAY_AGGRO1                      -1000148
 #define SAY_AGGRO2                      -1000149
 #define SAY_SURPREME1                   -1000154

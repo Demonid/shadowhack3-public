@@ -244,7 +244,7 @@ void UnitAI::FillAISpellInfo()
         AIInfo->realCooldown = spellInfo->RecoveryTime + spellInfo->StartRecoveryTime;
         SpellRangeEntry const* srange = sSpellRangeStore.LookupEntry(spellInfo->rangeIndex);
         if (srange)
-            AIInfo->maxRange = srange->maxRangeHostile * 3 / 4;
+            AIInfo->maxRange = (srange->maxRangeHostile * 3) * 0.25f;
     }
 }
 

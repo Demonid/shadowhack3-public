@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
@@ -774,7 +775,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
     uint64 unk4;
     uint32 BuiltNumberClient;
     uint32 id, security;
-    //uint8 expansion = 0;
+    uint8 premiumtype = 0;
     LocaleConstant locale;
     std::string account;
     SHA1Hash sha1;
@@ -932,10 +933,26 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
         return -1;
     }
 
+	QueryResult premresult =
+        LoginDatabase.PQuery ("SELECT premium_type "
+                                "FROM account_premium "
+                                "WHERE id = '%u' AND active = 1",
+                                id);
+
+    if (premresult) // if account premium
+    {
+		do
+		{
+			Field *fields = premresult->Fetch();
+			premiumtype |= fields[0].GetUInt8();
+		}
+		while(premresult->NextRow());
+    }
+
     // Check locked state for server
     AccountTypes allowedAccountType = sWorld->GetPlayerSecurityLimit();
     sLog->outDebug("Allowed Level: %u Player Level %u", allowedAccountType, AccountTypes(security));
-    if (allowedAccountType > SEC_PLAYER && AccountTypes(security) < allowedAccountType)
+    if (allowedAccountType > SEC_MODERATOR && AccountTypes(security) < allowedAccountType)
     {
         WorldPacket Packet (SMSG_AUTH_RESPONSE, 1);
         Packet << uint8 (AUTH_UNAVAILABLE);
@@ -987,7 +1004,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
                             safe_account.c_str());
 
     // NOTE ATM the socket is single-threaded, have this in mind ...
-    ACE_NEW_RETURN (m_Session, WorldSession (id, this, AccountTypes(security), expansion, mutetime, locale, recruiter), -1);
+    ACE_NEW_RETURN (m_Session, WorldSession (id, this, AccountTypes(security), expansion, mutetime, locale, premiumtype, recruiter), -1);
 
     m_Crypt.Init(&K);
 
@@ -1032,7 +1049,7 @@ int WorldSocket::HandlePing (WorldPacket& recvPacket)
             {
                 ACE_GUARD_RETURN (LockType, Guard, m_SessionLock, -1);
 
-                if (m_Session && m_Session->GetSecurity() == SEC_PLAYER)
+                if (m_Session && m_Session->GetSecurity() <= SEC_MODERATOR)
                 {
                     Player* _player = m_Session->GetPlayer();
                     sLog->outError("WorldSocket::HandlePing: Player (account: %u, GUID: %u, name: %s) kicked for over-speed pings (address: %s)",

@@ -193,7 +193,7 @@ public:
                 if (id >= 8)
                 {
                     Intro = false;
-                    me->SetHomePosition(IntroWay[7][0],IntroWay[7][1],IntroWay[7][2],0);
+                    me->SetHomePosition(IntroWay[7][0],IntroWay[7][1],IntroWay[7][2],0.f);
                     return;
                 }
 
@@ -231,7 +231,7 @@ public:
 
         void JustSummoned(Creature *summoned)
         {
-            summoned->AI()->AttackStart(me->getVictim());
+            if (summoned->AI()) summoned->AI()->AttackStart(me->getVictim());
         }
 
         void TakeOff()
@@ -321,14 +321,14 @@ public:
 
                 if (CharredEarthTimer <= diff)
                 {
-                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.f, true))
                         DoCast(pTarget, SPELL_CHARRED_EARTH);
                     CharredEarthTimer = 20000;
                 } else CharredEarthTimer -= diff;
 
                 if (TailSweepTimer <= diff)
                 {
-                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.f, true))
                         if (!me->HasInArc(M_PI, pTarget))
                             DoCast(pTarget, SPELL_TAIL_SWEEP);
                     TailSweepTimer = 15000;
@@ -378,7 +378,7 @@ public:
 
                     if (DistractingAshTimer <= diff)
                     {
-                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.f, true))
                             DoCast(pTarget, SPELL_DISTRACTING_ASH);
                         DistractingAshTimer = 2000; //timer wrong
                     } else DistractingAshTimer -= diff;

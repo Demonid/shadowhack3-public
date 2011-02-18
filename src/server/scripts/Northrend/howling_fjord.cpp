@@ -406,7 +406,7 @@ public:
                 {
                     pSummon->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
                     pSummon->GetMotionMaster()->MovePoint(0, afCenter[0], afCenter[1], afCenter[2]);
-                    pSummon->AI()->AttackStart(pPlayer);
+                    if (pSummon->AI()) pSummon->AI()->AttackStart(pPlayer);
                     return;
                 }
             }
