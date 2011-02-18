@@ -2649,7 +2649,7 @@ class Player : public Unit, public GridObject<Player>
         uint64 m_anti_AlarmCount;         //alarm counter
 
         uint32 m_anti_JustJumped;         //Jump already began, anti air jump check
-		uint32 m_anti_JustChangedSpeed;     //Dismounted
+		uint64 m_anti_JustChangedSpeed;   //Speed changed
         float  m_anti_JumpBaseZ;          //Z coord before jump
         // << movement anticheat
 

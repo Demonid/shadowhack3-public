@@ -12386,6 +12386,9 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
         data << float(GetSpeed(mtype));
         SendMessageToSet(&data, true);
     }
+
+    if (GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->setJustChangedSpeed();
 }
 
 void Unit::SetHover(bool on)
@@ -16163,6 +16166,7 @@ void Unit::KnockbackFrom(float x, float y, float speedXY, float speedZ)
         data << float(-speedZ);                                 // Z Movement speed (vertical)
 
         player->GetSession()->SendPacket(&data);
+        player->setJustChangedSpeed();
     }
 }
 
