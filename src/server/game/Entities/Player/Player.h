@@ -2281,7 +2281,6 @@ class Player : public Unit, public GridObject<Player>
 
         void SendCinematicStart(uint32 CinematicSequenceId);
         void SendMovieStart(uint32 MovieId);
-        void SendClearFocus(Unit* target);
 
 		bool CanGainPremiumXP() {return getLevel() <= sWorld->getIntConfig(CONFIG_PREMIUM_XP_LEVELLIMIT);}
 		bool CanGainPremiumSkill(uint32 SkillId) {return GetSkillValue(SkillId) <= sWorld->getIntConfig(CONFIG_PREMIUM_SKILL_GAIN_LIMIT);}
