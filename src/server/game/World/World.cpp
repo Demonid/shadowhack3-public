@@ -1702,7 +1702,7 @@ void World::SetInitialWorldSettings()
     sSmartScriptMgr->LoadSmartAIFromDB();
 
     ///- Initialize game time and timers
-    sLog->outDebug("DEBUG:: Initialize game time and timers");
+    sLog->outString("Initialize game time and timers");
     m_gameTime = time(NULL);
     m_startTime=m_gameTime;
 
@@ -1739,7 +1739,7 @@ void World::SetInitialWorldSettings()
     mail_timer = ((((localtime(&m_gameTime)->tm_hour + 20) % 24)* HOUR * IN_MILLISECONDS) / m_timers[WUPDATE_AUCTIONS].GetInterval());
                                                             //1440
     mail_timer_expires = ((DAY * IN_MILLISECONDS) / (m_timers[WUPDATE_AUCTIONS].GetInterval()));
-    sLog->outDebug("Mail timer set to: " UI64FMTD ", mail return is called every " UI64FMTD " minutes", uint64(mail_timer), uint64(mail_timer_expires));
+    sLog->outDetail("Mail timer set to: " UI64FMTD ", mail return is called every " UI64FMTD " minutes", uint64(mail_timer), uint64(mail_timer_expires));
     // handle timer for external mail
     m_timers[WUPDATE_EXTMAIL].SetInterval(m_int_configs[CONFIG_EXTERNAL_MAIL_INTERVAL] * MINUTE * IN_MILLISECONDS); 
 
@@ -2624,7 +2624,7 @@ void World::ProcessCliCommands()
     CliCommandHolder* command;
     while (cliCmdQueue.next(command))
     {
-        sLog->outDebug("CLI command under processing...");
+        sLog->outDetail("CLI command under processing...");
         zprint = command->m_print;
         callbackArg = command->m_callbackArg;
         CliHandler handler(callbackArg, zprint);
@@ -2665,9 +2665,9 @@ void World::SendAutoBroadcast()
         WorldPacket data(SMSG_NOTIFICATION, (msg.size()+1));
         data << msg;
         sWorld->SendGlobalMessage(&data);
-
     }
-    sLog->outDebug("AutoBroadcast: '%s'",msg.c_str());
+
+    sLog->outDetail("AutoBroadcast: '%s'",msg.c_str());
 }
 
 void World::UpdateRealmCharCount(uint32 accountId)

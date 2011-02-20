@@ -299,7 +299,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                             LookupOpcodeName(packet->GetOpcode()), packet->GetOpcode());
                         break;
                     case STATUS_UNHANDLED:
-                        sLog->outDebug("SESSION (account: %u, guidlow: %u, char: %s): received not handled opcode %s (0x%.4X)",
+                        sLog->outDebug(LOG_FILTER_NETWORKIO, "SESSION (account: %u, guidlow: %u, char: %s): received not handled opcode %s (0x%.4X)",
                             GetAccountId(), m_GUIDLow, _player ? _player->GetName() : "<none>",
                             LookupOpcodeName(packet->GetOpcode()), packet->GetOpcode());
                         break;
@@ -311,7 +311,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                         packet->GetOpcode(), GetRemoteAddress().c_str(), GetAccountId());
                 if (sLog->IsOutDebug())
                 {
-                    sLog->outDebug("Dumping error causing packet:");
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "Dumping error causing packet:");
                     packet->hexlike();
                 }
             }
@@ -501,7 +501,7 @@ void WorldSession::LogoutPlayer(bool Save)
         ///- Since each account can only have one online character at any given time, ensure all characters for active account are marked as offline
         //No SQL injection as AccountId is uint32
         CharacterDatabase.PExecute("UPDATE characters SET online = 0 WHERE account = '%u'", GetAccountId());
-        sLog->outDebug("SESSION: Sent SMSG_LOGOUT_COMPLETE Message");
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "SESSION: Sent SMSG_LOGOUT_COMPLETE Message");
     }
 
     m_playerLogout = false;
@@ -873,10 +873,10 @@ void WorldSession::ReadAddonsInfo(WorldPacket &data)
 
         uint32 currentTime;
         addonInfo >> currentTime;
-        sLog->outDebug("ADDON: CurrentTime: %u", currentTime);
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "ADDON: CurrentTime: %u", currentTime);
 
         if (addonInfo.rpos() != addonInfo.size())
-            sLog->outDebug("packet under-read!");
+            sLog->outDebug(LOG_FILTER_NETWORKIO, "packet under-read!");
     }
     else
         sLog->outError("Addon packet uncompress error!");
