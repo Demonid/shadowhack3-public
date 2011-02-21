@@ -104,7 +104,7 @@ namespace MMAP
         FILE* file = fopen(fileName, "rb");
         if (!file)
         {
-            sLog->outDebug("MMAP: Error: Could not open mmap file '%s'", fileName);
+            sLog->outDebug(LOG_FILTER_PATHFINDING, "MMAP: Error: Could not open mmap file '%s'", fileName);
             delete [] fileName;
             return false;
         }
@@ -181,7 +181,7 @@ namespace MMAP
         FILE *file = fopen(fileName, "rb");
         if (!file)
         {
-            sLog->outDebug("MMAP: Could not open mmtile file '%s'", fileName);
+            sLog->outDebug(LOG_FILTER_PATHFINDING, "MMAP: Could not open mmtile file '%s'", fileName);
             delete [] fileName;
             return false;
         }
@@ -243,7 +243,7 @@ namespace MMAP
         if (loadedMMaps.find(mapId) == loadedMMaps.end())
         {
             // file may not exist, therefore not loaded
-            sLog->outDebug("MMAP: Asked to unload not loaded navmesh map. %03u%02i%02i.mmtile", mapId, x, y);
+            sLog->outDebug(LOG_FILTER_PATHFINDING, "MMAP: Asked to unload not loaded navmesh map. %03u%02i%02i.mmtile", mapId, x, y);
             return false;
         }
 
@@ -254,7 +254,7 @@ namespace MMAP
         if (mmap->mmapLoadedTiles.find(packedGridPos) == mmap->mmapLoadedTiles.end())
         {
             // file may not exist, therefore not loaded
-            sLog->outDebug("MMAP: Asked to unload not loaded navmesh tile. %03u%02i%02i.mmtile", mapId, x, y);
+            sLog->outDebug(LOG_FILTER_PATHFINDING, "MMAP: Asked to unload not loaded navmesh tile. %03u%02i%02i.mmtile", mapId, x, y);
             return false;
         }
 
@@ -284,7 +284,7 @@ namespace MMAP
         if (loadedMMaps.find(mapId) == loadedMMaps.end())
         {
             // file may not exist, therefore not loaded
-            sLog->outDebug("MMAP: Asked to unload not loaded navmesh map %03u", mapId);
+            sLog->outDebug(LOG_FILTER_PATHFINDING, "MMAP: Asked to unload not loaded navmesh map %03u", mapId);
             return false;
         }
 
