@@ -1087,6 +1087,8 @@ struct CharmInfo
 
         CharmSpellEntry* GetCharmSpell(uint8 index) { return &(m_charmspells[index]); }
 
+        GlobalCooldownMgr& GetGlobalCooldownMgr() { return m_GlobalCooldownMgr; }
+
         void SetIsCommandAttack(bool val);
         bool IsCommandAttack();
         void SetIsAtStay(bool val);

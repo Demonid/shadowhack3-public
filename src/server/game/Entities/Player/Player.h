@@ -2551,6 +2551,8 @@ class Player : public Unit, public GridObject<Player>
         PlayerTalentMap *m_talents[MAX_TALENT_SPECS];
         uint32 m_lastPotionId;                              // last used health/mana potion in combat, that block next potion use
 
+        GlobalCooldownMgr m_GlobalCooldownMgr;
+
         uint8 m_activeSpec;
         uint8 m_specsCount;
 

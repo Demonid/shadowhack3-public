@@ -7468,6 +7468,13 @@ void Spell::CallScriptAfterUnitTargetSelectHandlers(std::list<Unit*>& unitTarget
     }
 }
 
+// Global cooldowns management
+enum GCDLimits
+{
+    MIN_GCD = 1000,
+    MAX_GCD = 1500
+};
+
 bool Spell::HasGlobalCooldown()
 {
     // global cooldown have only player or controlled units
