@@ -770,7 +770,7 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
         case ACTION_T_MOVE_RANDOM_POINT: //dosen't work in combat
         {
             float x,y,z;
-            me->GetClosePoint(x, y, z, me->GetObjectSize() / 3, (float)action.raw.param1);
+            me->GetClosePoint(x, y, z, me->GetObjectSize() / 3, (float)action.raw.param1, 0.0f, me);
             me->GetMotionMaster()->MovePoint(0,x,y,z);
             break;
         }

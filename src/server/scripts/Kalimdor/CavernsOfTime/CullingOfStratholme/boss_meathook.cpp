@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -26,23 +27,22 @@ Script Data End */
 #include "ScriptPCH.h"
 #include "culling_of_stratholme.h"
 
-enum Spells
+enum MeathookSpells
 {
-    SPELL_CONSTRICTING_CHAINS                   = 52696, //Encases the targets in chains, dealing 1800 Physical damage every 1 sec. and stunning the target for 5 sec.
-    H_SPELL_CONSTRICTING_CHAINS                 = 58823,
-    SPELL_DISEASE_EXPULSION                     = 52666, //Meathook belches out a cloud of disease, dealing 1710 to 1890 Nature damage and interrupting the spell casting of nearby enemy targets for 4 sec.
-    H_SPELL_DISEASE_EXPULSION                   = 58824,
-    SPELL_FRENZY                                = 58841 //Increases the caster's Physical damage by 10% for 30 sec.
+	SPELL_CHAIN_N                 = 52696,
+	SPELL_CHAIN_H                 = 58823,
+	SPELL_EXPLODED_N              = 52666,
+	SPELL_EXPLODED_H              = 58824,
+	SPELL_FRENZY                  = 58841,
 };
 
-enum Yells
+enum MeathookTexts
 {
-    SAY_AGGRO                                   = -1595026,
-    SAY_SLAY_1                                  = -1595027,
-    SAY_SLAY_2                                  = -1595028,
-    SAY_SLAY_3                                  = -1595029,
-    SAY_SPAWN                                   = -1595030,
-    SAY_DEATH                                   = -1595031
+	SAY_MEATHOOK_AGGRO       = -1594111,   
+	SAY_MEATHOOK_DEATH       = -1594112,  
+	SAY_MEATHOOK_SLAY01      = -1594113, 
+	SAY_MEATHOOK_SLAY02      = -1594114, 
+	SAY_MEATHOOK_SLAY03      = -1594115,
 };
 
 class boss_meathook : public CreatureScript
@@ -57,80 +57,74 @@ public:
 
     struct boss_meathookAI : public ScriptedAI
     {
-        boss_meathookAI(Creature *c) : ScriptedAI(c)
-        {
-            pInstance = c->GetInstanceScript();
-            if (pInstance)
-                DoScriptText(SAY_SPAWN,me);
-        }
+		boss_meathookAI(Creature *c) : ScriptedAI(c)
+		{
+			pInstance = c->GetInstanceScript();
+			Reset();
+		}
 
-        uint32 uiChainTimer;
-        uint32 uiDiseaseTimer;
-        uint32 uiFrenzyTimer;
+		uint32 Chain_Timer;
+		uint32 Exploded_Timer;
+		uint32 Frenzy_Timer;
 
-        InstanceScript* pInstance;
+		InstanceScript* pInstance;
 
-        void Reset()
-        {
-            uiChainTimer = urand(12000,17000);   //seen on video 13, 17, 15, 12, 16
-            uiDiseaseTimer = urand(2000,4000);   //approx 3s
-            uiFrenzyTimer = urand(21000,26000);  //made it up
+		void Reset() 
+		{
+			Chain_Timer = 6300;
+			Exploded_Timer = 5000;
+			Frenzy_Timer = 22300;
+		}
 
-            if (pInstance)
-                pInstance->SetData(DATA_MEATHOOK_EVENT, NOT_STARTED);
-        }
+		void EnterCombat(Unit* who)
+		{
+			DoScriptText(SAY_MEATHOOK_AGGRO, me);
+		}
 
-        void EnterCombat(Unit* /*who*/)
-        {
-            DoScriptText(SAY_AGGRO, me);
+		void JustDied(Unit *killer)
+		{
+			DoScriptText(SAY_MEATHOOK_DEATH, me);
+			if(pInstance)
+				pInstance->SetData(TYPE_PHASE, 3);
+		}
 
-            if (pInstance)
-                pInstance->SetData(DATA_MEATHOOK_EVENT, IN_PROGRESS);
-        }
+		void KilledUnit(Unit* pVictim)
+		{
+			DoScriptText(RAND(SAY_MEATHOOK_SLAY01, SAY_MEATHOOK_SLAY02, SAY_MEATHOOK_SLAY03), me);
+		}
 
-        void UpdateAI(const uint32 diff)
-        {
-            //Return since we have no target
-            if (!UpdateVictim())
-                return;
+		void UpdateAI(const uint32 diff)
+		{
 
-            if (uiDiseaseTimer <= diff)
-            {
-                DoCastAOE(SPELL_DISEASE_EXPULSION);
-                uiDiseaseTimer = urand(1500,4000);
-            } else uiDiseaseTimer -= diff;
+			if (!UpdateVictim())
+				return;
 
-            if (uiFrenzyTimer <= diff)
-            {
-                DoCast(me, SPELL_FRENZY);
-                uiFrenzyTimer = urand(21000,26000);
-            } else uiFrenzyTimer -= diff;
+			DoMeleeAttackIfReady();
 
-            if (uiChainTimer <= diff)
-            {
-                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
-                    DoCast(pTarget, SPELL_CONSTRICTING_CHAINS); //anyone but the tank
-                uiChainTimer = urand(2000,4000);
-            } else uiChainTimer -= diff;
+			if (Chain_Timer < diff)
+			{
+				if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
+					DoCast(target, DUNGEON_MODE(SPELL_CHAIN_N, SPELL_CHAIN_H));
 
-            DoMeleeAttackIfReady();
-        }
+				Chain_Timer = 6300;
+			}else Chain_Timer -= diff;
 
-        void JustDied(Unit* /*killer*/)
-        {
-            DoScriptText(SAY_DEATH, me);
+			if (Exploded_Timer < diff)
+			{
+				if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 10.0f, true))
+					DoCast(target, DUNGEON_MODE(SPELL_EXPLODED_N, SPELL_EXPLODED_H));
 
-            if (pInstance)
-                pInstance->SetData(DATA_MEATHOOK_EVENT, DONE);
-        }
+				Exploded_Timer = 5000;
+			}else Exploded_Timer -= diff;
 
-        void KilledUnit(Unit * victim)
-        {
-            if (victim == me)
-                return;
+			if (Frenzy_Timer < diff)
+			{       
+				me->InterruptNonMeleeSpells(false);
+				DoCast(me,SPELL_FRENZY);
 
-            DoScriptText(RAND(SAY_SLAY_1,SAY_SLAY_2,SAY_SLAY_3), me);
-        }
+				Frenzy_Timer = 23300;
+			}else Frenzy_Timer -= diff;
+		}
     };
 
 };

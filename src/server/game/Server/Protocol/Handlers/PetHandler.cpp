@@ -154,6 +154,7 @@ void WorldSession::HandlePetActionHelper(Unit *pet, uint64 guid1, uint16 spellid
                 case COMMAND_STAY:                          //flat=1792  //STAY
                     pet->AttackStop();
                     pet->InterruptNonMeleeSpells(false);
+					pet->StopMoving();
                     pet->GetMotionMaster()->MoveIdle();
                     charmInfo->SetCommandState(COMMAND_STAY);
 
@@ -285,7 +286,7 @@ void WorldSession::HandlePetActionHelper(Unit *pet, uint64 guid1, uint16 spellid
             Unit* unit_target = NULL;
 
             if (guid2)
-                unit_target = ObjectAccessor::GetUnit(*_player,guid2);
+                unit_target = ObjectAccessor::GetUnit(*_player, guid2);
 
             // do not cast unknown spells
             SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellid);
@@ -296,8 +297,10 @@ void WorldSession::HandlePetActionHelper(Unit *pet, uint64 guid1, uint16 spellid
             }
 
             if (spellInfo->StartRecoveryCategory > 0)
+            {
                 if (pet->GetCharmInfo() && pet->GetCharmInfo()->GetGlobalCooldownMgr().HasGlobalCooldown(spellInfo))
                     return;
+            }
 
             for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
             {
@@ -753,16 +756,19 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    if (spellInfo->StartRecoveryCategory > 0) // Check if spell is affected by GCD
-        if (caster->GetTypeId() == TYPEID_UNIT && caster->GetCharmInfo() && caster->GetCharmInfo()->GetGlobalCooldownMgr().HasGlobalCooldown(spellInfo))
-        {
-            caster->SendPetCastFail(spellId, SPELL_FAILED_NOT_READY);
-            return;
-        }
-
     // do not cast not learned spells
     if (!caster->HasSpell(spellId) || IsPassiveSpell(spellId))
         return;
+
+    //check GCD
+    if (spellInfo->StartRecoveryCategory > 0 && caster->GetTypeId() == TYPEID_UNIT && caster->GetCharmInfo())
+    {
+        if (caster->GetCharmInfo()->GetGlobalCooldownMgr().HasGlobalCooldown(spellInfo))
+        {
+            caster->SendPetCastFail(spellId, SPELL_FAILED_NOT_READY);
+            return;
+        }        
+    }
 
     SpellCastTargets targets;
     targets.read(recvPacket, caster);

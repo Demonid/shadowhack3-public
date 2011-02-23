@@ -111,13 +111,13 @@ public:
     {
         npc_greengill_slaveAI(Creature* c) : ScriptedAI(c) {}
 
-        uint64 PlayerGUID;
+        uint64 PlayerGUID;  //Q: why is this not local to SpellHit()?
 
         void EnterCombat(Unit* /*who*/){}
 
         void Reset()
         {
-        PlayerGUID = 0;
+        PlayerGUID = 0; //Q: remove ENRAGE aura?
         }
 
         void SpellHit(Unit* caster, const SpellEntry* spell)
@@ -135,7 +135,7 @@ public:
                         DoCast(plr, 45110, true);
                 }
                 DoCast(me, ENRAGE);
-                Unit* Myrmidon = me->FindNearestCreature(DM, 70);
+                Unit* Myrmidon = me->FindNearestCreature(DM, 70.f);
                 if (Myrmidon)
                 {
                     me->AddThreat(Myrmidon, 100000.0f);

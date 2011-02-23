@@ -51,7 +51,7 @@ EndContentData */
 
 enum eMatureNetherwing
 {
-    SAY_JUST_EATEN              = -1000175,
+    SAY_JUST_EATEN              = -1000175, //DB: old at -1000222
 
     SPELL_PLACE_CARCASS         = 38439,
     SPELL_JUST_EATEN            = 38502,
@@ -735,7 +735,7 @@ enum eOverlordData
     SPELL_THREE                     = 40216, // Dragonaw Faction
     SPELL_FOUR                      = 42016, // Dragonaw Trasform
 
-    OVERLORD_SAY_1                  = -1000606,
+    OVERLORD_SAY_1                  = -1000606, //DB old at -1000206
     OVERLORD_SAY_2                  = -1000607,
     OVERLORD_SAY_3                  = -1000608, //signed for 28315
     OVERLORD_SAY_4                  = -1000609,

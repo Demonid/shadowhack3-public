@@ -1,32 +1,27 @@
 /*
- * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
+* Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
+* Copyright (C) 2008-2010 Trinity <http://www.trinitycore.org/>
+*
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program; if not, write to the Free Software
+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+*/
 
 #include "ScriptPCH.h"
 #include "culling_of_stratholme.h"
 
-#define MAX_ENCOUNTER 5
-
-/* Culling of Stratholme encounters:
-0 - Meathook
-1 - Salramm the Fleshcrafter
-2 - Chrono-Lord Epoch
-3 - Mal'Ganis
-4 - Infinite Corruptor (Heroic only)
-*/
+#define CHROMI_WHISP_TEXT "Good work with crates! Come to me in front of Stratholme for your next assignment!"
+#define CHROMI_WHISP_TEXT_RU "Отлично сработано! Найди меня возле входа в Стратхольм, у меня есть еще одно задание."
 
 class instance_culling_of_stratholme : public InstanceMapScript
 {
@@ -35,211 +30,360 @@ public:
 
     InstanceScript* GetInstanceScript(InstanceMap* pMap) const
     {
-        return new instance_culling_of_stratholme_InstanceMapScript(pMap);
+    	return new instance_culling_of_stratholme_InstanceMapScript(pMap);
     }
+
 
     struct instance_culling_of_stratholme_InstanceMapScript : public InstanceScript
     {
-        instance_culling_of_stratholme_InstanceMapScript(Map* pMap) : InstanceScript(pMap) {Initialize();};
+    	instance_culling_of_stratholme_InstanceMapScript(Map* pMap) : InstanceScript(pMap) {Initialize();};
 
-        uint64 uiArthas;
-        uint64 uiMeathook;
-        uint64 uiSalramm;
-        uint64 uiEpoch;
-        uint64 uiMalGanis;
-        uint64 uiInfinite;
+    	uint8 m_uiCratesCount;
+    	uint32 m_auiEncounter[7];
+    	uint32 m_uiHeroicTimer;
+    	uint32 m_uiLastTimer;
 
-        uint64 uiShkafGate;
-        uint64 uiMalGanisGate1;
-        uint64 uiMalGanisGate2;
-        uint64 uiExitGate;
-        uint64 uiMalGanisChest;
+    	uint64 m_uiChromi01GUID;
+    	uint64 m_uiChromi02GUID;
+    	uint64 m_uiMikeGUID;
+    	uint64 m_uiMalCoricsGUID;
+    	uint64 m_uiGrianStoneGUID;
+    	uint64 m_uiJamesGUID;
+    	uint64 m_uiFrasCiabiGUID;
+    	uint64 m_uiForrestenGUID;
+    	uint64 m_uiRogerGUID;
+    	uint64 m_uiMoriganGUID;
+    	uint64 m_uiPerelliGUID;
+    	uint64 m_uiJenaGUID;
+    	uint64 m_uiMarthaGUID;
+    	uint64 m_uiMalcolmGUID;
+    	uint64 m_uiDogGUID;
+    	uint64 m_uiBartlebyGUID;
+    	uint64 m_uiArthasGUID;
+    	uint64 m_uiUtherGUID;
+    	uint64 m_uiJainaGUID;
+    	uint64 m_uiSalrammGUID;
+    	uint64 m_uiMalganisGUID;
+    	uint64 m_uiCorruptorGUID;
 
-        uint32 m_auiEncounter[MAX_ENCOUNTER];
-        std::string str_data;
+    	uint64 m_uiShkafGateGUID;
+    	uint64 m_uiMalGate1GUID;
+    	uint64 m_uiMalGate2GUID;
+    	uint64 m_uiMalChestGUID;
+    	uint64 m_uiExitGUID;
 
-        bool IsEncounterInProgress() const
-        {
-            for (uint8 i = 0; i < MAX_ENCOUNTER; ++i)
-                if (m_auiEncounter[i] == IN_PROGRESS) return true;
+    	void Initialize()
+    	{
+			m_uiHeroicTimer = 1500000;
+    		m_uiLastTimer = 1500000;
+    		m_auiEncounter[0] = NOT_STARTED;
+    		m_auiEncounter[1] = NOT_STARTED;
+    		m_auiEncounter[2] = 0;
+    		m_auiEncounter[3] = NOT_STARTED;
+    		m_auiEncounter[4] = 0;
+    		m_auiEncounter[5] = NOT_STARTED;
+    		m_auiEncounter[6] = NOT_STARTED;
 
-            return false;
-        }
+    		DoUpdateWorldState(WORLD_STATE_COS_CRATE_COUNT, 0);
+    		DoUpdateWorldState(WORLD_STATE_COS_CRATE_ON, 0);
+    		DoUpdateWorldState(WORLD_STATE_COS_WAVE_COUNT, 0);
+    		DoUpdateWorldState(WORLD_STATE_COS_TIME_COUNT, 0);
+    		DoUpdateWorldState(WORLD_STATE_COS_TIME_ON, 0);
 
-        void OnCreatureCreate(Creature* creature)
-        {
-            switch(creature->GetEntry())
-            {
-                case NPC_ARTHAS:
-                    uiArthas = creature->GetGUID();
-                    break;
-                case NPC_MEATHOOK:
-                    uiMeathook = creature->GetGUID();
-                    break;
-                case NPC_SALRAMM:
-                    uiSalramm = creature->GetGUID();
-                    break;
-                case NPC_EPOCH:
-                    uiEpoch = creature->GetGUID();
-                    break;
-                case NPC_MAL_GANIS:
-                    uiMalGanis = creature->GetGUID();
-                    break;
-                case NPC_INFINITE:
-                    uiInfinite = creature->GetGUID();
-                    break;
-            }
-        }
+    		m_uiCratesCount = 0;
+    		m_uiMikeGUID = 0;
+    		m_uiChromi01GUID = 0;
+    		m_uiChromi02GUID = 0;
+    		m_uiMalCoricsGUID = 0;
+    		m_uiGrianStoneGUID = 0;
+    		m_uiJamesGUID = 0;
+    		m_uiFrasCiabiGUID = 0;
+    		m_uiForrestenGUID = 0;
+    		m_uiRogerGUID = 0;
+    		m_uiMoriganGUID = 0;
+    		m_uiPerelliGUID = 0;
+    		m_uiJenaGUID = 0;
+    		m_uiMarthaGUID = 0;
+    		m_uiMalcolmGUID = 0;
+    		m_uiDogGUID = 0;
+    		m_uiBartlebyGUID = 0;
+    		m_uiArthasGUID = 0;
+    		m_uiUtherGUID = 0;
+    		m_uiJainaGUID = 0;
+    		m_uiShkafGateGUID = 0;
+    		m_uiSalrammGUID = 0;
+    		m_uiCorruptorGUID = 0;
+    		m_uiMalganisGUID = 0;
+    		m_uiMalGate1GUID = 0;
+    		m_uiMalGate2GUID = 0;
+    		m_uiMalChestGUID = 0;
+    		m_uiExitGUID = 0;
+    	}
 
-        void OnGameObjectCreate(GameObject* go)
-        {
-            switch(go->GetEntry())
-            {
-                case GO_SHKAF_GATE:
-                    uiShkafGate = go->GetGUID();
-                    break;
-                case GO_MALGANIS_GATE_1:
-                    uiMalGanisGate1 = go->GetGUID();
-                    break;
-                case GO_MALGANIS_GATE_2:
-                    uiMalGanisGate2 = go->GetGUID();
-                    break;
-                case GO_EXIT_GATE:
-                    uiExitGate = go->GetGUID();
-                    if (m_auiEncounter[3] == DONE)
-                        HandleGameObject(uiExitGate,true);
-                    break;
-                case GO_MALGANIS_CHEST_N:
-                case GO_MALGANIS_CHEST_H:
-                    uiMalGanisChest = go->GetGUID();
-                    if (m_auiEncounter[3] == DONE)
-                        go->RemoveFlag(GAMEOBJECT_FLAGS,GO_FLAG_INTERACT_COND);
-                    break;
-            }
-        }
+    	void OnCreatureCreate(Creature* pCreature)
+    	{
+    		switch(pCreature->GetEntry())
+    		{
+    		case NPC_CHROMI01:
+    			m_uiChromi01GUID = pCreature->GetGUID();
+    			break;
+    		case NPC_CHROMI02:
+    			m_uiChromi02GUID = pCreature->GetGUID();
+    			if (m_auiEncounter[0] == DONE)
+    				pCreature->SetVisible(true);
+    			else
+    				pCreature->SetVisible(false);
+    			break;
+    		case NPC_MIKE: 
+    			m_uiMikeGUID = pCreature->GetGUID();
+    			break;
+    		case NPC_MAL_CORICS: 
+    			m_uiMalCoricsGUID = pCreature->GetGUID();
+    			break;
+    		case NPC_GRIAN_STONE: 
+    			pCreature->SetStandState(UNIT_STAND_STATE_SIT_MEDIUM_CHAIR);
+    			m_uiGrianStoneGUID = pCreature->GetGUID();
+    			break;
+    		case NPC_JAMES: 
+    			pCreature->SetStandState(UNIT_STAND_STATE_SIT_MEDIUM_CHAIR);
+    			m_uiJamesGUID = pCreature->GetGUID();
+    			break;
+    		case NPC_FRAS_FRASIABI:
+    			pCreature->SetStandState(UNIT_STAND_STATE_SIT_MEDIUM_CHAIR); 
+    			m_uiFrasCiabiGUID = pCreature->GetGUID();
+    			break;
+    		case NPC_FORRESTER: 
+    			pCreature->SetStandState(UNIT_STAND_STATE_SIT_MEDIUM_CHAIR);
+    			m_uiForrestenGUID = pCreature->GetGUID();
+    			break;
+    		case NPC_ROGER:
+    			m_uiRogerGUID = pCreature->GetGUID();
+    			break;
+    		case NPC_MORIGAN:
+    			m_uiMoriganGUID = pCreature->GetGUID();
+    			break;
+    		case NPC_PERELLI:
+    			m_uiPerelliGUID = pCreature->GetGUID();
+    			break;
+    		case NPC_JENA:
+    			m_uiJenaGUID = pCreature->GetGUID();
+    			break;
+    		case NPC_MARTHA:
+    			pCreature->CastSpell(pCreature, 58925, false);
+    			m_uiMarthaGUID = pCreature->GetGUID();
+    			break;
+    		case NPC_MALCOLM:
+    			m_uiMalcolmGUID = pCreature->GetGUID();
+    			break;
+    		case NPC_DOG:
+    			m_uiDogGUID = pCreature->GetGUID();
+    			break;
+    		case NPC_BARTLEBY:
+    			m_uiBartlebyGUID = pCreature->GetGUID();
+    			break;
+    		case NPC_UTHER:
+    			m_uiUtherGUID = pCreature->GetGUID();
+    			break;
+    		case NPC_ARTHAS:
+    			m_uiArthasGUID = pCreature->GetGUID();
+    			pCreature->setActive(true);
+    			break;
+    		case NPC_JAINA:
+    			m_uiJainaGUID = pCreature->GetGUID();
+    			break;
+    		case NPC_INFINITE_CORRUPTOR: 
+    			pCreature->SetPhaseMask(0, true);
+    			m_uiCorruptorGUID = pCreature->GetGUID();
+    			break;
+    		}
+    	}
 
-        void SetData(uint32 type, uint32 data)
-        {
-            switch(type)
-            {
-                case DATA_MEATHOOK_EVENT:
-                    m_auiEncounter[0] = data;
-                    break;
-                case DATA_SALRAMM_EVENT:
-                    m_auiEncounter[1] = data;
-                    break;
-                case DATA_EPOCH_EVENT:
-                    m_auiEncounter[2] = data;
-                    break;
-                case DATA_MAL_GANIS_EVENT:
-                    m_auiEncounter[3] = data;
+    	void OnGameObjectCreate(GameObject* pGo)
+    	{
+    		if (pGo->GetEntry() == GO_SHKAF_GATE)
+    			m_uiShkafGateGUID = pGo->GetGUID();
 
-                    switch(m_auiEncounter[3])
-                    {
-                        case NOT_STARTED:
-                            HandleGameObject(uiMalGanisGate2,true);
-                            break;
-                        case IN_PROGRESS:
-                            HandleGameObject(uiMalGanisGate2,false);
-                            break;
-                        case DONE:
-                            HandleGameObject(uiExitGate, true);
-                            if (GameObject* go = instance->GetGameObject(uiMalGanisChest))
-                                go->RemoveFlag(GAMEOBJECT_FLAGS,GO_FLAG_INTERACT_COND);
-                            break;
-                    }
-                    break;
-                case DATA_INFINITE_EVENT:
-                    m_auiEncounter[4] = data;
-                    break;
-            }
+    		if (pGo->GetEntry() == GO_MALGANIS_GATE1)
+    			m_uiMalGate1GUID = pGo->GetGUID();
 
-            if (data == DONE)
-                SaveToDB();
-        }
+    		if (pGo->GetEntry() == GO_MALGANIS_GATE2)
+    			m_uiMalGate2GUID = pGo->GetGUID();
 
-        uint32 GetData(uint32 type)
-        {
-            switch(type)
-            {
-                case DATA_MEATHOOK_EVENT:             return m_auiEncounter[0];
-                case DATA_SALRAMM_EVENT:              return m_auiEncounter[1];
-                case DATA_EPOCH_EVENT:                return m_auiEncounter[2];
-                case DATA_MAL_GANIS_EVENT:            return m_auiEncounter[3];
-                case DATA_INFINITE_EVENT:             return m_auiEncounter[4];
-            }
-            return 0;
-        }
+    		if (pGo->GetEntry() == GO_MALGANIS_CHEST || pGo->GetEntry() == GO_MALGANIS_CHEST_H)
+    			m_uiMalChestGUID = pGo->GetGUID();
 
-        uint64 GetData64(uint32 identifier)
-        {
-            switch(identifier)
-            {
-                case DATA_ARTHAS:                     return uiArthas;
-                case DATA_MEATHOOK:                   return uiMeathook;
-                case DATA_SALRAMM:                    return uiSalramm;
-                case DATA_EPOCH:                      return uiEpoch;
-                case DATA_MAL_GANIS:                  return uiMalGanis;
-                case DATA_INFINITE:                   return uiInfinite;
-                case DATA_SHKAF_GATE:                 return uiShkafGate;
-                case DATA_MAL_GANIS_GATE_1:           return uiMalGanisGate1;
-                case DATA_MAL_GANIS_GATE_2:           return uiMalGanisGate2;
-                case DATA_EXIT_GATE:                  return uiExitGate;
-                case DATA_MAL_GANIS_CHEST:            return uiMalGanisChest;
-            }
-            return 0;
-        }
+    		if (pGo->GetEntry() == GO_EXIT)
+    			m_uiExitGUID = pGo->GetGUID();
+    	} 
 
-        std::string GetSaveData()
-        {
-            OUT_SAVE_INST_DATA;
+    	void ChromiWhispers()
+    	{
+    		Map::PlayerList const &PlayerList = instance->GetPlayers();
 
-            std::ostringstream saveStream;
-            saveStream << "C S " << m_auiEncounter[0] << " " << m_auiEncounter[1] << " "
-                << m_auiEncounter[2] << " " << m_auiEncounter[3] << " " << m_auiEncounter[4];
+    		if (PlayerList.isEmpty())
+    			return;
 
-            str_data = saveStream.str();
+    		if (Creature* pChromi = instance->GetCreature(m_uiChromi01GUID))
+    		{
+    			for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+    			{
+    				pChromi->MonsterWhisper((i->getSource()->isRussianLocale())? CHROMI_WHISP_TEXT_RU:CHROMI_WHISP_TEXT, i->getSource()->GetGUID(), false);
+    				i->getSource()->KilledMonsterCredit(30996, pChromi->GetGUID());
+    				i->getSource()->DestroyItemCount(ITEM_ARCANE_DISRUPTOR, 1, true);
+    			}
+    			pChromi->SetVisible(false);
+    		}
+    		if (Creature* pChromi2 = instance->GetCreature(m_uiChromi02GUID))
+    			pChromi2->SetVisible(true);
+    	}
 
-            OUT_SAVE_INST_DATA_COMPLETE;
-            return str_data;
-        }
 
-        void Load(const char* in)
-        {
-            if (!in)
-            {
-                OUT_LOAD_INST_DATA_FAIL;
-                return;
-            }
+    	void SetData(uint32 uiType, uint32 uiData)
+    	{
+    		switch(uiType)
+    		{
+    		case TYPE_QUEST:
+    			m_auiEncounter[0] = uiData;
+    			break; 
+    		case TYPE_CRATES_COUNT:
+    			m_uiCratesCount = m_uiCratesCount + uiData;
+    			if(m_uiCratesCount == 5)
+    			{
+    				m_auiEncounter[0] = DONE;
+    				ChromiWhispers();
+    			}
 
-            OUT_LOAD_INST_DATA(in);
+    			DoUpdateWorldState(WORLD_STATE_COS_CRATE_COUNT, m_uiCratesCount);
+    			break;
+    		case TYPE_INTRO:
+    			m_auiEncounter[1] = uiData;
+    			break;
+    		case TYPE_PHASE:
+    			m_auiEncounter[2] = uiData;
+    			break;
+    		case TYPE_ENCOUNTER:
+    			m_auiEncounter[3] = uiData;
+    			break;
+    		case TYPE_WING:
+    			m_auiEncounter[4] = uiData;
+    			break;
+    		case TYPE_BONUS:
+    			m_auiEncounter[5] = uiData;
+    			if(uiData == IN_PROGRESS)
+    			{
+    				if(Creature* Corruptor = instance->GetCreature(m_uiCorruptorGUID))
+    					Corruptor->SetPhaseMask(1, true);
+    				DoUpdateWorldState(WORLD_STATE_COS_TIME_ON, 1);
+    				DoUpdateWorldState(WORLD_STATE_COS_TIME_COUNT, 25);  
+    			} 
+    			break;
+    		case TYPE_MALGANIS:
+    			m_auiEncounter[6] = uiData;
+    			if (uiData == DONE)
+    			{
+    				DoRespawnGameObject(m_uiMalChestGUID, 30*MINUTE);
+    				if (GameObject* pGo = instance->GetGameObject(m_uiMalChestGUID))
+    					pGo->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_UNK1);
+    				if (Creature* pChromi2 = instance->GetCreature(m_uiChromi02GUID))
+    					pChromi2->SetVisible(false);
+    			}
+    			break;
+    		}
+    	}
 
-            char dataHead1, dataHead2;
-            uint16 data0, data1, data2, data3, data4;
+    	void SetData64(uint32 uiData, uint64 uiGuid)
+    	{
+    		switch(uiData)
+    		{
+    		case NPC_SALRAMM:
+    			m_uiSalrammGUID = uiGuid;
+    			break; 
+    		case NPC_MALGANIS:
+    			m_uiMalganisGUID = uiGuid;
+    			break; 
+    		}
+    	}
 
-            std::istringstream loadStream(in);
-            loadStream >> dataHead1 >> dataHead2 >> data0 >> data1 >> data2 >> data3 >> data4;
+    	uint32 GetData(uint32 uiType)
+    	{
+    		switch(uiType)
+    		{
+    		case TYPE_QUEST:
+    			return m_auiEncounter[0];
+    		case TYPE_INTRO:
+    			return m_auiEncounter[1];
+    		case TYPE_PHASE:
+    			return m_auiEncounter[2];
+    		case TYPE_ENCOUNTER:
+    			return m_auiEncounter[3];
+    		case TYPE_WING:
+    			return m_auiEncounter[4];
+    		case TYPE_BONUS:
+    			return m_auiEncounter[5];
+    		case TYPE_MALGANIS:
+    			return m_auiEncounter[6];
+    		}
+    		return 0;
+    	}
 
-            if (dataHead1 == 'C' && dataHead2 == 'S')
-            {
-                m_auiEncounter[0] = data0;
-                m_auiEncounter[1] = data1;
-                m_auiEncounter[2] = data2;
-                m_auiEncounter[3] = data3;
-                m_auiEncounter[4] = data4;
+    	uint64 GetData64(uint32 uiData)
+    	{
+    		switch(uiData)
+    		{
+    			case NPC_FORRESTER: return m_uiForrestenGUID;
+    			case NPC_JAMES: return m_uiJamesGUID;
+    			case NPC_FRAS_FRASIABI: return m_uiFrasCiabiGUID;
+    			case NPC_MAL_CORICS: return m_uiMalCoricsGUID;
+    			case NPC_GRIAN_STONE: return m_uiGrianStoneGUID;
+    			case NPC_ROGER: return m_uiRogerGUID;
+    			case NPC_MORIGAN: return m_uiMoriganGUID;
+    			case NPC_PERELLI: return m_uiPerelliGUID;
+    			case NPC_JENA: return m_uiJenaGUID;
+    			case NPC_MARTHA: return m_uiMarthaGUID;
+    			case NPC_MALCOLM: return m_uiMalcolmGUID;
+    			case NPC_DOG: return m_uiDogGUID;
+    			case NPC_BARTLEBY: return m_uiBartlebyGUID;
+    			case NPC_UTHER: return m_uiUtherGUID;
+    			case NPC_ARTHAS: return m_uiArthasGUID;
+    			case NPC_JAINA: return m_uiJainaGUID;
+    			case NPC_SALRAMM: return m_uiSalrammGUID;
+    			case NPC_MALGANIS: return m_uiMalganisGUID;
+    			case GO_SHKAF_GATE: return m_uiShkafGateGUID;
+    			case GO_MALGANIS_GATE1: return m_uiMalGate1GUID;
+    			case GO_MALGANIS_GATE2: return m_uiMalGate2GUID;
+    			case GO_MALGANIS_CHEST: return m_uiMalChestGUID;
+    			case GO_EXIT: return m_uiExitGUID;
+    		}
 
-                for (uint8 i = 0; i < MAX_ENCOUNTER; ++i)
-                    if (m_auiEncounter[i] == IN_PROGRESS)
-                        m_auiEncounter[i] = NOT_STARTED;
+    		return 0;
+    	}
 
-            } else OUT_LOAD_INST_DATA_FAIL;
+    	void Update(uint32 uiDiff)
+    	{
+    		if(m_auiEncounter[5] == IN_PROGRESS)
+    		{
+    			if(m_uiHeroicTimer < uiDiff)
+    			{
+    				m_auiEncounter[5] = FAIL;
+    				DoUpdateWorldState(WORLD_STATE_COS_TIME_ON, 0);
+    				if(Creature* Corruptor = instance->GetCreature(m_uiCorruptorGUID))
+    					Corruptor->SetPhaseMask(0, true);
+    			}
+				else m_uiHeroicTimer -= uiDiff;
 
-            OUT_LOAD_INST_DATA_COMPLETE;
-        }
+    			if(m_uiHeroicTimer < m_uiLastTimer - 60000)
+    			{
+    				m_uiLastTimer = m_uiHeroicTimer;
+    				uint32 tMinutes = m_uiHeroicTimer / 60000;
+    				DoUpdateWorldState(WORLD_STATE_COS_TIME_COUNT, tMinutes);
+    			}
+    		}
+
+    		return;
+    	}
     };
 
 };
-
 
 void AddSC_instance_culling_of_stratholme()
 {

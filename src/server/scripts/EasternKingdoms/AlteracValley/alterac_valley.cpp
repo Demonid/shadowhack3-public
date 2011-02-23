@@ -90,7 +90,7 @@ class mob_av_marshal_or_warmaster : public CreatureScript
 
             void UpdateAI(const uint32 diff)
             {
-                if (!bHasAura)
+                if (!bHasAura)      //Q: move this to DB or constructor? because auras are not dispellable
                 {
                     switch(me->GetEntry())
                     {
