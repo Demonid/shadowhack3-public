@@ -7091,7 +7091,16 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const *
                 summon->SetDisplayId(1126);
         }
 
-        summon->AI()->EnterEvadeMode();
+        if(summon->GetEntry() == 19921 || summon->GetEntry() == 19833)
+        {
+            if(Unit * target = m_targets.getUnitTarget())
+            {
+                summon->GetMotionMaster()->MoveFollow(target, 3.0f, 0);
+                summon->Attack(target, true);
+            }
+        }
+        else 
+            summon->AI()->EnterEvadeMode();
 
         ExecuteLogEffectSummonObject(i, summon);
     }
