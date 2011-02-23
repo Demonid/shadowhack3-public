@@ -1758,8 +1758,18 @@ public:
                 else //Venomous Snake
                 {
                     if (urand(0,2) == 0) //33% chance to cast
-                        DoCast(me->getVictim(), SPELL_DEADLY_POISON);
-                    SpellTimer = VENOMOUS_SNAKE_TIMER + (rand() %5)*100;
+                    {
+                        if (Aura * aur = me->getVictim()->GetAura(SPELL_DEADLY_POISON))
+                        {
+                            uint32 stack = aur->GetStackAmount() + 1;
+                            if (stack > 5)
+                                stack = 5;
+                            me->SetAuraStack(SPELL_DEADLY_POISON, me->getVictim(), stack);
+                        }
+                        else
+                            DoCast(me->getVictim(), SPELL_DEADLY_POISON);
+                    }
+                    SpellTimer = VENOMOUS_SNAKE_TIMER + (rand() %5)*100;					
                 }
             } else SpellTimer -= diff;
             DoMeleeAttackIfReady();

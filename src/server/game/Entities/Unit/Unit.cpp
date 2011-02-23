@@ -8073,7 +8073,10 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
                 break;
             case SPELLFAMILY_WARRIOR:
                 if (auraSpellInfo->Id == 50421)             // Scent of Blood
+                {
+                    RemoveAuraFromStack(50421);
                     trigger_spell_id = 50422;
+				}
                 break;
             case SPELLFAMILY_WARLOCK:
             {
@@ -8102,6 +8105,14 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
                 {
                     if (!procSpell)
                         return false;
+
+                    // Rain of Fire (friendly)
+                    if (procSpell->Id == 5740 || procSpell->Id == 6219
+                        || procSpell->Id == 11677 || procSpell->Id == 11678
+                        || procSpell->Id == 27212 || procSpell->Id == 47819
+                        || procSpell->Id == 47820)
+                        return false;
+
                     switch(GetFirstSchoolInMask(GetSpellSchoolMask(procSpell)))
                     {
                         case SPELL_SCHOOL_NORMAL:
