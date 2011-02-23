@@ -8096,7 +8096,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
                 {
                     RemoveAuraFromStack(50421);
                     trigger_spell_id = 50422;
-				}
+                }
                 break;
             case SPELLFAMILY_WARLOCK:
             {
