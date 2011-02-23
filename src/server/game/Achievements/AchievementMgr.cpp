@@ -38,7 +38,6 @@
 #include "BattlegroundAB.h"
 #include "Map.h"
 #include "InstanceScript.h"
-#include "LFGMgr.h"
 
 namespace Trinity
 {
@@ -423,8 +422,7 @@ void AchievementMgr::Reset()
 
 void AchievementMgr::ResetAchievementCriteria(AchievementCriteriaTypes type, uint32 miscvalue1, uint32 miscvalue2, bool evenIfCriteriaComplete)
 {
-    if ((sLog->getLogFilter() & LOG_FILTER_ACHIEVEMENT_UPDATES) == 0)
-        sLog->outDetail("AchievementMgr::ResetAchievementCriteria(%u, %u, %u)", type, miscvalue1, miscvalue2);
+    sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementMgr::ResetAchievementCriteria(%u, %u, %u)", type, miscvalue1, miscvalue2);
 
     if (!sWorld->getBoolConfig(CONFIG_GM_ALLOW_ACHIEVEMENT_GAINS) && m_player->GetSession()->GetSecurity() > SEC_PLAYER)
         return;
@@ -574,17 +572,25 @@ void AchievementMgr::LoadFromDB(PreparedQueryResult achievementResult, PreparedQ
         do
         {
             Field* fields = achievementResult->Fetch();
-            uint32 achievement_id = fields[0].GetUInt32();
+            uint32 achievementid = fields[0].GetUInt16();
 
             // don't must happen: cleanup at server startup in sAchievementMgr->LoadCompletedAchievements()
-            if (!sAchievementStore.LookupEntry(achievement_id))
+            AchievementEntry const* achievement = sAchievementStore.LookupEntry(achievementid);
+            if (!achievement)
                 continue;
 
-            CompletedAchievementData& ca = m_completedAchievements[achievement_id];
-            ca.date = time_t(fields[1].GetUInt64());
+            CompletedAchievementData& ca = m_completedAchievements[achievementid];
+            ca.date = time_t(fields[1].GetUInt32());
             ca.changed = false;
-        }
-        while (achievementResult->NextRow());
+
+            // title achievement rewards are retroactive
+            if (AchievementReward const* reward = sAchievementMgr->GetAchievementReward(achievement))
+                if (uint32 titleId = reward->titleId[GetPlayer()->GetTeam() == ALLIANCE ? 0 : 1])
+                    if (CharTitlesEntry const* titleEntry = sCharTitlesStore.LookupEntry(titleId))
+                        if (!GetPlayer()->HasTitle(titleEntry))
+                            GetPlayer()->SetTitle(titleEntry);
+
+        } while (achievementResult->NextRow());
     }
 
     if (criteriaResult)
@@ -592,9 +598,9 @@ void AchievementMgr::LoadFromDB(PreparedQueryResult achievementResult, PreparedQ
         do
         {
             Field* fields = criteriaResult->Fetch();
-            uint32 id      = fields[0].GetUInt32();
+            uint32 id      = fields[0].GetUInt16();
             uint32 counter = fields[1].GetUInt32();
-            time_t date    = time_t(fields[2].GetUInt64());
+            time_t date    = time_t(fields[2].GetUInt32());
 
             AchievementCriteriaEntry const* criteria = sAchievementCriteriaStore.LookupEntry(id);
             if (!criteria)
@@ -612,8 +618,7 @@ void AchievementMgr::LoadFromDB(PreparedQueryResult achievementResult, PreparedQ
             progress.counter = counter;
             progress.date    = date;
             progress.changed = false;
-        }
-        while (criteriaResult->NextRow());
+        } while (criteriaResult->NextRow());
     }
 }
 
@@ -627,8 +632,7 @@ void AchievementMgr::SendAchievementEarned(AchievementEntry const* achievement)
         return;
 
     #ifdef TRINITY_DEBUG
-    if ((sLog->getLogFilter() & LOG_FILTER_ACHIEVEMENT_UPDATES) == 0)
-        sLog->outDebug("AchievementMgr::SendAchievementEarned(%u)", achievement->ID);
+        sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementMgr::SendAchievementEarned(%u)", achievement->ID);
     #endif
 
     if (Guild* guild = sObjectMgr->GetGuildById(GetPlayer()->GetGuildId()))
@@ -718,8 +722,7 @@ static const uint32 achievIdForDangeon[][4] =
  */
 void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscvalue1, uint32 miscvalue2, Unit *unit, uint32 time)
 {
-    if ((sLog->getLogFilter() & LOG_FILTER_ACHIEVEMENT_UPDATES) == 0)
-        sLog->outDetail("AchievementMgr::UpdateAchievementCriteria(%u, %u, %u, %u)", type, miscvalue1, miscvalue2, time);
+    sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementMgr::UpdateAchievementCriteria(%u, %u, %u, %u)", type, miscvalue1, miscvalue2, time);
 
     if (!sWorld->getBoolConfig(CONFIG_GM_ALLOW_ACHIEVEMENT_GAINS) && m_player->GetSession()->GetSecurity() > SEC_PLAYER)
         return;
@@ -1541,9 +1544,6 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
                 if (IsCompletedAchievement(*itr))
                     CompletedAchievement(*itr);
         }
-
-        if (const uint32 dungeonId = sLFGMgr->GetDungeonIdForAchievement(achievement->ID))
-            sLFGMgr->RewardDungeonDoneFor(dungeonId, GetPlayer());
     }
 }
 
@@ -1813,8 +1813,7 @@ void AchievementMgr::SetCriteriaProgress(AchievementCriteriaEntry const* entry, 
     if (entry->timeLimit && timedIter == m_timedAchievements.end())
         return;
 
-    if ((sLog->getLogFilter() & LOG_FILTER_ACHIEVEMENT_UPDATES) == 0)
-        sLog->outDetail("AchievementMgr::SetCriteriaProgress(%u, %u) for (GUID:%u)", entry->ID, changeValue, m_player->GetGUIDLow());
+    sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementMgr::SetCriteriaProgress(%u, %u) for (GUID:%u)", entry->ID, changeValue, m_player->GetGUIDLow());
 
     CriteriaProgress* progress = GetCriteriaProgress(entry);
     if (!progress)

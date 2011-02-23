@@ -784,6 +784,18 @@ struct CurrencyTypesEntry
     uint32    BitIndex;                                     // 3        bit index in PLAYER_FIELD_KNOWN_CURRENCIES (1 << (index-1))
 };
 
+struct DungeonEncounterEntry
+{
+    uint32 id;                                              // 0        unique id
+    uint32 mapId;                                           // 1        map id
+    uint32 difficulty;                                      // 2        instance mode
+    //uint32 unk0;                                          // 3
+    uint32 encounterIndex;                                  // 4        encounter index for creating completed mask
+    char*  encounterName[16];                               // 5-20     encounter name
+    //uint32 nameFlags;                                     // 21
+    //uint32 unk1;                                          // 22
+};
+
 struct DurabilityCostsEntry
 {
     uint32    Itemlvl;                                      // 0
@@ -1749,6 +1761,12 @@ struct TaxiPathNodeEntry
     uint32    departureEventID;                             // 10       m_departureEventID
 };
 
+struct TeamContributionPointsEntry
+{
+    //uint32    entry;                                      // 0
+    float     value;                                        // 1 (???)
+};
+
 struct TotemCategoryEntry
 {
     uint32    ID;                                           // 0
@@ -1849,7 +1867,8 @@ struct VehicleSeatEntry
 
     bool CanEnterOrExit() const { return m_flags & VEHICLE_SEAT_FLAG_CAN_ENTER_OR_EXIT; }
     bool CanSwitchFromSeat() const { return m_flags & VEHICLE_SEAT_FLAG_B_CANSWITCH; }
-    bool IsUsableByAura() const { return m_flagsB & (VEHICLE_SEAT_FLAG_B_USABLE_FORCED | VEHICLE_SEAT_FLAG_B_USABLE_FORCED_2 | VEHICLE_SEAT_FLAG_B_USABLE_FORCED_3); }
+    bool IsUsableByOverride() const { return (m_flags & VEHICLE_SEAT_FLAG_UNCONTROLLED)
+                                    || (m_flagsB & VEHICLE_SEAT_FLAG_B_USABLE_FORCED | VEHICLE_SEAT_FLAG_B_USABLE_FORCED_2 | VEHICLE_SEAT_FLAG_B_USABLE_FORCED_3); }
     bool IsEjectable() const { return m_flagsB & VEHICLE_SEAT_FLAG_B_EJECTABLE; }
 };
 

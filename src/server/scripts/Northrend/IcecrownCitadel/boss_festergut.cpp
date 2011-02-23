@@ -98,7 +98,7 @@ class boss_festergut : public CreatureScript
 
             void Reset()
             {
-                events.Reset();
+                _Reset();
                 events.ScheduleEvent(EVENT_BERSERK, 300000);
                 events.ScheduleEvent(EVENT_INHALE_BLIGHT, urand(25000, 30000));
                 events.ScheduleEvent(EVENT_GAS_SPORE, urand(20000, 25000));
@@ -111,36 +111,34 @@ class boss_festergut : public CreatureScript
                     gasDummyGUID = gasDummy->GetGUID();
                     for (uint8 i = 0; i < 3; ++i)
                     {
-                        gasDummy->RemoveAurasDueToSpell(gaseousBlight[i]);
+                        me->RemoveAurasDueToSpell(gaseousBlight[i]);
                         gasDummy->RemoveAurasDueToSpell(gaseousBlightVisual[i]);
                     }
                 }
-
-                instance->SetBossState(DATA_FESTERGUT, NOT_STARTED);
             }
 
             void EnterCombat(Unit* who)
             {
                 if (!instance->CheckRequiredBosses(DATA_FESTERGUT, who->ToPlayer()))
                 {
-                    instance->DoCastSpellOnPlayers(LIGHT_S_HAMMER_TELEPORT);
                     EnterEvadeMode();
+                    instance->DoCastSpellOnPlayers(LIGHT_S_HAMMER_TELEPORT);
                     return;
                 }
 
+                me->setActive(true);
                 Talk(SAY_AGGRO);
                 if (Creature* gasDummy = me->FindNearestCreature(NPC_GAS_DUMMY, 100.0f, true))
                     gasDummyGUID = gasDummy->GetGUID();
                 if (Creature* professor = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_PROFESSOR_PUTRICIDE)))
                     professor->AI()->DoAction(ACTION_FESTERGUT_COMBAT);
-
-                DoZoneInCombat(me);
+                DoZoneInCombat();
             }
 
             void JustDied(Unit* /*killer*/)
             {
+                _JustDied();
                 Talk(SAY_DEATH);
-                instance->SetBossState(DATA_FESTERGUT, DONE);
                 if (Creature* professor = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_PROFESSOR_PUTRICIDE)))
                     professor->AI()->DoAction(ACTION_FESTERGUT_DEATH);
 
@@ -149,6 +147,7 @@ class boss_festergut : public CreatureScript
 
             void JustReachedHome()
             {
+                _JustReachedHome();
                 instance->SetBossState(DATA_FESTERGUT, FAIL);
             }
 
@@ -270,7 +269,7 @@ class boss_festergut : public CreatureScript
                 if (Creature* gasDummy = ObjectAccessor::GetCreature(*me, gasDummyGUID))
                     for (uint8 i = 0; i < 3; ++i)
                     {
-                        gasDummy->RemoveAurasDueToSpell(gaseousBlight[i]);
+                        me->RemoveAurasDueToSpell(gaseousBlight[i]);
                         gasDummy->RemoveAurasDueToSpell(gaseousBlightVisual[i]);
                     }
             }
@@ -464,6 +463,42 @@ class spell_festergut_blighted_spores : public SpellScriptLoader
         }
 };
 
+class spell_festergut_gaseous_blight : public SpellScriptLoader
+{
+    public:
+        spell_festergut_gaseous_blight() : SpellScriptLoader("spell_festergut_gaseous_blight") { }
+
+        class spell_festergut_gaseous_blight_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_festergut_gaseous_blight_SpellScript);
+
+            bool Validate(SpellEntry const* /*spell*/)
+            {
+                if (!sSpellStore.LookupEntry(SPELL_ORANGE_BLIGHT_RESIDUE))
+                    return false;
+                return true;
+            }
+
+            void ExtraEffect()
+            {
+                if (GetHitUnit()->HasAura(SPELL_ORANGE_BLIGHT_RESIDUE))
+                    return;
+
+                GetHitUnit()->CastSpell(GetHitUnit(), SPELL_ORANGE_BLIGHT_RESIDUE, true);
+            }
+
+            void Register()
+            {
+                AfterHit += SpellHitFn(spell_festergut_gaseous_blight_SpellScript::ExtraEffect);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_festergut_gaseous_blight_SpellScript();
+        }
+};
+
 class achievement_flu_shot_shortage : public AchievementCriteriaScript
 {
     public:
@@ -485,5 +520,6 @@ void AddSC_boss_festergut()
     new spell_festergut_pungent_blight();
     new spell_festergut_gastric_bloat();
     new spell_festergut_blighted_spores();
+    new spell_festergut_gaseous_blight();
     new achievement_flu_shot_shortage();
 }

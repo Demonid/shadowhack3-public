@@ -227,7 +227,7 @@ public:
 
         bool Validate(SpellEntry const * /*spellEntry*/)
         {
-            return sSpellStore.LookupEntry(SPELL_MAGE_FROST_WARDING_TRIGGERED) 
+            return sSpellStore.LookupEntry(SPELL_MAGE_FROST_WARDING_TRIGGERED)
                 && sSpellStore.LookupEntry(SPELL_MAGE_FROST_WARDING_R1);
         }
 
@@ -277,11 +277,11 @@ public:
 
         bool Validate(SpellEntry const * /*spellEntry*/)
         {
-            return sSpellStore.LookupEntry(SPELL_MAGE_INCANTERS_ABSORBTION_TRIGGERED) 
+            return sSpellStore.LookupEntry(SPELL_MAGE_INCANTERS_ABSORBTION_TRIGGERED)
                 && sSpellStore.LookupEntry(SPELL_MAGE_INCANTERS_ABSORBTION_R1);
         }
 
-        void Trigger(AuraEffect * aurEff, DamageInfo & dmgInfo, uint32 & absorbAmount)
+        void Trigger(AuraEffect * aurEff, DamageInfo & /*dmgInfo*/, uint32 & absorbAmount)
         {
             Unit * target = GetTarget();
 
@@ -322,11 +322,11 @@ public:
 
         bool Validate(SpellEntry const * /*spellEntry*/)
         {
-            return sSpellStore.LookupEntry(SPELL_MAGE_INCANTERS_ABSORBTION_TRIGGERED) 
+            return sSpellStore.LookupEntry(SPELL_MAGE_INCANTERS_ABSORBTION_TRIGGERED)
                 && sSpellStore.LookupEntry(SPELL_MAGE_INCANTERS_ABSORBTION_R1);
         }
 
-        void Trigger(AuraEffect * aurEff, DamageInfo & dmgInfo, uint32 & absorbAmount)
+        void Trigger(AuraEffect * aurEff, DamageInfo & /*dmgInfo*/, uint32 & absorbAmount)
         {
             Unit * target = GetTarget();
 

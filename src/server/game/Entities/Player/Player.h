@@ -132,6 +132,7 @@ struct SpellCooldown
 };
 
 typedef std::map<uint32, SpellCooldown> SpellCooldowns;
+typedef UNORDERED_MAP<uint32 /*instanceId*/, time_t/*releaseTime*/> InstanceTimeMap;
 
 enum TrainerSpellState
 {
@@ -794,7 +795,8 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADARENASTATS           = 28,
     PLAYER_LOGIN_QUERY_LOADBANNED               = 29,
     PLAYER_LOGIN_QUERY_LOADQUESTSTATUSREW       = 30,
-    MAX_PLAYER_LOGIN_QUERY                      = 31
+    PLAYER_LOGIN_QUERY_LOADINSTANCELOCKTIMES    = 31,
+    MAX_PLAYER_LOGIN_QUERY,
 };
 
 enum PlayerDelayedOperations
@@ -1638,6 +1640,8 @@ class Player : public Unit, public GridObject<Player>
         void RemoveSpellCategoryCooldown(uint32 cat, bool update = false);
         void SendClearCooldown(uint32 spell_id, Unit* target);
 
+        GlobalCooldownMgr& GetGlobalCooldownMgr() { return m_GlobalCooldownMgr; }
+
         void RemoveCategoryCooldown(uint32 cat);
         void RemoveArenaSpellCooldowns(bool removeActivePetCooldowns = false);
         void RemoveAllSpellCooldown();
@@ -1925,7 +1929,6 @@ class Player : public Unit, public GridObject<Player>
         static uint32 TeamForRace(uint8 race);
         uint32 GetTeam() const { return m_team; }
         TeamId GetTeamId() const { return m_team == ALLIANCE ? TEAM_ALLIANCE : TEAM_HORDE; }
-        static uint32 getFactionForRace(uint8 race);
         void setFactionForRace(uint8 race);
 
         void InitDisplayIds();
@@ -2298,11 +2301,26 @@ class Player : public Unit, public GridObject<Player>
         void UnbindInstance(uint32 mapid, Difficulty difficulty, bool unload = false);
         void UnbindInstance(BoundInstancesMap::iterator &itr, Difficulty difficulty, bool unload = false);
         InstancePlayerBind* BindToInstance(InstanceSave *save, bool permanent, bool load = false);
+        void BindToInstance();
+        void SetPendingBind(InstanceSave* save, uint32 bindTimer) { _pendingBind = save; _pendingBindTimer = bindTimer; }
+        bool HasPendingBind() const { return _pendingBind != NULL; }
         void SendRaidInfo();
         void SendSavedInstances();
-        static void ConvertInstancesToGroup(Player *player, Group *group = NULL, uint64 player_guid = 0);
+        static void ConvertInstancesToGroup(Player *player, Group *group, bool switchLeader);
         bool Satisfy(AccessRequirement const* ar, uint32 target_map, bool report = false);
         bool CheckInstanceLoginValid();
+        bool CheckInstanceCount(uint32 instanceId) const
+        {
+            if (_instanceResetTimes.size() < sWorld->getIntConfig(CONFIG_MAX_INSTANCES_PER_HOUR))
+                return true;
+            return _instanceResetTimes.find(instanceId) != _instanceResetTimes.end();
+        }
+
+        void AddInstanceEnterTime(uint32 instanceId, time_t enterTime)
+        {
+            if (_instanceResetTimes.find(instanceId) == _instanceResetTimes.end())
+                _instanceResetTimes.insert(InstanceTimeMap::value_type(instanceId, enterTime + HOUR));
+        }
 
         // last used pet number (for BG's)
         uint32 GetLastPetNumber() const { return m_lastpetnumber; }
@@ -2449,6 +2467,7 @@ class Player : public Unit, public GridObject<Player>
         void _LoadBGData(PreparedQueryResult result);
         void _LoadGlyphs(PreparedQueryResult result);
         void _LoadTalents(PreparedQueryResult result);
+        void _LoadInstanceTimeRestrictions(PreparedQueryResult result);
 
         /*********************************************************/
         /***                   SAVE SYSTEM                     ***/
@@ -2468,6 +2487,7 @@ class Player : public Unit, public GridObject<Player>
         void _SaveGlyphs(SQLTransaction& trans);
         void _SaveTalents(SQLTransaction& trans);
         void _SaveStats(SQLTransaction& trans);
+        void _SaveInstanceTimeRestrictions(SQLTransaction& trans);
 
         void _SetCreateBits(UpdateMask *updateMask, Player *target) const;
         void _SetUpdateBits(UpdateMask *updateMask, Player *target) const;
@@ -2526,6 +2546,8 @@ class Player : public Unit, public GridObject<Player>
         PlayerSpellMap m_spells;
         PlayerTalentMap *m_talents[MAX_TALENT_SPECS];
         uint32 m_lastPotionId;                              // last used health/mana potion in combat, that block next potion use
+
+        GlobalCooldownMgr m_GlobalCooldownMgr;
 
         uint8 m_activeSpec;
         uint8 m_specsCount;
@@ -2700,6 +2722,10 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_timeSyncTimer;
         uint32 m_timeSyncClient;
         uint32 m_timeSyncServer;
+
+        InstanceTimeMap _instanceResetTimes;
+        InstanceSave* _pendingBind;
+        uint32 _pendingBindTimer;
 };
 
 void AddItemsSetItem(Player*player,Item *item);
