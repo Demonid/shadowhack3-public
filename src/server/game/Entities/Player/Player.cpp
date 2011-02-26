@@ -4684,7 +4684,9 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
             }
 
             trans->PAppend("DELETE FROM characters WHERE guid = '%u'",guid);
-            trans->PAppend("DELETE FROM character_account_data WHERE guid = '%u'",guid);
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_PLAYER_ACCOUNT_DATA);
+            stmt->setUInt32(0, guid);
+            trans->Append(stmt);
             trans->PAppend("DELETE FROM character_declinedname WHERE guid = '%u'",guid);
             trans->PAppend("DELETE FROM character_action WHERE guid = '%u'",guid);
             trans->PAppend("DELETE FROM character_aura WHERE guid = '%u'",guid);
@@ -7822,6 +7824,9 @@ void Player::_ApplyWeaponDependentAuraMods(Item *item,WeaponAttackType attackTyp
             mod += (*itr)->GetAmount();
 
     SetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT, mod/100.0f);
+    UpdateDamagePhysical(BASE_ATTACK);
+    UpdateDamagePhysical(OFF_ATTACK);
+    UpdateDamagePhysical(RANGED_ATTACK);
 }
 
 void Player::_ApplyWeaponDependentAuraCritMod(Item *item, WeaponAttackType attackType, AuraEffect const* aura, bool apply)

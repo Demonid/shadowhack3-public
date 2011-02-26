@@ -1119,7 +1119,7 @@ bool ChatHandler::HandleMmapLocCommand(const char* /*args*/)
 
 	// calculate navmesh tile location
 	const dtNavMesh* navmesh = MMAP::MMapFactory::createOrGetMMapManager()->GetNavMesh(player->GetMapId());
-	const dtNavMeshQuery* navmeshquery = MMAP::MMapFactory::createOrGetMMapManager()->GetNavMeshQuery(player->GetMapId());
+	const dtNavMeshQuery* navmeshquery = MMAP::MMapFactory::createOrGetMMapManager()->GetNavMeshQuery(player->GetMapId(), player->GetInstanceId());
 	if (!navmesh || !navmeshquery)
 	{
 		PSendSysMessage("NavMesh not loaded for current map.");
@@ -1164,7 +1164,7 @@ bool ChatHandler::HandleMmapLoadedTilesCommand(const char* /*args*/)
     uint32 mapid = m_session->GetPlayer()->GetMapId();
 
     const dtNavMesh* navmesh = MMAP::MMapFactory::createOrGetMMapManager()->GetNavMesh(mapid);
-    const dtNavMeshQuery* navmeshquery = MMAP::MMapFactory::createOrGetMMapManager()->GetNavMeshQuery(mapid);
+    const dtNavMeshQuery* navmeshquery = MMAP::MMapFactory::createOrGetMMapManager()->GetNavMeshQuery(mapid, m_session->GetPlayer()->GetInstanceId());
     if (!navmesh || !navmeshquery)
     {
         PSendSysMessage("NavMesh not loaded for current map.");

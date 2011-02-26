@@ -55,6 +55,9 @@ Map::~Map()
         obj->ResetMap();
     }
 
+    // unload instance specific navigation data
+    MMAP::MMapFactory::createOrGetMMapManager()->unloadMapInstance(GetId(), GetInstanceId());
+
     if (!m_scriptSchedule.empty())
         sWorld->DecreaseScheduledScriptCount(m_scriptSchedule.size());
 }

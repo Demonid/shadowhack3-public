@@ -72,7 +72,6 @@ enum Npcs
 {
     NPC_EYEBEAM_1                               = 33632,
     NPC_EYEBEAM_2                               = 33802,
-    NPC_RUBBLE                                  = 33768,
     NPC_LEFT_ARM                                = 32933,
     NPC_RIGHT_ARM                               = 32934
 };

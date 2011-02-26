@@ -323,7 +323,7 @@ TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
                 float dist = owner.GetMeleeReach() + sWorld->getRate(RATE_TARGET_POS_RECALCULATION_RANGE);
 
                 needNewDest = i_destinationHolder.HasArrived() && 
-                    ( !inRange(next_point, i_path->getActualEndPosition(), dist, 2*dist) || !i_target->IsWithinLOSInMap(&owner) );
+                    ( !inRange(next_point, i_path->getActualEndPosition(), dist, dist) || !i_target->IsWithinLOSInMap(&owner) );
 
                 // GetClosePoint() will always return a point on the ground, so we need to
                 // handle the difference in elevation when the creature is flying
