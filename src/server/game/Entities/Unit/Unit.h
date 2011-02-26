@@ -445,30 +445,31 @@ enum DeathState
 
 enum UnitState
 {
-    UNIT_STAT_DIED            = 0x00000001,
-    UNIT_STAT_MELEE_ATTACKING = 0x00000002,                     // player is melee attacking someone
+    UNIT_STAT_DIED                = 0x00000001,
+    UNIT_STAT_MELEE_ATTACKING     = 0x00000002,                     // player is melee attacking someone
     //UNIT_STAT_MELEE_ATTACK_BY = 0x00000004,                     // player is melee attack by someone
-    UNIT_STAT_STUNNED         = 0x00000008,
-    UNIT_STAT_ROAMING         = 0x00000010,
-    UNIT_STAT_CHASE           = 0x00000020,
+    UNIT_STAT_STUNNED             = 0x00000008,
+    UNIT_STAT_ROAMING             = 0x00000010,
+    UNIT_STAT_CHASE               = 0x00000020,
     //UNIT_STAT_SEARCHING       = 0x00000040,
-    UNIT_STAT_FLEEING         = 0x00000080,
-    UNIT_STAT_IN_FLIGHT       = 0x00000100,                     // player is in flight mode
-    UNIT_STAT_FOLLOW          = 0x00000200,
-    UNIT_STAT_ROOT            = 0x00000400,
-    UNIT_STAT_CONFUSED        = 0x00000800,
-    UNIT_STAT_DISTRACTED      = 0x00001000,
-    UNIT_STAT_ISOLATED        = 0x00002000,                     // area auras do not affect other players
-    UNIT_STAT_ATTACK_PLAYER   = 0x00004000,
-    UNIT_STAT_CASTING         = 0x00008000,
-    UNIT_STAT_POSSESSED       = 0x00010000,
-    UNIT_STAT_CHARGING        = 0x00020000,
-    UNIT_STAT_JUMPING         = 0x00040000,
-    UNIT_STAT_ONVEHICLE       = 0x00080000,
-    UNIT_STAT_MOVE            = 0x00100000,
-    UNIT_STAT_ROTATING        = 0x00200000,
-    UNIT_STAT_EVADE           = 0x00400000,
-    UNIT_STAT_TIMED_EVADE     = 0x00800000,
+    UNIT_STAT_FLEEING             = 0x00000080,
+    UNIT_STAT_IN_FLIGHT           = 0x00000100,                     // player is in flight mode
+    UNIT_STAT_FOLLOW              = 0x00000200,
+    UNIT_STAT_ROOT                = 0x00000400,
+    UNIT_STAT_CONFUSED            = 0x00000800,
+    UNIT_STAT_DISTRACTED          = 0x00001000,
+    UNIT_STAT_ISOLATED            = 0x00002000,                     // area auras do not affect other players
+    UNIT_STAT_ATTACK_PLAYER       = 0x00004000,
+    UNIT_STAT_CASTING             = 0x00008000,
+    UNIT_STAT_POSSESSED           = 0x00010000,
+    UNIT_STAT_CHARGING            = 0x00020000,
+    UNIT_STAT_JUMPING             = 0x00040000,
+    UNIT_STAT_ONVEHICLE           = 0x00080000,
+    UNIT_STAT_MOVE                = 0x00100000,
+    UNIT_STAT_ROTATING            = 0x00200000,
+    UNIT_STAT_EVADE               = 0x00400000,
+    UNIT_STAT_TIMED_EVADE         = 0x00800000,
+    UNIT_STAT_IGNORE_PATHFINDING  = 0x08000000,
 
     UNIT_STAT_UNATTACKABLE    = (UNIT_STAT_IN_FLIGHT | UNIT_STAT_ONVEHICLE),
     UNIT_STAT_MOVING          = (UNIT_STAT_ROAMING | UNIT_STAT_CHASE),
@@ -730,7 +731,7 @@ enum SplineFlags
     SPLINEFLAG_UNKNOWN22      = 0x00200000,
     SPLINEFLAG_UNKNOWN23      = 0x00400000,
     SPLINEFLAG_TRANSPORT      = 0x00800000,
-    SPLINEFLAG_UNKNOWN25      = 0x01000000,
+    SPLINEFLAG_EXIT_VEHICLE   = 0x01000000,
     SPLINEFLAG_UNKNOWN26      = 0x02000000,
     SPLINEFLAG_UNKNOWN27      = 0x04000000,
     SPLINEFLAG_UNKNOWN28      = 0x08000000,
@@ -1086,8 +1087,6 @@ struct CharmInfo
         void ToggleCreatureAutocast(uint32 spellid, bool apply);
 
         CharmSpellEntry* GetCharmSpell(uint8 index) { return &(m_charmspells[index]); }
-
-        GlobalCooldownMgr& GetGlobalCooldownMgr() { return m_GlobalCooldownMgr; }
 
         void SetIsCommandAttack(bool val);
         bool IsCommandAttack();
@@ -1531,6 +1530,7 @@ class Unit : public WorldObject
         void SendMonsterStop(bool on_death = false);
         void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 Time, Player* player = NULL);
         void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 MoveFlags, uint32 time, float speedZ, Player *player = NULL);
+        void SendMonsterMoveExitVehicle(Position const* newPos);
         //void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint8 type, uint32 MovementFlags, uint32 Time, Player* player = NULL);
         void SendMonsterMoveTransport(Unit *vehicleOwner);
         void SendMonsterMoveWithSpeed(float x, float y, float z, uint32 transitTime = 0, Player* player = NULL);
@@ -2074,7 +2074,7 @@ class Unit : public WorldObject
         bool CheckPlayerCondition(Player* pPlayer);
         void EnterVehicle(Unit *base, int8 seatId = -1, AuraApplication const * aurApp = NULL) { EnterVehicle(base->GetVehicleKit(), seatId, aurApp); }
         void EnterVehicle(Vehicle *vehicle, int8 seatId = -1, AuraApplication const * aurApp = NULL);
-        void ExitVehicle();
+        void ExitVehicle(Position const* exitPosition = NULL);
         void ChangeSeat(int8 seatId, bool next = true);
 
         void BuildMovementPacket(ByteBuffer *data) const;
