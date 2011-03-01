@@ -1029,6 +1029,10 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
         {
             damageInfo->HitInfo |= SPELL_HIT_TYPE_CRIT;
             damage = SpellCriticalDamageBonus(spellInfo, damage, damageInfo->target);
+            int critPctDamageMod = 0; 
+            critPctDamageMod = GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_CRIT_DAMAGE_BONUS, damageInfo->schoolMask); 
+            if (critPctDamageMod != 0) 
+                AddPctN(damage, critPctDamageMod);
         }
         damageInfo->damage = damage;
         return;
@@ -1077,8 +1081,8 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
                     else
                     {
                         critPctDamageMod += pVictim->GetTotalAuraModifier(SPELL_AURA_MOD_ATTACKER_MELEE_CRIT_DAMAGE);
-                        critPctDamageMod += GetTotalAuraModifier(SPELL_AURA_MOD_CRIT_DAMAGE_BONUS_MELEE);
                     }
+					critPctDamageMod += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_CRIT_DAMAGE_BONUS, damageInfo->schoolMask);
                     // Increase crit damage from SPELL_AURA_MOD_CRIT_PERCENT_VERSUS
                     critPctDamageMod += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_CRIT_PERCENT_VERSUS, crTypeMask);
 
@@ -1113,6 +1117,10 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
                 {
                     damageInfo->HitInfo |= SPELL_HIT_TYPE_CRIT;
                     damage = SpellCriticalDamageBonus(spellInfo, damage, pVictim);
+                    int critPctDamageMod = 0; 
+                    critPctDamageMod = GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_CRIT_DAMAGE_BONUS, damageInfo->schoolMask); 
+                    if (critPctDamageMod != 0) 
+                        AddPctN(damage, critPctDamageMod);
                 }
 
                 ApplyResilience(pVictim, NULL, &damage, crit, CR_CRIT_TAKEN_SPELL);
@@ -1277,8 +1285,8 @@ void Unit::CalculateMeleeDamage(Unit *pVictim, uint32 damage, CalcDamageInfo *da
                 else
                 {
                     mod += damageInfo->target->GetTotalAuraModifier(SPELL_AURA_MOD_ATTACKER_MELEE_CRIT_DAMAGE);
-                    mod += GetTotalAuraModifier(SPELL_AURA_MOD_CRIT_DAMAGE_BONUS_MELEE);
                 }
+                mod += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_CRIT_DAMAGE_BONUS, damageInfo->damageSchoolMask);
 
                 uint32 crTypeMask = damageInfo->target->GetCreatureTypeMask();
 
