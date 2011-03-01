@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -39,7 +40,8 @@ enum Says
     EMOTE_PERMA                     = -1603268,
 };
 
-#define GOSSIP_ITEM_1 "Activate Harpoones!"
+#define GOSSIP_ITEM_1               "We are ready to fight!"
+#define GOSSIP_ITEM_1_RU            "Мы готовы к битве!"
 
 enum Spells
 {
@@ -64,7 +66,7 @@ const Position PosHarpoon[4] =
 {561.449f, -146.857f, 391.517f, 5.426f}
 };
 
-const Position PosEngSpawn = {591.951f, -95.968f, 391.517f, 0};
+const Position PosEngSpawn = {591.951f, -95.968f, 391.517f, 0.0f};
 
 const Position PosEngRepair[4] =
 {
@@ -76,10 +78,10 @@ const Position PosEngRepair[4] =
 
 const Position PosDefSpawn[4] =
 {
-{600.75f, -104.850f, 391.517f, 0},
-{596.38f, -110.262f, 391.517f, 0},
-{566.47f, -103.633f, 391.517f, 0},
-{570.41f, -108.791f, 391.517f, 0}
+{600.75f, -104.850f, 391.517f, 0.0f},
+{596.38f, -110.262f, 391.517f, 0.0f},
+{566.47f, -103.633f, 391.517f, 0.0f},
+{570.41f, -108.791f, 391.517f, 0.0f}
 };
 
 const Position PosDefCombat[4] =
@@ -95,7 +97,6 @@ const Position RazorGround = {586.966f, -175.534f, 391.517f, 1.692f};
 
 enum Mobs
 {
-    RAZORSCALE                      = 33186,// ?? why not use instance?
     NPC_DARK_RUNE_GUARDIAN          = 33388,
     NPC_DARK_RUNE_SENTINEL          = 33846,
     NPC_DARK_RUNE_WATCHER           = 33453,
@@ -164,12 +165,12 @@ public:
 
     struct boss_razorscaleAI : public BossAI
     {
-        boss_razorscaleAI(Creature *pCreature) : BossAI(pCreature, TYPE_RAZORSCALE), phase(PHASE_NULL)
+        boss_razorscaleAI(Creature *pCreature) : BossAI(pCreature, BOSS_RAZORSCALE), phase(PHASE_NULL)
         {
             // Do not let Razorscale be affected by Battle Shout buff
             me->ApplySpellImmune(0, IMMUNITY_ID, (SPELL_BATTLE_SHOUT), true);
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-            me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true);  // Death Grip
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
         }
 
         Phases phase;
@@ -404,9 +405,9 @@ public:
             switch(action)
             {
                 case ACTION_EVENT_START:
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
                     me->SetReactState(REACT_AGGRESSIVE);
-                    DoZoneInCombat();
+                    AggroAllPlayersInRange(200.0f);
                     break;
             }
         }
@@ -439,11 +440,11 @@ public:
     bool OnGossipHello(Player* pPlayer, Creature* pCreature)
     {
         InstanceScript* pInstance = pCreature->GetInstanceScript();
-        if (pInstance && pInstance->GetBossState(TYPE_RAZORSCALE) == NOT_STARTED && pPlayer)
+        if (pInstance && pInstance->GetBossState(BOSS_RAZORSCALE) == NOT_STARTED && pPlayer)
         {
             pPlayer->PrepareGossipMenu(pCreature);
 
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT,GOSSIP_ITEM_1,GOSSIP_SENDER_MAIN,GOSSIP_ACTION_INFO_DEF);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, (pPlayer->isRussianLocale()) ? GOSSIP_ITEM_1_RU:GOSSIP_ITEM_1,GOSSIP_SENDER_MAIN,GOSSIP_ACTION_INFO_DEF);
             pPlayer->SEND_GOSSIP_MENU(13853, pCreature->GetGUID());
         }
         else pPlayer->SEND_GOSSIP_MENU(13910, pCreature->GetGUID());
@@ -512,7 +513,7 @@ public:
                 switch(uiPhase)
                 {
                     case 1:
-                        pInstance->SetBossState(TYPE_RAZORSCALE, IN_PROGRESS);
+                        pInstance->SetBossState(BOSS_RAZORSCALE, IN_PROGRESS);
                         summons.DespawnAll();
                         uiTimer = 1000;
                         uiPhase = 2;
@@ -520,40 +521,45 @@ public:
                     case 2:
                         for (uint8 n = 0; n < RAID_MODE(2,4); ++n)
                         {
-                            engineer[n] = me->SummonCreature(NPC_ENGINEER, PosEngSpawn, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-                            engineer[n]->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
-                            engineer[n]->SetSpeed(MOVE_RUN, 0.5f);
-                            engineer[n]->SetHomePosition(PosEngRepair[n]);
-                            engineer[n]->GetMotionMaster()->MoveTargetedHome();
+                            if (engineer[n] = me->SummonCreature(NPC_ENGINEER, PosEngSpawn, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
+                            {
+                                engineer[n]->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
+                                engineer[n]->SetSpeed(MOVE_RUN, 0.5f);
+                                engineer[n]->SetHomePosition(PosEngRepair[n]);
+                                engineer[n]->GetMotionMaster()->MoveTargetedHome();
+                            }
                         }
-                        engineer[0]->MonsterYell(SAY_AGGRO_3, LANG_UNIVERSAL, 0);
+                        if (engineer[0]) engineer[0]->MonsterYell(SAY_AGGRO_3, LANG_UNIVERSAL, 0);
                         uiPhase = 3;
                         uiTimer = 14000;
                         break;
                     case 3:
                         for (uint8 n = 0; n < 4; ++n)
                         {
-                            defender[n] = me->SummonCreature(NPC_DEFENDER, PosDefSpawn[n], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-                            defender[n] ->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
-                            defender[n] ->SetHomePosition(PosDefCombat[n]);
-                            defender[n] ->GetMotionMaster()->MoveTargetedHome();
+                            if (defender[n] = me->SummonCreature(NPC_DEFENDER, PosDefSpawn[n], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
+                            {
+                                defender[n]->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
+                                defender[n]->SetHomePosition(PosDefCombat[n]);
+                                defender[n]->GetMotionMaster()->MoveTargetedHome();
+                                defender[n]->SetReactState(REACT_AGGRESSIVE);
+                            }
                         }
                         uiPhase = 4;
                         break;
                     case 4:
                         for (uint8 n = 0; n < RAID_MODE(2,4); ++n)
-                            engineer[n]->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_USESTANDING);
+                            if (engineer[n]) engineer[n]->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_USESTANDING);
                         for (uint8 n = 0; n < 4; ++n)
-                            defender[n]->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_READY2H);
+                            if (defender[n]) defender[n]->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_READY2H);
                         me->MonsterYell(SAY_AGGRO_2, LANG_UNIVERSAL, 0);
                         uiTimer = 16000;
                         uiPhase = 5;
                         break;
                     case 5:
-                        if (Creature *pRazorscale = me->GetCreature(*me, pInstance->GetData64(TYPE_RAZORSCALE)))
-                            pRazorscale->AI()->DoAction(ACTION_EVENT_START);
-                        engineer[0]->MonsterYell(SAY_AGGRO_1, LANG_UNIVERSAL, 0);
-                        uiPhase = 6;
+                        if (Creature *pRazorscale = me->GetCreature(*me, pInstance->GetData64(DATA_RAZORSCALE)))
+                            if (pRazorscale->AI()) pRazorscale->AI()->DoAction(ACTION_EVENT_START);
+                        if (engineer[0]) engineer[0]->MonsterYell(SAY_AGGRO_1, LANG_UNIVERSAL, 0);
+                        uiPhase = 0;
                         break;
                 }
             }
@@ -578,7 +584,7 @@ public:
     {
         npc_mole_machine_triggerAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
         {
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED | UNIT_FLAG_DISABLE_MOVE);   //Q: to DB?
             me->SetVisible(false);
         }
 
@@ -588,7 +594,7 @@ public:
         void Reset()
         {
             MoleMachine = me->SummonGameObject(GOB_MOLE_MACHINE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(),
-                float(urand(0, 6)), 0, 0, 0, 0, 300);
+                float(urand(0, 6)), 0.0f, 0.0f, 0.0f, 0.0f, 300);
             if (MoleMachine)
                 MoleMachine->SetGoState(GO_STATE_ACTIVE);
             SummonTimer = 6000;
@@ -596,9 +602,6 @@ public:
 
         void UpdateAI(const uint32 uiDiff)
         {
-            if (!UpdateVictim())
-                return;
-
             if (SummonTimer <= uiDiff)
             {
                 float x = me->GetPositionX();
@@ -622,7 +625,7 @@ public:
 
         void JustSummoned(Creature *summon)
         {
-            summon->AI()->DoZoneInCombat();
+            if (summon->AI()) summon->AI()->DoZoneInCombat();
         }
     };
 
@@ -668,12 +671,7 @@ public:
 
     struct npc_darkrune_watcherAI : public ScriptedAI
     {
-        npc_darkrune_watcherAI(Creature *pCreature) : ScriptedAI(pCreature)
-        {
-            pInstance = pCreature->GetInstanceScript();
-        }
-
-        InstanceScript *pInstance;
+        npc_darkrune_watcherAI(Creature *pCreature) : ScriptedAI(pCreature){}
 
         uint32 ChainTimer;
         uint32 LightTimer;
@@ -722,12 +720,7 @@ public:
 
     struct npc_darkrune_guardianAI : public ScriptedAI
     {
-        npc_darkrune_guardianAI(Creature *pCreature) : ScriptedAI(pCreature)
-        {
-            pInstance = pCreature->GetInstanceScript();
-        }
-
-        InstanceScript *pInstance;
+        npc_darkrune_guardianAI(Creature *pCreature) : ScriptedAI(pCreature){}
 
         uint32 StormTimer;
 
@@ -767,12 +760,7 @@ public:
 
     struct npc_darkrune_sentinelAI : public ScriptedAI
     {
-        npc_darkrune_sentinelAI(Creature *pCreature) : ScriptedAI(pCreature)
-        {
-            pInstance = pCreature->GetInstanceScript();
-        }
-
-        InstanceScript *pInstance;
+        npc_darkrune_sentinelAI(Creature *pCreature) : ScriptedAI(pCreature){}
 
         uint32 HeroicTimer;
         uint32 WhirlTimer;

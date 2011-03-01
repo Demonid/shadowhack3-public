@@ -40,7 +40,9 @@ EndContentData */
 #define ITEM_ENTRY_BOMBS        25853
 
 #define GOSSIP_HELLO_EROZION1   "I need a pack of Incendiary Bombs."
+#define GOSSIP_HELLO_EROZION1_RU "Мне нужна упаковка зажигательных бомб."
 #define GOSSIP_HELLO_EROZION2   "[PH] Teleport please, i'm tired."
+#define GOSSIP_HELLO_EROZION2_RU "[PH] Телепортируй, пожалуйста, все ноги стёрты уже."
 
 /*######
 ## npc_erozion
@@ -78,10 +80,10 @@ public:
 
         InstanceScript* pInstance = pCreature->GetInstanceScript();
         if (pInstance && pInstance->GetData(TYPE_BARREL_DIVERSION) != DONE && !pPlayer->HasItemCount(ITEM_ENTRY_BOMBS,1))
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HELLO_EROZION1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, (pPlayer->isRussianLocale()) ? GOSSIP_HELLO_EROZION1_RU:GOSSIP_HELLO_EROZION1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
-        if (pPlayer->GetQuestStatus(QUEST_ENTRY_RETURN) == QUEST_STATUS_COMPLETE)
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HELLO_EROZION2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+        if (pPlayer->GetQuestStatus(QUEST_ENTRY_RETURN) == QUEST_STATUS_COMPLETE && !pPlayer->GetQuestRewardStatus(QUEST_ENTRY_RETURN))
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, (pPlayer->isRussianLocale()) ? GOSSIP_HELLO_EROZION2_RU:GOSSIP_HELLO_EROZION2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
 
         pPlayer->SEND_GOSSIP_MENU(9778, pCreature->GetGUID());
 
@@ -178,16 +180,20 @@ public:
 #define GOSSIP_ID_START         9568
 #define GOSSIP_ID_SKARLOC1      9614                        //I'm glad Taretha is alive. We now must find a way to free her...
 #define GOSSIP_ITEM_SKARLOC1    "Taretha cannot see you, Thrall."
+#define GOSSIP_ITEM_SKARLOC1_RU "Тарета не может встретиться с тобой, Тралл."
 #define GOSSIP_ID_SKARLOC2      9579                        //What do you mean by this? Is Taretha in danger?
 #define GOSSIP_ITEM_SKARLOC2    "The situation is rather complicated, Thrall. It would be best for you to head into the mountains now, before more of Blackmoore's men show up. We'll make sure Taretha is safe."
+#define GOSSIP_ITEM_SKARLOC2_RU "Всё несколько запутано, Тралл. Давай лучше отправимся в горы, пока не подтянулись новые люди Блэкмора, и убедимся, что Тарета в безопасности."
 #define GOSSIP_ID_SKARLOC3      9580
 
 #define GOSSIP_ID_TARREN        9597                        //tarren mill is beyond these trees
 #define GOSSIP_ITEM_TARREN      "We're ready, Thrall."
+#define GOSSIP_ITEM_TARREN_RU   "Мы готовы, Тралл."
 
 #define GOSSIP_ID_COMPLETE      9578                        //Thank you friends, I owe my freedom to you. Where is Taretha? I hoped to see her
 
 #define GOSSIP_ITEM_WALKING     "[PH] Start walking."
+#define GOSSIP_ITEM_WALKING_RU  "[PH] Начать движение."
 
 class npc_thrall_old_hillsbrad : public CreatureScript
 {
@@ -224,7 +230,7 @@ public:
                 break;
 
             case GOSSIP_ACTION_INFO_DEF+2:
-                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_SKARLOC2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+20);
+                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, (pPlayer->isRussianLocale()) ? GOSSIP_ITEM_SKARLOC2_RU:GOSSIP_ITEM_SKARLOC2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+20);
                 pPlayer->SEND_GOSSIP_MENU(GOSSIP_ID_SKARLOC2, pCreature->GetGUID());
                 break;
 
@@ -262,19 +268,19 @@ public:
         {
             if (pInstance->GetData(TYPE_BARREL_DIVERSION) == DONE && !pInstance->GetData(TYPE_THRALL_EVENT))
             {
-                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_WALKING, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, (pPlayer->isRussianLocale()) ? GOSSIP_ITEM_WALKING_RU:GOSSIP_ITEM_WALKING, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
                 pPlayer->SEND_GOSSIP_MENU(GOSSIP_ID_START, pCreature->GetGUID());
             }
 
             if (pInstance->GetData(TYPE_THRALL_PART1) == DONE && !pInstance->GetData(TYPE_THRALL_PART2))
             {
-                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_SKARLOC1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, (pPlayer->isRussianLocale()) ? GOSSIP_ITEM_SKARLOC1_RU:GOSSIP_ITEM_SKARLOC1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
                 pPlayer->SEND_GOSSIP_MENU(GOSSIP_ID_SKARLOC1, pCreature->GetGUID());
             }
 
             if (pInstance->GetData(TYPE_THRALL_PART2) == DONE && !pInstance->GetData(TYPE_THRALL_PART3))
             {
-                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_TARREN, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
+                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, (pPlayer->isRussianLocale()) ? GOSSIP_ITEM_TARREN_RU:GOSSIP_ITEM_TARREN, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
                 pPlayer->SEND_GOSSIP_MENU(GOSSIP_ID_TARREN, pCreature->GetGUID());
             }
         }
@@ -572,8 +578,10 @@ public:
 
 #define GOSSIP_ID_EPOCH1        9610                        //Thank you for helping Thrall escape, friends. Now I only hope
 #define GOSSIP_ITEM_EPOCH1      "Strange wizard?"
+#define GOSSIP_ITEM_EPOCH1_RU   "Странный колдун?"
 #define GOSSIP_ID_EPOCH2        9613                        //Yes, friends. This man was no wizard of
 #define GOSSIP_ITEM_EPOCH2      "We'll get you out. Taretha. Don't worry. I doubt the wizard would wander too far away."
+#define GOSSIP_ITEM_EPOCH2_RU   "Мы вытащим тебя отсюда, Тарета. Не волнуйся. Я не думаю, что колдун ушел куда-то далеко."
 
 class npc_taretha : public CreatureScript
 {
@@ -591,7 +599,7 @@ public:
         InstanceScript* pInstance = pCreature->GetInstanceScript();
         if (uiAction == GOSSIP_ACTION_INFO_DEF+1)
         {
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_EPOCH2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, (pPlayer->isRussianLocale()) ? GOSSIP_ITEM_EPOCH2_RU:GOSSIP_ITEM_EPOCH2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
             pPlayer->SEND_GOSSIP_MENU(GOSSIP_ID_EPOCH2, pCreature->GetGUID());
         }
         if (uiAction == GOSSIP_ACTION_INFO_DEF+2)
@@ -607,7 +615,7 @@ public:
                  if (uint64 ThrallGUID = pInstance->GetData64(DATA_THRALL))
                  {
                      Creature* Thrall = (Unit::GetCreature((*pCreature), ThrallGUID));
-                     if (Thrall)
+                     if (Thrall && Thrall->AI())
                          CAST_AI(npc_thrall_old_hillsbrad::npc_thrall_old_hillsbradAI, Thrall->AI())->StartWP();
                  }
             }
@@ -620,7 +628,7 @@ public:
         InstanceScript* pInstance = pCreature->GetInstanceScript();
         if (pInstance && pInstance->GetData(TYPE_THRALL_PART3) == DONE && pInstance->GetData(TYPE_THRALL_PART4) == NOT_STARTED)
         {
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_EPOCH1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, (pPlayer->isRussianLocale()) ? GOSSIP_ITEM_EPOCH1_RU:GOSSIP_ITEM_EPOCH1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
             pPlayer->SEND_GOSSIP_MENU(GOSSIP_ID_EPOCH1, pCreature->GetGUID());
         }
         return true;

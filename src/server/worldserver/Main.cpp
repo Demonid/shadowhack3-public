@@ -37,8 +37,8 @@
 
 #ifdef _WIN32
 #include "ServiceWin32.h"
-char serviceName[] = "TrinityCore";
-char serviceLongName[] = "Trinity core service";
+char serviceName[] = "Izb00shkaCore";
+char serviceLongName[] = "Izb00shka core service";
 char serviceDescription[] = "Massive Network Game Object Server";
 /*
  * -1 - not in service mode

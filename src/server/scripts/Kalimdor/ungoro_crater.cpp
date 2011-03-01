@@ -34,7 +34,7 @@ EndContentData */
 
 enum eAMeData
 {
-    SAY_READY               = -1000517,
+    SAY_READY               = -1000517, //DB: old were at -1000200
     SAY_AGGRO1              = -1000518,
     SAY_SEARCH              = -1000519,
     SAY_AGGRO2              = -1000520,
@@ -117,7 +117,7 @@ public:
 
         void JustSummoned(Creature* summoned)
         {
-            summoned->AI()->AttackStart(me);
+            if (summoned->AI()) summoned->AI()->AttackStart(me);
         }
 
         void JustDied(Unit* /*killer*/)

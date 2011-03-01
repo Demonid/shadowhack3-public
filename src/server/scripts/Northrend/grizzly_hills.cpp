@@ -174,6 +174,7 @@ public:
 
         void JustSummoned(Creature* pSummoned)
         {
+            if (!pSummoned->AI()) return;
             if (Creature* Mrfloppy = GetClosestCreatureWithEntry(me, NPC_MRFLOPPY, 50.0f))
                 pSummoned->AI()->AttackStart(Mrfloppy);
             else
@@ -517,7 +518,7 @@ public:
 
         void UpdateAI(const uint32 uiDiff)
         {
-            // call this each update tick?
+            // call this each update tick? //Q: do smth with it
             if (me->FindNearestCreature(TALLHORN_STAG, 0.2f))
             {
                 me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_USESTANDING);
@@ -677,7 +678,7 @@ public:
 
         void JustDied(Unit * pKiller)
         {
-            if (pKiller->ToPlayer() && pKiller->ToPlayer()->GetTypeId() == TYPEID_PLAYER)
+            if (pKiller && pKiller->ToPlayer())
             {
                 if (me->FindNearestCreature(NPC_WAR_GOLEM, 10.0f, true))
                 {

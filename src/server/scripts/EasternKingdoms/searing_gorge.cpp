@@ -32,10 +32,10 @@ EndContentData */
 #include "ScriptPCH.h"
 
 /*######
-## npc_kalaran_windblade
+## npc_kalaran_windblade    //Q: move to DB entirely?
 ######*/
 
-#define GOSSIP_HELLO_KW    "Tell me what drives this vengance?"
+#define GOSSIP_HELLO_KW    "Tell me what drives this vengeance?"
 #define GOSSIP_SELECT_KW1  "Continue please"
 #define GOSSIP_SELECT_KW2  "Let me confer with my colleagues"
 
@@ -82,7 +82,7 @@ public:
 
 
 /*######
-## npc_lothos_riftwaker
+## npc_lothos_riftwaker     //Q: move to DB entirely?
 ######*/
 
 #define GOSSIP_HELLO_LR "Teleport me to the Molten Core"
@@ -98,7 +98,7 @@ public:
         if (uiAction == GOSSIP_ACTION_INFO_DEF + 1)
         {
             pPlayer->CLOSE_GOSSIP_MENU();
-            pPlayer->TeleportTo(409, 1096, -467, -104.6f, 3.64f);
+            pPlayer->TeleportTo(409, 1096.f, -467.f, -104.6f, 3.64f);
         }
 
         return true;
@@ -121,7 +121,7 @@ public:
 
 
 /*######
-## npc_zamael_lunthistle
+## npc_zamael_lunthistle    //Q: move to DB entirely?
 ######*/
 
 #define GOSSIP_HELLO_ZL     "Tell me your story"

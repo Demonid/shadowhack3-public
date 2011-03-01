@@ -186,7 +186,7 @@ public:
         {
             bJustReset = true;
             me->SetVisible(false);
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE + UNIT_FLAG_NOT_SELECTABLE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             ScriptedAI::EnterEvadeMode();
         }
 
@@ -211,7 +211,7 @@ public:
             {
                 if (!TalkSequence)
                 {
-                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE + UNIT_FLAG_NOT_SELECTABLE);
+                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                     me->InterruptNonMeleeSpells(true);
                     me->RemoveAllAuras();
                     me->DeleteThreatList();
@@ -233,7 +233,7 @@ public:
                 {
                     if (ResetTimer <= diff)
                     {
-                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
+                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                         me->RemoveUnitMovementFlag(MOVEMENTFLAG_LEVITATING);
                         me->SetVisible(true);
                         me->SetStandState(UNIT_STAND_STATE_SLEEP);
@@ -249,13 +249,13 @@ public:
                 {
                     if (me->GetDistance(CENTER_X, CENTER_Y, DRAGON_REALM_Z) >= 75)
                     {
-                        me->AI()->EnterEvadeMode();
+                        EnterEvadeMode();
                         return;
                     }
                     if (HealthBelowPct(10) && !isEnraged)
                     {
                         if (Creature* Sath = Unit::GetCreature(*me, SathGUID))
-                            Sath->AI()->DoAction(DO_ENRAGE);
+                            if (Sath->AI()) Sath->AI()->DoAction(DO_ENRAGE);
                         DoAction(DO_ENRAGE);
                     }
                     if (!isBanished && HealthBelowPct(1))
@@ -322,7 +322,7 @@ public:
                     {
                         (*i)->CastSpell((*i), SPELL_SPECTRAL_BLAST,true);
                         SpectralBlastTimer = 20000+rand()%5000;
-                    } else SpectralBlastTimer = 1000;
+                    } else SpectralBlastTimer = 1000;   //Q: targetList.clear() ?
                 } else SpectralBlastTimer -= diff;
 
                 DoMeleeAttackIfReady();
@@ -652,8 +652,11 @@ public:
                 TeleportAllPlayersBack();
                 if (Creature *Kalecgos = Unit::GetCreature(*me, KalecgosGUID))
                 {
-                    CAST_AI(boss_kalecgos::boss_kalecgosAI, Kalecgos->AI())->TalkTimer = 1;
-                    CAST_AI(boss_kalecgos::boss_kalecgosAI, Kalecgos->AI())->isFriendly = false;
+                    if (Kalecgos->AI())
+                    {
+                        CAST_AI(boss_kalecgos::boss_kalecgosAI, Kalecgos->AI())->TalkTimer = 1;
+                        CAST_AI(boss_kalecgos::boss_kalecgosAI, Kalecgos->AI())->isFriendly = false;
+                    }
                 }
                 EnterEvadeMode();
                 return;
@@ -668,8 +671,11 @@ public:
             TeleportAllPlayersBack();
             if (Creature *Kalecgos = Unit::GetCreature(*me, KalecgosGUID))
             {
-                CAST_AI(boss_kalecgos::boss_kalecgosAI, Kalecgos->AI())->TalkTimer = 1;
-                CAST_AI(boss_kalecgos::boss_kalecgosAI, Kalecgos->AI())->isFriendly = true;
+                if (Kalecgos->AI())
+                {
+                    CAST_AI(boss_kalecgos::boss_kalecgosAI, Kalecgos->AI())->TalkTimer = 1;
+                    CAST_AI(boss_kalecgos::boss_kalecgosAI, Kalecgos->AI())->isFriendly = true;
+                }
             }
 
             if (pInstance)
@@ -719,13 +725,13 @@ public:
                 if (!Kalec || (Kalec && !Kalec->isAlive()))
                 {
                     if (Creature *Kalecgos = Unit::GetCreature(*me, KalecgosGUID))
-                        Kalecgos->AI()->EnterEvadeMode();
+                        if (Kalecgos->AI()) Kalecgos->AI()->EnterEvadeMode();
                         return;
                 }
                 if (HealthBelowPct(10) && !isEnraged)
                 {
                     if (Creature* Kalecgos = Unit::GetCreature(*me, KalecgosGUID))
-                        Kalecgos->AI()->DoAction(DO_ENRAGE);
+                        if (Kalecgos->AI()) Kalecgos->AI()->DoAction(DO_ENRAGE);
                     DoAction(DO_ENRAGE);
                 }
                 Creature *Kalecgos = Unit::GetCreature(*me, KalecgosGUID);
@@ -733,7 +739,7 @@ public:
                 {
                     if (!Kalecgos->isInCombat())
                     {
-                        me->AI()->EnterEvadeMode();
+                        EnterEvadeMode();
                         return;
                     }
                 }
