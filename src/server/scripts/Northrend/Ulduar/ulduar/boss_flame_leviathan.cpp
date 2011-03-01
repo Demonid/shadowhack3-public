@@ -429,7 +429,7 @@ public:
             switch (pSpell->Id)
             {
             case SPELL_START_THE_ENGINE:
-                vehicle->InstallAllAccessories(me->GetEntry());
+                vehicle->InstallAllAccessories();
                 break;
             case SPELL_ELECTROSHOCK:
                 me->InterruptSpell(CURRENT_CHANNELED_SPELL);
