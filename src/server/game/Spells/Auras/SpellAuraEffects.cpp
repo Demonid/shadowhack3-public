@@ -217,7 +217,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNoImmediateEffect,                         //160 SPELL_AURA_MOD_AOE_AVOIDANCE                 implemented in Unit::MagicSpellHitResult
     &AuraEffect::HandleNoImmediateEffect,                         //161 SPELL_AURA_MOD_HEALTH_REGEN_IN_COMBAT
     &AuraEffect::HandleNoImmediateEffect,                         //162 SPELL_AURA_POWER_BURN_MANA implemented in AuraEffect::PeriodicTick
-    &AuraEffect::HandleNoImmediateEffect,                         //163 SPELL_AURA_MOD_CRIT_DAMAGE_BONUS_MELEE
+    &AuraEffect::HandleNoImmediateEffect,                         //163 SPELL_AURA_MOD_CRIT_DAMAGE_BONUS
     &AuraEffect::HandleUnused,                                    //164 unused (3.2.0), only one test spell
     &AuraEffect::HandleNoImmediateEffect,                         //165 SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS implemented in Unit::MeleeDamageBonus
     &AuraEffect::HandleAuraModAttackPowerPercent,                 //166 SPELL_AURA_MOD_ATTACK_POWER_PCT
@@ -779,8 +779,8 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
                 ApplyPctU(amount, GetBase()->GetUnitOwner()->GetMaxPower(GetBase()->GetUnitOwner()->getPowerType()));
             break;
         case SPELL_AURA_MOD_INCREASE_SPEED:
-            // Dash - do not set speed if not in cat form
-            if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_DRUID && GetSpellProto()->SpellFamilyFlags[2] & 0x00000008)
+            // Dash, Feral Swiftness - do not set speed if not in cat form
+            if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_DRUID && GetSpellProto()->SpellFamilyFlags[2] & 0x00000008 || GetSpellProto()->Id == 17002 || GetSpellProto()->Id == 24866)
                 amount = GetBase()->GetUnitOwner()->GetShapeshiftForm() == FORM_CAT ? amount : 0;
             break;
         default:
