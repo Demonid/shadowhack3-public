@@ -337,6 +337,7 @@ void MotionMaster::MoveJump(float x, float y, float z, float speedXY, float spee
     if (i_owner->GetTypeId() == TYPEID_PLAYER)
     {
         sLog->outStaticDebug("Player (GUID: %u) jump to point (X: %f Y: %f Z: %f)", i_owner->GetGUIDLow(), x, y, z);
+        i_owner->ToPlayer()->addAnticheatTemporaryImmunity(time);
         Mutate(new PointMovementGenerator<Player>(0, x, y, z, false, true), MOTION_SLOT_CONTROLLED);
     }
     else
@@ -362,7 +363,6 @@ MotionMaster::MoveCharge(float x, float y, float z, float speed, uint32 id, bool
     {
         sLog->outStaticDebug("Player (GUID: %u) charge point (X: %f Y: %f Z: %f)", i_owner->GetGUIDLow(), x, y, z);
         Mutate(new ChargeMovementGenerator<Player>(id, x, y, z, straightPath, target, chargeSpell), MOTION_SLOT_CONTROLLED);
-        i_owner->ToPlayer()->setJustChangedSpeed();
     }
     else
     {

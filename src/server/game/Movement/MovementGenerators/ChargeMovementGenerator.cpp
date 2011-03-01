@@ -43,6 +43,9 @@ void ChargeMovementGenerator<T>::_setTargetPosition(T &unit)
     float speed = traveller.Speed() * 0.001f; // in ms
     uint32 transitTime = uint32(i_path.GetTotalLength() / speed);
     unit.MonsterMoveByPath(i_path, 1, i_path.size(), transitTime);
+
+    if (unit.GetTypeId() == TYPEID_PLAYER)
+        unit.ToPlayer()->addAnticheatTemporaryImmunity(transitTime);
 }
 
 template<class T>
@@ -135,8 +138,6 @@ bool ChargeMovementGenerator<T>::Update(T &unit, const uint32 &diff)
         {
             unit.ClearUnitState(UNIT_STAT_MOVE);
             arrived = true;
-            if (unit.GetTypeId() == TYPEID_PLAYER)
-                unit.ToPlayer()->setJustChangedSpeed();
             return false;
         }
 
@@ -149,6 +150,9 @@ template<class T>
 void ChargeMovementGenerator<T>:: Finalize(T &unit)
 {
     unit.ClearUnitState(UNIT_STAT_CHARGING | UNIT_STAT_JUMPING);
+
+    if (unit.GetTypeId() == TYPEID_PLAYER)
+        unit.ToPlayer()->resetAnticheatTemporaryImmunity();
 
     if (arrived) // without this crash!
     {

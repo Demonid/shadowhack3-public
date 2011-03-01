@@ -3851,7 +3851,7 @@ void Unit::RemoveAurasByType(AuraType auraType, uint64 casterGUID, Aura * except
                 iter = m_modAuras[auraType].begin();
 
             if (auraType == SPELL_AURA_MOUNTED && GetTypeId() == TYPEID_PLAYER)
-                ToPlayer()->setJustChangedSpeed();
+                ToPlayer()->addAnticheatTemporaryImmunity(250);
         }
     }
 }
@@ -12436,7 +12436,7 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
     }
 
     if (GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->setJustChangedSpeed();
+        ToPlayer()->addAnticheatTemporaryImmunity();
 }
 
 void Unit::SetHover(bool on)
@@ -16228,7 +16228,7 @@ void Unit::KnockbackFrom(float x, float y, float speedXY, float speedZ)
         data << float(-speedZ);                                 // Z Movement speed (vertical)
 
         player->GetSession()->SendPacket(&data);
-        player->setJustChangedSpeed();
+        player->addAnticheatTemporaryImmunity(speedZ * 100);
     }
 }
 
