@@ -2404,7 +2404,8 @@ class Player : public Unit, public GridObject<Player>
         float GetAverageItemLevel();
         bool isDebugAreaTriggers;
 
-        void setJustChangedSpeed() {m_anti_JustChangedSpeed++;}
+        void addAnticheatTemporaryImmunity(uint32 time_ms = 100) {m_anti_temporaryImmunity = getMSTime() + time_ms;}
+        void resetAnticheatTemporaryImmunity() {m_anti_temporaryImmunity = 0;}
 
     protected:
         uint32 m_AreaID;
@@ -2647,7 +2648,7 @@ class Player : public Unit, public GridObject<Player>
         uint64 m_anti_AlarmCount;         //alarm counter
 
         uint32 m_anti_JustJumped;         //Jump already began, anti air jump check
-		uint64 m_anti_JustChangedSpeed;   //Speed changed
+		uint32 m_anti_temporaryImmunity;  //Speed changed
         float  m_anti_JumpBaseZ;          //Z coord before jump
         // << movement anticheat
 
