@@ -2977,6 +2977,9 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
             // Unstable Affliction
             else if (spellproto->Id == 31117)
                 return DIMINISHING_LIMITONLY;
+            // Inferno Summon stun
+            else if (spellproto->Id == 22703)
+                return DIMINISHING_NONE;
             break;
         }
         case SPELLFAMILY_DRUID:
@@ -4076,6 +4079,14 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetB[1] = 16;
             count++;
             break;
+        case 66:        // Invisibility
+            spellInfo->EffectAmplitude[1] = 333;
+            break;
+        case 29444:     // Magic Absorption
+        case 29441:
+            spellInfo->spellLevel = 0;
+            count++;
+            break;
         case 30451:     // Arcane Blast
         case 42894:
         case 42896:
@@ -4502,6 +4513,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 // Roar
                 else if (spellInfo->SpellFamilyFlags[0] & 0x8)
                     mSpellCustomAttr[i] |= SPELL_ATTR0_CU_AURA_CC;
+                // Entangling Roots
+                else if (spellInfo->SpellFamilyFlags[0] & 0x200)
+                    spellInfo->CastingTimeIndex = 1;
                 else
                     break;
                 count++;
