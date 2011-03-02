@@ -379,7 +379,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     /*----------------------*/
         //---- anti-cheat features -->>>
     bool check_passed = true;
-#ifdef MOVEMENT_ANTICHEAT_DEBUG_FULL
+    #ifdef MOVEMENT_ANTICHEAT_DEBUG_FULL
     if (plMover){
         sLog->outBasic("IAC-%s > client-time:%d fall-time:%d | xyzo: %f,%f,%fo(%f) flags[%X] opcode[%s]| transport (xyzo): %f,%f,%fo(%f)",
             plMover->GetName(),movementInfo.time,movementInfo.fallTime,movementInfo.x,movementInfo.y,movementInfo.z,movementInfo.o,
@@ -570,15 +570,19 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                 || plMover->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS) || ( vehicleIsCreature && vehicleCanFly ));
 
             //AntiGravitation
-            float JumpHeight = plMover->m_anti_JumpBaseZ - movementInfo.pos.m_positionZ;
-            if ( (plMover->m_anti_JumpBaseZ != 0 )
-                    && !(movementInfo.flags & (MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_FLYING))
-                    && (JumpHeight < plMover->m_anti_Last_VSpeed))
+            if (plMover->m_anti_JumpBaseZ != 0)
             {
-                #ifdef MOVEMENT_ANTICHEAT_ALARM_LOG
-                    sLog->outCheater("IAC-%s, GraviJump exception. ", plMover->GetName());
-                #endif
-                check_passed = false;
+                float JumpHeight = plMover->m_anti_JumpBaseZ - movementInfo.pos.m_positionZ;
+                if ( !(movementInfo.flags & (MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_FLYING)) && (JumpHeight < plMover->m_anti_Last_VSpeed))
+                {
+                    if (immunityTime < cServerTime)
+                    {
+                        #ifdef MOVEMENT_ANTICHEAT_ALARM_LOG
+                        sLog->outCheater("IAC-%s, GraviJump exception. ", plMover->GetName());
+                        #endif
+                        check_passed = false;
+                    }
+                }
             }
  
             //multi jump checks
