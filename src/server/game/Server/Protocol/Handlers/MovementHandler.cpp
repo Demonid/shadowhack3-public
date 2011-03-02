@@ -437,8 +437,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
         #endif
 
         //mistiming checks
-        int32 gmd = World::GetMistimingDelta();
-        uint32 immunityTime = plMover->m_anti_temporaryImmunity + gmd;
+        const int32 gmd = World::GetMistimingDelta();
 
         if (sync_time > gmd || sync_time < -gmd)
         {
@@ -565,9 +564,13 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             }
             // end calculating section ---------------------
 
-            bool flying_allowed = (plMover->HasAuraType(SPELL_AURA_FLY) || plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED)
+            const bool flying_allowed = (plMover->HasAuraType(SPELL_AURA_FLY) || plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED)
                 || plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) || plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED)
                 || plMover->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS) || ( vehicleIsCreature && vehicleCanFly ));
+
+            const uint32 immunityTime = plMover->m_anti_temporaryImmunity + gmd;
+
+            const bool hasTimedImmunity = immunityTime >= cServerTime;
 
             //AntiGravitation
             if (plMover->m_anti_JumpBaseZ != 0)
@@ -575,7 +578,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                 float JumpHeight = plMover->m_anti_JumpBaseZ - movementInfo.pos.m_positionZ;
                 if ( !(movementInfo.flags & (MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_FLYING)) && (JumpHeight < plMover->m_anti_Last_VSpeed))
                 {
-                    if (immunityTime < cServerTime)
+                    if (!hasTimedImmunity)
                     {
                         #ifdef MOVEMENT_ANTICHEAT_ALARM_LOG
                         sLog->outCheater("IAC-%s, GraviJump exception. ", plMover->GetName());
@@ -606,7 +609,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             //speed hack checks
             if ( (real_delta > allowed_delta && real_delta < 4900.0f) && (delta_z < (plMover->m_anti_Last_VSpeed * time_delta) || delta_z < 1) )
             {
-                if (immunityTime < cServerTime)
+                if (!hasTimedImmunity)
                 {
                     #ifdef MOVEMENT_ANTICHEAT_ALARM_LOG
                     sLog->outCheater("IAC-%s, speed exception | cDelta = %f aDelta = %f | cSpeed = %f lSpeed = %f deltaTime = %f",
@@ -629,7 +632,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             //climb mountain hack checks // 1.56f (delta_z < GetPlayer()->m_anti_Last_VSpeed))
             if ((delta_z < plMover->m_anti_Last_VSpeed) && (plMover->m_anti_JustJumped == 0) && (tg_z > 2.37f) && ((movementInfo.flags & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING)) == 0) )
             {
-                if (immunityTime < cServerTime)
+                if (!hasTimedImmunity)
                 {
                     #ifdef MOVEMENT_ANTICHEAT_ALARM_LOG
                         sLog->outCheater("IAC-%s, mountain exception | tg_z = %f", plMover->GetName(), tg_z);
@@ -644,7 +647,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                   && !(movementInfo.flags & (MOVEMENTFLAG_SWIMMING)) // allow X button in water
                   && !flying_allowed)
             {
-                if (immunityTime < cServerTime)
+                if (!hasTimedImmunity)
                 {
                     #ifdef MOVEMENT_ANTICHEAT_ALARM_LOG
                         sLog->outCheater("IAC-%s, flight exception.", plMover->GetName());
