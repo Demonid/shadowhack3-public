@@ -1021,6 +1021,11 @@ void Spell::AddUnitTarget(Unit* pVictim, uint32 effIndex)
         if (m_delayMoment == 0 || m_delayMoment>target.timeDelay)
             m_delayMoment = target.timeDelay;
     }
+    else if(m_caster->GetTypeId() == TYPEID_PLAYER && m_caster != pVictim && IsCCSpell(m_spellInfo))
+    {
+        target.timeDelay = 100LL;
+        m_delayMoment = 100LL;
+    }
     else
         target.timeDelay = 0LL;
 
