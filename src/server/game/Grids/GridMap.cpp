@@ -27,13 +27,10 @@
 #include "GridMap.h"
 #include "VMapFactory.h"
 #include "World.h"
-
 char const* MAP_MAGIC         = "MAPS";
-char const* MAP_VERSION_MAGIC = "v1.2";
 char const* MAP_AREA_MAGIC    = "AREA";
 char const* MAP_HEIGHT_MAGIC  = "MHGT";
 char const* MAP_LIQUID_MAGIC  = "MLIQ";
-
 GridMap::GridMap()
 {
     m_flags = 0;
@@ -77,7 +74,7 @@ bool GridMap::loadData(char *filename)
 
     fread(&header, sizeof(header),1,in);
     if (header.mapMagic     == *((uint32 const*)(MAP_MAGIC)) &&
-        header.versionMagic == *((uint32 const*)(MAP_VERSION_MAGIC)))
+        header.versionMagic == *((uint32 const*)(sWorld->MAP_VERSION_MAGIC)))
     {
         // loadup area data
         if (header.areaMapOffset && !loadAreaData(in, header.areaMapOffset, header.areaMapSize))
@@ -581,7 +578,7 @@ bool GridMap::ExistMap(uint32 mapid, int gx, int gy)
     GridMapFileHeader header;
     fread(&header, sizeof(header), 1, pf);
     if (header.mapMagic     != *((uint32 const*)(MAP_MAGIC)) ||
-        header.versionMagic != *((uint32 const*)(MAP_VERSION_MAGIC)))
+        header.versionMagic != *((uint32 const*)(sWorld->MAP_VERSION_MAGIC)))
     {
         sLog->outError("Map file '%s' is non-compatible version (outdated?). Please, create new using ad.exe program.", tmp);
         delete [] tmp;
