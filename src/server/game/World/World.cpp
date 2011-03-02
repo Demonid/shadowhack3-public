@@ -1397,9 +1397,6 @@ void World::SetInitialWorldSettings()
     sLog->outString("Loading Aggro Spells Definitions...");
     sSpellMgr->LoadSpellThreats();
 
-    sLog->outString("Loading Spell Group Stack Rules...");
-    sSpellMgr->LoadSpellGroupStackRules();
-
     sLog->outString("Loading NPC Texts...");
     sObjectMgr->LoadGossipText();
 

@@ -577,6 +577,8 @@ SpellSpecific GetSpellSpecific(SpellEntry const * spellInfo)
                 else if (drink)
                     return SPELL_SPECIFIC_DRINK;
             }
+            else if ((spellInfo->AttributesEx2 & SPELL_ATTR2_FOOD_BUFF) || spellInfo->SpellIconID == 2560)
+                return SPELL_SPECIFIC_WELL_FED;
             // scrolls effects
             else
             {
@@ -595,6 +597,9 @@ SpellSpecific GetSpellSpecific(SpellEntry const * spellInfo)
                         return SPELL_SPECIFIC_WARRIOR_ENRAGE;
                 }
             }
+            if (spellInfo->Id == 74410 || spellInfo->Id == 74411)
+                return SPELL_SPECIFIC_ARENABG_DAMPENING;
+
             break;
         }
         case SPELLFAMILY_MAGE:
@@ -610,14 +615,30 @@ SpellSpecific GetSpellSpecific(SpellEntry const * spellInfo)
             if ((spellInfo->SpellFamilyFlags[0] & 0x1000000) && spellInfo->EffectApplyAuraName[0] == SPELL_AURA_MOD_CONFUSE)
                 return SPELL_SPECIFIC_MAGE_POLYMORPH;
 
+            // Frost Nova and Shattered Barrier
+            if (spellInfo->SpellIconID == 193)
+                return SPELL_SPECIFIC_MAGE_NOVA;
             break;
         }
         case SPELLFAMILY_WARRIOR:
         {
+            if (spellInfo->SpellFamilyFlags[1] & 0x000080 || spellInfo->SpellFamilyFlags[0] & 0x00010000)
+                return SPELL_SPECIFIC_POSITIVE_SHOUT;
+
             if (spellInfo->Id == 12292) // Death Wish
                 return SPELL_SPECIFIC_WARRIOR_ENRAGE;
 
+            // Blood Frenzy
+            if (spellInfo->Id == 30069 || spellInfo->Id == 30070)
+                return SPELL_SPECIFIC_TARGET_DAMAGE_BOOST;
+
             break;
+        }
+        case SPELLFAMILY_ROGUE:
+        {
+            // Savage Combat
+            if(spellInfo->Id == 58684 || spellInfo->Id == 58683)
+                return SPELL_SPECIFIC_TARGET_DAMAGE_BOOST;
         }
         case SPELLFAMILY_WARLOCK:
         {
@@ -632,10 +653,20 @@ SpellSpecific GetSpellSpecific(SpellEntry const * spellInfo)
             //seed of corruption and corruption
             if (spellInfo->SpellFamilyFlags[1] & 0x10 || spellInfo->SpellFamilyFlags[0] & 0x2)
                 return SPELL_SPECIFIC_WARLOCK_CORRUPTION;
+            // Immolate and Unstable Affliction
+            if (spellInfo->SpellFamilyFlags[0]== 0x4 || spellInfo->SpellFamilyFlags[1]== 0x100)
+                return SPELL_SPECIFIC_IMMOLATE_UNSTABLE;
+
             break;
         }
         case SPELLFAMILY_PRIEST:
         {
+            // "Well Fed" buff from Blessed Sunfruit, Blessed Sunfruit Juice, Alterac Spring Water
+            if ((spellInfo->Attributes & SPELL_ATTR0_CASTABLE_WHILE_SITTING) &&
+                (spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_AUTOATTACK) &&
+                (spellInfo->SpellIconID == 52 || spellInfo->SpellIconID == 79))
+                return SPELL_SPECIFIC_WELL_FED;
+
             // Divine Spirit and Prayer of Spirit
             if (spellInfo->SpellFamilyFlags[0] & 0x20)
                 return SPELL_SPECIFIC_PRIEST_DIVINE_SPIRIT;
@@ -656,6 +687,9 @@ SpellSpecific GetSpellSpecific(SpellEntry const * spellInfo)
         }
         case SPELLFAMILY_PALADIN:
         {
+            if (spellInfo->SpellFamilyFlags[0] & 0x11010002)
+                return SPELL_SPECIFIC_BLESSING;
+
             if (IsSealSpell(spellInfo))
                 return SPELL_SPECIFIC_SEAL;
 
@@ -680,6 +714,20 @@ SpellSpecific GetSpellSpecific(SpellEntry const * spellInfo)
 
             break;
         }
+        case SPELLFAMILY_DRUID:
+        {
+            // Mangle bear / cat
+            if (spellInfo->SpellIconID == 2312)
+                return SPELL_SPECIFIC_TRAUMA_MANGLE;
+                
+            // Faerie Fire
+            if (spellInfo->SpellIconID == 770)
+                return SPELL_SPECIFIC_FAERIEFIRE;    
+        
+            break;
+        }
+        case SPELLFAMILY_POTION:
+            return sSpellMgr->GetSpellElixirSpecific(spellInfo->Id);
 
         case SPELLFAMILY_DEATHKNIGHT:
             if (spellInfo->Id == 48266 || spellInfo->Id == 48263 || spellInfo->Id == 48265)
@@ -708,6 +756,9 @@ SpellSpecific GetSpellSpecific(SpellEntry const * spellInfo)
             }
         }
     }
+    // elixirs can have different families, but potion most ofc.
+    if(SpellSpecific sp = sSpellMgr->GetSpellElixirSpecific(spellInfo->Id))
+        return sp;
 
     return SPELL_SPECIFIC_NORMAL;
 }
@@ -1689,56 +1740,6 @@ void SpellMgr::LoadSpellGroups()
     }
 
     sLog->outString(">> Loaded %u spell group definitions in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
-    sLog->outString();
-}
-
-void SpellMgr::LoadSpellGroupStackRules()
-{
-    uint32 oldMSTime = getMSTime();
-
-    mSpellGroupStack.clear();                                  // need for reload case
-
-    uint32 count = 0;
-
-    //                                                       0         1
-    QueryResult result = WorldDatabase.Query("SELECT group_id, stack_rule FROM spell_group_stack_rules");
-    if (!result)
-    {
-
-
-        sLog->outString(">> Loaded 0 spell group stack rules");
-        sLog->outString();
-        return;
-    }
-
-
-    do
-    {
-        Field *fields = result->Fetch();
-
-
-        uint32 group_id = fields[0].GetUInt32();
-        uint8 stack_rule = fields[1].GetUInt32();
-        if (stack_rule >= SPELL_GROUP_STACK_RULE_MAX)
-        {
-            sLog->outErrorDb("SpellGroupStackRule %u listed in `spell_group_stack_rules` does not exist", stack_rule);
-            continue;
-        }
-
-        SpellGroupSpellMapBounds spellGroup = GetSpellGroupSpellMapBounds((SpellGroup)group_id);
-
-        if (spellGroup.first == spellGroup.second)
-        {
-            sLog->outErrorDb("SpellGroup id %u listed in `spell_group_stack_rules` does not exist", group_id);
-            continue;
-        }
-
-        mSpellGroupStack[(SpellGroup)group_id] = (SpellGroupStackRule)stack_rule;
-
-        ++count;
-    } while (result->NextRow());
-
-    sLog->outString(">> Loaded %u spell group stack rules in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
     sLog->outString();
 }
 
@@ -3271,10 +3272,8 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
 
 //-----------TRINITY-------------
 
-bool SpellMgr::CanAurasStack(Aura const *aura1, Aura const *aura2, bool sameCaster) const
+bool SpellMgr::CanAurasStack(SpellEntry const *spellInfo_1, SpellEntry const *spellInfo_2, bool sameCaster) const
 {
-    SpellEntry const *spellInfo_1 = aura1->GetSpellProto();
-    SpellEntry const *spellInfo_2 = aura2->GetSpellProto();
     SpellSpecific spellSpec_1 = GetSpellSpecific(spellInfo_1);
     SpellSpecific spellSpec_2 = GetSpellSpecific(spellInfo_2);
     if (spellSpec_1 && spellSpec_2)
@@ -3282,31 +3281,25 @@ bool SpellMgr::CanAurasStack(Aura const *aura1, Aura const *aura2, bool sameCast
             || (sameCaster && IsSingleFromSpellSpecificPerCaster(spellSpec_1, spellSpec_2)))
             return false;
 
-    SpellGroupStackRule stackRule = CheckSpellGroupStackRules(spellInfo_1->Id, spellInfo_2->Id);
-    if (stackRule)
-    {
-        if (stackRule == SPELL_GROUP_STACK_RULE_EXCLUSIVE)
-            return false;
-        if (sameCaster && stackRule == SPELL_GROUP_STACK_RULE_EXCLUSIVE_FROM_SAME_CASTER)
-            return false;
-    }
-
-    if (spellInfo_1->SpellFamilyName != spellInfo_2->SpellFamilyName)
-        return true;
-
     if (!sameCaster)
     {
         if (spellInfo_1->AttributesEx & SPELL_ATTR1_STACK_FOR_DIFF_CASTERS
             || spellInfo_1->AttributesEx3 & SPELL_ATTR3_STACK_FOR_DIFF_CASTERS)
             return true;
 
-        // Deadly Poison (Venomous Snake) should not stack
-        if (spellInfo_1->Id == spellInfo_2->Id && spellInfo_1->Id == 34655)
-            return false;
-
         // check same periodic auras
-        for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        for (uint32 i = 0; i < 3; ++i)
         {
+            // area auras should not stack (shaman totem)
+            if(spellInfo_1->Effect[i] != SPELL_EFFECT_APPLY_AURA
+                && spellInfo_1->Effect[i] != SPELL_EFFECT_PERSISTENT_AREA_AURA)
+                continue;
+
+            // not channeled AOE effects should not stack (blizzard should, but Consecration should not)
+            if((IsAreaEffectTarget[spellInfo_1->EffectImplicitTargetA[i]] || IsAreaEffectTarget[spellInfo_1->EffectImplicitTargetB[i]])
+                && !IsChanneledSpell(spellInfo_1))
+                continue;
+
             switch(spellInfo_1->EffectApplyAuraName[i])
             {
                 // DOT or HOT from different casters will stack
@@ -3321,9 +3314,6 @@ bool SpellMgr::CanAurasStack(Aura const *aura1, Aura const *aura2, bool sameCast
                 case SPELL_AURA_OBS_MOD_POWER:
                 case SPELL_AURA_OBS_MOD_HEALTH:
                 case SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE:
-                    // periodic auras which target areas are not allowed to stack this way (replenishment for example)
-                    if (IsAreaOfEffectSpellEffect(spellInfo_1, i) || IsAreaOfEffectSpellEffect(spellInfo_2, i))
-                        break;
                     return true;
                 default:
                     break;
@@ -3331,51 +3321,96 @@ bool SpellMgr::CanAurasStack(Aura const *aura1, Aura const *aura2, bool sameCast
         }
     }
 
-    bool isVehicleAura1 = false;
-    bool isVehicleAura2 = false;
-    uint8 i = 0;
-    while (i < MAX_SPELL_EFFECTS && !(isVehicleAura1 && isVehicleAura2))
-    {
-        if (spellInfo_1->EffectApplyAuraName[i] == SPELL_AURA_CONTROL_VEHICLE)
-            isVehicleAura1 = true;
-        if (spellInfo_2->EffectApplyAuraName[i] == SPELL_AURA_CONTROL_VEHICLE)
-            isVehicleAura2 = true;
-
-        ++i;
-    }
-
-    if (isVehicleAura1 && isVehicleAura2)
-    {
-        Vehicle* veh = NULL;
-        if (aura1->GetOwner()->ToUnit())
-            veh = aura1->GetOwner()->ToUnit()->GetVehicleKit();
-
-        if (!veh)           // We should probably just let it stack. Vehicle system will prevent undefined behaviour later
-            return true;
-
-        if (!veh->GetAvailableSeatCount())
-            return false;   // No empty seat available
-
-        return true;        // Empty seat available (skip rest)
-    }
-
     uint32 spellId_1 = GetLastSpellInChain(spellInfo_1->Id);
     uint32 spellId_2 = GetLastSpellInChain(spellInfo_2->Id);
 
     // same spell
     if (spellId_1 == spellId_2)
+        switch(spellId_1)
     {
         // Hack for Incanter's Absorption
-        if (spellId_1 == 44413)
-            return true;
-        if (aura1->GetCastItemGUID() && aura2->GetCastItemGUID())
-            if (aura1->GetCastItemGUID() != aura2->GetCastItemGUID() && (GetSpellCustomAttr(spellId_1) & SPELL_ATTR0_CU_ENCHANT_PROC))
-                return true;
-        // same spell with same caster should not stack
-        return false;
-    }
+            case 44413: return true;
 
-    return true;
+            // Mongoose and Berserk weapon procs
+            case 59620:
+            case 28093: return !sameCaster;
+        // same spell with same caster should not stack
+            default: return false;
+        }
+
+
+    //use data of highest rank spell(needed for spells which ranks have different effects)
+    spellInfo_1 = sSpellStore.LookupEntry(spellId_1);
+    spellInfo_2 = sSpellStore.LookupEntry(spellId_2);
+    // Concentration aura and Aura Mastery.
+    if (spellInfo_2->Id == 19746 && spellInfo_1->Id == 64364)
+        return true;
+    // Other auras remove Aura Mastery immunity effect.
+    else if (spellInfo_1->Id == 64364 && spellInfo_2->SpellFamilyFlags[1] & 0x20)
+        return false;
+    //Dampen and Amplify Magic
+    if(spellInfo_1->SpellFamilyName == SPELLFAMILY_MAGE && spellInfo_2->SpellFamilyName == SPELLFAMILY_MAGE && 
+        spellInfo_1->SpellFamilyFlags[0]==spellInfo_2->SpellFamilyFlags[0] && spellInfo_1->SpellFamilyFlags[0] & 0x2000)
+        return false;
+
+   
+    if(spellInfo_1->SpellFamilyName == SPELLFAMILY_DRUID && spellInfo_2->SpellFamilyName == SPELLFAMILY_DRUID && spellInfo_1->SpellIconID == spellInfo_2->SpellIconID )
+        switch(spellInfo_1->SpellIconID)
+        {
+            case 123:  // Mark of the wild
+            case 109:  // Faerie Fire
+                return false;
+            default:break;
+        }
+        
+
+    // Priest shadow protection
+    if(spellInfo_1->SpellFamilyName == SPELLFAMILY_PRIEST && spellInfo_2->SpellFamilyName == SPELLFAMILY_PRIEST &&
+        spellInfo_1->EffectApplyAuraName[0] == SPELL_AURA_MOD_RESISTANCE_EXCLUSIVE && 
+        spellInfo_2->EffectApplyAuraName[0]==SPELL_AURA_MOD_RESISTANCE_EXCLUSIVE)
+        return false;
+    // Paladin beacon of light 
+    if((spellId_1 == 53651 && spellId_2 == 53563)|| (spellId_1 == 53563 && spellId_2== 53651))
+        return true;
+    // nnever replace aspects.
+    if(GetSpellSpecific(spellInfo_1)==SPELL_SPECIFIC_ASPECT || GetSpellSpecific(spellInfo_1)==SPELL_SPECIFIC_ASPECT)
+        return true;
+    
+    if(spellInfo_1->SpellIconID == 0 ||  spellInfo_2->SpellIconID == 0)
+    {
+        bool isModifier = false;
+        for (int i = 0; i < 3; ++i)
+        {
+            if (spellInfo_1->EffectApplyAuraName[i] == SPELL_AURA_ADD_FLAT_MODIFIER ||
+                spellInfo_1->EffectApplyAuraName[i] == SPELL_AURA_ADD_PCT_MODIFIER  ||
+                spellInfo_2->EffectApplyAuraName[i] == SPELL_AURA_ADD_FLAT_MODIFIER ||
+                spellInfo_2->EffectApplyAuraName[i] == SPELL_AURA_ADD_PCT_MODIFIER )
+                isModifier = true;
+        }
+        if(isModifier = true)
+            return true;
+    }
+    if(GetSpellDuration(spellInfo_1) <= 60*IN_MILLISECONDS || GetSpellDuration(spellInfo_2)<= 60*IN_MILLISECONDS)
+        return true;
+ 
+    if (spellInfo_1->SpellFamilyName != SPELLFAMILY_POTION && spellInfo_2->SpellFamilyName != SPELLFAMILY_POTION )
+       for (int i = 0; i < 3; ++i)
+       {
+            if (spellInfo_1->Effect[i] == SPELL_EFFECT_APPLY_AURA && spellInfo_2->Effect[i]==SPELL_EFFECT_APPLY_AURA &&
+                spellInfo_1->EffectApplyAuraName[i] == spellInfo_2->EffectApplyAuraName[i])
+                switch (spellInfo_1->EffectApplyAuraName[i])
+                {
+                    case SPELL_AURA_MOD_RANGED_ATTACK_POWER:
+                        return false;
+                    case SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE:
+                    case SPELL_AURA_MOD_STAT:
+                        if(spellInfo_1->EffectMiscValue[i] == spellInfo_2->EffectMiscValue[i])
+                            return false;
+                        break;
+                    default:break;
+                }
+       }
+       return true;
 }
 
 bool CanSpellDispelAura(SpellEntry const * dispelSpell, SpellEntry const * aura)

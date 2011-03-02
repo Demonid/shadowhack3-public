@@ -140,30 +140,45 @@ enum SpellFamilyFlag
 // Spell clasification
 enum SpellSpecific
 {
-    SPELL_SPECIFIC_NORMAL            = 0,
-    SPELL_SPECIFIC_SEAL              = 1,
-    SPELL_SPECIFIC_AURA              = 3,
-    SPELL_SPECIFIC_STING             = 4,
-    SPELL_SPECIFIC_CURSE             = 5,
-    SPELL_SPECIFIC_ASPECT            = 6,
-    SPELL_SPECIFIC_TRACKER           = 7,
-    SPELL_SPECIFIC_WARLOCK_ARMOR     = 8,
-    SPELL_SPECIFIC_MAGE_ARMOR        = 9,
-    SPELL_SPECIFIC_ELEMENTAL_SHIELD  = 10,
-    SPELL_SPECIFIC_MAGE_POLYMORPH    = 11,
-    SPELL_SPECIFIC_JUDGEMENT         = 13,
-    SPELL_SPECIFIC_WARLOCK_CORRUPTION= 17,
-    SPELL_SPECIFIC_FOOD              = 19,
-    SPELL_SPECIFIC_DRINK             = 20,
-    SPELL_SPECIFIC_FOOD_AND_DRINK    = 21,
-    SPELL_SPECIFIC_PRESENCE          = 22,
-    SPELL_SPECIFIC_CHARM             = 23,
-    SPELL_SPECIFIC_SCROLL            = 24,
-    SPELL_SPECIFIC_MAGE_ARCANE_BRILLANCE = 25,
-    SPELL_SPECIFIC_WARRIOR_ENRAGE    = 26,
-    SPELL_SPECIFIC_PRIEST_DIVINE_SPIRIT = 27,
-    SPELL_SPECIFIC_HAND              = 28,
-    SPELL_SPECIFIC_PHASE             = 29,
+    SPELL_SPECIFIC_NORMAL                   = 0,
+    SPELL_SPECIFIC_SEAL                     = 1,
+    SPELL_SPECIFIC_BLESSING                 = 2,
+    SPELL_SPECIFIC_AURA                     = 3,
+    SPELL_SPECIFIC_STING                    = 4,
+    SPELL_SPECIFIC_CURSE                    = 5,
+    SPELL_SPECIFIC_ASPECT                   = 6,
+    SPELL_SPECIFIC_TRACKER                  = 7,
+    SPELL_SPECIFIC_WARLOCK_ARMOR            = 8,
+    SPELL_SPECIFIC_MAGE_ARMOR               = 9,
+    SPELL_SPECIFIC_ELEMENTAL_SHIELD         = 10,
+    SPELL_SPECIFIC_MAGE_POLYMORPH           = 11,
+    SPELL_SPECIFIC_POSITIVE_SHOUT           = 12,
+    SPELL_SPECIFIC_JUDGEMENT                = 13,
+    SPELL_SPECIFIC_BATTLE_ELIXIR            = 14,
+    SPELL_SPECIFIC_GUARDIAN_ELIXIR          = 15,
+    SPELL_SPECIFIC_FLASK_ELIXIR             = 16,
+    SPELL_SPECIFIC_WARLOCK_CORRUPTION       = 17,
+    SPELL_SPECIFIC_WELL_FED                 = 18,
+    SPELL_SPECIFIC_FOOD                     = 19,
+    SPELL_SPECIFIC_DRINK                    = 20,
+    SPELL_SPECIFIC_FOOD_AND_DRINK           = 21,
+    SPELL_SPECIFIC_PRESENCE                 = 22,
+    SPELL_SPECIFIC_CHARM                    = 23,
+    SPELL_SPECIFIC_SCROLL                   = 24,
+    SPELL_SPECIFIC_MAGE_ARCANE_BRILLANCE    = 25,
+    SPELL_SPECIFIC_WARRIOR_ENRAGE           = 26,
+    SPELL_SPECIFIC_PRIEST_DIVINE_SPIRIT     = 27,
+    SPELL_SPECIFIC_HAND                     = 28,
+    SPELL_SPECIFIC_PHASE                    = 29,
+    SPELL_SPECIFIC_BLESSING_OF_MIGHT        = 30,
+    SPELL_SPECIFIC_BATTLE_SHOUT             = 31,
+    SPELL_SPECIFIC_TARGET_DAMAGE_BOOST      = 32,
+    SPELL_SPECIFIC_TRAUMA_MANGLE            = 33,
+    SPELL_SPECIFIC_NETHER_PROTECTION        = 34,
+    SPELL_SPECIFIC_IMMOLATE_UNSTABLE        = 35,
+    SPELL_SPECIFIC_ARENABG_DAMPENING        = 36,
+    SPELL_SPECIFIC_MAGE_NOVA                = 37,
+    SPELL_SPECIFIC_FAERIEFIRE               = 38
 };
 
 #define SPELL_LINKED_MAX_SPELLS  200000
@@ -713,16 +728,6 @@ typedef std::pair<SpellSpellGroupMap::const_iterator,SpellSpellGroupMap::const_i
 typedef std::multimap<SpellGroup, int32> SpellGroupSpellMap;
 typedef std::pair<SpellGroupSpellMap::const_iterator,SpellGroupSpellMap::const_iterator> SpellGroupSpellMapBounds;
 
-enum SpellGroupStackRule
-{
-    SPELL_GROUP_STACK_RULE_DEFAULT = 0,
-    SPELL_GROUP_STACK_RULE_EXCLUSIVE = 1,
-    SPELL_GROUP_STACK_RULE_EXCLUSIVE_FROM_SAME_CASTER = 2,
-};
-#define SPELL_GROUP_STACK_RULE_MAX 3
-
-typedef std::map<SpellGroup, SpellGroupStackRule> SpellGroupStackMap;
-
 typedef std::map<uint32, uint16> SpellThreatMap;
 
 // Spell script target related declarations (accessed using SpellMgr functions)
@@ -971,6 +976,28 @@ class SpellMgr
         {
             return SpellGroupSpellMapBounds(mSpellGroupSpell.lower_bound(group_id),mSpellGroupSpell.upper_bound(group_id));
         }
+        SpellSpecific GetSpellElixirSpecific(uint32 spellid) const
+        {
+            SpellSpecific spec = SPELL_SPECIFIC_NORMAL;
+            SpellSpellGroupMapBounds spellGroup = GetSpellSpellGroupMapBounds(spellid);
+            for ( SpellSpellGroupMap::const_iterator itr = spellGroup.first; itr != spellGroup.second ; ++itr)
+            {
+                if (itr->second == SPELL_GROUP_ELIXIR_BATTLE
+                    || itr->second == SPELL_GROUP_ELIXIR_GUARDIAN)
+                {
+                    if (spec)
+                    {
+                        spec = SPELL_SPECIFIC_FLASK_ELIXIR;
+                                break;
+                    }
+                    else if (itr->second == SPELL_GROUP_ELIXIR_BATTLE)
+                        spec = SPELL_SPECIFIC_BATTLE_ELIXIR;
+                    else if (itr->second == SPELL_GROUP_ELIXIR_GUARDIAN)
+                        spec = SPELL_SPECIFIC_GUARDIAN_ELIXIR;
+                }
+            }
+            return spec;
+        }
         void GetSetOfSpellsInSpellGroup(SpellGroup group_id, std::set<uint32>& foundSpells) const
         {
             std::set<SpellGroup> usedGroups;
@@ -995,51 +1022,6 @@ class SpellMgr
                     foundSpells.insert(itr->second);
                 }
             }
-        }
-
-        SpellGroupStackRule CheckSpellGroupStackRules(uint32 spellid_1, uint32 spellid_2) const
-        {
-            spellid_1 = GetFirstSpellInChain(spellid_1);
-            spellid_2 = GetFirstSpellInChain(spellid_2);
-            if (spellid_1 == spellid_2)
-                return SPELL_GROUP_STACK_RULE_DEFAULT;
-            // find SpellGroups which are common for both spells
-            SpellSpellGroupMapBounds spellGroup1 = GetSpellSpellGroupMapBounds(spellid_1);
-            std::set<SpellGroup> groups;
-            for (SpellSpellGroupMap::const_iterator itr = spellGroup1.first; itr != spellGroup1.second ; ++itr)
-            {
-                if (IsSpellMemberOfSpellGroup(spellid_2, itr->second))
-                {
-                    bool add = true;
-                    SpellGroupSpellMapBounds groupSpell = GetSpellGroupSpellMapBounds(itr->second);
-                    for (SpellGroupSpellMap::const_iterator itr2 = groupSpell.first; itr2 != groupSpell.second ; ++itr2)
-                    {
-                        if (itr2->second < 0)
-                        {
-                            SpellGroup currGroup = (SpellGroup)abs(itr2->second);
-                            if (IsSpellMemberOfSpellGroup(spellid_1, currGroup) && IsSpellMemberOfSpellGroup(spellid_2, currGroup))
-                            {
-                                add = false;
-                                break;
-                            }
-                        }
-                    }
-                    if (add)
-                        groups.insert(itr->second);
-                }
-            }
-
-            SpellGroupStackRule rule = SPELL_GROUP_STACK_RULE_DEFAULT;
-
-            for (std::set<SpellGroup>::iterator itr = groups.begin() ; itr!= groups.end() ; ++itr)
-            {
-                SpellGroupStackMap::const_iterator found = mSpellGroupStack.find(*itr);
-                if (found != mSpellGroupStack.end())
-                    rule = found->second;
-                if (rule)
-                    break;
-            }
-            return rule;
         }
 
         uint16 GetSpellThreat(uint32 spellid) const
@@ -1244,7 +1226,7 @@ class SpellMgr
         bool _isPositiveSpell(uint32 spellId, bool deep) const;
         bool IsRankSpellDueToSpell(SpellEntry const *spellInfo_1,uint32 spellId_2) const;
         static bool canStackSpellRanks(SpellEntry const *spellInfo);
-        bool CanAurasStack(Aura const *aura1, Aura const *aura2, bool sameCaster) const;
+        bool CanAurasStack(SpellEntry const *spellInfo_1, SpellEntry const *spellInfo_2, bool sameCaster) const;
 
         SpellEntry const* SelectAuraRankForPlayerLevel(SpellEntry const* spellInfo, uint32 playerLevel) const;
 
@@ -1435,7 +1417,6 @@ class SpellMgr
         void LoadPetLevelupSpellMap();
         void LoadPetDefaultSpells();
         void LoadSpellAreas();
-        void LoadSpellGroupStackRules();
 
     private:
         bool _isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) const;
@@ -1455,7 +1436,6 @@ class SpellMgr
         SpellPetAuraMap     mSpellPetAuraMap;
         SpellCustomAttribute  mSpellCustomAttr;
         SpellLinkedMap      mSpellLinkedMap;
-        SpellGroupStackMap   mSpellGroupStack;
         SpellEnchantProcEventMap     mSpellEnchantProcEventMap;
         EnchantCustomAttribute  mEnchantCustomAttr;
         PetLevelupSpellMap  mPetLevelupSpellMap;
