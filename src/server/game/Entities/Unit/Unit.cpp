@@ -2619,7 +2619,8 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
         return SPELL_MISS_NONE;
 
     // Try victim reflect spell
-    if (CanReflect)
+    bool isdeathgrip = spell->Id == 49560 || spell->Id == 49575;
+    if (CanReflect || isdeathgrip)
     {
         int32 reflectchance = pVictim->GetTotalAuraModifier(SPELL_AURA_REFLECT_SPELLS);
         Unit::AuraEffectList const& mReflectSpellsSchool = pVictim->GetAuraEffectsByType(SPELL_AURA_REFLECT_SPELLS_SCHOOL);
@@ -2638,6 +2639,7 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
         case SPELL_DAMAGE_CLASS_MELEE:
             return MeleeSpellHitResult(pVictim, spell);
         case SPELL_DAMAGE_CLASS_NONE:
+            if(!isdeathgrip && spell->Id != 55095)
                 return SPELL_MISS_NONE;
         case SPELL_DAMAGE_CLASS_MAGIC:
             return MagicSpellHitResult(pVictim, spell);

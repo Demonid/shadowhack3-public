@@ -524,7 +524,7 @@ m_caster(Caster), m_spellValue(new SpellValue(m_spellInfo))
         m_canReflect = true;
 
     // Death Grip
-    if (m_spellInfo->Id == 49575 || m_spellInfo->Id == 49560 || m_spellInfo->Id == 49576)
+    if (m_spellInfo->Id == 49575 || m_spellInfo->Id == 49560)
         m_canReflect = true;
 
     if (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC && !IsAreaOfEffectSpell(m_spellInfo) && !(m_spellInfo->AttributesEx2 & SPELL_ATTR2_CANT_REFLECTED))

@@ -3842,6 +3842,11 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
             count++;
             break;
+        // death grip
+        case 49576:
+            spellInfo->AttributesEx2 |= SPELL_ATTR2_CANT_REFLECTED;
+            count++;
+            break;
         // Penance Reflect
         case 53000:
         case 52999:
