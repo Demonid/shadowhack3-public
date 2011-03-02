@@ -79,6 +79,7 @@ class AuraApplication
 class Aura
 {
     public:
+        void SetAuraTimer(int32 time, uint64 guid=0);
         typedef std::map<uint64, AuraApplication *> ApplicationMap;
 
         static Aura * TryCreate(SpellEntry const* spellproto, uint8 effMask, WorldObject * owner, Unit * caster, int32 *baseAmount = NULL, Item * castItem = NULL, uint64 casterGUID = 0);
@@ -165,6 +166,7 @@ class Aura
         void HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster, bool apply);
         bool CanBeAppliedOn(Unit *target);
         bool CheckAreaTarget(Unit *target);
+        bool IsUniqueVisibleAuraBuff();
 
         // AuraScript
         void LoadScripts();
