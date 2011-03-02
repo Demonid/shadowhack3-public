@@ -37,6 +37,7 @@
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
 #include "ScriptMgr.h"
+#include "PetAI.h"
 
 class Aura;
 //
@@ -4098,7 +4099,7 @@ void AuraEffect::HandleModTaunt(AuraApplication const * aurApp, uint8 mode, bool
 
     Unit * target = aurApp->GetTarget();
 
-    if (!target->isAlive() || !target->CanHaveThreatList())
+    if (!target->isAlive() || (!target->CanHaveThreatList() && !target->isPet()))
         return;
 
     Unit * caster = GetCaster();
@@ -4106,7 +4107,15 @@ void AuraEffect::HandleModTaunt(AuraApplication const * aurApp, uint8 mode, bool
         return;
 
     if (apply)
+    {
         target->TauntApply(caster);
+        if(target->isPet())
+        {
+            if(target->ToCreature()->IsAIEnabled)
+                (static_cast<PetAI*>(target->ToCreature()->AI()))->DoAttack(caster, true);
+            else target->Attack(caster, true);
+        }
+    }
     else
     {
         // When taunt aura fades out, mob will switch to previous target if current has less than 1.1 * secondthreat
@@ -4954,10 +4963,15 @@ void AuraEffect::HandleModTotalPercentStat(AuraApplication const * aurApp, uint8
 
     for (int32 i = STAT_STRENGTH; i < MAX_STATS; i++)
     {
+        if(target->isPet())
+        {
+            target->ToPet()->UpdateStats(Stats(i));
+            continue;
+        }
         if (GetMiscValue() == i || GetMiscValue() == -1)
         {
             target->HandleStatModifier(UnitMods(UNIT_MOD_STAT_START + i), TOTAL_PCT, float(GetAmount()), apply);
-            if (target->GetTypeId() == TYPEID_PLAYER || target->ToCreature()->isPet())
+            if (target->GetTypeId() == TYPEID_PLAYER)
                 target->ApplyStatPercentBuffMod(Stats(i), (float)GetAmount(), apply);
         }
     }
@@ -5526,6 +5540,11 @@ void AuraEffect::HandleModDamageDone(AuraApplication const * aurApp, uint8 mode,
 
     Unit * target = aurApp->GetTarget();
 
+    if(target->isPet())
+    {
+        target->ToPet()->UpdateDamagePhysical(BASE_ATTACK);
+        return;
+    }
     // apply item specific bonuses for already equipped weapon
     if (target->GetTypeId() == TYPEID_PLAYER)
     {
@@ -5612,6 +5631,12 @@ void AuraEffect::HandleModDamagePercentDone(AuraApplication const * aurApp, uint
     Player* target = aurApp->GetTarget()->ToPlayer();
     if (!target)
         return;
+
+    if (target->isPet())
+    {
+        target->ToPet()->UpdateDamagePhysical(BASE_ATTACK);
+        return;
+    }
 
     if (target->HasItemFitToSpellRequirements(GetSpellProto()))
 	{
@@ -6309,6 +6334,14 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                     caster->ToPlayer()->StopCastingBindSight();
                 return;
             }
+            break;
+        }
+        case SPELLFAMILY_WARLOCK:
+        {
+            // Glyph of Felguard visual
+            if(GetId() == 56246)
+                if(Pet * pet = caster->ToPlayer()->GetPet())
+                    pet->UpdateAttackPowerAndDamage();
             break;
         }
         case SPELLFAMILY_PALADIN:
