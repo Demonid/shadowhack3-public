@@ -1621,6 +1621,7 @@ class Player : public Unit, public GridObject<Player>
         bool IsAffectedBySpellmod(SpellEntry const *spellInfo, SpellModifier *mod, Spell * spell = NULL);
         template <class T> T ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell * spell = NULL);
         void RemoveSpellMods(Spell * spell);
+        void RemovePrecastSpellMods(Spell * spell);
         void RestoreSpellMods(Spell *spell, uint32 ownerAuraId=0);
         void DropModCharge(SpellModifier * mod, Spell * spell);
         void SetSpellModTakingSpell(Spell* spell, bool apply);
@@ -2772,6 +2773,53 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
     if (m_spellModTakingSpell)
         spell = m_spellModTakingSpell;
 
+    switch(op)
+    {
+        case SPELLMOD_CASTING_TIME:
+        case SPELLMOD_COST:
+        {
+            if(basevalue == 0)
+                return T(0);
+            for (SpellModList::iterator itr = m_spellMods[op].begin(); itr != m_spellMods[op].end(); ++itr)
+            {
+                if(!IsAffectedBySpellmod(spellInfo,(*itr),spell))
+                    continue;
+                if((*itr)->type == SPELLMOD_PCT && (op != SPELLMOD_CASTING_TIME || basevalue <= T(10000)) && (*itr)->value <= -100)
+                {
+                    if(op != SPELLMOD_GLOBAL_COOLDOWN && op != SPELLMOD_CRIT_DAMAGE_BONUS)
+                        DropModCharge((*itr), spell);
+                    basevalue=0;
+                    return T(0);
+                }
+            }
+            break;
+        }
+        case SPELLMOD_CRITICAL_CHANCE:
+        case SPELLMOD_CHANCE_OF_SUCCESS:
+        {
+            for (SpellModList::iterator itr = m_spellMods[op].begin(); itr != m_spellMods[op].end(); ++itr)
+            {
+                if(!IsAffectedBySpellmod(spellInfo,(*itr),spell))
+                    continue;
+                if((*itr)->type == SPELLMOD_FLAT && abs((*itr)->value) >= 100)
+                {
+                    basevalue=T((*itr)->value>0?100:0);
+                    if(op != SPELLMOD_GLOBAL_COOLDOWN && op != SPELLMOD_CRIT_DAMAGE_BONUS)
+                        DropModCharge((*itr), spell);
+                    return T(0);
+                }
+                if((*itr)->type == SPELLMOD_PCT && (*itr)->value <= -100)
+                {
+                    if(op != SPELLMOD_GLOBAL_COOLDOWN && op != SPELLMOD_CRIT_DAMAGE_BONUS)
+                        DropModCharge((*itr), spell);
+                    basevalue=0;
+                    return T(0);
+                }
+            }
+            break;
+        }
+        default:break;
+    }
     for (SpellModList::iterator itr = m_spellMods[op].begin(); itr != m_spellMods[op].end(); ++itr)
     {
         SpellModifier *mod = *itr;
@@ -2791,14 +2839,19 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
             if (basevalue == T(0))
                 continue;
 
+            if( spellInfo->Id == 17962 && !mod->mask[0] && !mod->mask[1])
+                continue;
             // special case (skip >10sec spell casts for instant cast setting)
             if (mod->op == SPELLMOD_CASTING_TIME  && basevalue >= T(10000) && mod->value <= -100)
                 continue;
 
-            AddPctN(totalmul, mod->value);
+            if(op == SPELLMOD_COST || op == SPELLMOD_DAMAGE)
+                totalmul+=mod->value/100.0f;
+            else
+            totalmul *= 1.0f + (float)mod->value / 100.0f;
         }
-
-        DropModCharge(mod, spell);
+        if(mod->op != SPELLMOD_GLOBAL_COOLDOWN && mod->op != SPELLMOD_CRIT_DAMAGE_BONUS)
+            DropModCharge(mod, spell);
     }
     float diff = (float)basevalue * (totalmul - 1.0f) + (float)totalflat;
     basevalue = T((float)basevalue + diff);
