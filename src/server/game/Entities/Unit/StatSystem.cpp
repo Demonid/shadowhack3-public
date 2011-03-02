@@ -644,7 +644,23 @@ void Player::UpdateSpellCritChance(uint32 school)
     // Crit from Intellect
     crit += GetSpellCritFromIntellect();
     // Increase crit from SPELL_AURA_MOD_SPELL_CRIT_CHANCE
-    crit += GetTotalAuraModifier(SPELL_AURA_MOD_SPELL_CRIT_CHANCE);
+    AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(SPELL_AURA_MOD_SPELL_CRIT_CHANCE);
+    uint32 modifer=0;
+    for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
+    {
+        switch((*i)->GetId())
+        {
+            case 24907: // Moonkin Aura
+            case 54646: // Focus Magic
+            case 51466: // Elemental Oath
+            case 51470: // --//-- rank 2
+                if(modifer<(*i)->GetAmount())
+                    modifer=(*i)->GetAmount();
+                break;
+            default: crit += (*i)->GetAmount();
+        }
+    }
+    crit+=modifer;
     // Increase crit from SPELL_AURA_MOD_CRIT_PCT
     crit += GetTotalAuraModifier(SPELL_AURA_MOD_CRIT_PCT);
     // Increase crit by school from SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL
@@ -655,6 +671,7 @@ void Player::UpdateSpellCritChance(uint32 school)
     // Store crit value
     SetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + school, crit);
 }
+
 
 void Player::UpdateArmorPenetration(int32 amount)
 {
