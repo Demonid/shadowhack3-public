@@ -5689,6 +5689,15 @@ void Player::ApplyRatingMod(CombatRating cr, int32 value, bool apply)
     {
         case CR_HASTE_MELEE:
         {
+            switch(getClass())
+            {
+                case CLASS_DEATH_KNIGHT:
+                case CLASS_SHAMAN:
+                case CLASS_PALADIN:
+                case CLASS_DRUID:
+                    value*=1.3f;
+                default: break;
+            }
             float RatingChange = value / GetRatingCoefficient(cr);
             ApplyAttackTimePercentMod(BASE_ATTACK,RatingChange,apply);
             ApplyAttackTimePercentMod(OFF_ATTACK,RatingChange,apply);
