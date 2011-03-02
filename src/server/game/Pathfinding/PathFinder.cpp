@@ -82,7 +82,8 @@ bool PathInfo::Update(const float destX, const float destY, const float destZ, b
     PATH_DEBUG("++ PathInfo::Update() for %u \n", m_sourceUnit->GetGUID());
 
     // make sure navMesh works - we can run on map w/o mmap
-    if (!m_navMesh || !m_navMeshQuery || m_sourceUnit->HasUnitState(UNIT_STAT_IGNORE_PATHFINDING))
+    if (m_sourceUnit->HasUnitState(UNIT_STAT_IGNORE_PATHFINDING) ||
+        !m_navMesh || !m_navMeshQuery || !HaveTiles(newStart, newDest))
     {
         BuildShortcut();
         m_type = PathType(PATHFIND_NORMAL | PATHFIND_NOT_USING_PATH);
@@ -185,6 +186,13 @@ dtPolyRef PathInfo::getPolyByLocation(const float* point, float *distance)
 void PathInfo::BuildPolyPath(PathNode startPos, PathNode endPos)
 {
     // *** getting start/end poly logic ***
+
+    if (!HaveTiles(startPos, endPos))
+    {
+        BuildShortcut();
+        m_type = PathType(PATHFIND_NORMAL | PATHFIND_NOT_USING_PATH);
+        return;
+    }
 
     float distToStartPoly, distToEndPoly;
     float startPoint[VERTEX_SIZE] = {startPos.y, startPos.z, startPos.x};
@@ -752,4 +760,25 @@ dtStatus PathInfo::findSmoothPath(const float* startPos, const float* endPos,
     *smoothPathSize = nsmoothPath;
     // this is most likely loop
     return nsmoothPath < maxSmoothPathSize ? DT_SUCCESS : DT_FAILURE;
+}
+
+bool PathInfo::HaveTiles(const PathNode startPos, const PathNode endPos) const
+{
+    bool haveTiles;
+    int tx, ty;
+
+    float startPoint[VERTEX_SIZE] = {startPos.y, startPos.z, startPos.x};
+    float endPoint[VERTEX_SIZE] = {endPos.y, endPos.z, endPos.x};
+
+    // check if the start and end point have a mmtile loaded
+    m_navMesh->calcTileLoc(startPoint, &tx, &ty);
+    haveTiles = m_navMesh->getTileAt(tx, ty) != NULL;
+
+    if (haveTiles)
+    {
+        m_navMesh->calcTileLoc(endPoint, &tx, &ty);
+        haveTiles = m_navMesh->getTileAt(tx, ty) != NULL;
+    }
+
+    return haveTiles;
 }

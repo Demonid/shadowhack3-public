@@ -118,6 +118,7 @@ class PathInfo
         void BuildPolyPath(PathNode startPos, PathNode endPos);
         void BuildPointPath(float *startPoint, float *endPoint);
         void BuildShortcut();
+        bool HaveTiles(const PathNode startPos, const PathNode endPos) const;
 
         NavTerrain getNavTerrain(float x, float y, float z);
         void createFilter();
