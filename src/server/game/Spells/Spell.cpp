@@ -1434,7 +1434,11 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
 
         if (!m_caster->IsFriendlyTo(unit))
         {
-            if(m_spellInfo->speed > 0.0f && unit == m_targets.getUnitTarget() && unit->HasAuraTypeWithFamilyFlags(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE, SPELLFAMILYFLAG_ROGUE_VANISH) && !m_caster->canSeeOrDetect(unit, true))
+            // spell misses if target has Invisibility or Vanish of Shadowmeld and isn't visible for caster
+            if (m_spellInfo->speed > 0.0f && unit == m_targets.getUnitTarget()
+                && ((unit->HasAura(58984) || unit->HasInvisibilityAura() || m_caster->HasInvisibilityAura())
+                || unit->HasAuraTypeWithFamilyFlags(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE, SPELLFAMILYFLAG_ROGUE_VANISH))
+                && !m_caster->canSeeOrDetect(unit))
                 return SPELL_MISS_MISS;
 
             unit->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_HITBYSPELL);
@@ -1519,6 +1523,19 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
                 {
                     m_spellAura->Remove();
                     return SPELL_MISS_IMMUNE;
+                }
+                // Mind Control
+                if(m_spellInfo->Id == 605)
+                 {
+                    Unit * unit2 = ObjectAccessor::GetUnit(*m_caster, m_UniqueTargetInfo.begin()->targetGUID);
+                    if (Aura * aur = unit2->GetAura(605))
+                    {
+                        if (aur != m_spellAura)
+                            duration = aur->GetDuration();
+                    }
+                    // no aura, returning
+                    else if(const_cast<Unit*>(m_caster) == unit)
+                        duration = 0;
                 }
 
                 ((UnitAura*)m_spellAura)->SetDiminishGroup(m_diminishGroup);
