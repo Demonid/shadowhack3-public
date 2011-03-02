@@ -148,7 +148,6 @@ public:
             { "spell_scripts",                SEC_ADMINISTRATOR, true,  &HandleReloadSpellScriptsCommand,               "", NULL },
             { "spell_target_position",        SEC_ADMINISTRATOR, true,  &HandleReloadSpellTargetPositionCommand,        "", NULL },
             { "spell_threats",                SEC_ADMINISTRATOR, true,  &HandleReloadSpellThreatsCommand,               "", NULL },
-            { "spell_group_stack_rules",      SEC_ADMINISTRATOR, true,  &HandleReloadSpellGroupStackRulesCommand,       "", NULL },
             { "trinity_string",               SEC_ADMINISTRATOR, true,  &HandleReloadTrinityStringCommand,              "", NULL },
             { "waypoint_scripts",             SEC_ADMINISTRATOR, true,  &HandleReloadWpScriptsCommand,                  "", NULL },
             { NULL,                           0,                 false, NULL,                                           "", NULL }
@@ -284,7 +283,6 @@ public:
         HandleReloadSpellBonusesCommand(handler,"a");
         HandleReloadSpellTargetPositionCommand(handler,"a");
         HandleReloadSpellThreatsCommand(handler,"a");
-        HandleReloadSpellGroupStackRulesCommand(handler,"a");
         HandleReloadSpellPetAurasCommand(handler,"a");
         return true;
     }
@@ -896,14 +894,6 @@ public:
         sLog->outString("Re-Loading Aggro Spells Definitions...");
         sSpellMgr->LoadSpellThreats();
         handler->SendGlobalGMSysMessage("DB table `spell_threat` (spell aggro definitions) reloaded.");
-        return true;
-    }
-
-    static bool HandleReloadSpellGroupStackRulesCommand(ChatHandler* handler, const char* /*args*/)
-    {
-        sLog->outString("Re-Loading Spell Group Stack Rules...");
-        sSpellMgr->LoadSpellGroupStackRules();
-        handler->SendGlobalGMSysMessage("DB table `spell_group_stack_rules` (spell stacking definitions) reloaded.");
         return true;
     }
 
