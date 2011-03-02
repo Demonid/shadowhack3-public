@@ -3082,8 +3082,8 @@ void Spell::cancel()
             SendCastResult(SPELL_FAILED_INTERRUPTED);
 
             // spell is canceled-take mods and clear list
-            if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                m_caster->ToPlayer()->RemoveSpellMods(this);
+            if(IsChanneledSpell(m_spellInfo) && m_caster->GetTypeId() == TYPEID_PLAYER)
+                m_caster->ToPlayer()->RemovePrecastSpellMods(this);
 
             m_appliedMods.clear();
             break;
@@ -3311,7 +3311,7 @@ void Spell::cast(bool skipCheck)
     SendSpellGo();
 
     // Okay, everything is prepared. Now we need to distinguish between immediate and evented delayed spells
-    if ((m_spellInfo->speed > 0.0f && !IsChanneledSpell(m_spellInfo)) || m_spellInfo->Id == 14157)
+    if ((m_spellInfo->speed > 0.0f || m_delayMoment) && !IsChanneledSpell(m_spellInfo) || m_spellInfo->Id == 14157 || m_spellInfo->Id == 14189 || m_spellInfo->Id == 70802)
     {
         // Remove used for cast item if need (it can be already NULL after TakeReagents call
         // in case delayed spell remove item at cast delay start
@@ -3758,6 +3758,8 @@ void Spell::finish(bool ok)
 
         // Take mods after trigger spell (needed for 14177 to affect 48664)
         // mods are taken only on succesfull cast and independantly from targets of the spell
+        if(IsChanneledSpell(m_spellInfo))
+            m_caster->ToPlayer()->RemovePrecastSpellMods(this);
         m_caster->ToPlayer()->RemoveSpellMods(this);
         m_caster->ToPlayer()->SetSpellModTakingSpell(this, false);
     }

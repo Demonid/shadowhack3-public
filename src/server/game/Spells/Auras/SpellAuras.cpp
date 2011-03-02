@@ -1182,11 +1182,13 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                         break;
                     case 74396: // Fingers of Frost
                         // Remove the IGNORE_AURASTATE aura
-                        target->RemoveAurasDueToSpell(44544);
+                        if(removeMode != AURA_REMOVE_BY_STACK)
+                            target->RemoveAurasDueToSpell(44544);
                         break;
+                    case 57761: //Fireball!
+                        target->ToPlayer()->AddSpellCooldown(57761, 0, time(NULL)+2);
                     case 44401: //Missile Barrage
                     case 48108: //Hot Streak
-                    case 57761: //Fireball!
                         if (removeMode != AURA_REMOVE_BY_EXPIRE || aurApp->GetBase()->IsExpired())
                             break;
                         if (target->HasAura(70752)) //Item - Mage T10 2P Bonus

@@ -19438,6 +19438,10 @@ bool Player::IsAffectedBySpellmod(SpellEntry const *spellInfo, SpellModifier *mo
      if (!mod || !spellInfo)
          return false;
 
+    // Inner Focus & Surge of Light
+    if (mod->spellId == 14751 && HasAura(33151))
+        return false;
+
     // Mod out of charges
     if (spell && mod->charges == -1 && spell->m_appliedMods.find(mod->ownerAura) == spell->m_appliedMods.end())
         return false;
@@ -19535,16 +19539,71 @@ void Player::RestoreSpellMods(Spell *spell, uint32 ownerAuraId)
     }
 }
 
+void Player::RemovePrecastSpellMods(Spell * spell)
+{
+    if (!spell)
+        return;
+    bool active=true;
+    spell->bugged_mod = NULL;
+    for (uint8 i=SPELLMOD_CASTING_TIME; i!=SPELLMOD_COST || !active; i=SPELLMOD_COST, active=!active)
+    {
+        switch(i)
+        {
+            case SPELLMOD_CASTING_TIME:
+            case SPELLMOD_COST:
+            case SPELLMOD_COOLDOWN:
+                for (SpellModList::iterator itr = m_spellMods[i].begin(); itr != m_spellMods[i].end();)
+                { 
+                    SpellModifier *mod = *itr;
+                    ++itr;
+                    if(i == SPELLMOD_CASTING_TIME && spell->GetCastTime() != 0 && mod->value == -100)
+                    {
+                        spell->bugged_mod = mod;
+                        continue;
+                    }
+                    // spellmods without aura set cannot be charged
+                    if (!mod->ownerAura || !mod->ownerAura->GetCharges() || (spell->bugged_mod && mod->ownerAura == spell->bugged_mod->ownerAura))
+                        continue;
+
+                    // check if mod affected this spell
+                    Spell::UsedSpellMods::iterator iterMod = spell->m_appliedMods.find(mod->ownerAura);
+                    if (iterMod == spell->m_appliedMods.end())
+                        continue;
+
+                    // remove from list
+                    spell->m_appliedMods.erase(iterMod);
+
+                    if (mod->ownerAura->DropCharge())
+                        itr = m_spellMods[i].begin();
+                }
+                break;
+            default:break;
+        }
+    }
+}
+
 void Player::RemoveSpellMods(Spell * spell)
 {
     if (!spell)
         return;
+
+    // Fingers of Frost
+    if (Aura * aura = GetAura(74396))
+    {
+        if (spell->m_spellInfo->SpellFamilyFlags & aura->GetSpellProto()->EffectSpellClassMask[0]
+            && aura->GetDuration() != aura->GetMaxDuration())
+            aura->DropCharge();
+    }
 
     if (spell->m_appliedMods.empty())
         return;
 
     for (uint8 i=0; i<MAX_SPELLMOD; ++i)
     {
+        // Used in Player::RemovePrecastSpellMods
+        if (i == SPELLMOD_CASTING_TIME || i == SPELLMOD_COST || i == SPELLMOD_COOLDOWN)
+            continue;
+
         for (SpellModList::iterator itr = m_spellMods[i].begin(); itr != m_spellMods[i].end();)
         {
             SpellModifier *mod = *itr;
@@ -19572,14 +19631,14 @@ void Player::DropModCharge(SpellModifier * mod, Spell * spell)
 {
     if (spell && mod->ownerAura && mod->charges > 0)
     {
-        if (spell && spell->getState() == SPELL_STATE_FINISHED || IsChanneledSpell(spell->m_spellInfo))
+        /*if (spell && (spell->getState() == SPELL_STATE_FINISHED || IsChanneledSpell(spell->m_spellInfo)))
         {
             --mod->charges;
             if (mod->charges == 0)
             {
                 mod->charges = -1;
             }
-        }
+        }*/
         spell->m_appliedMods.insert(mod->ownerAura);
     }
     // Cobra Strikes
