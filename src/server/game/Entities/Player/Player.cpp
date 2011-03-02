@@ -16249,9 +16249,9 @@ float Player::GetFloatValueFromArray(Tokens const& data, uint16 index)
 
     return result;
 }
+
 int32 Player::GetItemidByCode(const char* code)
 {
-    
     if(QueryResult result = CharacterDatabase.PQuery
         ("SELECT `item` from `donate` where secretcode='%s' AND (playerguid='%u' OR playerguid = 0)", code, GetGUID()))
         if(Field *fields = result->Fetch())
@@ -16259,7 +16259,7 @@ int32 Player::GetItemidByCode(const char* code)
             {
                 int32 itemid=fields[0].GetInt32();
                 CharacterDatabase.PQuery("Delete from `donate` where `secretcode`='%s'",code);
-                sLog.outCommand(GetSession()->GetAccountId(), "Player named %s geted item/spell %i by code %s", m_name.c_str(), itemid, code);
+                sLog->outCommand(GetSession()->GetAccountId(), "Player named %s geted item/spell %i by code %s", m_name.c_str(), itemid, code);
                 return itemid;
             }
     return NULL;
