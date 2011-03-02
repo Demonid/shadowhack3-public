@@ -32,6 +32,12 @@
 #include "InstanceSaveMgr.h"
 #include "ObjectMgr.h"
 
+/*Movement anticheat DEBUG defines */
+//#define MOVEMENT_ANTICHEAT_DEBUG true
+#define MOVEMENT_ANTICHEAT_ALARM_LOG true
+//#define MOVEMENT_ANTICHEAT_DEBUG_FULL true
+/*end Movement anticheate defines*/
+
 void WorldSession::HandleMoveWorldportAckOpcode(WorldPacket & /*recv_data*/)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: got MSG_MOVE_WORLDPORT_ACK.");
@@ -404,8 +410,9 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             plMover->m_anti_LastClientTime = movementInfo.time;
         }
 
-        uint32 cServerTime=getMSTime();
+        uint32 cServerTime = getMSTime();
         uint32 cServerTimeDelta = 1500;
+
         if (plMover->m_anti_LastServerTime != 0)
         {
             cServerTimeDelta = cServerTime - plMover->m_anti_LastServerTime;
@@ -431,6 +438,8 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
 
         //mistiming checks
         int32 gmd = World::GetMistimingDelta();
+        uint32 immunityTime = plMover->m_anti_temporaryImmunity + gmd;
+
         if (sync_time > gmd || sync_time < -gmd)
         {
             cClientTimeDelta = cServerTimeDelta;
@@ -593,7 +602,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             //speed hack checks
             if ( (real_delta > allowed_delta && real_delta < 4900.0f) && (delta_z < (plMover->m_anti_Last_VSpeed * time_delta) || delta_z < 1) )
             {
-                if (plMover->m_anti_temporaryImmunity < cServerTime)
+                if (immunityTime < cServerTime)
                 {
                     #ifdef MOVEMENT_ANTICHEAT_ALARM_LOG
                     sLog->outCheater("IAC-%s, speed exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f",
@@ -628,7 +637,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                   && !(movementInfo.flags & (MOVEMENTFLAG_SWIMMING)) // allow X button in water
                   && !flying_allowed)
             {
-                if (plMover->m_anti_temporaryImmunity < cServerTime)
+                if (immunityTime < cServerTime)
                 {
                     #ifdef MOVEMENT_ANTICHEAT_ALARM_LOG
                         sLog->outCheater("IAC-%s, flight exception.", plMover->GetName());
