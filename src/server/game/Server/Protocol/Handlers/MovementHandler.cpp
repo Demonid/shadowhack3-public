@@ -605,7 +605,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                 if (immunityTime < cServerTime)
                 {
                     #ifdef MOVEMENT_ANTICHEAT_ALARM_LOG
-                    sLog->outCheater("IAC-%s, speed exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f",
+                    sLog->outCheater("IAC-%s, speed exception | cDelta = %f aDelta = %f | cSpeed = %f lSpeed = %f deltaTime = %f",
                         plMover->GetName(), real_delta, allowed_delta, current_speed, plMover->m_anti_Last_HSpeed, time_delta);
                     #endif
                     check_passed = false;
@@ -616,8 +616,8 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             if ( (real_delta >= 4900.0f ) && !(real_delta < allowed_delta) )
             {
                 #ifdef MOVEMENT_ANTICHEAT_ALARM_LOG
-                sLog->outCheater("IAC-%s, is teleport exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaToime=%f",
-                    plMover->GetName(),real_delta, allowed_delta, current_speed, plMover->m_anti_Last_HSpeed,time_delta);
+                sLog->outCheater("IAC-%s, is teleport exception | cDelta = %f aDelta = %f | cSpeed = %f lSpeed = %f deltaTime = %f",
+                    plMover->GetName(),real_delta, allowed_delta, current_speed, plMover->m_anti_Last_HSpeed, time_delta);
                 #endif
                 check_passed = false;
             }
@@ -625,10 +625,13 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             //climb mountain hack checks // 1.56f (delta_z < GetPlayer()->m_anti_Last_VSpeed))
             if ((delta_z < plMover->m_anti_Last_VSpeed) && (plMover->m_anti_JustJumped == 0) && (tg_z > 2.37f) && ((movementInfo.flags & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING)) == 0) )
             {
-                #ifdef MOVEMENT_ANTICHEAT_ALARM_LOG
-                    sLog->outCheater("IAC-%s, mountain exception | tg_z=%f", plMover->GetName(),tg_z);
-                #endif
-                check_passed = false;
+                if (immunityTime < cServerTime)
+                {
+                    #ifdef MOVEMENT_ANTICHEAT_ALARM_LOG
+                        sLog->outCheater("IAC-%s, mountain exception | tg_z = %f", plMover->GetName(), tg_z);
+                    #endif
+                    check_passed = false;
+                }
             }
 
             //Fly hack checks
