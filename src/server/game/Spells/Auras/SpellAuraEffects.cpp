@@ -606,14 +606,22 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
         case SPELL_AURA_DAMAGE_SHIELD:
             if (!caster)
                 break;
-		// Retribution Aura
-		if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_PALADIN && m_spellProto->SpellFamilyFlags[0] & 0x00000008)
+            // Retribution Aura
+            if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_PALADIN && m_spellProto->SpellFamilyFlags[0] & 0x00000008)
                 // 3.3% from sp bonus
                 DoneActualBenefit = caster->SpellBaseDamageBonus(GetSpellSchoolMask(m_spellProto)) * 0.033f;
             // Thorns
             else if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_DRUID && m_spellProto->SpellFamilyFlags[0] & 0x100)
                 // 3.3% from sp bonus
                 DoneActualBenefit = caster->SpellBaseDamageBonus(GetSpellSchoolMask(m_spellProto)) * 0.033f;
+            // Damage Shield
+            else if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && m_spellProto->SpellFamilyFlags[0] & 0x800000)
+                // 1% from sp bonus
+                DoneActualBenefit = caster->SpellBaseDamageBonus(GetSpellSchoolMask(m_spellProto)) * 0.01f;
+            // Demonic Immolation
+            else if (m_spellProto->Id == 4524)
+                // 135% from sp bonus
+                DoneActualBenefit = caster->SpellBaseDamageBonus(GetSpellSchoolMask(m_spellProto)) * 1.35f;
             break;
         case SPELL_AURA_PERIODIC_DAMAGE:
             if (!caster)
@@ -2355,7 +2363,20 @@ void AuraEffect::TriggerSpell(Unit * target, Unit * caster) const
                 {
                     // Invisibility
                     case 66:
-                    // Here need periodic triger reducing threat spell (or do it manually)
+                        if(caster)
+                        {
+                            AuraEffect * auraeff = caster->GetAuraEffect(SPELL_AURA_ADD_FLAT_MODIFIER, SPELLFAMILY_MAGE, 2126, 1);
+                            int32 bonusamount = auraeff ? auraeff->GetAmount() : 0;
+                            if(GetBase()->GetDuration() < (3000+bonusamount)/3)
+                            {
+                                triggerSpellId = 32612;
+                                caster->RemoveAura(GetBase());
+                                caster->CombatStopWithPets();
+                                caster->getHostileRefManager().deleteReferences();
+                                caster->DeleteThreatList();
+                                break;
+                            }
+                        }
                         return;
                 }
                 break;
@@ -6018,18 +6039,28 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                     if (GetSpellProto()->SpellFamilyFlags[1] & 0x10)
                     {
                         // Final heal only on dispelled or duration end
-                        if (aurApp->GetRemoveMode() != AURA_REMOVE_BY_EXPIRE && aurApp->GetRemoveMode() != AURA_REMOVE_BY_ENEMY_SPELL)
-                            return;
+                        if (aurApp->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE || aurApp->GetRemoveMode() == AURA_REMOVE_BY_ENEMY_SPELL)
+                         {
+                            if (caster)
+                            {
+                                // final heal
+                                int32 stack = 0;
+                                if (aurApp->GetRemoveMode() == AURA_REMOVE_BY_ENEMY_SPELL)
+                                    stack = 1;
+                                else
+                                    stack = GetBase()->GetStackAmount();
+                                target->CastCustomSpell(target, 33778, &m_amount, &stack, NULL, true, NULL, this, caster->GetGUID());
 
-                        // final heal
-                        int32 stack = GetBase()->GetStackAmount();
-                        target->CastCustomSpell(target, 33778, &m_amount, &stack, NULL, true, NULL, this, GetCasterGUID());
+                                // restore mana
+                                if (Unit *source = caster)
+                                {
+                                    if (!target->IsFriendlyTo(source))
+                                        source = target;
 
-                        // restore mana
-                        if (caster)
-                        {
-                            int32 returnmana = CalculatePctU(caster->GetCreateMana(), GetSpellProto()->ManaCostPercentage) * stack * 0.5f;
-                            caster->CastCustomSpell(caster, 64372, &returnmana, NULL, NULL, true, NULL, this, GetCasterGUID());
+                                    int32 returnmana = CalculatePctU(caster->GetCreateMana(), GetSpellProto()->ManaCostPercentage) * stack / 2;
+                                    source->CastCustomSpell(source, 64372, &returnmana, NULL, NULL, true, NULL, this, caster->GetGUID());
+                                }
+                            }
                         }
                     }
                     break;

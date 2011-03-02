@@ -1030,6 +1030,13 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                     }
                     break;
                 }
+                case 27893: // Rune Weapon
+                {
+                    float dmg_multiplier = 0.3f;
+                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE,float((petlevel * 4 - petlevel) + (m_owner->GetTotalAttackPowerValue(BASE_ATTACK) * dmg_multiplier * 2 / 14)));
+                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE,float((petlevel * 4 + petlevel) + (m_owner->GetTotalAttackPowerValue(BASE_ATTACK) * dmg_multiplier * 2 / 14)));
+                    break;
+                }
                 case 27829: // Ebon Gargoyle
                 {
                     if (!pInfo)
