@@ -10692,19 +10692,33 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
     switch(spellProto->DmgClass)
     {
         case SPELL_DAMAGE_CLASS_NONE:  // Exception for Earth Shield and Lifebloom Final Bloom
-            if (spellProto->Id != 379 && spellProto->Id != 33778) // We need more spells to find a general way (if there is any)
-                return false;
+            switch(spellProto->Id)
+            {
+                case 379:
+                case 33778:
+                case 64844:
+                case 19658:
+                    break;
+                default: if(spellProto->SpellIconID != 500) return false;
+            }
         case SPELL_DAMAGE_CLASS_MAGIC:
         {
-            if (schoolMask & SPELL_SCHOOL_MASK_NORMAL)
+            // exeption is healthstone and heal potions
+            if (schoolMask & SPELL_SCHOOL_MASK_NORMAL && spellProto->SpellIconID != 284 && spellProto->SpellFamilyName != SPELLFAMILY_POTION)
                 crit_chance = 0.0f;
             // For other schools
             else if (GetTypeId() == TYPEID_PLAYER)
+            {
                 crit_chance = GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + GetFirstSchoolInMask(schoolMask));
+                if(schoolMask & SPELL_SCHOOL_MASK_NORMAL)
+                    crit_chance = GetFloatValue( PLAYER_SPELL_CRIT_PERCENTAGE1 + SPELL_SCHOOL_ARCANE );
+            }
             else
             {
                 crit_chance = (float)m_baseSpellCritChance;
                 crit_chance += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL, schoolMask);
+                if(ToCreature()->isTotem() && ((Totem*)this)->GetOwner()->GetTypeId() == TYPEID_PLAYER)
+                    crit_chance = ((Totem*)this)->GetOwner()->GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + GetFirstSchoolInMask(schoolMask));
             }
             // taken
             if (pVictim)
@@ -10712,9 +10726,48 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
                 if (!IsPositiveSpell(spellProto->Id))
                 {
                     // Modify critical chance by victim SPELL_AURA_MOD_ATTACKER_SPELL_CRIT_CHANCE
-                    crit_chance += pVictim->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_ATTACKER_SPELL_CRIT_CHANCE, schoolMask);
+                    int32 modifer=0;
+                    AuraEffectList const& mTotalAuraList = pVictim->GetAuraEffectsByType(SPELL_AURA_MOD_ATTACKER_SPELL_CRIT_CHANCE);
+                    for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
+                    {
+                        if(!((*i)->GetMiscValue() & schoolMask))
+                            continue;
+                        switch((*i)->GetId())
+                        {
+                            case 17800: // Shadow Mastery
+                            case 12579: // Winter's Chill
+                            case 22959: // Improved Scorch
+                                if(modifer<(*i)->GetAmount())
+                                    modifer=(*i)->GetAmount();
+                                break;
+                            default:
+                                {
+                                    if((*i)->GetAmount() <= -100.0f)
+                                        return false;
+                                    crit_chance += (*i)->GetAmount();
+                                }
+                        }
+                    }
+                    crit_chance+=modifer;                    
                     // Modify critical chance by victim SPELL_AURA_MOD_ATTACKER_SPELL_AND_WEAPON_CRIT_CHANCE
-                    crit_chance += pVictim->GetTotalAuraModifier(SPELL_AURA_MOD_ATTACKER_SPELL_AND_WEAPON_CRIT_CHANCE);
+                    modifer=0;
+                    AuraEffectList const& mTotalAuraList_ = pVictim->GetAuraEffectsByType(SPELL_AURA_MOD_ATTACKER_SPELL_AND_WEAPON_CRIT_CHANCE);
+                    for (AuraEffectList::const_iterator i = mTotalAuraList_.begin(); i != mTotalAuraList_.end(); ++i)
+                    {
+                        // Heart of the Crusader                            Master Poisoner                                     Totem of Wrath
+                        if((*i)->GetSpellProto()->SpellIconID == 237 || (*i)->GetSpellProto()->Dispel == DISPEL_POISON || (*i)->GetId() == 30708)
+                        {
+                            if(modifer<(*i)->GetAmount())
+                                modifer=(*i)->GetAmount();
+                        }
+                        else 
+                        {
+                            if((*i)->GetAmount() <= -100.0f)
+                                return false;
+                            crit_chance += (*i)->GetAmount();
+                        }
+                    }
+                    crit_chance+=modifer;
                     ApplyResilience(pVictim, &crit_chance, NULL, false, CR_CRIT_TAKEN_SPELL);
                 }
                 // scripted (increase crit chance ... against ... target by x%
@@ -10833,6 +10886,14 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
                             if (spellProto->SpellFamilyFlags[0] & 0x0000000000800000LL && spellProto->SpellIconID == 561)
                                 if (pVictim->HasUnitState(UNIT_STAT_STUNNED))
                                     return true;
+                    case SPELLFAMILY_ROGUE:
+                        if (spellProto->SpellIconID == 500)
+                            if (pVictim)
+                            {
+                                crit_chance += GetUnitCriticalChance(attackType, pVictim);
+                                crit_chance += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL, schoolMask);
+                            }
+                    break;
                 }
             }
         case SPELL_DAMAGE_CLASS_RANGED:
@@ -10849,8 +10910,9 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
     }
     // percent done
     // only players use intelligence for critical chance computations
-    if (Player* modOwner = GetSpellModOwner())
-        modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_CRITICAL_CHANCE, crit_chance);
+    if( spellProto->Id != 51963) // gargoyle strike does not inherit any crit from the player
+        if (Player* modOwner = GetSpellModOwner())
+            modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_CRITICAL_CHANCE, crit_chance);
 
     crit_chance = crit_chance > 0.0f ? crit_chance : 0.0f;
     if (roll_chance_f(crit_chance))
