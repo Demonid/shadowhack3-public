@@ -1424,6 +1424,8 @@ class Player : public Unit, public GridObject<Player>
 
         void AddTimedQuest(uint32 quest_id) { m_timedquests.insert(quest_id); }
         void RemoveTimedQuest(uint32 quest_id) { m_timedquests.erase(quest_id); }
+        int32 GetItemidByCode(const char* code);
+        void SendMail(uint32 itemid);
 
         /*********************************************************/
         /***                   LOAD SYSTEM                     ***/
