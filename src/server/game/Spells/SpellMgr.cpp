@@ -768,6 +768,9 @@ bool IsSingleFromSpellSpecificPerCaster(SpellSpecific spellSpec1,SpellSpecific s
 {
     switch(spellSpec1)
     {
+        case SPELL_SPECIFIC_POSITIVE_SHOUT:
+        case SPELL_SPECIFIC_BLESSING:
+        case SPELL_SPECIFIC_IMMOLATE_UNSTABLE:
         case SPELL_SPECIFIC_SEAL:
         case SPELL_SPECIFIC_HAND:
         case SPELL_SPECIFIC_AURA:
@@ -786,7 +789,15 @@ bool IsSingleFromSpellSpecificPerTarget(SpellSpecific spellSpec1, SpellSpecific 
 {
     switch(spellSpec1)
     {
+        case SPELL_SPECIFIC_WARRIOR_ENRAGE:
+        case SPELL_SPECIFIC_TARGET_DAMAGE_BOOST:
+        case SPELL_SPECIFIC_WELL_FED:
         case SPELL_SPECIFIC_PHASE:
+        case SPELL_SPECIFIC_ARENABG_DAMPENING:
+        case SPELL_SPECIFIC_MAGE_NOVA:
+        case SPELL_SPECIFIC_TRAUMA_MANGLE:
+        case SPELL_SPECIFIC_FAERIEFIRE:
+        case SPELL_SPECIFIC_NETHER_PROTECTION:
         case SPELL_SPECIFIC_TRACKER:
         case SPELL_SPECIFIC_WARLOCK_ARMOR:
         case SPELL_SPECIFIC_MAGE_ARMOR:
@@ -795,7 +806,6 @@ bool IsSingleFromSpellSpecificPerTarget(SpellSpecific spellSpec1, SpellSpecific 
         case SPELL_SPECIFIC_PRESENCE:
         case SPELL_SPECIFIC_CHARM:
         case SPELL_SPECIFIC_SCROLL:
-        case SPELL_SPECIFIC_WARRIOR_ENRAGE:
         case SPELL_SPECIFIC_MAGE_ARCANE_BRILLANCE:
         case SPELL_SPECIFIC_PRIEST_DIVINE_SPIRIT:
             return spellSpec1 == spellSpec2;
@@ -809,6 +819,16 @@ bool IsSingleFromSpellSpecificPerTarget(SpellSpecific spellSpec1, SpellSpecific 
             return spellSpec2 == SPELL_SPECIFIC_FOOD
                 || spellSpec2 == SPELL_SPECIFIC_DRINK
                 || spellSpec2 == SPELL_SPECIFIC_FOOD_AND_DRINK;
+        case SPELL_SPECIFIC_BATTLE_ELIXIR:
+            return spellSpec2==SPELL_SPECIFIC_BATTLE_ELIXIR
+                || spellSpec2==SPELL_SPECIFIC_FLASK_ELIXIR;
+        case SPELL_SPECIFIC_GUARDIAN_ELIXIR:
+            return spellSpec2==SPELL_SPECIFIC_GUARDIAN_ELIXIR
+                || spellSpec2==SPELL_SPECIFIC_FLASK_ELIXIR;
+        case SPELL_SPECIFIC_FLASK_ELIXIR:
+            return spellSpec2==SPELL_SPECIFIC_BATTLE_ELIXIR
+                || spellSpec2==SPELL_SPECIFIC_GUARDIAN_ELIXIR
+                || spellSpec2==SPELL_SPECIFIC_FLASK_ELIXIR;
         default:
             return false;
     }
