@@ -82,7 +82,7 @@ public:
             //Frostbolt_Timer
             if (Frostbolt_Timer <= diff)
             {
-                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))
                     DoCast(pTarget, SPELL_FROSTBOLT);
 
                 Frostbolt_Timer = 8000;

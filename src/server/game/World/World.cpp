@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
@@ -48,9 +49,11 @@
 #include "CreatureAIRegistry.h"
 #include "BattlegroundMgr.h"
 #include "OutdoorPvPMgr.h"
+#include "OutdoorPvPWG.h"
 #include "TemporarySummon.h"
 #include "WaypointMovementGenerator.h"
 #include "VMapFactory.h"
+#include "MoveMap.h"
 #include "GameEventMgr.h"
 #include "PoolMgr.h"
 #include "GridNotifiersImpl.h"
@@ -83,6 +86,12 @@ float World::m_MaxVisibleDistanceInBGArenas   = DEFAULT_VISIBILITY_BGARENAS;
 int32 World::m_visibility_notify_periodOnContinents = DEFAULT_VISIBILITY_NOTIFY_PERIOD;
 int32 World::m_visibility_notify_periodInInstances  = DEFAULT_VISIBILITY_NOTIFY_PERIOD;
 int32 World::m_visibility_notify_periodInBGArenas   = DEFAULT_VISIBILITY_NOTIFY_PERIOD;
+
+//movement anticheat
+bool World::m_EnableMvAnticheat = true;
+uint32 World::m_TeleportToPlaneAlarms = 50;
+uint32 World::m_MistimingAlarms = 20;
+uint32 World::m_MistimingDelta = 2000;
 
 /// World constructor
 World::World()
@@ -129,6 +138,7 @@ World::~World()
         delete command;
 
     VMAP::VMapFactory::clear();
+    MMAP::MMapFactory::clear();
 
     //TODO free addSessQueue
 }
@@ -258,7 +268,7 @@ World::AddSession_(WorldSession* s)
     if (decrease_session)
         --Sessions;
 
-    if (pLimit > 0 && Sessions >= pLimit && s->GetSecurity() == SEC_PLAYER && !HasRecentlyDisconnected(s))
+    if (pLimit > 0 && Sessions >= pLimit && s->GetSecurity() <= SEC_MODERATOR && !HasRecentlyDisconnected(s))
     {
         AddQueuedPlayer (s);
         UpdateMaxSessionCounters();
@@ -456,6 +466,9 @@ void World::LoadConfigSettings(bool reload)
     rate_values[RATE_XP_KILL]     = sConfig->GetFloatDefault("Rate.XP.Kill", 1.0f);
     rate_values[RATE_XP_QUEST]    = sConfig->GetFloatDefault("Rate.XP.Quest", 1.0f);
     rate_values[RATE_XP_EXPLORE]  = sConfig->GetFloatDefault("Rate.XP.Explore", 1.0f);
+	rate_values[RATE_PREMIUM_XP_KILL]     = sConfig->GetFloatDefault("Rate.Premium.XP.Kill", 2.0f);
+	rate_values[RATE_PREMIUM_XP_QUEST]    = sConfig->GetFloatDefault("Rate.Premium.XP.Quest", 2.0f);
+	rate_values[RATE_PREMIUM_XP_EXPLORE]  = sConfig->GetFloatDefault("Rate.Premium.XP.Explore", 2.0f);
     rate_values[RATE_REPAIRCOST]  = sConfig->GetFloatDefault("Rate.RepairCost", 1.0f);
     if (rate_values[RATE_REPAIRCOST] < 0.0f)
     {
@@ -521,6 +534,19 @@ void World::LoadConfigSettings(bool reload)
         rate_values[RATE_TARGET_POS_RECALCULATION_RANGE] = NOMINAL_MELEE_RANGE;
     }
 
+    rate_values[RATE_MAX_CHARGE_PROC_RANGE] = sConfig->GetFloatDefault("MaxChargeProcRange", 10.0f);
+    if (rate_values[RATE_MAX_CHARGE_PROC_RANGE] < 7.0f)
+    {
+        sLog->outError("MaxChargeProcRange (%f) must be >= 7. Using 7 instead.", rate_values[RATE_MAX_CHARGE_PROC_RANGE]);
+        rate_values[RATE_MAX_CHARGE_PROC_RANGE] = 7.0f;
+    }
+    else if (rate_values[RATE_MAX_CHARGE_PROC_RANGE] > 25.0f)
+    {
+        sLog->outError("MaxChargeProcRange (%f) must be <= %f. Using 25 instead.",
+            rate_values[RATE_MAX_CHARGE_PROC_RANGE], 25.0f);
+        rate_values[RATE_MAX_CHARGE_PROC_RANGE] = 25.0f;
+    }
+
     rate_values[RATE_DURABILITY_LOSS_ON_DEATH]  = sConfig->GetFloatDefault("DurabilityLoss.OnDeath", 10.0f);
     if (rate_values[RATE_DURABILITY_LOSS_ON_DEATH] < 0.0f)
     {
@@ -557,6 +583,35 @@ void World::LoadConfigSettings(bool reload)
     {
         sLog->outError("DurabilityLossChance.Block (%f) must be >=0. Using 0.0 instead.",rate_values[RATE_DURABILITY_LOSS_BLOCK]);
         rate_values[RATE_DURABILITY_LOSS_BLOCK] = 0.0f;
+    }
+    // movement anticheat
+    m_EnableMvAnticheat = sConfig->GetBoolDefault("Anticheat.Movement.Enable",true);
+    m_TeleportToPlaneAlarms = sConfig->GetIntDefault("Anticheat.Movement.TeleportToPlaneAlarms", 50);
+    if (m_TeleportToPlaneAlarms<20){
+        sLog->outError("Anticheat.Movement.TeleportToPlaneAlarms (%d) must be >=20. Using 20 instead.",m_TeleportToPlaneAlarms);
+        m_TeleportToPlaneAlarms = 20;
+    }
+    if (m_TeleportToPlaneAlarms>100){
+        sLog->outError("Anticheat.Movement.TeleportToPlaneAlarms (%d) must be <=100. Using 100 instead.",m_TeleportToPlaneAlarms);
+        m_TeleportToPlaneAlarms = 100;
+    }
+    m_MistimingDelta = sConfig->GetIntDefault("Anticheat.Movement.MistimingDelta",10000);
+    if (m_MistimingDelta<1000){
+        sLog->outError("Anticheat.Movement.m_MistimingDelta (%d) must be >=1000ms. Using 1000 instead.",m_TeleportToPlaneAlarms);
+        m_MistimingDelta = 1000;
+    }
+    if (m_MistimingDelta>15000){
+        sLog->outError("Anticheat.Movement.m_MistimingDelta (%d) must be <=15000ms. Using 15000 instead.",m_TeleportToPlaneAlarms);
+        m_MistimingDelta = 15000;
+    }
+    m_MistimingAlarms = sConfig->GetIntDefault("Anticheat.Movement.MistimingAlarms",20);
+    if (m_MistimingAlarms<10) {
+        sLog->outError("Anticheat.Movement.MistimingAlarms (%d) must be >=20. Using 10 instead.",m_TeleportToPlaneAlarms);
+        m_MistimingAlarms = 10;
+    }
+    if (m_MistimingAlarms>50){
+        sLog->outError("Anticheat.Movement.m_MistimingAlarms (%d) must be <=50. Using 50 instead.",m_TeleportToPlaneAlarms);
+        m_MistimingAlarms = 50;
     }
     ///- Read other configuration items from the config file
 
@@ -875,6 +930,9 @@ void World::LoadConfigSettings(bool reload)
 
     m_int_configs[CONFIG_MAIL_DELIVERY_DELAY] = sConfig->GetIntDefault("MailDeliveryDelay",HOUR);
 
+    m_bool_configs[CONFIG_EXTERNAL_MAIL] = sConfig->GetBoolDefault("ExternalMail", false);
+    m_int_configs[CONFIG_EXTERNAL_MAIL_INTERVAL] = sConfig->GetIntDefault("ExternalMailInterval", 1);
+
     m_int_configs[CONFIG_UPTIME_UPDATE] = sConfig->GetIntDefault("UpdateUptimeInterval", 10);
     if (int32(m_int_configs[CONFIG_UPTIME_UPDATE]) <= 0)
     {
@@ -903,6 +961,9 @@ void World::LoadConfigSettings(bool reload)
     sLog->outString("Will clear `logs` table of entries older than %i seconds every %u minutes.",
         m_int_configs[CONFIG_LOGDB_CLEARTIME], m_int_configs[CONFIG_LOGDB_CLEARINTERVAL]);
 
+	m_int_configs[CONFIG_PREMIUM_XP_LEVELLIMIT]     = sConfig->GetIntDefault("Rate.Premium.XP.LevelLimit", 70);
+	m_int_configs[CONFIG_PREMIUM_SKILL_GAIN_LIMIT]  = sConfig->GetIntDefault("Rate.Premium.SkillGain.Limit", 400);
+
     m_int_configs[CONFIG_SKILL_CHANCE_ORANGE] = sConfig->GetIntDefault("SkillChance.Orange",100);
     m_int_configs[CONFIG_SKILL_CHANCE_YELLOW] = sConfig->GetIntDefault("SkillChance.Yellow",75);
     m_int_configs[CONFIG_SKILL_CHANCE_GREEN]  = sConfig->GetIntDefault("SkillChance.Green",25);
@@ -916,9 +977,14 @@ void World::LoadConfigSettings(bool reload)
 
     m_int_configs[CONFIG_SKILL_GAIN_CRAFTING]  = sConfig->GetIntDefault("SkillGain.Crafting", 1);
 
+	m_int_configs[CONFIG_PREMIUM_SKILL_GAIN_CRAFTING]  = sConfig->GetIntDefault("SkillGain.Premium.Crafting", 2);
+
+
     m_int_configs[CONFIG_SKILL_GAIN_DEFENSE]  = sConfig->GetIntDefault("SkillGain.Defense", 1);
 
     m_int_configs[CONFIG_SKILL_GAIN_GATHERING]  = sConfig->GetIntDefault("SkillGain.Gathering", 1);
+
+	m_int_configs[CONFIG_PREMIUM_SKILL_GAIN_GATHERING]  = sConfig->GetIntDefault("SkillGain.Premium.Gathering", 2);
 
     m_int_configs[CONFIG_SKILL_GAIN_WEAPON]  = sConfig->GetIntDefault("SkillGain.Weapon", 1);
 
@@ -1131,6 +1197,12 @@ void World::LoadConfigSettings(bool reload)
     sLog->outString("WORLD: VMap support included. LineOfSight:%i, getHeight:%i, indoorCheck:%i PetLOS:%i", enableLOS, enableHeight, enableIndoor, enablePetLOS);
     sLog->outString("WORLD: VMap data directory is: %svmaps",m_dataPath.c_str());
 
+    m_bool_configs[CONFIG_MOVEMAP_ENABLE] = sConfig->GetBoolDefault("PathFinding.Enable", true);
+
+    std::string ignoreMMapIds = sConfig->GetStringDefault("PathFinding.ignoreMapIds", "");
+    MMAP::MMapFactory::preventPathfindingOnMaps(ignoreMMapIds.c_str());
+    sLog->outString("WORLD: PathFinding %sabled", getBoolConfig(CONFIG_MOVEMAP_ENABLE) ? "en" : "dis");
+
     m_int_configs[CONFIG_MAX_WHO] = sConfig->GetIntDefault("MaxWhoListReturns", 49);
     m_bool_configs[CONFIG_PET_LOS] = sConfig->GetBoolDefault("vmap.petLOS", true);
     m_bool_configs[CONFIG_START_ALL_SPELLS] = sConfig->GetBoolDefault("PlayerStart.AllSpells", false);
@@ -1153,6 +1225,23 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_MIN_LOG_UPDATE] = sConfig->GetIntDefault("MinRecordUpdateTimeDiff", 100);
     m_int_configs[CONFIG_NUMTHREADS] = sConfig->GetIntDefault("MapUpdate.Threads", 1);
     m_int_configs[CONFIG_MAX_RESULTS_LOOKUP_COMMANDS] = sConfig->GetIntDefault("Command.LookupMaxResults", 0);
+
+	m_bool_configs[CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED]          = sConfig->GetBoolDefault("OutdoorPvP.Wintergrasp.Enabled", true);
+	m_bool_configs[CONFIG_OUTDOORPVP_WINTERGRASP_CUSTOM_HONOR]     = sConfig->GetBoolDefault("OutdoorPvP.Wintergrasp.CustomHonorRewards", false);
+
+	m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_START_TIME]        = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.StartTime", 30);
+	m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_BATTLE_TIME]       = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.BattleTime", 30);
+	m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_INTERVAL]          = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.Interval", 150);	
+	m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_WIN_BATTLE]        = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorBattleWin", 3000);
+	m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_LOSE_BATTLE]       = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorBattleLose", 1250);
+	m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_DAMAGED_TOWER]     = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorDamageTower", 750);
+	m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_DESTROYED_TOWER]   = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorDestroyedTower", 750);
+	m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_DAMAGED_BUILDING]  = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorDamagedBuilding", 750);
+	m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_INTACT_BUILDING]   = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorIntactBuilding", 1500);
+
+	m_bool_configs[CONFIG_OUTDOORPVP_WINTERGRASP_ANTIFARM_ENABLE]  = sConfig->GetBoolDefault("OutdoorPvP.Wintergrasp.Antifarm.Enable", false);
+	m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_ANTIFARM_ATK]      = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.Antifarm.Atk", 5);
+	m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_ANTIFARM_DEF]      = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.Antifarm.Def", 5);
 
     // chat logging
     m_bool_configs[CONFIG_CHATLOG_CHANNEL] = sConfig->GetBoolDefault("ChatLogs.Channel", false);
@@ -1194,6 +1283,8 @@ void World::SetInitialWorldSettings()
     ///- Initialize the random number generator
     srand((unsigned int)time(NULL));
 
+    ///- Initialize detour memory management
+    dtAllocSetCustom(dtCustomAlloc, dtCustomFree);
     ///- Initialize config settings
     LoadConfigSettings();
 
@@ -1649,6 +1740,8 @@ void World::SetInitialWorldSettings()
                                                             //1440
     mail_timer_expires = ((DAY * IN_MILLISECONDS) / (m_timers[WUPDATE_AUCTIONS].GetInterval()));
     sLog->outDetail("Mail timer set to: " UI64FMTD ", mail return is called every " UI64FMTD " minutes", uint64(mail_timer), uint64(mail_timer_expires));
+    // handle timer for external mail
+    m_timers[WUPDATE_EXTMAIL].SetInterval(m_int_configs[CONFIG_EXTERNAL_MAIL_INTERVAL] * MINUTE * IN_MILLISECONDS); 
 
     ///- Initilize static helper structures
     AIRegistry::Initialize();
@@ -1868,6 +1961,16 @@ void World::Update(uint32 diff)
 
     if (m_gameTime > m_NextRandomBGReset)
         ResetRandomBG();
+
+    /// Handle external mail
+    if (m_bool_configs[CONFIG_EXTERNAL_MAIL])
+    {
+        if (m_timers[WUPDATE_EXTMAIL].Passed())
+        {
+            sObjectMgr->SendExternalMails();
+            m_timers[WUPDATE_EXTMAIL].Reset();
+        }
+    }
 
     /// <ul><li> Handle auctions when the timer has passed
     if (m_timers[WUPDATE_AUCTIONS].Passed())
@@ -2809,4 +2912,30 @@ void World::ProcessQueryCallbacks()
         _UpdateRealmCharCount(result, param);
         m_realmCharCallback.FreeResult();
     }
+}
+
+void World::SendWintergraspState()
+{
+	OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197);
+	if (!pvpWG)
+		return;
+
+	for (SessionMap::const_iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
+	{
+		if (!itr->second || !itr->second->GetPlayer() || !itr->second->GetPlayer()->IsInWorld())
+			continue;
+
+		if (pvpWG->isWarTime())
+		{
+			// "Battle in progress"
+			itr->second->GetPlayer()->SendUpdateWorldState(ClockWorldState[1], (time(NULL)));
+		} 
+		else
+		{
+			pvpWG->SendInitWorldStatesTo(itr->second->GetPlayer());
+			itr->second->GetPlayer()->SendUpdateWorldState(ClockWorldState[1], (time(NULL) + pvpWG->GetTimer()));
+			// Hide unneeded info which in center of screen
+			itr->second->GetPlayer()->SendInitWorldStates(itr->second->GetPlayer()->GetZoneId(), itr->second->GetPlayer()->GetAreaId());
+		}
+	}
 }

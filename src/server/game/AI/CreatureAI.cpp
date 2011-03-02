@@ -96,16 +96,35 @@ void CreatureAI::DoZoneInCombat(Creature* creature)
                 pPlayer->SetInCombatWith(creature);
                 creature->AddThreat(pPlayer, 0.0f);
             }
-
-            /* Causes certain things to never leave the threat list (Priest Lightwell, etc):
-            for (Unit::ControlList::const_iterator itr = pPlayer->m_Controlled.begin(); itr != pPlayer->m_Controlled.end(); ++itr)
-            {
-                creature->SetInCombatWith(*itr);
-                (*itr)->SetInCombatWith(creature);
-                creature->AddThreat(*itr, 0.0f);
-            }*/
         }
     }
+}
+
+void CreatureAI::AggroAllPlayersInRange(float fMaxSearchRange, Creature* creature)
+{
+	if (!creature)
+		creature = me;
+
+	std::list<Player*> PlList;
+
+	creature->GetPlayerListInDistance(PlList, fMaxSearchRange);
+
+	if(PlList.empty())
+		return;
+
+	for (std::list<Player*>::const_iterator itr = PlList.begin(); itr != PlList.end(); ++itr)
+	{
+		if (Player* pPlayer = (*itr))
+		{		
+			if(pPlayer->isGameMaster() || !pPlayer->isAlive())
+				continue;
+
+			creature->SetInCombatWith(pPlayer);
+			pPlayer->SetInCombatWith(creature);
+			creature->AddThreat(pPlayer, 0.0f);
+		}
+	}
+
 }
 
 // scripts does not take care about MoveInLineOfSight loops
@@ -129,10 +148,6 @@ void CreatureAI::MoveInLineOfSight(Unit *who)
 
     if (me->canStartAttack(who, false))
         AttackStart(who);
-    //else if (who->getVictim() && me->IsFriendlyTo(who)
-    //    && me->IsWithinDistInMap(who, sWorld->getIntConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS))
-    //    && me->canStartAttack(who->getVictim(), true)) // TODO: if we use true, it will not attack it when it arrives
-    //    me->GetMotionMaster()->MoveChase(who->getVictim());
 }
 
 void CreatureAI::EnterEvadeMode()

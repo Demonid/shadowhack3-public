@@ -50,6 +50,7 @@ enum DebugLogFilters
     LOG_FILTER_LOOT                     = 0x00100000,   // Loot related
     LOG_FILTER_GUILD                    = 0x00200000,   // Guild related
     LOG_FILTER_TRANSPORTS               = 0x00400000,   // Transport related
+    LOG_FILTER_PATHFINDING              = 0x08000000,   // Pathfinding related
 };
 
 enum LogTypes
@@ -117,6 +118,7 @@ class Log
         void outString( );
         void outStringInLine( const char * str, ... )           ATTR_PRINTF(2,3);
         void outError( const char * err, ... )                  ATTR_PRINTF(2,3);
+	void outCheater( const char * cheat, ... )              ATTR_PRINTF(2,3);
         void outCrash( const char * err, ... )                  ATTR_PRINTF(2,3);
         void outBasic( const char * str, ... )                  ATTR_PRINTF(2,3);
         void outDetail( const char * str, ... )                 ATTR_PRINTF(2,3);
@@ -157,6 +159,7 @@ class Log
         FILE* logfile;
         FILE* gmLogfile;
         FILE* charLogfile;
+        FILE* cheatLogfile;
         FILE* dberLogfile;
         FILE* chatLogfile;
         FILE* arenaLogFile;

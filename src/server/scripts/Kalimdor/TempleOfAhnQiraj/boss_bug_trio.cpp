@@ -275,7 +275,7 @@ public:
             {
                 Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,0);
                 Creature* Summoned = me->SummonCreature(15621,me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(),0,TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN,90000);
-                if (Summoned && pTarget)
+                if (Summoned && pTarget && Summoned->AI())
                     Summoned->AI()->AttackStart(pTarget);
             }
         }

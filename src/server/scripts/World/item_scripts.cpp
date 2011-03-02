@@ -392,6 +392,7 @@ enum eHelpThemselves
 {
     QUEST_CANNOT_HELP_THEMSELVES                  =  11876,
     NPC_TRAPPED_MAMMOTH_CALF                      =  25850,
+    SPELL_SMASH_MAMMOTH_TRAP                      =  46201,
     GO_MAMMOTH_TRAP_1                             = 188022,
     GO_MAMMOTH_TRAP_2                             = 188024,
     GO_MAMMOTH_TRAP_3                             = 188025,
@@ -449,7 +450,7 @@ public:
             {
                 pMammoth->AI()->DoAction(1);
                 pTrap->SetGoState(GO_STATE_READY);
-                pPlayer->KilledMonsterCredit(NPC_TRAPPED_MAMMOTH_CALF,0);
+                pPlayer->CastedCreatureOrGO(NPC_TRAPPED_MAMMOTH_CALF,pMammoth->GetGUID(),SPELL_SMASH_MAMMOTH_TRAP);
                 return true;
             }
         }
@@ -510,6 +511,93 @@ public:
     }
 };
 
+/*#####
+# item_horn_of_elemental_fury
+#####*/
+class item_horn_of_elemental_fury : public ItemScript
+{
+public:
+    item_horn_of_elemental_fury() : ItemScript("item_horn_of_elemental_fury") {}
+
+    enum eHornElementalFury
+    {
+        QUEST_THE_COLLAPSE      =   11706,
+        ZONE_ID_BOREAN_TUNDRA   =   3537,
+        AREA_ID_GEYSER_FIELD    =   4035,
+        NPC_ALLUVIUS            =   25742,
+    };
+
+    bool OnUse(Player* pPlayer, Item* pItem, SpellCastTargets const& /*pTargets*/)
+    {
+        if (pPlayer->GetZoneId() != ZONE_ID_BOREAN_TUNDRA || pPlayer->GetAreaId() != AREA_ID_GEYSER_FIELD)
+        {
+	        return false;
+        }
+
+        if (pPlayer->GetQuestStatus(QUEST_THE_COLLAPSE) == QUEST_STATUS_INCOMPLETE)
+        {
+	        pPlayer->GroupKillHappens(NPC_ALLUVIUS, pPlayer);
+            return true;
+        }
+
+        return false;
+    }
+};
+
+class item_gavrock_runebreaker : public ItemScript
+{
+public:
+    item_gavrock_runebreaker() : ItemScript("item_gavrock_runebreaker") {}
+
+    bool OnUse(Player* pPlayer, Item* pItem, SpellCastTargets const& targets)
+    {
+        if (pPlayer->GetQuestStatus(12099) == QUEST_STATUS_INCOMPLETE)
+        {
+            Quest const* qInfo = sObjectMgr->GetQuestTemplate(12099);
+	        if ( pPlayer->getQuestStatusMap()[12099].m_creatureOrGOcount[0] < qInfo->ReqCreatureOrGOCount[0] )
+	        {
+		        uint32 reqkillcount = qInfo->ReqCreatureOrGOCount[0];
+		        uint32 curkillcount = pPlayer->getQuestStatusMap()[12099].m_creatureOrGOcount[0];
+		        if (curkillcount < reqkillcount)
+		        {
+			        pPlayer->getQuestStatusMap()[12099].m_creatureOrGOcount[0] = curkillcount + 1;
+			        pPlayer->SendQuestUpdateAddCreatureOrGo( qInfo, pPlayer->GetGUID(), 0, curkillcount, 1);
+                }               
+	        }
+        }
+        return false;
+    }
+};
+
+class item_wrangling_rope : public ItemScript
+{
+public:
+    item_wrangling_rope() : ItemScript("item_wrangling_rope") {}
+
+    bool OnUse(Player* pPlayer, Item* pItem, SpellCastTargets const& /*targets*/)
+    {
+        Unit* target = pPlayer->GetSelectedUnit();
+        if(target)
+        {
+            if(target->GetHealth() <= target->CountPctFromMaxHealth(30))
+            {
+                pPlayer->CastStop();
+                pPlayer->CastSpell(target, 40926, false);
+                target->ClearInCombat();
+                pPlayer->AttackStop();
+                pPlayer->ClearInCombat();
+                if (pPlayer->GetQuestStatus(11065) == QUEST_STATUS_INCOMPLETE)
+                {
+                    pPlayer->KilledMonsterCredit(target->GetEntry(), target->GetGUID());
+                    target->GetMotionMaster()->MoveFollow(pPlayer, 5.0f, 0.0f);
+                    target->ToCreature()->DespawnOrUnsummon(2000);
+                }    
+            }
+        }
+        return false;
+    }
+};
+
 void AddSC_item_scripts()
 {
     new item_only_for_flight;
@@ -525,5 +613,8 @@ void AddSC_item_scripts()
     new item_petrov_cluster_bombs;
     new item_dehta_trap_smasher;
     new item_trident_of_nazjan;
-    new item_captured_frog();
+    new item_captured_frog;
+    new item_horn_of_elemental_fury;
+    new item_gavrock_runebreaker;
+    new item_wrangling_rope;
 }

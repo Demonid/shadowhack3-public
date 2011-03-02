@@ -30,11 +30,11 @@ EndContentData */
 #include "ScriptPCH.h"
 
 /*######
-## npc_henze_faulk
+## npc_henze_faulk //Q: identical to dun_morogh.cpp:npc_narm_faulk, unite?
 ######*/
 enum eHenzeFaulkData
 {
-    SAY_HEAL = -1000187,
+    SAY_HEAL = -1000187,    //DB:check
 };
 
 class npc_henze_faulk : public CreatureScript

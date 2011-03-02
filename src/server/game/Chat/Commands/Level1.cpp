@@ -166,8 +166,8 @@ bool ChatHandler::HandleGPSCommand(const char* args)
     int gx = 63 - p.x_coord;
     int gy = 63 - p.y_coord;
 
-    uint32 have_map = Map::ExistMap(obj->GetMapId(),gx,gy) ? 1 : 0;
-    uint32 have_vmap = Map::ExistVMap(obj->GetMapId(),gx,gy) ? 1 : 0;
+    uint32 have_map = GridMap::ExistMap(obj->GetMapId(),gx,gy) ? 1 : 0;
+    uint32 have_vmap = GridMap::ExistVMap(obj->GetMapId(),gx,gy) ? 1 : 0;
 
     if(have_vmap)
     {
@@ -187,8 +187,8 @@ bool ChatHandler::HandleGPSCommand(const char* args)
         cell.GridX(), cell.GridY(), cell.CellX(), cell.CellY(), obj->GetInstanceId(),
         zone_x, zone_y, ground_z, floor_z, have_map, have_vmap);
 
-    LiquidData liquid_status;
-    ZLiquidStatus res = map->getLiquidStatus(obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), MAP_ALL_LIQUIDS, &liquid_status);
+    GridMapLiquidData liquid_status;
+    GridMapLiquidStatus res = map->getLiquidStatus(obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), MAP_ALL_LIQUIDS, &liquid_status);
     if (res)
     {
         PSendSysMessage(LANG_LIQUID_STATUS, liquid_status.level, liquid_status.depth_level, liquid_status.type, res);
@@ -284,7 +284,7 @@ bool ChatHandler::HandleSummonCommand(const char* args)
 
         // before GM
         float x,y,z;
-        m_session->GetPlayer()->GetClosePoint(x,y,z,target->GetObjectSize());
+        m_session->GetPlayer()->GetClosePoint(x, y, z, target->GetObjectSize(), 0.0f, 0.0f, m_session->GetPlayer());
         target->TeleportTo(m_session->GetPlayer()->GetMapId(),x,y,z,target->GetOrientation());
         target->SetPhaseMask(m_session->GetPlayer()->GetPhaseMask(), true);
     }
@@ -832,7 +832,7 @@ bool ChatHandler::HandleGroupSummonCommand(const char* args)
 
         // before GM
         float x,y,z;
-        m_session->GetPlayer()->GetClosePoint(x,y,z,pl->GetObjectSize());
+        m_session->GetPlayer()->GetClosePoint(x, y, z, pl->GetObjectSize(), 0.0f, 0.0f, m_session->GetPlayer());
         pl->TeleportTo(m_session->GetPlayer()->GetMapId(),x,y,z,pl->GetOrientation());
     }
 
