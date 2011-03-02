@@ -889,6 +889,11 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
 
         for (uint8 stat = 0; stat < MAX_STATS; ++stat)
             SetCreateStat(Stats(stat), float(pInfo->stats[stat]));
+        if (pInfo->min_dmg && pInfo->max_dmg)
+        {
+            SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, pInfo->min_dmg);
+            SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, pInfo->max_dmg);
+        }
     }
     else                                            // not exist in DB, use some default fake data
     {
@@ -914,10 +919,11 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             uint32 val  = (fire > shadow) ? fire : shadow;
             SetBonusDamage(int32 (val * 0.15f));
             //bonusAP += val * 0.57;
-
-            SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)));
-            SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)));
-
+            if(!pInfo->min_dmg || !pInfo->max_dmg)
+            {
+                SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)));
+                SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)));
+            }
             //SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, float(cinfo->attackpower));
             break;
         }

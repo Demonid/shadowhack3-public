@@ -40,6 +40,7 @@ class PetAI : public CreatureAI
         void KilledUnit(Unit * /*victim*/);
         void AttackStart(Unit *target);
         void MovementInform(uint32 moveType, uint32 data);
+        void DoAttack(Unit *target, bool chase);
 
     private:
         bool _isVisible(Unit *) const;
@@ -56,7 +57,7 @@ class PetAI : public CreatureAI
 
         Unit *SelectNextTarget();
         void HandleReturnMovement();
-        void DoAttack(Unit *target, bool chase);
+
         bool _CanAttack(Unit *target);
         bool _CheckTargetCC(Unit *target);
 };

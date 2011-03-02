@@ -12010,18 +12010,9 @@ bool Unit::canAttack(Unit const* target, bool force) const
     {
         if (IsFriendlyTo(target))
             return false;
-
-        if (GetTypeId()!=TYPEID_PLAYER)
-        {
-            if (isPet())
-            {
-                if (Unit *owner = GetOwner())
-                    if (!(owner->canAttack(target)))
-                        return false;
-            }
-            else if (!IsHostileTo(target))
+        if (GetTypeId()!=TYPEID_PLAYER && !isPet())
+            if (!IsHostileTo(target))
                 return false;
-        }
     }
     else if (!IsHostileTo(target))
         return false;
