@@ -3842,6 +3842,12 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_AREA_ENEMY_SRC;
             count++;
             break;
+        // Magic Absorption
+        case 29444:
+        case 29441:
+            spellInfo->spellLevel = 0;
+            count++;
+            break;
         // Bind
         case 3286:
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
