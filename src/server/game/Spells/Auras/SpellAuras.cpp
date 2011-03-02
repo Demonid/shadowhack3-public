@@ -2049,3 +2049,37 @@ void DynObjAura::FillTargetMap(std::map<Unit *, uint8> & targets, Unit * /*caste
     }
 }
 
+void Aura::SetAuraTimer(int32 time, uint64 guid)
+{
+    if(GetDuration() == -1 || GetDuration()>time)
+    {
+        SetDuration(time);
+        SetMaxDuration(time);
+        if(AuraApplication *aur= GetApplicationOfTarget(guid?guid:m_casterGuid))
+            aur->ClientUpdate();
+    }
+}
+
+bool Aura::IsUniqueVisibleAuraBuff()
+{
+    for(uint8 i=0; i<3; ++i)
+    {
+        if(!(GetEffectMask() & (1 << i)))
+            continue;
+        
+        switch(GetSpellProto()->EffectImplicitTargetA[i])
+        {
+            case TARGET_UNIT_CASTER:
+                if(!GetSpellProto()->EffectRadiusIndex[i])
+                    break;
+            case TARGET_UNIT_RAID_CASTER:
+            case TARGET_UNIT_TARGET_ALLY:
+            /*    if(!poisitve)
+                break;
+            case*/ 
+                return true;
+            default:break;
+        }
+    }
+    return false;
+}

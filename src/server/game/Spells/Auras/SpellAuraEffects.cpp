@@ -1008,15 +1008,22 @@ void AuraEffect::HandleEffect(AuraApplication const * aurApp, uint8 mode, bool a
 
     bool prevented = false;
     if (apply)
+    {
         prevented = GetBase()->CallScriptEffectApplyHandlers(const_cast<AuraEffect const *>(this), aurApp, (AuraEffectHandleModes)mode);
+        if(!GetBase()->GetDuration())
+            prevented = true;
+    }
     else
         prevented = GetBase()->CallScriptEffectRemoveHandlers(const_cast<AuraEffect const *>(this), aurApp, (AuraEffectHandleModes)mode);
-
-    // check if script events have removed the aura or if default effect prevention was requested
-    if ((apply && aurApp->GetRemoveMode()) || prevented)
-        return;
-
-    (*this.*AuraEffectHandler [GetAuraType()])(aurApp, mode, apply);
+    if(m_base->IsUniqueVisibleAuraBuff() && (
+        (AuraEffectHandler[GetAuraType()] == &AuraEffect::HandleAuraModWeaponCritPercent && GetSpellProto()->EffectRadiusIndex[GetEffIndex()]) || 
+        AuraEffectHandler[GetAuraType()] == &AuraEffect::HandleAuraModAttackPowerPercent ||
+        AuraEffectHandler[GetAuraType()] == &AuraEffect::HandleAuraModRangedAttackPowerPercent))
+    {
+        DoUniqueStackAura(aurApp, mode, apply);
+    }
+    else if (!prevented)
+        (*this.*AuraEffectHandler [GetAuraType()])(aurApp, mode, apply);
 }
 
 void AuraEffect::HandleEffect(Unit * target, uint8 mode, bool apply)
@@ -4724,9 +4731,36 @@ void AuraEffect::HandleAuraModResistance(AuraApplication const * aurApp, uint8 m
     {
         if (GetMiscValue() & int32(1<<x))
         {
-            target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), TOTAL_VALUE, float(GetAmount()), apply);
-            if (target->GetTypeId() == TYPEID_PLAYER || target->ToCreature()->isPet())
-                target->ApplyResistanceBuffModsMod(SpellSchools(x),GetAmount() > 0,(float)GetAmount(), apply);
+            if(GetBase()->IsUniqueVisibleAuraBuff())
+            {
+                mod_pair pair = GetUniqueVisibleAuraBuff(target, x);
+                AuraEffect *mod1 = pair.mod1;
+                AuraEffect *mod2 = pair.mod2;
+                if(!mod1 && !mod2)
+                    return;
+                if(!mod2)
+                {
+                    target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), TOTAL_VALUE, float(GetAmount()), apply);
+                    if (target->GetTypeId() == TYPEID_PLAYER || target->ToCreature()->isPet())
+                        target->ApplyResistanceBuffModsMod(SpellSchools(x),GetAmount() > 0,GetAmount(), apply);
+                    return;
+                }
+                int32 firstmod  = apply?mod2->GetAmount():mod1->GetAmount();
+                int32 secondmod = apply?mod1->GetAmount():mod2->GetAmount();
+                target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), TOTAL_VALUE, float(firstmod), false);
+                if (target->GetTypeId() == TYPEID_PLAYER || target->ToCreature()->isPet())
+                    target->ApplyResistanceBuffModsMod(SpellSchools(x),firstmod > 0,firstmod, false);
+                target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), TOTAL_VALUE, float(secondmod), true);
+                if (target->GetTypeId() == TYPEID_PLAYER || target->ToCreature()->isPet())
+                    target->ApplyResistanceBuffModsMod(SpellSchools(x),secondmod > 0,secondmod, true);
+            }
+            else
+            {
+                target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), TOTAL_VALUE, float(GetAmount()), apply);
+                if (target->GetTypeId() == TYPEID_PLAYER || target->ToCreature()->isPet())
+                    target->ApplyResistanceBuffModsMod(SpellSchools(x),GetAmount() > 0,GetAmount(), apply);
+
+            }        
         }
     }
 }
@@ -6707,4 +6741,103 @@ void AuraEffect::HandleAuraSetVehicle(AuraApplication const * aurApp, uint8 mode
         data.Initialize(SMSG_ON_CANCEL_EXPECTED_RIDE_VEHICLE_AURA, 0);
         target->ToPlayer()->GetSession()->SendPacket(&data);
     }
+}
+void AuraEffect::DoUniqueStackAura(AuraApplication const * aurApp, uint8 mode, bool apply) const
+{
+    AuraEffect *mod1=NULL;
+    AuraEffect *mod2=NULL;
+    AuraApplication const *app1 = NULL;
+    AuraApplication const *app2 = NULL;
+    Unit * target = aurApp->GetTarget();
+    Unit::VisibleAuraMap const *visibleAuras = target->GetVisibleAuras();
+    for (Unit::VisibleAuraMap::const_iterator itr = visibleAuras->begin(); itr != visibleAuras->end(); ++itr)
+        if(itr->second->GetBase()->IsUniqueVisibleAuraBuff())
+            for (uint8 i=0; i<3; ++i)
+            {
+                if(!(itr->second->GetBase()->GetEffectMask() & (1 << i)))
+                    continue;
+                AuraEffect *auraeff = itr->second->GetBase()->GetEffect(i);
+                if(auraeff->GetAuraType() !=GetAuraType())
+                    continue;
+                if(!mod1)
+                {
+                    mod1=auraeff;
+                    app1=itr->second;
+                }
+                else if(mod1->GetAmount() < auraeff->GetAmount())
+                {
+                    mod2 = mod1;
+                    mod1 = auraeff;
+                    app2 = app1;
+                    app1 = itr->second;
+                }
+                else if(!mod2 || mod2->GetAmount() < auraeff->GetAmount())
+                {
+                    mod2 = auraeff;
+                    app2=itr->second;
+                }
+            }
+    AuraEffect * co_this = const_cast<AuraEffect*>(this);
+    if(!mod1)
+    {
+        mod1=co_this;
+        app1=aurApp;
+    }
+    else if(mod1->GetAmount() < GetAmount())
+    {
+        mod2 = mod1;
+        mod1 = co_this;
+        app1=aurApp;
+        app2=app1;
+    }
+    if(mod1!=co_this)
+        return;
+    if(!mod2)
+    {
+        (*this.*AuraEffectHandler [GetAuraType()])(aurApp, mode, apply);
+        return;
+    }
+    (*(apply?mod2:mod1).*AuraEffectHandler [GetAuraType()])(apply?app2:app1, mode, false);
+    (*(apply?mod1:mod2).*AuraEffectHandler [GetAuraType()])(apply?app2:app1, mode, true);
+}
+
+mod_pair AuraEffect::GetUniqueVisibleAuraBuff(Unit * target, int8 x) const
+{
+    AuraEffect *mod1=NULL;
+    AuraEffect *mod2=NULL;
+    Unit::VisibleAuraMap const *visibleAuras = target->GetVisibleAuras();
+    for (Unit::VisibleAuraMap::const_iterator itr = visibleAuras->begin(); itr != visibleAuras->end(); ++itr)
+        if(itr->second->GetBase()->IsUniqueVisibleAuraBuff())
+            for (uint8 i=0; i<3; ++i)
+            {
+                if(!(itr->second->GetBase()->GetEffectMask() & (1 << i)))
+                    continue;
+                AuraEffect *auraeff = itr->second->GetBase()->GetEffect(i);
+                if(auraeff->GetAuraType() !=GetAuraType() || (x && !(auraeff->GetMiscValue() & int32(1<<x))))
+                    continue;
+                if(!mod1)
+                    mod1=auraeff;
+                else if(mod1->GetAmount() < auraeff->GetAmount())
+                {
+                    mod2 = mod1;
+                    mod1 = auraeff;
+                }
+                else if(!mod2 || mod2->GetAmount() < auraeff->GetAmount())
+                    mod2 = auraeff;
+            }
+    AuraEffect * co_this = const_cast<AuraEffect*>(this);
+    if(!mod1)
+        mod1=co_this;
+    else if(mod1->GetAmount() < GetAmount())
+    {
+        mod2 = mod1;
+        mod1 = co_this;
+    }
+    if(mod1!=co_this)
+    {
+        mod1 = NULL;
+        mod2 = NULL;
+    }
+    mod_pair pair = {mod1, mod2};
+    return pair;
 }
