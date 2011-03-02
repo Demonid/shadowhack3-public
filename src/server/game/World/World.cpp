@@ -1198,8 +1198,10 @@ void World::LoadConfigSettings(bool reload)
     sLog->outString("WORLD: VMap data directory is: %svmaps",m_dataPath.c_str());
 
     m_bool_configs[CONFIG_MOVEMAP_ENABLE] = sConfig->GetBoolDefault("PathFinding.Enable", true);
-    m_bool_configs[CONFIG_MOVEMAP_TYPE] = sConfig->GetBoolDefault("PathFinding.MovemapType", true);
-
+    if(sConfig->GetBoolDefault("PathFinding.MovemapType", true))
+        MAP_VERSION_MAGIC = "v2.1";
+    else
+        MAP_VERSION_MAGIC = "v1.2";
     std::string ignoreMMapIds = sConfig->GetStringDefault("PathFinding.ignoreMapIds", "");
     MMAP::MMapFactory::preventPathfindingOnMaps(ignoreMMapIds.c_str());
     sLog->outString("WORLD: PathFinding %sabled", getBoolConfig(CONFIG_MOVEMAP_ENABLE) ? "en" : "dis");

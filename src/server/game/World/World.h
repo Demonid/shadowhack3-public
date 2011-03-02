@@ -555,11 +555,11 @@ struct CliCommandHolder
 };
 
 typedef UNORDERED_MAP<uint32, WorldSession*> SessionMap;
-
 /// The World
 class World
 {
     public:
+        char *MAP_VERSION_MAGIC;
         static volatile uint32 m_worldLoopCounter;
 
         World();
