@@ -334,6 +334,7 @@ void MotionMaster::MoveJump(float x, float y, float z, float speedXY, float spee
 
     i_owner->AddUnitState(UNIT_STAT_CHARGING | UNIT_STAT_JUMPING);
     i_owner->m_TempSpeed = speedXY;
+
     if (i_owner->GetTypeId() == TYPEID_PLAYER)
     {
         sLog->outStaticDebug("Player (GUID: %u) jump to point (X: %f Y: %f Z: %f)", i_owner->GetGUIDLow(), x, y, z);
