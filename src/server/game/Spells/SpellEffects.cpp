@@ -6283,7 +6283,7 @@ void Spell::EffectKnockBack(SpellEffIndex effIndex)
 void Spell::EffectLeapBack(SpellEffIndex effIndex)
 {
     float speedxy = float(m_spellInfo->EffectMiscValue[effIndex])/10;
-    float speedz = float(damage/10);
+    float speedz = float(damage * 0.1f);
     if (!speedxy)
     {
         if (m_targets.getUnitTarget())

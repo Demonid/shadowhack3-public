@@ -64,7 +64,7 @@ bool PointMovementGenerator<T>::Update(T &unit, const uint32 &diff)
 
     Traveller<T> traveller(unit);
 
-    i_destinationHolder.UpdateTraveller(traveller, diff, false);
+    i_destinationHolder.UpdateTraveller(traveller, diff, !m_usePathfinding);
 
     if (i_destinationHolder.HasArrived())
     {
@@ -77,12 +77,14 @@ bool PointMovementGenerator<T>::Update(T &unit, const uint32 &diff)
 }
 
 template<class T>
-void PointMovementGenerator<T>:: Finalize(T &unit)
+void PointMovementGenerator<T>::Finalize(T &unit)
 {
     if (unit.HasUnitState(UNIT_STAT_CHARGING))
-    {
         unit.ClearUnitState(UNIT_STAT_CHARGING | UNIT_STAT_JUMPING);
-    }
+
+    if (unit.GetTypeId() == TYPEID_PLAYER)
+        unit.ToPlayer()->resetAnticheatTemporaryImmunity();
+
     if (arrived) // without this crash!
     {
         MovementInform(unit);
