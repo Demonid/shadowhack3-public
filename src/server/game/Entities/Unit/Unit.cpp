@@ -12435,7 +12435,7 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
         SendMessageToSet(&data, true);
     }
 
-    if (GetTypeId() == TYPEID_PLAYER)
+    if (GetTypeId() == TYPEID_PLAYER && !ToPlayer()->hasAnticheatTemporaryImmunity())
         ToPlayer()->addAnticheatTemporaryImmunity();
 }
 

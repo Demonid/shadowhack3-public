@@ -502,7 +502,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             //hmm... in first time after login player has MOVE_SWIMBACK instead MOVE_WALKBACK
             //else move_type = movementInfo.flags & MOVEMENTFLAG_BACKWARD ? MOVE_SWIM_BACK : MOVE_RUN;
 
-            float current_speed = plMover->GetSpeed(move_type);
+            float current_speed = plMover->HasUnitState(UNIT_STAT_CHARGING) ? plMover->m_TempSpeed : plMover->GetSpeed(move_type);
 
             bool vehicleCanFly = false;
             bool vehicleIsCreature = false;
@@ -568,7 +568,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                 || plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) || plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED)
                 || plMover->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS) || ( vehicleIsCreature && vehicleCanFly ));
 
-            const uint32 immunityTime = plMover->m_anti_temporaryImmunity + gmd;
+            const uint32 immunityTime = plMover->m_anti_temporaryImmunity + cServerTimeDelta + plMover->GetSession()->GetLatency();
 
             const bool hasTimedImmunity = immunityTime >= cServerTime;
 

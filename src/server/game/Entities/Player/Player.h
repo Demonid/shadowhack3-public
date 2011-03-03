@@ -2406,6 +2406,7 @@ class Player : public Unit, public GridObject<Player>
 
         void addAnticheatTemporaryImmunity(uint32 time_ms = 100) {m_anti_temporaryImmunity = getMSTime() + time_ms;}
         void resetAnticheatTemporaryImmunity() {m_anti_temporaryImmunity = 0;}
+        bool hasAnticheatTemporaryImmunity() {return m_anti_temporaryImmunity + 75 > getMSTime();}
 
     protected:
         uint32 m_AreaID;
