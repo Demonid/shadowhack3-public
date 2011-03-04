@@ -2180,6 +2180,14 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
         {
             if (cur == TARGET_SRC_CASTER)
             {
+                // Mirror Image
+                if(m_spellInfo->Id == 58836)
+                {
+                    for (std::set<Unit*>::iterator itr = m_caster->m_Controlled.begin() ; itr != m_caster->m_Controlled.end(); ++itr)
+                        if((*itr)->GetEntry() == 31216)
+                            AddUnitTarget(*itr, i);
+                    return;
+                }
                 m_targets.setSrc(*m_caster);
                 break;
             }
@@ -2542,6 +2550,9 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                     // TODO: move these to sql
                     switch (m_spellInfo->Id)
                     {
+                        // Mirror Image
+                        case 58836:
+                            return;
                         case 46584: // Raise Dead
                         {
                             if (WorldObject* result = FindCorpseUsing<Trinity::RaiseDeadObjectCheck> ())
