@@ -1205,7 +1205,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         {
             spellHitTarget = m_caster;
             // Start triggers for remove charges if need (trigger only for victim, and mark as active spell)
-            m_caster->ProcDamageAndSpell(unit, PROC_FLAG_NONE, PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG, PROC_EX_REFLECT, 1, BASE_ATTACK, m_spellInfo);
+            m_caster->ProcDamageAndSpell(unit, PROC_FLAG_NONE, PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG, PROC_EX_REFLECT, 1, 0, BASE_ATTACK, m_spellInfo);
             if (m_caster->GetTypeId() == TYPEID_UNIT)
                 m_caster->ToCreature()->LowerPlayerDamageReq(target->damage);
         }
@@ -3887,11 +3887,12 @@ void Spell::SendSpellStart()
     //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Sending SMSG_SPELL_START id=%u", m_spellInfo->Id);
 
     uint32 castFlags = CAST_FLAG_UNKNOWN_2;
+    uint32 powertype = m_spellInfo->Id == 45529 ? 5 :m_spellInfo->powerType;
     if (m_spellInfo->Attributes & SPELL_ATTR0_REQ_AMMO)
         castFlags |= CAST_FLAG_AMMO;
     if ((m_caster->GetTypeId() == TYPEID_PLAYER ||
         (m_caster->GetTypeId() == TYPEID_UNIT && m_caster->ToCreature()->isPet()))
-         && m_spellInfo->powerType != POWER_HEALTH)
+         && powertype != POWER_HEALTH)
         castFlags |= CAST_FLAG_POWER_LEFT_SELF;
 
     if (m_spellInfo->runeCostID && m_spellInfo->powerType == POWER_RUNE)
@@ -3912,7 +3913,7 @@ void Spell::SendSpellStart()
     m_targets.write(data);
 
     if (castFlags & CAST_FLAG_POWER_LEFT_SELF)
-        data << uint32(m_caster->GetPower((Powers)m_spellInfo->powerType));
+        data << uint32(m_caster->GetPower((Powers)powertype));
 
     if (castFlags & CAST_FLAG_AMMO)
         WriteAmmoToPacket(&data);
@@ -3933,6 +3934,8 @@ void Spell::SendSpellGo()
         return;
 
     //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Sending SMSG_SPELL_GO id=%u", m_spellInfo->Id);
+    uint32 Id = m_spellInfo->Id == 45529? 70355:m_spellInfo->Id;
+    l:Powers powertype = Powers(Id!= m_spellInfo->Id? 5 :m_spellInfo->powerType);
 
     uint32 castFlags = CAST_FLAG_UNKNOWN_9;
 
@@ -3944,17 +3947,27 @@ void Spell::SendSpellGo()
         castFlags |= CAST_FLAG_AMMO;                        // arrows/bullets visual
     if ((m_caster->GetTypeId() == TYPEID_PLAYER ||
         (m_caster->GetTypeId() == TYPEID_UNIT && m_caster->ToCreature()->isPet()))
-        && m_spellInfo->powerType != POWER_HEALTH)
+        && powertype != POWER_HEALTH)
         castFlags |= CAST_FLAG_POWER_LEFT_SELF; // should only be sent to self, but the current messaging doesn't make that possible
 
-    if ((m_caster->GetTypeId() == TYPEID_PLAYER)
-        && (m_caster->getClass() == CLASS_DEATH_KNIGHT)
-        && m_spellInfo->runeCostID
-        && m_spellInfo->powerType == POWER_RUNE)
-    {
-        castFlags |= CAST_FLAG_UNKNOWN_19;                   // same as in SMSG_SPELL_START
-        castFlags |= CAST_FLAG_RUNE_LIST;                    // rune cooldowns list
-        castFlags |= CAST_FLAG_UNKNOWN_9;                    // ??
+    if (m_caster->GetTypeId() == TYPEID_PLAYER
+        && m_caster->getClass() == CLASS_DEATH_KNIGHT
+        && ((m_spellInfo->runeCostID) 
+        || IsSpellHaveEffect(m_spellInfo, SPELL_EFFECT_ACTIVATE_RUNE)))
+        switch(m_spellInfo->Id)
+        {
+            case 49560:
+            case 49576:
+            case 55095:
+                break;
+            default:
+            {
+                castFlags |= CAST_FLAG_UNKNOWN_19;                   // same as in SMSG_SPELL_START
+                castFlags |= CAST_FLAG_RUNE_LIST;                    // rune cooldowns list
+                castFlags |= CAST_FLAG_UNKNOWN_9;                    // ??
+                break;
+            }
+
     }
 
     if (IsSpellHaveEffect(m_spellInfo, SPELL_EFFECT_ACTIVATE_RUNE))
@@ -3972,7 +3985,7 @@ void Spell::SendSpellGo()
 
     data.append(m_caster->GetPackGUID());
     data << uint8(m_cast_count);                            // pending spell cast?
-    data << uint32(m_spellInfo->Id);                        // spellId
+    data << uint32(Id);                                     // spellId
     data << uint32(castFlags);                              // cast flags
     data << uint32(getMSTime());                            // timestamp
 
@@ -3990,7 +4003,7 @@ void Spell::SendSpellGo()
     m_targets.write(data);
 
     if (castFlags & CAST_FLAG_POWER_LEFT_SELF)
-        data << uint32(m_caster->GetPower((Powers)m_spellInfo->powerType));
+        data << uint32(m_caster->GetPower(powertype));
 
     if (castFlags & CAST_FLAG_RUNE_LIST)                   // rune cooldowns list
     {
@@ -4028,6 +4041,11 @@ void Spell::SendSpellGo()
     }
 
     m_caster->SendMessageToSet(&data, true);
+    if(Id!= m_spellInfo->Id)
+    {
+        Id= m_spellInfo->Id;
+        goto l;
+    }
 }
 
 void Spell::WriteAmmoToPacket(WorldPacket * data)
@@ -4427,7 +4445,7 @@ void Spell::TakePower()
     bool hit = true;
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
     {
-        if (m_spellInfo->powerType == POWER_RAGE || m_spellInfo->powerType == POWER_ENERGY)
+       if (m_spellInfo->powerType == POWER_RAGE || m_spellInfo->powerType == POWER_ENERGY || m_spellInfo->powerType == POWER_RUNE)
             if (uint64 targetGUID = m_targets.getUnitTargetGUID())
                 for (std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
                     if (ihit->targetGUID == targetGUID)
@@ -4436,6 +4454,11 @@ void Spell::TakePower()
                             hit = false;
                         if (ihit->missCondition != SPELL_MISS_NONE)
                         {
+                            if(m_spellInfo->powerType == POWER_RUNE)
+                            {
+                                m_runesState = m_caster->ToPlayer()->GetRunesState();
+                                return;
+                            }
                             //lower spell cost on fail (by talent aura)
                             if (Player *modOwner = m_caster->ToPlayer()->GetSpellModOwner())
                                 modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_SPELL_COST_REFUND_ON_FAIL, m_powerCost);
@@ -4451,6 +4474,9 @@ void Spell::TakePower()
         TakeRunePower();
         return;
     }
+    // hack to fix visual bug with blood tap
+    if (m_spellInfo->Id == 45529 && !m_powerCost)
+        m_powerCost=1;
 
     if (!m_powerCost)
         return;
@@ -4620,7 +4646,8 @@ void Spell::TakeRunePower()
                 plr->SetLastUsedRune(RuneType(rune));
                 runeCost[rune]--;
 
-                plr->RestoreBaseRune(i);
+                if(plr->GetRuneConvertAura(i))
+                    plr->RestoreBaseRune(i);
 
                 if (runeCost[RUNE_DEATH] == 0)
                     break;

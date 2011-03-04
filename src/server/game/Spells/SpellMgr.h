@@ -355,6 +355,7 @@ inline bool IsNonCombatSpell(SpellEntry const *spellInfo)
 bool IsPositiveSpell(uint32 spellId);
 bool IsPositiveEffect(uint32 spellId, uint32 effIndex);
 bool IsPositiveTarget(uint32 targetA, uint32 targetB);
+bool IsDispelableBySpell(SpellEntry const * dispelSpell, uint32 spellId, bool def = false);
 bool CanSpellDispelAura(SpellEntry const * dispelSpell, SpellEntry const * aura);
 bool CanSpellPierceImmuneAura(SpellEntry const * pierceSpell, SpellEntry const * aura);
 
