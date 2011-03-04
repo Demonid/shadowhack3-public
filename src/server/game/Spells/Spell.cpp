@@ -2993,7 +2993,8 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const * triggere
     SpellCastResult result = CheckCast(true);
     if (result != SPELL_CAST_OK && !IsAutoRepeat())          //always cast autorepeat dummy for triggering
     {
-        if (triggeredByAura && !triggeredByAura->GetBase()->IsPassive())
+        // only for bladestorm
+        if (triggeredByAura && triggeredByAura->GetId() == 46924)
         {
             SendChannelUpdate(0);
             triggeredByAura->GetBase()->SetDuration(0);
