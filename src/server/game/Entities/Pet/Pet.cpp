@@ -832,7 +832,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                 petType = HUNTER_PET;
 
                 m_unitTypeMask |= UNIT_MASK_HUNTER_PET; break;
-            default:sLog.outError("Unknown type pet %u is summoned by player class %u", GetEntry(), m_owner->getClass());
+            default:sLog->outError("Unknown type pet %u is summoned by player class %u", GetEntry(), m_owner->getClass());
                 petType = SUMMON_PET;
             break;
         }

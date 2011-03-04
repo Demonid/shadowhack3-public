@@ -3500,12 +3500,31 @@ bool CanSpellDispelAura(SpellEntry const * dispelSpell, SpellEntry const * aura)
 
 bool CanSpellPierceImmuneAura(SpellEntry const * pierceSpell, SpellEntry const * aura)
 {
+    // Cloak of shadows
+    if(!aura)
+    {
+        // Blood Plague
+        if(pierceSpell->Id == 55078)
+            return true;
+        // Hunter's spell can pierce except Freezing trap
+        if(pierceSpell->SpellFamilyName == SPELLFAMILY_HUNTER && pierceSpell->SpellIconID != 180)
+            return true;
+        return false;
+    }
+
+    if(aura->Id == 33786)
+    {
+        // Re-cyclone & Fiery Fire
+        if(pierceSpell->Id == aura->Id || pierceSpell->SpellIconID == 109)
+            return false;
+    }
+    
     // these spells pierce all avalible spells (Resurrection Sickness for example)
-    if (pierceSpell->Attributes & SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY)
+    if (pierceSpell->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY)
         return true;
 
     // these spells (Cyclone for example) can pierce all...
-    if ((pierceSpell->AttributesEx & SPELL_ATTR1_UNAFFECTED_BY_SCHOOL_IMMUNE)
+    if ((pierceSpell->AttributesEx & SPELL_ATTR_EX_UNAFFECTED_BY_SCHOOL_IMMUNE)
         // ...but not these (Divine shield for example)
         && !(aura && (aura->Mechanic == MECHANIC_IMMUNE_SHIELD || aura->Mechanic == MECHANIC_INVULNERABILITY)))
         return true;
@@ -3878,6 +3897,154 @@ void SpellMgr::LoadSpellCustomAttr()
 
         switch (i)
         {
+         // Shaman T9 Elemental 4P Bonus
+         case 71824:
+            spellInfo->EffectBasePoints[0] = 1;
+            count++;
+            break;
+        // Item - Priest T9 Healing 2P Bonus (Prayer of Mending)
+        case 67201:
+            spellInfo->EffectApplyAuraName[0] = SPELL_AURA_ADD_PCT_MODIFIER;
+            spellInfo->EffectMiscValue[0] = SPELLMOD_DAMAGE;
+            count++;
+            break;
+        // Rage of Rivendare 
+        case 50117:
+        case 50118:
+        case 50119:
+        case 50120:
+        case 50121:
+            spellInfo->EffectSpellClassMask[0][1] |= 0x02000000;
+            count++;
+            break;
+        // Monstrous Bite 
+        case 55499:
+        case 55498:
+        case 55497:
+        case 55496:
+        case 55495:
+        case 54680:
+            spellInfo->EffectImplicitTargetA[1]=1;
+            count++;
+            break;
+        // Summon Gargoyle
+        case 49206:
+            spellInfo->DurationIndex = 9;
+            count++;
+            break;
+        case 14185: // Preparation
+        //case 11958: // Cold snap
+        //case 23989: // Readiness
+            spellInfo->StartRecoveryCategory =0;
+            spellInfo->StartRecoveryTime = 0;
+            count++;
+            break;
+        // Judgement of Command
+        case 20467:
+            spellInfo->EffectBasePoints[1] = 19;
+            count++;
+            break;
+        // Summon Val'kyr
+        case 71843:
+        case 71844:
+            spellInfo->AttributesEx4 = 0;
+            count++;
+            break;
+        // Envenom
+        case 32645:
+        case 32684:
+        case 57992:
+        case 57993:
+            spellInfo->Dispel = 0;
+            count++;
+            break;
+        // Chotky Flare
+        case 1543:
+            spellInfo->speed =0;
+            count++;
+            break;
+        // Magic Suppression
+        case 49611:
+        case 49224:
+        case 49610:
+        // Arcane Blast
+        case 36032:
+            spellInfo->procCharges=0;
+            count++;
+            break;
+        // Brambles
+        case 50419:
+            spellInfo->procChance = 0;
+            count++;
+            break;
+        case 16836:
+        case 16839:
+        case 16840:
+            spellInfo->EffectApplyAuraName[0] = SPELL_AURA_ADD_PCT_MODIFIER;
+            spellInfo->EffectMiscValue[0]=SPELLMOD_DAMAGE;
+            spellInfo->EffectSpellClassMask[2][0] = 0x00000100;
+            count++;
+            break;
+        // Elemental oath
+        case 51466:
+        case 51470:
+            spellInfo->Effect[1] = SPELL_EFFECT_APPLY_AURA;
+            spellInfo->EffectApplyAuraName[1] = SPELL_AURA_ADD_FLAT_MODIFIER;
+            spellInfo->EffectMiscValue[1] = SPELLMOD_EFFECT2;
+            spellInfo->EffectSpellClassMask[1][1] = 0x0004000;
+            count++;
+            break;
+        // Blood Tap
+        case 45529:
+            spellInfo->EffectMiscValue[0] = RUNE_BLOOD;
+            spellInfo->EffectApplyAuraName[1]=SPELL_AURA_DUMMY;
+            count++;
+            break;
+        // Flame Shock passive
+        case 75461:
+            spellInfo->Effect[1] = SPELL_EFFECT_APPLY_AURA;
+            spellInfo->EffectApplyAuraName[1] = SPELL_AURA_PERIODIC_HASTE;
+            spellInfo->EffectSpellClassMask[1]=spellInfo->EffectSpellClassMask[0];
+            count++;
+            break;
+        // !HACK! vekhile like mounts cannot be used at arena
+        case 61447:
+        case 61425:
+        case 60424:
+        case 55531:
+        case 61470:
+        case 61469:
+        case 61465:
+        case 61467:
+        case 126: // Eye of Kilrogg    
+            spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_NOT_USABLE_IN_ARENA;
+            count++;
+            break;
+        // Glyph of Cloak of Shadows
+        case 63269:
+            spellInfo->EffectSpellClassMask[1] = 0x10000;
+            count++;
+            break;
+        // Anger Capacitor
+        case 71406:
+        case 71545:
+            spellInfo->EffectSpellClassMask[0]=0;
+            count++;
+            break;
+        // Sprit Heal
+        case 44535:
+            spellInfo->EffectMiscValue[0]=127;
+            count++;
+            break;
+        // Seals of the Pure
+        case 20224:
+        case 20225:
+        case 20330:
+        case 20331:
+        case 20332:
+            spellInfo->EffectSpellClassMask[0][1]=0x20400800;
+            count++;
+            break;
         case 36350: //They Must Burn Bomb Aura (self)
             spellInfo->EffectTriggerSpell[0] = 36325; // They Must Burn Bomb Drop (DND)
             count++;
@@ -4087,6 +4254,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->procCharges = 1;
             count++;
             break;
+        case 53257: // Cobra Strikes
         case 53390: // Tidal Wave
             spellInfo->procCharges = 2;
             count++;
@@ -4372,6 +4540,8 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         // target allys instead of enemies, target A is src_caster, spells with effect like that have ally target
         // this is the only known exception, probably just wrong data
+        case 13810:     // Frost Trap Aura
+            spellInfo->Effect[1] = 0;
         case 29214: // Wrath of the Plaguebringer
         case 54836: // Wrath of the Plaguebringer
             spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_AREA_ALLY_SRC;
@@ -4631,7 +4801,8 @@ void SpellMgr::LoadSpellCustomAttr()
     properties->Type = SUMMON_TYPE_TOTEM;
     properties = const_cast<SummonPropertiesEntry*>(sSummonPropertiesStore.LookupEntry(647)); // 52893
     properties->Type = SUMMON_TYPE_TOTEM;
-
+    properties = const_cast<SummonPropertiesEntry*>(sSummonPropertiesStore.LookupEntry(711)); // 52893
+    properties->Type = SUMMON_TYPE_PET;
     CreatureAI::FillAISpellInfo();
 
     sLog->outString(">> Loaded %u custom spell attributes in %u ms", count, GetMSTimeDiffToNow(oldMSTime));

@@ -1781,16 +1781,13 @@ void Spell::EffectTriggerSpell(SpellEffIndex effIndex)
         // Cloak of Shadows
         case 35729:
         {
-            uint32 dispelMask = GetDispellMask(DISPEL_ALL);
             Unit::AuraApplicationMap& Auras = unitTarget->GetAppliedAuras();
             for (Unit::AuraApplicationMap::iterator iter = Auras.begin(); iter != Auras.end();)
             {
                 // remove all harmful spells on you...
                 SpellEntry const* spell = iter->second->GetBase()->GetSpellProto();
-                if ((spell->DmgClass == SPELL_DAMAGE_CLASS_MAGIC // only affect magic spells
-                    || ((1<<spell->Dispel) & dispelMask))
-                    // ignore positive and passive auras
-                    && !iter->second->IsPositive() && !iter->second->GetBase()->IsPassive())
+                if(spell->SchoolMask != SPELL_SCHOOL_MASK_NORMAL && !iter->second->IsPositive() && 
+                    !iter->second->GetBase()->IsPassive() && IsDispelableBySpell(m_spellInfo, spell->Id, true))
                 {
                     m_caster->RemoveAura(iter);
                 }
@@ -4104,14 +4101,14 @@ void Spell::SpellDamageWeaponDmg(SpellEffIndex effIndex)
         }
         case SPELLFAMILY_PALADIN:
         {
-            // Seal of Command - Increase damage by 36% on every swing
+            /* Seal of Command - Increase damage by 36% on every swing
             if (m_spellInfo->SpellFamilyFlags[0] & 0x2000000)
             {
                 totalDamagePercentMod *= 1.36f;            // 136% damage
             }
 
             // Seal of Command Unleashed
-            else if (m_spellInfo->Id == 20467)
+            else*/ if (m_spellInfo->Id == 20467)
             {
                 spell_bonus += int32(0.08f * m_caster->GetTotalAttackPowerValue(BASE_ATTACK));
                 spell_bonus += int32(0.13f * m_caster->SpellBaseDamageBonus(GetSpellSchoolMask(m_spellInfo)));
