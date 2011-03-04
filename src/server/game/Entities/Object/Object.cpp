@@ -1548,17 +1548,67 @@ bool Position::HasInArc(float arcangle, float x, float y) const
 
 bool WorldObject::IsInBetween(const WorldObject *obj1, const WorldObject *obj2, float size) const
 {
-    if (GetPositionX() > std::max(obj1->GetPositionX(), obj2->GetPositionX())
-        || GetPositionX() < std::min(obj1->GetPositionX(), obj2->GetPositionX())
-        || GetPositionY() > std::max(obj1->GetPositionY(), obj2->GetPositionY())
-        || GetPositionY() < std::min(obj1->GetPositionY(), obj2->GetPositionY()))
+    if(obj1->GetPositionZ()>=30.0f)
         return false;
+    float x0[2]={GetPositionX()-obj1->GetPositionX(),GetPositionX()-obj2->GetPositionX()}; // x coords, 0 - first char, 1 - second
+    float y0[2]={GetPositionY()-obj1->GetPositionY(),GetPositionY()-obj2->GetPositionY()}; // y coords
+    bool upper=false;
+    float angle1 = obj1->GetAngle(obj2);
+    if(float dz = obj1->GetPositionZ()-obj2->GetPositionZ()) // diffrentlevel
+        if(abs(dz)>2.0f )
+        {
+            x0[uint8(dz>0)] += sin(angle1)*abs(dz);
+            y0[uint8(dz>0)] += cos(angle1)*abs(dz);
+            if (0 > std::max(-x0[0], -x0[1])
+                || 0 < std::min(-x0[0], -x0[1])
+                || 0 > std::max(-y0[0], -y0[1])
+                || 0 < std::min(-y0[0], -y0[1]))
+                return false;
+            else return abs(sin(obj1->GetAngle(this) - obj1->GetAngle(obj2))) * GetExactDist2d(obj1->GetPositionX(), obj1->GetPositionY()) < size;
 
-    if (!size)
-        size = GetObjectSize() / 2;
-
-    float angle = obj1->GetAngle(this) - obj1->GetAngle(obj2);
-    return fabs(sin(angle)) * GetExactDist2d(obj1->GetPositionX(), obj1->GetPositionY()) < size;
+        }
+    // Out of sqware rule
+    if((abs(x0[0])>size && abs(x0[1])>size && ((x0[0] > 0) == (x0[1] > 0)))
+        || (abs(y0[0])>size && abs(y0[1])>size && ((y0[0] > 0) == (y0[1] > 0))))
+        return false;
+    // Rombue rule
+    for (uint8 j=0; j<4; ++j)
+    {
+        bool out = true;
+        uint8 znak[2];
+        for (uint8 i =0; i<2; ++i)
+            znak[i] = 1 - i*2;
+        for (uint8 i =0; i<2; ++i)
+            if(y0[i]*znak[0]+x0[i]*znak[1] < size)
+            {
+                out = false;
+                break;
+            }
+        if(out)
+            return false;
+    }
+    bool recheck = false;
+    float dist[2] = {x0[0]*x0[0]+y0[0]*y0[0], x0[1]*x0[1]+y0[1]*y0[1]};
+    for (uint8 i =0; i<2; ++i)
+        if(dist[i]<size)
+        {
+            if(dist[i]<size-1)
+                return false;
+            else recheck = true;
+        }
+    // Kick ass calculations!
+    float k=(x0[0]-x0[1])/(y0[0]-y0[1]);
+    float x=(x0[0]-k*y0[0])/(1+k*k);
+    float y=k*x;
+    if(recheck)
+    {
+        float dist_ = x*x+y*y;
+        if(dist_ < dist[0] && dist_ < dist[1])
+            return true;
+    }
+    else if(x*x+y*y<(size*size))
+        return true;
+    return false;
 }
 
 bool WorldObject::isInFront(WorldObject const* target, float distance,  float arc) const

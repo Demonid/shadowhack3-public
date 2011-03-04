@@ -1160,6 +1160,7 @@ struct SpellProcEventEntry;                                 // used only private
 class Unit : public WorldObject
 {
     public:
+        bool IsWithinLOSInMap(const WorldObject* obj) const;
         typedef std::set<Unit*> AttackerSet;
         typedef std::set<Unit*> ControlList;
         typedef std::pair<uint32, uint8> spellEffectPair;
@@ -1523,6 +1524,7 @@ class Unit : public WorldObject
 
         void KnockbackFrom(float x, float y, float speedXY, float speedZ);
         void KnockBackWithAngle(float angle, float horizontalSpeed, float verticalSpeed);
+        void KnockBackPlayerWithAngle(float angle, float horizontalSpeed, float verticalSpeed);
         void JumpTo(float speedXY, float speedZ, bool forward = true);
         void JumpTo(WorldObject *obj, float speedZ);
 

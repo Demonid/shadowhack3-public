@@ -2603,6 +2603,7 @@ enum DiminishingGroup
     DIMINISHING_TRIGGER_ROOT,                               // Immobilizing effects from triggered spells like Frostbite
     DIMINISHING_CHARM,
     DIMINISHING_DISORIENT,                                  // Also: Gouge, Sap, Repentance, Hungering Cold
+    DIMINISHING_SLOW,                                       // Mirror Image Frostbolt and other slowing spells
     DIMINISHING_KNOCKOUT,                                   // Sap, Knockout mechanics
     DIMINISHING_FEAR_BLIND,                                 // Intimidating Shout, Howl of Terror, Blind
     // Warrior Specific
