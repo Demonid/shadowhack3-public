@@ -820,20 +820,25 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
 
     //Determine pet type
     PetType petType = MAX_PET_TYPE;
-    if (isPet() && m_owner->GetTypeId() == TYPEID_PLAYER)
-    {
-        if ((m_owner->getClass() == CLASS_WARLOCK)
-            || (m_owner->getClass() == CLASS_SHAMAN)        // Fire Elemental
-            || (m_owner->getClass() == CLASS_DEATH_KNIGHT)) // Risen Ghoul
-            petType = SUMMON_PET;
-        else if (m_owner->getClass() == CLASS_HUNTER)
+    if((isPet() || GetEntry() == 31216) && m_owner->GetTypeId() == TYPEID_PLAYER)
+        switch(m_owner->getClass())
         {
-            petType = HUNTER_PET;
-            m_unitTypeMask |= UNIT_MASK_HUNTER_PET;
+            case CLASS_WARLOCK:
+            case CLASS_DEATH_KNIGHT: // Risen Ghoul
+            case CLASS_SHAMAN:       // Fire, Earth Elementals
+            case CLASS_MAGE: 
+                petType = SUMMON_PET; break;
+            case CLASS_HUNTER:
+                petType = HUNTER_PET;
+
+                m_unitTypeMask |= UNIT_MASK_HUNTER_PET; break;
+            default:sLog.outError("Unknown type pet %u is summoned by player class %u", GetEntry(), m_owner->getClass());
+                petType = SUMMON_PET;
+            break;
         }
-        else
-            sLog->outError("Unknown type pet %u is summoned by player class %u", GetEntry(), m_owner->getClass());
-    }
+    // Infernal
+    if(GetEntry() == 89)
+        petType = SUMMON_PET;
 
     uint32 creature_ID = (petType == HUNTER_PET) ? 1 : cinfo->Entry;
 
@@ -859,7 +864,11 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
         else
             scale = cFamily->minScale + float(getLevel() - cFamily->minScaleLevel) / cFamily->maxScaleLevel * (cFamily->maxScale - cFamily->minScale);
 
+        // no more cute pets
+        if(this->ToCreature()->GetCreatureInfo()->type_flags & CREATURE_TYPEFLAGS_EXOTIC)
+            scale*=1.5f;
         SetFloatValue(OBJECT_FIELD_SCALE_X, scale);
+        SetFloatValue(UNIT_FIELD_COMBATREACH, scale*2);
     }
 
     //resistance
@@ -913,18 +922,33 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
     {
         case SUMMON_PET:
         {
-            //the damage bonus used for pets is either fire or shadow damage, whatever is higher
-            uint32 fire  = m_owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FIRE);
-            uint32 shadow = m_owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
-            uint32 val  = (fire > shadow) ? fire : shadow;
-            SetBonusDamage(int32 (val * 0.15f));
-            //bonusAP += val * 0.57;
-            if(!pInfo->min_dmg || !pInfo->max_dmg)
+            if (m_owner->GetTypeId() == TYPEID_PLAYER)
+            {
+                //the damage bonus used for pets is either fire or shadow damage, whatever is higher
+                uint32 fire  = m_owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FIRE);
+                uint32 shadow = m_owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
+                uint32 val  = (fire > shadow) ? fire : shadow;
+                SetBonusDamage(int32 (val * 0.15f));
+                //bonusAP += val * 0.57;
+
+                //SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, float(cinfo->attackpower));
+                if(GetEntry() == 89) // Infernal
+                {
+                    if(HasAura(19483))
+                        break;
+                    AddAura(19483, this);
+                    uint32 bonusdamage = val * 0.57;
+                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(bonusdamage + petlevel - (petlevel / 4)));
+                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(bonusdamage + petlevel + (petlevel / 4)));
+                    break;
+                }
+            }
+
+            if(!pInfo || !pInfo->min_dmg || !pInfo->max_dmg)
             {
                 SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)));
                 SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)));
             }
-            //SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, float(cinfo->attackpower));
             break;
         }
         case HUNTER_PET:
@@ -960,6 +984,12 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                     float bonusDmg = m_owner->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_NATURE) * 0.15f;
                     SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel * 2.5f - (petlevel / 2) + bonusDmg));
                     SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel * 2.5f + (petlevel / 2) + bonusDmg));
+                    if(!HasAura(50419))
+                        if(AuraEffect * Auraeff = m_owner->GetAuraEffect(SPELL_AURA_ADD_FLAT_MODIFIER, SPELLFAMILY_DRUID, 53, 2))
+                        {
+                            Aura * aur = AddAura(50419, this);
+                            aur->GetEffect(0)->SetAmount(Auraeff->GetAmount());
+                        }
                     break;
                 }
                 case 15352: //earth elemental 36213
@@ -1048,6 +1078,8 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                     SetBonusDamage(int32(m_owner->GetTotalAttackPowerValue(BASE_ATTACK) * 0.5f));
                     SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)));
                     SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)));
+                    m_modAttackSpeedPct[RANGED_ATTACK]=m_owner->m_modAttackSpeedPct[RANGED_ATTACK];
+                    SetFloatValue(UNIT_MOD_CAST_SPEED, m_modAttackSpeedPct[RANGED_ATTACK]);
                     break;
                 }
             }
