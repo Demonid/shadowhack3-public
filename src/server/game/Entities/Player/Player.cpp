@@ -22974,16 +22974,12 @@ void Player::UpdateCharmedAI()
 uint32 Player::GetRuneBaseCooldown(uint8 index)
 {
     uint8 rune = GetBaseRune(index);
-    uint32 cooldown = RUNE_COOLDOWN;
+    float cooldown = RUNE_COOLDOWN;
 
-    AuraEffectList const& regenAura = GetAuraEffectsByType(SPELL_AURA_MOD_POWER_REGEN_PERCENT);
-    for (AuraEffectList::const_iterator i = regenAura.begin();i != regenAura.end(); ++i)
-    {
-        if ((*i)->GetMiscValue() == POWER_RUNE && (*i)->GetMiscValueB() == rune)
-            cooldown = cooldown*(100-(*i)->GetAmount())*0.01f;
-    }
+    if(AuraEffect * aur = GetAuraEffect(63622, 0, GetGUID()))
+        cooldown*=(100.0f-aur->GetAmount())/100.0f;
 
-    return cooldown;
+    return uint32(cooldown);
 }
 
 void Player::RemoveRunesByAuraEffect(AuraEffect const * aura)

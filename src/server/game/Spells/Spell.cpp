@@ -4572,16 +4572,28 @@ void Spell::TakeRunePower()
 
     runeCost[RUNE_DEATH] = 0;                               // calculated later
 
+    float base = 0.1f;
+    uint32 cooldown = RUNE_COOLDOWN;
+    // improved unholy presence
+    if(AuraEffect * aur = plr->GetAuraEffect(63622, 0, plr->GetGUID()))
+    {
+        base*=(100.0f+aur->GetAmount())/100.0f;
+        cooldown*=(100.0f-aur->GetAmount())/100.0f;
+    }
+
     for (uint32 i = 0; i < MAX_RUNES; ++i)
     {
         RuneType rune = plr->GetCurrentRune(i);
         if ((plr->GetRuneCooldown(i) == 0) && (runeCost[rune] > 0))
         {
-            plr->SetRuneCooldown(i, plr->GetRuneBaseCooldown(i));
+            plr->SetRuneCooldown(i, cooldown);
             plr->SetLastUsedRune(RuneType(rune));
             runeCost[rune]--;
         }
     }
+
+    for (uint32 i = 0; i < NUM_RUNE_TYPES; ++i)
+        plr->SetFloatValue(PLAYER_RUNE_REGEN_1 + i, base);
 
     runeCost[RUNE_DEATH] = runeCost[RUNE_BLOOD] + runeCost[RUNE_UNHOLY] + runeCost[RUNE_FROST];
 
@@ -4592,7 +4604,7 @@ void Spell::TakeRunePower()
             RuneType rune = plr->GetCurrentRune(i);
             if ((plr->GetRuneCooldown(i) == 0) && (rune == RUNE_DEATH))
             {
-                plr->SetRuneCooldown(i, plr->GetRuneBaseCooldown(i));
+                plr->SetRuneCooldown(i, cooldown);
                 plr->SetLastUsedRune(RuneType(rune));
                 runeCost[rune]--;
 
