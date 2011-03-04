@@ -2947,6 +2947,13 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
             // some generic arena related spells have by some strange reason MECHANIC_TURN
             if  (spellproto->Mechanic == MECHANIC_TURN)
                 return DIMINISHING_NONE;
+            if (spellproto->SpellIconID == 68)
+                return DIMINISHING_SLOW;
+            break;
+        case SPELLFAMILY_SHAMAN:
+            // Earthgrab
+            if (spellproto->Id == 64695)
+                return DIMINISHING_CONTROL_ROOT;
             break;
         case SPELLFAMILY_MAGE:
         {
@@ -2960,13 +2967,18 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
             // Frost Nova / Freeze (Water Elemental)
             if (spellproto->SpellIconID == 193)
                 return DIMINISHING_CONTROL_ROOT;
+            if(spellproto->Id == 44572)
+                return DIMINISHING_CONTROL_STUN;
+            // slow limited to 10 secs
+            if(spellproto->Id == 31589)
+                return DIMINISHING_LIMITONLY;
             break;
         }
         case SPELLFAMILY_ROGUE:
         {
             // Sap 0x80 Gouge 0x8
             if (spellproto->SpellFamilyFlags[0] & 0x88)
-                return DIMINISHING_POLYMORPH;
+                return DIMINISHING_DISORIENT;
             // Blind
             else if (spellproto->SpellFamilyFlags[0] & 0x1000000)
                 return DIMINISHING_FEAR_BLIND;
@@ -2990,13 +3002,16 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
             else if (spellproto->SpellFamilyFlags[1] & 0x8)
                 return DIMINISHING_FEAR_BLIND;
             // Seduction
-            else if (spellproto->SpellFamilyFlags[1] & 0x10000000)
+            else if (spellproto->SpellFamilyFlags[0] & 0x40000000 && spellproto->SpellIconID == 48)
                 return DIMINISHING_FEAR_BLIND;
             // Curse of Elements
             else if ((spellproto->SpellFamilyFlags[1] & 0x200) && (spellproto->SpellIconID == 55))
                 return DIMINISHING_LIMITONLY;
             // Unstable Affliction
             else if (spellproto->Id == 31117)
+                return DIMINISHING_LIMITONLY;
+            // Infernal
+            else if(spellproto->Id == 22703)
                 return DIMINISHING_LIMITONLY;
             break;
         }
@@ -3025,15 +3040,15 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
             else if (spellproto->SpellFamilyFlags[0] & 0x40000)
                 return DIMINISHING_FEAR_BLIND;
             // Charge Stun
-            else if (spellproto->SpellFamilyFlags[0] & 0x01000000)
-                return DIMINISHING_NONE;
+            else if (spellproto->Id == 7922)
+                return DIMINISHING_CHARGE;
             break;
         }
         case SPELLFAMILY_PALADIN:
         {
             // Repentance
             if (spellproto->SpellFamilyFlags[0] & 0x4)
-                return DIMINISHING_POLYMORPH;
+                return DIMINISHING_DISORIENT;
             // Judgement of Justice - limit duration to 10s in PvP
             else if (spellproto->SpellIconID == 3013)
                 return DIMINISHING_LIMITONLY;
@@ -3043,7 +3058,7 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
         {
             // Hungering Cold (no flags)
             if (spellproto->SpellIconID == 2797)
-                return DIMINISHING_POLYMORPH;
+                return DIMINISHING_DISORIENT;
             // Mark of Blood
             else if ((spellproto->SpellFamilyFlags[0] & 0x10000000)
                 && spellproto->SpellIconID == 2285)
@@ -3057,8 +3072,24 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
                 return DIMINISHING_LIMITONLY;
             // Scatter Shot
             if ((spellproto->SpellFamilyFlags[0] & 0x40000) && spellproto->SpellIconID == 132)
-                return DIMINISHING_NONE;
+                return DIMINISHING_SCATTER;
+            // Freezing Trap
+            if(1 << spellproto->Mechanic & (1<<MECHANIC_FREEZE | 1<<MECHANIC_SLEEP))
+                return DIMINISHING_DISORIENT;
+            // Silencing Shot
+            if(spellproto->Id == 34490)
+                return DIMINISHING_SILENCE;
+            // Nether Shock
+            if(spellproto->SpellIconID == 2027)
+                return DIMINISHING_SILENCE;
             break;
+            break;
+        }
+        case SPELLFAMILY_PRIEST:
+        {
+            if (spellproto->Id == 605)
+                return DIMINISHING_CHARM;
+             break;
         }
         default:
             break;
@@ -3071,7 +3102,7 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
                     (1<<MECHANIC_SHACKLE))) return triggered ? DIMINISHING_TRIGGER_STUN : DIMINISHING_CONTROL_STUN;
     if (mechanic & ((1<<MECHANIC_SLEEP) |
                     (1<<MECHANIC_FREEZE))) return DIMINISHING_FREEZE_SLEEP;
-    if (mechanic & (1<<MECHANIC_POLYMORPH)) return DIMINISHING_POLYMORPH;
+    if (mechanic & (1<<MECHANIC_POLYMORPH)) return DIMINISHING_DISORIENT;
     if (mechanic & (1<<MECHANIC_ROOT))      return triggered ? DIMINISHING_TRIGGER_ROOT : DIMINISHING_CONTROL_ROOT;
     if (mechanic & ((1<<MECHANIC_FEAR) |
                     (1<<MECHANIC_TURN)))    return DIMINISHING_FEAR_BLIND;
@@ -3135,6 +3166,13 @@ int32 GetDiminishingReturnsLimitDuration(DiminishingGroup group, SpellEntry cons
                 return 40 * IN_MILLISECONDS;
             break;
         }
+        case SPELLFAMILY_DEATHKNIGHT:
+        {
+             // Mark of Blood - limit to 10 second in PvP (3.0.3)
+             if (spellproto->SpellIconID == 2285)
+               return 10 * IN_MILLISECONDS;
+            break;
+        }
         default:
             break;
     }
@@ -3153,12 +3191,15 @@ bool IsDiminishingReturnsGroupDurationLimited(DiminishingGroup group)
         case DIMINISHING_TRIGGER_ROOT:
         case DIMINISHING_FEAR_BLIND:
         case DIMINISHING_CHARM:
-        case DIMINISHING_POLYMORPH:
+        case DIMINISHING_DISORIENT:
         case DIMINISHING_KNOCKOUT:
         case DIMINISHING_CYCLONE:
         case DIMINISHING_BANISH:
         case DIMINISHING_LIMITONLY:
         case DIMINISHING_CHEAPSHOT_POUNCE:
+        case DIMINISHING_CHARGE:
+        case DIMINISHING_SCATTER:
+        case DIMINISHING_SLOW:
             return true;
         default:
             return false;
@@ -3182,15 +3223,18 @@ DiminishingReturnsType GetDiminishingReturnsGroupType(DiminishingGroup group)
     {
         case DIMINISHING_TAUNT:
         case DIMINISHING_CONTROL_STUN:
+        case DIMINISHING_CHARGE:
+        case DIMINISHING_SCATTER:
         case DIMINISHING_TRIGGER_STUN:
         case DIMINISHING_CHEAPSHOT_POUNCE:
         case DIMINISHING_CYCLONE:
+        case DIMINISHING_SLOW
             return DRTYPE_ALL;
         case DIMINISHING_FEAR_BLIND:
         case DIMINISHING_CONTROL_ROOT:
         case DIMINISHING_TRIGGER_ROOT:
         case DIMINISHING_CHARM:
-        case DIMINISHING_POLYMORPH:
+        case DIMINISHING_DISORIENT:
         case DIMINISHING_SILENCE:
         case DIMINISHING_DISARM:
         case DIMINISHING_DEATHCOIL:
