@@ -22049,7 +22049,7 @@ void Player::RemoveItemDependentAurasAndCasts(Item * pItem)
 
         // skip passive (passive item dependent spells work in another way) and not self applied auras
         SpellEntry const* spellInfo = aura->GetSpellProto();
-        if (aura->IsPassive() ||  aura->GetCasterGUID() != GetGUID())
+        if (aura->IsPassive() || aura->GetCasterGUID() != GetGUID() || aura->GetId() == 46924 ) // dunno howtofix bladestorm resap.
         {
             ++itr;
             continue;
