@@ -56,6 +56,8 @@
 #include "Transport.h"
 #include "PathFinder.h"
 #include "MovementGenerator.h"
+#include "BattlegroundDS.h"
+#include "BattlegroundRV.h"
 
 #include <math.h>
 
@@ -16280,6 +16282,27 @@ void Unit::KnockbackFrom(float x, float y, float speedXY, float speedZ)
     }
 }
 
+void Unit::KnockBackPlayerWithAngle(float angle, float horizontalSpeed, float verticalSpeed)
+{
+    float vsin = sin(angle);
+    float vcos = cos(angle);
+    
+    // Effect propertly implemented only for players
+    if(GetTypeId()==TYPEID_PLAYER)
+    {
+        WorldPacket data(SMSG_MOVE_KNOCK_BACK, 8+4+4+4+4+4);
+        data.append(GetPackGUID());
+        data << uint32(0);                                  // Sequence
+        data << float(vcos);                                // x direction
+        data << float(vsin);                                // y direction
+        data << float(horizontalSpeed);                     // Horizontal speed
+        data << float(-verticalSpeed);                      // Z Movement speed (vertical)
+        ((Player*)this)->GetSession()->SendPacket(&data);
+    }
+    else
+        sLog->outError("KnockBackPlayer: Target of KnockBackPlayer must be player!");
+}
+
 float Unit::GetCombatRatingReduction(CombatRating cr) const
 {
     if (GetTypeId() == TYPEID_PLAYER)
@@ -17176,6 +17199,48 @@ void CharmInfo::SetIsReturning(bool val)
 bool CharmInfo::IsReturning()
 {
     return m_isReturning;
+}
+
+bool Unit::IsWithinLOSInMap(const WorldObject* obj) const
+{
+    if (!IsInMap(obj)) return false;
+    float ox,oy,oz;
+    obj->GetPosition(ox,oy,oz);
+    if(const Player* plr = GetTypeId() == TYPEID_PLAYER? ToPlayer():dynamic_cast<Player*>(GetOwner()))
+    {
+        if(plr->GetBattleground())
+        {
+            // Hack rules for Orgrimmar Arena
+            if(GetMapId() == 618 && ((BattlegroundRV*)plr->GetBattleground())->fencesopened)
+            {
+                const float bochki[4][2]=
+                    {{BG_RV_OBJECT_PILAR_1, 2.90f},
+                    {BG_RV_OBJECT_PILAR_2, 6.40f},
+                    {BG_RV_OBJECT_PILAR_3, 2.90f},
+                    {BG_RV_OBJECT_PILAR_4, 6.40f}};
+                for (uint8 i=0; i<4; ++i)
+                {
+                    BattlegroundRV* bg =((BattlegroundRV*)plr->GetBattleground());
+                    // by default first(0) pilar is opened
+                    if((i+1) % 2 == uint8(bg->pillarsopened))
+                        continue;
+                    GameObject* bochka = bg->GetBgMap()->GetGameObject(bg->m_BgObjects[bochki[i][0]]);
+                    if(bochka->IsInBetween(this, obj,bochki[i][1]))
+                        return false;
+                } 
+                return true;
+            }
+            // Hack rules for Dalaran Arena
+            else if(GetMapId() == 617 && ((BattlegroundDS*)plr->GetBattleground())->isWaterFallActive())
+            {
+                BattlegroundDS* bg =((BattlegroundDS*)plr->GetBattleground());
+                GameObject* fontan = bg->GetBgMap()->GetGameObject(bg->m_BgObjects[BG_DS_OBJECT_WATER_1]);
+                if(fontan->IsInBetween(this, obj, 5))
+                    return false;
+            }
+        }
+    }
+    return(IsWithinLOS(ox, oy, oz));
 }
 
 #define PATHFIND_REACHABLE_CHECK true

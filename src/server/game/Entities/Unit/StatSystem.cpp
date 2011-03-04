@@ -645,7 +645,7 @@ void Player::UpdateSpellCritChance(uint32 school)
     crit += GetSpellCritFromIntellect();
     // Increase crit from SPELL_AURA_MOD_SPELL_CRIT_CHANCE
     AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(SPELL_AURA_MOD_SPELL_CRIT_CHANCE);
-    uint32 modifer=0;
+    int32 modifer=0;
     for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
     {
         switch((*i)->GetId())
