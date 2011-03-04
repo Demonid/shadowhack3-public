@@ -3498,6 +3498,34 @@ bool CanSpellDispelAura(SpellEntry const * dispelSpell, SpellEntry const * aura)
     return true;
 }
 
+bool IsDispelableBySpell(SpellEntry const * dispelSpell, uint32 spellId, bool def)
+{
+    if (!dispelSpell) return false;
+    SpellEntry const *spellproto = sSpellStore.LookupEntry(spellId);
+    if (!spellproto) return false;
+
+    switch(spellId)
+    {
+        // Wickened Soul
+        case 6788:
+        // Resurrection Sickness
+        case 15007:
+        // Deserter
+        case 26013:
+            return false;
+        default:break;
+    } 
+    
+    // Cyclone etc..
+    if (spellproto->AttributesEx & SPELL_ATTR1_UNAFFECTED_BY_SCHOOL_IMMUNE && spellproto->SpellIconID != 109) // NOT EVEN Faerie Fire
+        return false;
+
+    if (dispelSpell->Attributes & SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY)
+        return true;
+
+    return def;
+}
+
 bool CanSpellPierceImmuneAura(SpellEntry const * pierceSpell, SpellEntry const * aura)
 {
     // Cloak of shadows
@@ -3520,11 +3548,11 @@ bool CanSpellPierceImmuneAura(SpellEntry const * pierceSpell, SpellEntry const *
     }
     
     // these spells pierce all avalible spells (Resurrection Sickness for example)
-    if (pierceSpell->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY)
+    if (pierceSpell->Attributes & SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY)
         return true;
 
     // these spells (Cyclone for example) can pierce all...
-    if ((pierceSpell->AttributesEx & SPELL_ATTR_EX_UNAFFECTED_BY_SCHOOL_IMMUNE)
+    if ((pierceSpell->AttributesEx & SPELL_ATTR1_UNAFFECTED_BY_SCHOOL_IMMUNE)
         // ...but not these (Divine shield for example)
         && !(aura && (aura->Mechanic == MECHANIC_IMMUNE_SHIELD || aura->Mechanic == MECHANIC_INVULNERABILITY)))
         return true;
@@ -3963,15 +3991,6 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->speed =0;
             count++;
             break;
-        // Magic Suppression
-        case 49611:
-        case 49224:
-        case 49610:
-        // Arcane Blast
-        case 36032:
-            spellInfo->procCharges=0;
-            count++;
-            break;
         // Brambles
         case 50419:
             spellInfo->procChance = 0;
@@ -3994,55 +4013,14 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectSpellClassMask[1][1] = 0x0004000;
             count++;
             break;
-        // Blood Tap
-        case 45529:
-            spellInfo->EffectMiscValue[0] = RUNE_BLOOD;
-            spellInfo->EffectApplyAuraName[1]=SPELL_AURA_DUMMY;
-            count++;
-            break;
-        // Flame Shock passive
-        case 75461:
-            spellInfo->Effect[1] = SPELL_EFFECT_APPLY_AURA;
-            spellInfo->EffectApplyAuraName[1] = SPELL_AURA_PERIODIC_HASTE;
-            spellInfo->EffectSpellClassMask[1]=spellInfo->EffectSpellClassMask[0];
-            count++;
-            break;
-        // !HACK! vekhile like mounts cannot be used at arena
-        case 61447:
-        case 61425:
-        case 60424:
-        case 55531:
-        case 61470:
-        case 61469:
-        case 61465:
-        case 61467:
-        case 126: // Eye of Kilrogg    
-            spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_NOT_USABLE_IN_ARENA;
-            count++;
-            break;
         // Glyph of Cloak of Shadows
         case 63269:
             spellInfo->EffectSpellClassMask[1] = 0x10000;
             count++;
             break;
-        // Anger Capacitor
-        case 71406:
-        case 71545:
-            spellInfo->EffectSpellClassMask[0]=0;
-            count++;
-            break;
         // Sprit Heal
         case 44535:
             spellInfo->EffectMiscValue[0]=127;
-            count++;
-            break;
-        // Seals of the Pure
-        case 20224:
-        case 20225:
-        case 20330:
-        case 20331:
-        case 20332:
-            spellInfo->EffectSpellClassMask[0][1]=0x20400800;
             count++;
             break;
         case 36350: //They Must Burn Bomb Aura (self)
@@ -4252,6 +4230,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 64823:    // Item - Druid T8 Balance 4P Bonus
         case 44401:
         case 57934:     // Tricks of the Trade
+        case 67210:     // Item - Rogue T9 2P Bonus (Rupture)
             spellInfo->procCharges = 1;
             count++;
             break;
@@ -4386,17 +4365,16 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectMiscValue[1] = 127;
             count++;
             break;
-        case 16836:     // Brambles
-        case 16839:
-        case 16840:
-            spellInfo->EffectApplyAuraName[0] =  SPELL_AURA_ADD_PCT_MODIFIER;
-            spellInfo->EffectMiscValue[0] = SPELLMOD_EFFECT1;
-            count++;
-            break;
         case 49224:     // Magic Suppression
         case 49611:
         case 36032:     // Arcane Blast buff
             spellInfo->procCharges = 0;
+            count++;
+            break;
+        // Blood Tap
+        case 45529:
+            spellInfo->EffectMiscValue[0] = RUNE_BLOOD;
+            spellInfo->EffectApplyAuraName[1]=SPELL_AURA_DUMMY;
             count++;
             break;
         // Flame Shock passive

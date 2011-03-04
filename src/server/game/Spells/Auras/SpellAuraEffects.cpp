@@ -6074,6 +6074,27 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                     if (GetId() == 34477 || GetId() == 57934)
                         target->SetReducedThreatPercent(0, 0);
                     break;
+               case SPELLFAMILY_DEATHKNIGHT:
+                    // Blood Tap
+                    if(GetId() == 45529)
+                    {
+                        if(Player * plr=target->ToPlayer())
+                        {
+                            if(plr->GetCurrentRune(0) == RUNE_DEATH && !plr->GetRuneConvertAura(0))
+                               plr->ConvertRune(0, RUNE_BLOOD);
+                            else if(plr->GetCurrentRune(1) == RUNE_DEATH && !plr->GetRuneConvertAura(1))
+                               plr->ConvertRune(1, RUNE_BLOOD);
+                        }
+                    }
+                    break;
+                case SPELLFAMILY_PALADIN:
+                    // Sacred Shield
+                    if(GetId() == 58597 && caster && caster->GetTypeId() == TYPEID_PLAYER)
+                    {
+                        caster->ToPlayer()->AddSpellCooldown(58597,0,time(NULL) + 6);
+                        break;
+                    }
+                    break;
                 default:
                     break;
             }

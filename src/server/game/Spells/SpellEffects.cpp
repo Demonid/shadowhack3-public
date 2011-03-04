@@ -500,6 +500,7 @@ void Spell::SpellDamageSchoolDmg(SpellEffIndex effIndex)
                 {
                     AuraEffect const* aura = NULL;                // found req. aura for damage calculation
 
+                    bool isimmolate=false;
                     Unit::AuraEffectList const &mPeriodic = unitTarget->GetAuraEffectsByType(SPELL_AURA_PERIODIC_DAMAGE);
                     for (Unit::AuraEffectList::const_iterator i = mPeriodic.begin(); i != mPeriodic.end(); ++i)
                     {
@@ -512,6 +513,7 @@ void Spell::SpellDamageSchoolDmg(SpellEffIndex effIndex)
                         if ((*i)->GetSpellProto()->SpellFamilyFlags[0] & 0x4)
                         {
                             aura = *i;                      // it selected always if exist
+                            isimmolate=true;
                             break;
                         }
 
@@ -523,15 +525,8 @@ void Spell::SpellDamageSchoolDmg(SpellEffIndex effIndex)
                     // found Immolate or Shadowflame
                     if (aura)
                     {
-                        uint32 pdamage = uint32(std::max(aura->GetAmount(), 0));
-                        pdamage = m_caster->SpellDamageBonus(unitTarget, aura->GetSpellProto(), pdamage, DOT, aura->GetBase()->GetStackAmount());
-                        uint32 pct_dir = m_caster->CalculateSpellDamage(unitTarget, m_spellInfo, (effIndex + 1));
-                        uint8 baseTotalTicks = uint8(m_caster->CalcSpellDuration(aura->GetSpellProto()) / aura->GetSpellProto()->EffectAmplitude[0]);
-                        damage += int32(CalculatePctU(pdamage * baseTotalTicks, pct_dir));
-
-                        uint32 pct_dot = m_caster->CalculateSpellDamage(unitTarget, m_spellInfo, (effIndex + 2)) / 3;
-                        m_spellValue->EffectBasePoints[1] = SpellMgr::CalculateSpellEffectBaseAmount(int32(CalculatePctU(pdamage * baseTotalTicks, pct_dot)), m_spellInfo, 1);
-
+                        int32 damagetick = aura->GetAmount();
+                        damage += isimmolate ? damagetick * 3: damagetick * 4;
                         apply_direct_bonus = false;
                         // Glyph of Conflagrate
                         if (!m_caster->HasAura(56235))
@@ -3896,6 +3891,9 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
             const int32 amount = aura->GetAmount();
             pet_->CastCustomSpell(pet_, 68361, &amount, 0, 0, true);
         }
+        // Glyph of Seduction
+        if(m_caster->HasAura(56250))
+            pet_->CastSpell(pet_, 56250, true);
     }
     if (!pet)
         return;
@@ -6895,10 +6893,29 @@ void Spell::EffectActivateRune(SpellEffIndex effIndex)
     {
         if (plr->GetRuneCooldown(j) && plr->GetCurrentRune(j) == RuneType(m_spellInfo->EffectMiscValue[effIndex]))
         {
+            // blood tap
+            if(m_spellInfo->Id == 45529)
+                plr->ConvertRune(j, RUNE_DEATH);
             plr->SetRuneCooldown(j, 0);
             --count;
         }
     }
+    
+    // WTF NO COUNT
+    if(count && m_spellInfo->Id == 45529)
+    {
+        if(plr->GetCurrentRune(0) == RUNE_BLOOD)
+            plr->ConvertRune(0, RUNE_DEATH);
+        else if(plr->GetCurrentRune(1) == RUNE_BLOOD)
+            plr->ConvertRune(1, RUNE_DEATH);
+        else for (uint32 j = 0; j < MAX_RUNES && count > 0; ++j)
+        {
+            if (plr->GetRuneCooldown(j) && plr->GetCurrentRune(j) == RUNE_DEATH)
+                plr->SetRuneCooldown(j, 0);
+            --count;
+        }
+    }
+
     // Empower rune weapon
     if (m_spellInfo->Id == 47568)
     {
