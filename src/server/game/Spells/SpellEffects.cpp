@@ -5521,7 +5521,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                         m_caster->CastSpell(unitTarget, 55078, true);
                     // Frost Fever
                     if (m_targets.getUnitTarget()->GetAura(55095))
-                        m_caster->CastSpell(unitTarget, 55095, true);
+                        m_caster->CastSpell(unitTarget, 55095, false);
                 }
             }
             break;

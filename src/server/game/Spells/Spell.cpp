@@ -1299,7 +1299,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
 
         // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
         if (canEffectTrigger && missInfo != SPELL_MISS_REFLECT)
-            caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, addhealth, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
+            caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, addhealth, 0, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
 
         int32 gain = caster->HealBySpell(unitTarget, m_spellInfo, addhealth, crit);
         unitTarget->getHostileRefManager().threatAssist(caster, float(gain) * 0.5f, m_spellInfo);
@@ -1325,7 +1325,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
         if (canEffectTrigger && missInfo != SPELL_MISS_REFLECT)
         {
-            caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, damageInfo.damage, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
+            caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, damageInfo.damage, damageInfo.absorb, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
             if (caster->GetTypeId() == TYPEID_PLAYER && (m_spellInfo->Attributes & SPELL_ATTR0_STOP_ATTACK_TARGET) == 0 &&
                (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MELEE || m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_RANGED))
                 caster->ToPlayer()->CastItemCombatSpell(unitTarget, m_attackType, procVictim, procEx);
@@ -1348,7 +1348,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         procEx |= createProcExtendMask(&damageInfo, missInfo);
         // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
         if (canEffectTrigger && missInfo != SPELL_MISS_REFLECT)
-            caster->ProcDamageAndSpell(unit, procAttacker, procVictim, procEx, 0, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
+            caster->ProcDamageAndSpell(unit, procAttacker, procVictim, procEx, 0, 0, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
 
         // Failed Pickpocket, reveal rogue
         if (missInfo == SPELL_MISS_RESIST
@@ -3571,7 +3571,7 @@ void Spell::_handle_immediate_phase()
             }
         }
         // Proc damage for spells which have only dest targets (2484 should proc 51486 for example)
-        m_originalCaster->ProcDamageAndSpell(0, procAttacker, 0, m_procEx | PROC_EX_NORMAL_HIT, 0, BASE_ATTACK, m_spellInfo, m_triggeredByAuraSpell);
+        m_originalCaster->ProcDamageAndSpell(0, procAttacker, 0, m_procEx | PROC_EX_NORMAL_HIT, 0, 0, BASE_ATTACK, m_spellInfo, m_triggeredByAuraSpell);
     }
 }
 
@@ -6829,6 +6829,22 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
                 caster = m_caster;
             if (target->GetEntry() == 5925)
                 return true;
+            // Ok new rules for LOS
+            for (uint8 i=0; i<3; ++i)
+            {
+                // auras likea pala
+                if(m_spellInfo->Effect[i] == SPELL_EFFECT_APPLY_AREA_AURA_RAID)
+                    return true;
+                // bloodlust/hymns/prayers
+                if( m_spellInfo->EffectApplyAuraName[i] && (m_spellInfo->EffectImplicitTargetB[i] == TARGET_UNIT_AREA_ALLY_SRC || 
+                    m_spellInfo->EffectImplicitTargetA[i] == TARGET_UNIT_RAID_CASTER))
+                    return true;
+                if(IsChanneledSpell(m_spellInfo))
+                    continue;
+                // Pets time!
+                if( m_spellInfo->EffectImplicitTargetA[i] == TARGET_UNIT_PET || m_spellInfo->EffectImplicitTargetA[i] == TARGET_UNIT_MASTER)
+                    return true;
+            }
             if (target != m_caster && !target->IsWithinLOSInMap(caster))
                 return false;
             break;
