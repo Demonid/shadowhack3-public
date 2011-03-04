@@ -4760,15 +4760,15 @@ void Unit::SendSpellNonMeleeDamageLog(Unit *target, uint32 SpellID, uint32 Damag
     SendSpellNonMeleeDamageLog(&log);
 }
 
-void Unit::ProcDamageAndSpell(Unit *pVictim, uint32 procAttacker, uint32 procVictim, uint32 procExtra, uint32 amount, WeaponAttackType attType, SpellEntry const *procSpell, SpellEntry const * procAura)
+void Unit::ProcDamageAndSpell(Unit *pVictim, uint32 procAttacker, uint32 procVictim, uint32 procEx, uint32 amount, uint32 abosrb, WeaponAttackType attType, SpellEntry const *procSpell, SpellEntry const * procAura)
 {
      // Not much to do if no flags are set.
     if (procAttacker)
-        ProcDamageAndSpellFor(false, pVictim, procAttacker, procExtra,attType, procSpell, amount, procAura);
+        ProcDamageAndSpellFor(false, pVictim,procAttacker, procEx,attType, procSpell, amount, abosrb, procAura);
     // Now go on with a victim's events'n'auras
     // Not much to do if no flags are set or there is no victim
     if (pVictim && pVictim->isAlive() && procVictim)
-        pVictim->ProcDamageAndSpellFor(true, this, procVictim, procExtra, attType, procSpell, amount, procAura);
+        pVictim->ProcDamageAndSpellFor(true, this, procVictim, procEx, attType, procSpell, amount, abosrb, procAura);
 }
 
 void Unit::SendPeriodicAuraLog(SpellPeriodicAuraLogInfo *pInfo)
@@ -6420,6 +6420,20 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
         {
             switch(dummySpell->Id)
             {
+                // Tricks of the Trade - 15% damage bonus effect for redirection target
+                case 57934:
+                {
+                    if (GetTypeId() == TYPEID_PLAYER)
+                        if(Unit * redirect = GetMisdirectionTarget())
+                        {
+                            if(triggeredByAura->GetAmount() || redirect->GetTypeId()!=TYPEID_PLAYER)
+                                return false;
+                            triggeredByAura->SetAmount(1);
+                            CastSpell(redirect,57933,true);
+                            triggeredByAura->GetBase()->SetAuraTimer(6000);
+                        }
+                    return false;
+                }
                 // Glyph of Backstab
                 case 56800:
                 {
@@ -14020,7 +14034,7 @@ uint32 createProcExtendMask(SpellNonMeleeDamage *damageInfo, SpellMissInfo missC
     return procEx;
 }
 
-void Unit::ProcDamageAndSpellFor(bool isVictim, Unit * pTarget, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, SpellEntry const * procSpell, uint32 damage, SpellEntry const * procAura)
+void Unit::ProcDamageAndSpellFor(bool isVictim, Unit * pTarget, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, SpellEntry const * procSpell, uint32 damage, uint32 abosrb, SpellEntry const * procAura)
 {
     // Player is loaded now - do not allow passive spell casts to proc
     if (GetTypeId() == TYPEID_PLAYER && this->ToPlayer()->GetSession()->PlayerLoading())
@@ -15213,13 +15227,13 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
     // Do KILL and KILLED procs. KILL proc is called only for the unit who landed the killing blow (and its owner - for pets and totems) regardless of who tapped the victim
     if (isPet() || isTotem())
         if (Unit *owner = GetOwner())
-            owner->ProcDamageAndSpell(pVictim, PROC_FLAG_KILL, PROC_FLAG_NONE, PROC_EX_NONE, 0);
+            owner->ProcDamageAndSpell(pVictim, PROC_FLAG_KILL, PROC_FLAG_NONE, PROC_EX_NONE, 0, 0);
 
     if (pVictim->GetCreatureType() != CREATURE_TYPE_CRITTER)
-        ProcDamageAndSpell(pVictim, PROC_FLAG_KILL, PROC_FLAG_KILLED, PROC_EX_NONE, 0);
+        ProcDamageAndSpell(pVictim, PROC_FLAG_KILL, PROC_FLAG_KILLED, PROC_EX_NONE, 0, 0);
 
     // Proc auras on death - must be before aura/combat remove
-    pVictim->ProcDamageAndSpell(NULL, PROC_FLAG_DEATH, PROC_FLAG_NONE, PROC_EX_NONE, 0, BASE_ATTACK, 0);
+    pVictim->ProcDamageAndSpell(NULL, PROC_FLAG_DEATH, PROC_FLAG_NONE, PROC_EX_NONE, 0, BASE_ATTACK, 0, 0);
 
     // if talent known but not triggered (check priest class for speedup check)
     bool SpiritOfRedemption = false;
