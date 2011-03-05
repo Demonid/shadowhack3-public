@@ -3340,7 +3340,7 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
         }
         else
         {
-            if (success)
+            if (success && !failCount)
             {
                 success_list.push_back(std::make_pair(itr->first->GetId(), itr->first->GetCasterGUID()));
                 --itr->second;
@@ -3355,6 +3355,7 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
                     dataFail << uint64(m_caster->GetGUID());            // Caster GUID
                     dataFail << uint64(unitTarget->GetGUID());          // Victim GUID
                     dataFail << uint32(m_spellInfo->Id);                // dispel spell id
+                    success_list.clear();
                 }
                 ++failCount;
                 dataFail << uint32(itr->first->GetId());                         // Spell Id

@@ -262,7 +262,8 @@ void Unit::Update(uint32 p_time)
         SendThreatListUpdate();
 
     // update combat timer only for players and pets (only pets with PetAI)
-    if (isInCombat() && (GetTypeId() == TYPEID_PLAYER || (ToCreature()->isPet() && IsControlledByPlayer())))
+    if (isInCombat() && (GetTypeId() == TYPEID_PLAYER || (ToCreature()->isPet() && IsControlledByPlayer()
+        || (IsVehicle() || HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE)) )))
     {
         // Check UNIT_STAT_MELEE_ATTACKING or UNIT_STAT_CHASE (without UNIT_STAT_FOLLOW in this case) so pets can reach far away
         // targets without stopping half way there and running off.
@@ -7116,7 +7117,8 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                         return false;
 
                     WeaponAttackType attType = WeaponAttackType(this->ToPlayer()->GetAttackBySlot(castItem->GetSlot()));
-                    if ((attType != BASE_ATTACK && attType != OFF_ATTACK) || !isAttackReady(attType))
+                    if ((attType == OFF_ATTACK && (procFlag & PROC_FLAG_DONE_MAINHAND_ATTACK)) || 
+                        (attType == BASE_ATTACK && (procFlag & PROC_FLAG_DONE_OFFHAND_ATTACK)))
                         return false;
 
                     // Now compute real proc chance...
@@ -7164,7 +7166,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
 
                     // Value gained from additional AP
                     basepoints0 = int32(extra_attack_power/14.0f * GetAttackTime(BASE_ATTACK)/1000);
-                    triggered_spell_id = 25504;
+                    triggered_spell_id = attType == BASE_ATTACK?25504:33750;
 
                     // apply cooldown before cast to prevent processing itself
                     if (cooldown)
@@ -12151,6 +12153,9 @@ void Unit::SetInCombatState(bool PvP, Unit* enemy)
     if (!isAlive())
         return;
 
+    PvP = PvP || this->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE) || this->IsVehicle()
+            || enemy->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE) || enemy->IsVehicle();
+        
     if (PvP)
         m_CombatTimer = 5000;
 
@@ -12739,6 +12744,9 @@ bool Unit::CanHaveThreatList() const
     if (HasUnitTypeMask(UNIT_MASK_MINION | UNIT_MASK_GUARDIAN | UNIT_MASK_CONTROLABLE_GUARDIAN) && IS_PLAYER_GUID(((Pet*)this)->GetOwnerGUID()))
         return false;
 
+    if (IsVehicle() || HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
+        return false;
+        
     return true;
 }
 
