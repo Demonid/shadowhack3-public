@@ -138,8 +138,8 @@ ChatCommand * ChatHandler::getCommandTable()
     static ChatCommand characterCommandTable[] =
     {
         { "customize",      SEC_ADMINISTRATOR,  true,  OldHandler<&ChatHandler::HandleCharacterCustomizeCommand>,     "", NULL },
-		{ "changefaction",  SEC_ADMINISTRATOR,  true,  OldHandler<&ChatHandler::HandleCharacterChangeFactionCommand>, "", NULL },
-		{ "changerace",     SEC_ADMINISTRATOR,  true,  OldHandler<&ChatHandler::HandleCharacterChangeRaceCommand>,    "", NULL },
+        { "changefaction",  SEC_ADMINISTRATOR,  true,  OldHandler<&ChatHandler::HandleCharacterChangeFactionCommand>, "", NULL },
+        { "changerace",     SEC_ADMINISTRATOR,  true,  OldHandler<&ChatHandler::HandleCharacterChangeRaceCommand>,    "", NULL },
         { "deleted",        SEC_GAMEMASTER,     true,  NULL,                                              "", characterDeletedCommandTable},
         { "erase",          SEC_CONSOLE,        true,  OldHandler<&ChatHandler::HandleCharacterEraseCommand>,         "", NULL },
         { "level",          SEC_ADMINISTRATOR,  true,  OldHandler<&ChatHandler::HandleCharacterLevelCommand>,         "", NULL },
@@ -461,7 +461,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "unbindsight",    SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleUnbindSightCommand>,         "", NULL },
         { "playall",        SEC_GAMEMASTER,     false, OldHandler<&ChatHandler::HandlePlayAllCommand>,             "", NULL },
         { "mmap",           SEC_ADMINISTRATOR,  false, NULL,                                           "", mmapCommandTable },
-		{ "wg",             SEC_GAMEMASTER,     false, NULL,                                    "", wintergraspCommandTable },
+        { "wg",             SEC_GAMEMASTER,     false, NULL,                                    "", wintergraspCommandTable },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 

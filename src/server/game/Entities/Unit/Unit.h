@@ -2021,7 +2021,7 @@ class Unit : public WorldObject
         // reactive attacks
         void ClearAllReactives();
         void StartReactiveTimer(ReactiveType reactive) { m_reactiveTimer[reactive] = REACTIVE_TIMER_START;}
-        bool HasReactiveTimer ( ReactiveType reactive )	{return m_reactiveTimer[reactive] > 0;}	
+        bool HasReactiveTimer ( ReactiveType reactive )    {return m_reactiveTimer[reactive] > 0;}    
         void UpdateReactives(uint32 p_time);
 
         // group updates

@@ -1377,7 +1377,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                 if (m_caster->HasUnitState(UNIT_STAT_STUNNED | UNIT_STAT_FLEEING | UNIT_STAT_ROOT | UNIT_STAT_CONFUSED))
                     return;
 
-		    if (unitTarget)
+            if (unitTarget)
                 {
                     if ((unitTarget->HasAuraType(SPELL_AURA_MOD_STEALTH) || unitTarget->HasAuraType(SPELL_AURA_MOD_INVISIBILITY)) && !m_caster->canSeeOrDetect(unitTarget, true))
                         return;
@@ -1539,8 +1539,8 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                 m_caster->ToPlayer()->RemoveSpellCooldown(m_spellInfo->Id, true);
                 spell_id = 48289;
                 break;
-		    // Raise Ally
-			case 61999:
+            // Raise Ally
+            case 61999:
                 if (!unitTarget)
                     return;
 
@@ -1557,7 +1557,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     }
 
                 unitTarget->CastSpell(unitTarget, 46619, true);
-				break;
+                break;
             // Raise dead - take reagents and trigger summon spells
             case 48289:
                 if (m_targets.HasDst())
@@ -3224,21 +3224,21 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
 
     if (summon)
     {
-		switch (entry)
-		{
-		case 30230: // Risen Ally
-			{
-				uint32 petlevel = summon->getLevel();
-				summon->setPowerType(POWER_ENERGY);
-				summon->SetMaxHealth(3000 + petlevel * 100);
-				summon->SetHealth(summon->GetMaxHealth());
-				summon->SetPower(POWER_ENERGY, 100);
-				summon->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float((petlevel * 4 - petlevel) + (m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.3 * 2 / 14)));
-				summon->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float((petlevel * 4 + petlevel) + (m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.3 * 2 / 14)));
-				summon->CastSpell(summon, 35177, true); //spawn animation effect
-				break;
-			}
-		}
+        switch (entry)
+        {
+        case 30230: // Risen Ally
+            {
+                uint32 petlevel = summon->getLevel();
+                summon->setPowerType(POWER_ENERGY);
+                summon->SetMaxHealth(3000 + petlevel * 100);
+                summon->SetHealth(summon->GetMaxHealth());
+                summon->SetPower(POWER_ENERGY, 100);
+                summon->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float((petlevel * 4 - petlevel) + (m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.3 * 2 / 14)));
+                summon->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float((petlevel * 4 + petlevel) + (m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.3 * 2 / 14)));
+                summon->CastSpell(summon, 35177, true); //spawn animation effect
+                break;
+            }
+        }
         summon->SetUInt32Value(UNIT_CREATED_BY_SPELL, m_spellInfo->Id);
         summon->SetCreatorGUID(m_originalCaster->GetGUID());
         ExecuteLogEffectSummonObject(effIndex, summon);
@@ -4476,40 +4476,40 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
             switch(m_spellInfo->Id)
             {
                 //Teleport to Lake Wintergrasp
-				case 58622:
-				{
-					if (unitTarget->GetTypeId() != TYPEID_PLAYER)
-						return;
+                case 58622:
+                {
+                    if (unitTarget->GetTypeId() != TYPEID_PLAYER)
+                        return;
 
-					if (OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197))
-					{
-						if(pvpWG->isWarTime() || pvpWG->GetTimer() < 300 * IN_MILLISECONDS)
-						{
-							switch (unitTarget->ToPlayer()->GetTeam())
-							{
-								case ALLIANCE:
-									{
-										if (pvpWG->getDefenderTeam() == TEAM_ALLIANCE)
-											unitTarget->CastSpell(unitTarget, SPELL_TELEPORT_FORTRESS, true);
-										else
-											unitTarget->CastSpell(unitTarget, SPELL_TELEPORT_ALLIANCE_CAMP, true);
-									}
-									break;
-								case HORDE:
-									{
-										if (pvpWG->getDefenderTeam() == TEAM_HORDE)
-											unitTarget->CastSpell(unitTarget, SPELL_TELEPORT_FORTRESS, true);
-										else
-											unitTarget->CastSpell(unitTarget, SPELL_TELEPORT_HORDE_CAMP, true);
-									}
-									break;
-								default:
-									break;
-							}
-						}
-					}
-					return;
-				}
+                    if (OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197))
+                    {
+                        if(pvpWG->isWarTime() || pvpWG->GetTimer() < 300 * IN_MILLISECONDS)
+                        {
+                            switch (unitTarget->ToPlayer()->GetTeam())
+                            {
+                                case ALLIANCE:
+                                    {
+                                        if (pvpWG->getDefenderTeam() == TEAM_ALLIANCE)
+                                            unitTarget->CastSpell(unitTarget, SPELL_TELEPORT_FORTRESS, true);
+                                        else
+                                            unitTarget->CastSpell(unitTarget, SPELL_TELEPORT_ALLIANCE_CAMP, true);
+                                    }
+                                    break;
+                                case HORDE:
+                                    {
+                                        if (pvpWG->getDefenderTeam() == TEAM_HORDE)
+                                            unitTarget->CastSpell(unitTarget, SPELL_TELEPORT_FORTRESS, true);
+                                        else
+                                            unitTarget->CastSpell(unitTarget, SPELL_TELEPORT_HORDE_CAMP, true);
+                                    }
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                    return;
+                }
                 // Glyph of Backstab
                 case 63975:
                 {
@@ -5725,11 +5725,11 @@ void Spell::EffectStuck(SpellEffIndex /*effIndex*/)
         return;
 
     if( Battleground *bg = pTarget->GetBattleground() )
-	{
-		bg->EventPlayerDroppedFlag(pTarget);
-	}
+    {
+        bg->EventPlayerDroppedFlag(pTarget);
+    }
 
-	pTarget->RepopAtGraveyard();
+    pTarget->RepopAtGraveyard();
 
     // Stuck spell trigger Hearthstone cooldown
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(8690);
@@ -7243,18 +7243,18 @@ void Spell::EffectPlayerNotification(SpellEffIndex /*effIndex*/)
     switch(m_spellInfo->Id)
     {
         case 58730: // Restricted Flight Area
-		{
+        {
 
-			OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197);
-			if (sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED) && pvpWG && pvpWG->isWarTime())
-			{
-				unitTarget->ToPlayer()->GetSession()->SendNotification(LANG_ZONE_NOFLYZONE);
-				unitTarget->PlayDirectSound(9417); // Fel Reaver sound
-				unitTarget->MonsterTextEmote(sObjectMgr->GetTrinityString(LANG_BG_WG_NO_FLY, unitTarget->ToPlayer()->GetSession()->GetSessionDbLocaleIndex()), unitTarget->GetGUID(), true);
-				break;
-			} else unitTarget->RemoveAura(58730);
-			break;
-		}
+            OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197);
+            if (sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED) && pvpWG && pvpWG->isWarTime())
+            {
+                unitTarget->ToPlayer()->GetSession()->SendNotification(LANG_ZONE_NOFLYZONE);
+                unitTarget->PlayDirectSound(9417); // Fel Reaver sound
+                unitTarget->MonsterTextEmote(sObjectMgr->GetTrinityString(LANG_BG_WG_NO_FLY, unitTarget->ToPlayer()->GetSession()->GetSessionDbLocaleIndex()), unitTarget->GetGUID(), true);
+                break;
+            } else unitTarget->RemoveAura(58730);
+            break;
+        }
         case 58600: // Restricted Flight Area
             unitTarget->ToPlayer()->GetSession()->SendNotification(LANG_ZONE_NOFLYZONE);
             break;

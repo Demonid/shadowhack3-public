@@ -137,8 +137,8 @@ void GridMap::unloadData()
 bool GridMap::loadAreaData(FILE *in, uint32 offset, uint32 /*size*/)
 {
     GridMapAreaHeader header;
-	fseek(in, offset, SEEK_SET);
-	fread(&header, sizeof(header), 1, in);
+    fseek(in, offset, SEEK_SET);
+    fread(&header, sizeof(header), 1, in);
     if (header.fourcc != *((uint32 const*)(MAP_AREA_MAGIC)))
         return false;
 

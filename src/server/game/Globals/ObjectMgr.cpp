@@ -5900,94 +5900,94 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
 
 void ObjectMgr::SendExternalMails()
 {
-	QueryResult result = CharacterDatabase.PQuery("SELECT id, receiver, subject, message, money, item, item_count FROM mail_external");
-	if(!result)
-	{
-		sLog->outString("Izb00shkaMailer: No Mails in Queue...");
-		return;
-	}
+    QueryResult result = CharacterDatabase.PQuery("SELECT id, receiver, subject, message, money, item, item_count FROM mail_external");
+    if(!result)
+    {
+        sLog->outString("Izb00shkaMailer: No Mails in Queue...");
+        return;
+    }
 
-	sLog->outString("Izb00shkaMailer: Send Mails from Queue...");
+    sLog->outString("Izb00shkaMailer: Send Mails from Queue...");
 
-	do
-	{
-		Field *fields = result->Fetch();
-		uint32 id = fields[0].GetUInt32();
-		uint32 receiver_guid = fields[1].GetUInt32();
-		std::string subject = fields[2].GetString();
-		std::string message = fields[3].GetString();
-		uint32 money = fields[4].GetUInt32();
-		uint32 ItemID = fields[5].GetUInt32();
-		uint32 ItemCount = fields[6].GetUInt32();
-		Player *receiver = NULL;
-		uint64 rec_guid = 0;
+    do
+    {
+        Field *fields = result->Fetch();
+        uint32 id = fields[0].GetUInt32();
+        uint32 receiver_guid = fields[1].GetUInt32();
+        std::string subject = fields[2].GetString();
+        std::string message = fields[3].GetString();
+        uint32 money = fields[4].GetUInt32();
+        uint32 ItemID = fields[5].GetUInt32();
+        uint32 ItemCount = fields[6].GetUInt32();
+        Player *receiver = NULL;
+        uint64 rec_guid = 0;
 
-		if (!receiver_guid)
-		{
-			sLog->outError("Izb00shkaMailer: Unknown player GUID, skip mail.");
-			continue;
-		}
+        if (!receiver_guid)
+        {
+            sLog->outError("Izb00shkaMailer: Unknown player GUID, skip mail.");
+            continue;
+        }
 
-		rec_guid = MAKE_NEW_GUID(receiver_guid, 0, HIGHGUID_PLAYER);
+        rec_guid = MAKE_NEW_GUID(receiver_guid, 0, HIGHGUID_PLAYER);
 
-		receiver = sObjectMgr->GetPlayer(receiver_guid);
+        receiver = sObjectMgr->GetPlayer(receiver_guid);
 
-		MailSender sender(MAIL_NORMAL, 0, MAIL_STATIONERY_GM);
-		MailDraft draft(subject, message);
+        MailSender sender(MAIL_NORMAL, 0, MAIL_STATIONERY_GM);
+        MailDraft draft(subject, message);
 
-		Item* ToMailItem = NULL;
-		ItemPrototype const* item_proto = NULL;
+        Item* ToMailItem = NULL;
+        ItemPrototype const* item_proto = NULL;
 
-		SQLTransaction trans = CharacterDatabase.BeginTransaction();
+        SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
-		if (ItemID)
-			item_proto = sObjectMgr->GetItemPrototype(ItemID);
+        if (ItemID)
+            item_proto = sObjectMgr->GetItemPrototype(ItemID);
 
-		if(item_proto)
-		{
-			if ( ItemCount < 1 || (item_proto->MaxCount > 0 && ItemCount > uint32(item_proto->MaxCount)) )
-			{
-				sLog->outDetail("Izb00shkaMailer: Warning: invalid ItemCount of %u, setting to 1", ItemCount);
-				ItemCount = 1;
-			}
+        if(item_proto)
+        {
+            if ( ItemCount < 1 || (item_proto->MaxCount > 0 && ItemCount > uint32(item_proto->MaxCount)) )
+            {
+                sLog->outDetail("Izb00shkaMailer: Warning: invalid ItemCount of %u, setting to 1", ItemCount);
+                ItemCount = 1;
+            }
 
-			if ( ItemCount > 1 && ItemCount > item_proto->GetMaxStackSize() )
-			{
-				sLog->outDetail("Izb00shkaMailer: Warning: invalid ItemCount of %u, setting to %u.", ItemCount, item_proto->GetMaxStackSize());
-				ItemCount = item_proto->GetMaxStackSize();
-			}
+            if ( ItemCount > 1 && ItemCount > item_proto->GetMaxStackSize() )
+            {
+                sLog->outDetail("Izb00shkaMailer: Warning: invalid ItemCount of %u, setting to %u.", ItemCount, item_proto->GetMaxStackSize());
+                ItemCount = item_proto->GetMaxStackSize();
+            }
 
-			ToMailItem = Item::CreateItem(ItemID, ItemCount, receiver);
-		}
+            ToMailItem = Item::CreateItem(ItemID, ItemCount, receiver);
+        }
 
-		if (ToMailItem)
-		{
-			ToMailItem->SaveToDB(trans);
-			draft.AddItem(ToMailItem);
+        if (ToMailItem)
+        {
+            ToMailItem->SaveToDB(trans);
+            draft.AddItem(ToMailItem);
 
-			sLog->outString("Izb00shkaMailer: Sending mail to player %s. Attached item: %u", receiver ? receiver->GetName() : "", ItemID);				
-		}
-		else
-		{
-			sLog->outString("Izb00shkaMailer: Sending mail to player %s.", receiver ? receiver->GetName() : "");
-		}
+            sLog->outString("Izb00shkaMailer: Sending mail to player %s. Attached item: %u", receiver ? receiver->GetName() : "", ItemID);                
+        }
+        else
+        {
+            sLog->outString("Izb00shkaMailer: Sending mail to player %s.", receiver ? receiver->GetName() : "");
+        }
 
-		if (money)
-			draft.AddMoney(money);
+        if (money)
+            draft.AddMoney(money);
 
-		draft.SendMailTo(trans, MailReceiver(receiver, GUID_LOPART(rec_guid)), sender);
+        draft.SendMailTo(trans, MailReceiver(receiver, GUID_LOPART(rec_guid)), sender);
 
-		std::ostringstream ss;
+        std::ostringstream ss;
 
-		ss << "DELETE FROM mail_external WHERE id = " << id << ";";
+        ss << "DELETE FROM mail_external WHERE id = " << id << ";";
 
-		trans->Append(ss.str().c_str());
+        trans->Append(ss.str().c_str());
 
-		CharacterDatabase.CommitTransaction(trans);
+        CharacterDatabase.CommitTransaction(trans);
 
-	} while(result->NextRow());
+    } while(result->NextRow());
 
-	sLog->outString("Izb00shkaMailer: All Mails Sent.");
+    sLog->outString("Izb00shkaMailer: All Mails Sent.");
 }
 
 void ObjectMgr::LoadQuestAreaTriggers()
@@ -8665,11 +8665,11 @@ void ObjectMgr::LoadMailLevelRewards()
         uint32 raceMask       = fields[1].GetUInt32();
         uint32 mailTemplateId = fields[2].GetUInt32();
         uint32 senderEntry    = fields[3].GetUInt32();
-		std::string subject   = fields[4].GetString();
-		std::string message   = fields[5].GetString();
-		uint32 money          = fields[6].GetUInt32();
-		uint32 ItemID         = fields[7].GetUInt32();
-		uint32 ItemCount      = fields[8].GetUInt32();
+        std::string subject   = fields[4].GetString();
+        std::string message   = fields[5].GetString();
+        uint32 money          = fields[6].GetUInt32();
+        uint32 ItemID         = fields[7].GetUInt32();
+        uint32 ItemCount      = fields[8].GetUInt32();
 
         if (level > MAX_LEVEL)
         {

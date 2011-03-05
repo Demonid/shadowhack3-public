@@ -251,13 +251,13 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     ASSERT(mover != NULL);                                  // there must always be a mover
 
     Player *plMover = mover->ToPlayer();
-	Vehicle *vehMover = mover->GetVehicleKit();
+    Vehicle *vehMover = mover->GetVehicleKit();
 
-	if (vehMover)			
-		if (mover->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED))
-			if (Unit *charmer = mover->GetCharmer())
-				if (charmer->GetTypeId() == TYPEID_PLAYER)
-					plMover = charmer->ToPlayer();
+    if (vehMover)            
+        if (mover->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED))
+            if (Unit *charmer = mover->GetCharmer())
+                if (charmer->GetTypeId() == TYPEID_PLAYER)
+                    plMover = charmer->ToPlayer();
 
 
     // ignore, waiting processing in WorldSession::HandleMoveWorldportAckOpcode and WorldSession::HandleMoveTeleportAck
@@ -306,8 +306,8 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             return;
         }
 
-		if (plMover && plMover->m_anti_TransportGUID == 0 && (movementInfo.t_guid != 0))
-		{
+        if (plMover && plMover->m_anti_TransportGUID == 0 && (movementInfo.t_guid != 0))
+        {
             // if we boarded a transport, add us to it
 //            if (plMover && !plMover->GetTransport())
             if (!plMover->GetTransport())
@@ -325,17 +325,17 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             }
         }
 
-		//movement anticheat;
-		//Correct finding GO guid in DB (thanks to GriffonHeart)
-		if (plMover)
-		{
+        //movement anticheat;
+        //Correct finding GO guid in DB (thanks to GriffonHeart)
+        if (plMover)
+        {
             if(GameObject *obj = HashMapHolder<GameObject>::Find(movementInfo.t_guid))
                 plMover->m_anti_TransportGUID = obj->GetDBTableGUIDLow() ? obj->GetDBTableGUIDLow() : obj->GetGUID();
             else
-				plMover->m_anti_TransportGUID = GUID_LOPART(movementInfo.t_guid);
+                plMover->m_anti_TransportGUID = GUID_LOPART(movementInfo.t_guid);
 
-		}
-		// end movement anticheat
+        }
+        // end movement anticheat
 
         if (!mover->GetTransport() && !mover->GetVehicle())
         {
@@ -351,13 +351,13 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
         movementInfo.t_pos.Relocate(0.0f, 0.0f, 0.0f, 0.0f);
         movementInfo.t_time = 0;
         movementInfo.t_seat = -1;
-		plMover->m_anti_TransportGUID = 0;		
+        plMover->m_anti_TransportGUID = 0;        
     }
 
     // fall damage generation (ignore in flight case that can be triggered also at lags in moment teleportation to another map).
     if (opcode == MSG_MOVE_FALL_LAND && plMover && !plMover->isInFlight())
     {
-		//movement anticheat
+        //movement anticheat
         plMover->m_anti_JustJumped = 0;
         plMover->m_anti_JumpBaseZ = 0;
         //end movement anticheat
@@ -371,7 +371,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     }
 
     /*----------------------*/
-    	//---- anti-cheat features -->>>
+        //---- anti-cheat features -->>>
     bool check_passed = true;
     #ifdef MOVEMENT_ANTICHEAT_DEBUG_FULL
     if (plMover){
@@ -389,7 +389,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     }
     #endif
 
-	if ( plMover && World::GetEnableMvAnticheat() && !plMover->HasAuraType(SPELL_AURA_MOD_POSSESS) && !plMover->HasAura(56266) && !(vehMover && vehMover->GetBase()->HasUnitState(UNIT_STAT_CHARGING)))
+    if ( plMover && World::GetEnableMvAnticheat() && !plMover->HasAuraType(SPELL_AURA_MOD_POSSESS) && !plMover->HasAura(56266) && !(vehMover && vehMover->GetBase()->HasUnitState(UNIT_STAT_CHARGING)))
     {
         //calc time deltas
         int32 cClientTimeDelta = 1500;
@@ -436,31 +436,31 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             cClientTimeDelta = cServerTimeDelta;
             plMover->m_anti_MistimingCount++;
 
-			#ifdef MOVEMENT_ANTICHEAT_DEBUG
+            #ifdef MOVEMENT_ANTICHEAT_DEBUG
             sLog->outError("IAC-%s, mistiming exception. #:%d, mistiming: %dms ",
                             plMover->GetName(), plMover->m_anti_MistimingCount, sync_time);
-			#endif
+            #endif
 
             if (plMover->m_anti_MistimingCount > World::GetMistimingAlarms())
             {
-				#ifdef MOVEMENT_ANTICHEAT_ALARM_LOG
-					sLog->outCheater("IAC-%s disconnected due to mistiming exceptions limit.", plMover->GetName());
-				#endif
+                #ifdef MOVEMENT_ANTICHEAT_ALARM_LOG
+                    sLog->outCheater("IAC-%s disconnected due to mistiming exceptions limit.", plMover->GetName());
+                #endif
                 plMover->GetSession()->KickPlayer();
                 return;
             }
 
             check_passed = false;
 
-			if (vehMover)
-			{
-				if (plMover && plMover->IsMounted())
-				{
-					plMover->Unmount();
-				}
-				else
-					vehMover->Dismiss();
-			}
+            if (vehMover)
+            {
+                if (plMover && plMover->IsMounted())
+                {
+                    plMover->Unmount();
+                }
+                else
+                    vehMover->Dismiss();
+            }
         }
         // end mistiming checks
 
@@ -475,18 +475,18 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             // if the three flags FLY/SWIM/WALK are set exclusively, this SWITCH is equivalent to IF/ELSE commented below
             switch(movementInfo.flags & (MOVEMENTFLAG_FLYING | MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_WALKING))
             {
-				case MOVEMENTFLAG_FLYING:
-					move_type = movementInfo.flags & MOVEMENTFLAG_BACKWARD ? MOVE_FLIGHT_BACK : MOVE_FLIGHT;
-					break;
-				case MOVEMENTFLAG_SWIMMING:
-					move_type = movementInfo.flags & MOVEMENTFLAG_BACKWARD ? MOVE_SWIM_BACK : MOVE_SWIM;
-					break;
-				case MOVEMENTFLAG_WALKING:
-					move_type = MOVE_WALK;
-					break;
-				default:
-					move_type = movementInfo.flags & MOVEMENTFLAG_BACKWARD ? MOVE_SWIM_BACK : MOVE_RUN;
-					break;
+                case MOVEMENTFLAG_FLYING:
+                    move_type = movementInfo.flags & MOVEMENTFLAG_BACKWARD ? MOVE_FLIGHT_BACK : MOVE_FLIGHT;
+                    break;
+                case MOVEMENTFLAG_SWIMMING:
+                    move_type = movementInfo.flags & MOVEMENTFLAG_BACKWARD ? MOVE_SWIM_BACK : MOVE_SWIM;
+                    break;
+                case MOVEMENTFLAG_WALKING:
+                    move_type = MOVE_WALK;
+                    break;
+                default:
+                    move_type = movementInfo.flags & MOVEMENTFLAG_BACKWARD ? MOVE_SWIM_BACK : MOVE_RUN;
+                    break;
             }
             //if (movementInfo.flags & MOVEMENTFLAG_FLYING) move_type = movementInfo.flags & MOVEMENTFLAG_BACKWARD ? MOVE_FLIGHT_BACK : MOVE_FLIGHT;
             //else if (movementInfo.flags & MOVEMENTFLAG_SWIMMING) move_type = movementInfo.flags & MOVEMENTFLAG_BACKWARD ? MOVE_SWIM_BACK : MOVE_SWIM;
@@ -496,19 +496,19 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
 
             float current_speed = plMover->GetSpeed(move_type);
 
-			bool vehicleCanFly = false;
-			bool vehicleIsCreature = false;
+            bool vehicleCanFly = false;
+            bool vehicleIsCreature = false;
 
-			if ( plMover->GetVehicle() )
-			{
-				if (Creature *vehCreature  = plMover->GetVehicleCreatureBase())
-				{	
-					vehicleIsCreature = true;
-					vehicleCanFly = vehCreature->canFly();
-				}
+            if ( plMover->GetVehicle() )
+            {
+                if (Creature *vehCreature  = plMover->GetVehicleCreatureBase())
+                {    
+                    vehicleIsCreature = true;
+                    vehicleCanFly = vehCreature->canFly();
+                }
 
-				current_speed = plMover->GetVehicleBase()->GetSpeed(move_type);
-			}
+                current_speed = plMover->GetVehicleBase()->GetSpeed(move_type);
+            }
             // end current speed
 
             // movement distance
@@ -535,23 +535,23 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                 if (plMover->m_anti_LastSpeedChangeTime == 0 )
                     plMover->m_anti_LastSpeedChangeTime = movementInfo.time + (uint32)floor(((plMover->m_anti_Last_HSpeed / current_speed) * 1500)) + 200; //100ms above for random fluctuating =)))
             } 
-			else
-			{
+            else
+            {
                 allowed_delta = current_speed;
             }
-			
+            
             allowed_delta = allowed_delta * time_delta;
             allowed_delta = allowed_delta * allowed_delta + 2;
 
-			if ( plMover->GetVehicle() )
-			{
-				allowed_delta *= (plMover->GetVehicle()->GetVehicleInfo()->m_ID == 349) ? 10.0f : 1.1f;    // hack for Argent mount charging
-			}
+            if ( plMover->GetVehicle() )
+            {
+                allowed_delta *= (plMover->GetVehicle()->GetVehicleInfo()->m_ID == 349) ? 10.0f : 1.1f;    // hack for Argent mount charging
+            }
             // end calculating section ---------------------
 
-			bool flying_allowed = (plMover->HasAuraType(SPELL_AURA_FLY) || plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED)
-				|| plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) || plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED)
-				|| plMover->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS) || ( vehicleIsCreature && vehicleCanFly ));
+            bool flying_allowed = (plMover->HasAuraType(SPELL_AURA_FLY) || plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED)
+                || plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) || plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED)
+                || plMover->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS) || ( vehicleIsCreature && vehicleCanFly ));
 
             //AntiGravitation
             float JumpHeight = plMover->m_anti_JumpBaseZ - movementInfo.pos.m_positionZ;
@@ -560,7 +560,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                     && (JumpHeight < plMover->m_anti_Last_VSpeed))
             {
                 #ifdef MOVEMENT_ANTICHEAT_ALARM_LOG
-					sLog->outCheater("IAC-%s, GraviJump exception. ", plMover->GetName());
+                    sLog->outCheater("IAC-%s, GraviJump exception. ", plMover->GetName());
                 #endif
                 check_passed = false;
             }
@@ -571,9 +571,9 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                 if (plMover->m_anti_JustJumped >= 1)
                 {
                     check_passed = false; //don't process new jump packet
-					#ifdef MOVEMENT_ANTICHEAT_ALARM_LOG
-						sLog->outCheater("IAC-%s, multijump", plMover->GetName());
-					#endif
+                    #ifdef MOVEMENT_ANTICHEAT_ALARM_LOG
+                        sLog->outCheater("IAC-%s, multijump", plMover->GetName());
+                    #endif
                 }
                 else
                 {
@@ -610,7 +610,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             if ((delta_z < plMover->m_anti_Last_VSpeed) && (plMover->m_anti_JustJumped == 0) && (tg_z > 2.37f) && ((movementInfo.flags & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING)) == 0) )
             {
                 #ifdef MOVEMENT_ANTICHEAT_ALARM_LOG
-					sLog->outCheater("IAC-%s, mountain exception | tg_z=%f", plMover->GetName(),tg_z);
+                    sLog->outCheater("IAC-%s, mountain exception | tg_z=%f", plMover->GetName(),tg_z);
                 #endif
                 check_passed = false;
             }
@@ -618,17 +618,17 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             //Fly hack checks
             if (((movementInfo.flags & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING)) != 0)
                   && !plMover->isGameMaster()
-				  && !(movementInfo.flags & (MOVEMENTFLAG_SWIMMING)) // allow X button in water
+                  && !(movementInfo.flags & (MOVEMENTFLAG_SWIMMING)) // allow X button in water
                   && !flying_allowed)
             {
-				if (plMover->m_anti_JustChangedSpeed == 0)
-				{
-					#ifdef MOVEMENT_ANTICHEAT_ALARM_LOG
-						sLog->outCheater("IAC-%s, flight exception.", plMover->GetName());
-					#endif
-					check_passed = false;
-				}
-            }			
+                if (plMover->m_anti_JustChangedSpeed == 0)
+                {
+                    #ifdef MOVEMENT_ANTICHEAT_ALARM_LOG
+                        sLog->outCheater("IAC-%s, flight exception.", plMover->GetName());
+                    #endif
+                    check_passed = false;
+                }
+            }            
 
             //Water-Walk checks
             if (((movementInfo.flags & MOVEMENTFLAG_WATERWALKING) != 0)
@@ -636,7 +636,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                   && !(plMover->HasAuraType(SPELL_AURA_WATER_WALK) | plMover->HasAuraType(SPELL_AURA_GHOST)))
             {
                 #ifdef MOVEMENT_ANTICHEAT_ALARM_LOG
-					sLog->outCheater("IAC-%s, water-walk exception. ", plMover->GetName());
+                    sLog->outCheater("IAC-%s, water-walk exception. ", plMover->GetName());
                 #endif
                 check_passed = false;
             }
@@ -674,79 +674,79 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                 if (plMover->m_anti_TeleToPlane_Count != 0) plMover->m_anti_TeleToPlane_Count = 0;
             }
         } 
-		else if (movementInfo.flags & MOVEMENTFLAG_ONTRANSPORT)
-		{
+        else if (movementInfo.flags & MOVEMENTFLAG_ONTRANSPORT)
+        {
             //antiwrap checks
-			if ( plMover->GetTransport() || plMover->GetVehicle() )
+            if ( plMover->GetTransport() || plMover->GetVehicle() )
             {
                 float trans_rad = movementInfo.t_pos.m_positionX*movementInfo.t_pos.m_positionX + movementInfo.t_pos.m_positionY*movementInfo.t_pos.m_positionY + movementInfo.t_pos.m_positionZ*movementInfo.pos.m_positionZ;
                 if (trans_rad > 3600.0f)
-				{
+                {
                     check_passed = false;
                     #ifdef MOVEMENT_ANTICHEAT_DEBUG
-						sLog->outError("IAC-%s, leave transport.", plMover->GetName());
+                        sLog->outError("IAC-%s, leave transport.", plMover->GetName());
                     #endif
                 }
             }
-			else
-			{	
-				GameObjectData const* go_data = sObjectMgr->GetGOData(plMover->m_anti_TransportGUID);
-				GameObject const* go_transport = plMover->GetMap()->GetGameObject(plMover->m_anti_TransportGUID);
+            else
+            {    
+                GameObjectData const* go_data = sObjectMgr->GetGOData(plMover->m_anti_TransportGUID);
+                GameObject const* go_transport = plMover->GetMap()->GetGameObject(plMover->m_anti_TransportGUID);
 
                 if (go_data || go_transport)
                 {
-					float delta_gox;
-					float delta_goy;
-					float delta_goz;
-					float gox;
-					float goy;
-					float goz;
-					uint32 mapid;
+                    float delta_gox;
+                    float delta_goy;
+                    float delta_goz;
+                    float gox;
+                    float goy;
+                    float goz;
+                    uint32 mapid;
 
-					if (go_data)
-					{
-						gox = go_data->posX;
-						goy = go_data->posY;
-						goz = go_data->posZ;
+                    if (go_data)
+                    {
+                        gox = go_data->posX;
+                        goy = go_data->posY;
+                        goz = go_data->posZ;
                         delta_gox = gox - movementInfo.pos.m_positionX;
                         delta_goy = goy - movementInfo.pos.m_positionY;
                         delta_goz = goz - movementInfo.pos.m_positionZ;
-						mapid = go_data->mapid;
-					}
-					else
-					{
-						gox = go_transport->GetPositionX();
-						goy = go_transport->GetPositionY();
-						goz = go_transport->GetPositionZ();
+                        mapid = go_data->mapid;
+                    }
+                    else
+                    {
+                        gox = go_transport->GetPositionX();
+                        goy = go_transport->GetPositionY();
+                        goz = go_transport->GetPositionZ();
                         delta_gox = gox - movementInfo.pos.m_positionX;
                         delta_goy = goy - movementInfo.pos.m_positionY;
                         delta_goz = goz - movementInfo.pos.m_positionZ;
 
-						//HACK: for SotA ships. Need more research
-						if (go_transport->GetEntry() == 193182 || go_transport->GetEntry() == 193183 || go_transport->GetEntry() == 193184 || go_transport->GetEntry() == 193185)
-						{
-							delta_gox = 0.0f;
-							delta_goy = 0.0f;
-						}
-						mapid = go_transport->GetMapId();
-					}
+                        //HACK: for SotA ships. Need more research
+                        if (go_transport->GetEntry() == 193182 || go_transport->GetEntry() == 193183 || go_transport->GetEntry() == 193184 || go_transport->GetEntry() == 193185)
+                        {
+                            delta_gox = 0.0f;
+                            delta_goy = 0.0f;
+                        }
+                        mapid = go_transport->GetMapId();
+                    }
 
                     #ifdef MOVEMENT_ANTICHEAT_DEBUG
                     sLog->outError("IAC-%s, transport movement. GO xyz: %f, %f, %f",
                         plMover->GetName(), gox, goy, goz);
                     #endif
                     if ( plMover->GetMapId() != mapid )
-					{
+                    {
                         check_passed = false;
-						#ifdef MOVEMENT_ANTICHEAT_DEBUG
-							sLog->outError("IAC-%s, incorrect mapID %u, need %u", plMover->GetName(), plMover->GetMapId(), mapid );
-						#endif
+                        #ifdef MOVEMENT_ANTICHEAT_DEBUG
+                            sLog->outError("IAC-%s, incorrect mapID %u, need %u", plMover->GetName(), plMover->GetMapId(), mapid );
+                        #endif
                     } 
-					else if (mapid != 369) 
-					{
+                    else if (mapid != 369) 
+                    {
                         float delta_go = delta_gox*delta_gox + delta_goy*delta_goy;
                         if (delta_go > 3600.0f) 
-						{
+                        {
                             check_passed = false;
                             #ifdef MOVEMENT_ANTICHEAT_DEBUG
                                 sLog->outError("IAC-%s, leave transport. GO xyz: %f, %f, %f", plMover->GetName(), gox, goy, goz);
@@ -754,40 +754,40 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                         }
                     }
 
-				} 
-				else
-				{
-					#ifdef MOVEMENT_ANTICHEAT_DEBUG
-						sLog->outError("IAC-%s, undefined transport.", plMover->GetName());
+                } 
+                else
+                {
+                    #ifdef MOVEMENT_ANTICHEAT_DEBUG
+                        sLog->outError("IAC-%s, undefined transport.", plMover->GetName());
                     #endif
                     check_passed = false;
-				}
+                }
             }
 
             if (!check_passed)
-			{
+            {
                 plMover->m_anti_JustChangedSpeed = 0;
 
-				if ( plMover->GetTransport() && !plMover->GetVehicle() )
+                if ( plMover->GetTransport() && !plMover->GetVehicle() )
                 {
                     plMover->m_transport->RemovePassenger(plMover);
                     plMover->m_transport = NULL;
-					plMover->m_anti_TransportGUID = 0;
+                    plMover->m_anti_TransportGUID = 0;
                 }
-				else if ( plMover->GetVehicle() && !plMover->GetVehicle()->GetVehicleInfo() )
-				{
-					plMover->m_transport->RemovePassenger(plMover);
+                else if ( plMover->GetVehicle() && !plMover->GetVehicle()->GetVehicleInfo() )
+                {
+                    plMover->m_transport->RemovePassenger(plMover);
                     plMover->m_transport = NULL;
-					plMover->GetVehicle()->Dismiss();
-					plMover->m_anti_TransportGUID = 0;
-				}
+                    plMover->GetVehicle()->Dismiss();
+                    plMover->m_anti_TransportGUID = 0;
+                }
 
-				if (vehMover)
-				{
-					if (plMover && plMover->IsMounted())
-						plMover->Unmount();
-					else vehMover->Dismiss();
-				}
+                if (vehMover)
+                {
+                    if (plMover && plMover->IsMounted())
+                        plMover->Unmount();
+                    else vehMover->Dismiss();
+                }
 
                 movementInfo.t_pos.m_positionX = 0.0f;
                 movementInfo.t_pos.m_positionY = 0.0f;
@@ -799,8 +799,8 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     }
 
     /* process position-change */
-   	if (check_passed)
-	{
+       if (check_passed)
+    {
         if (plMover && plMover->m_anti_JustChangedSpeed > 0)
             plMover->m_anti_JustChangedSpeed--;
 
@@ -849,36 +849,36 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                     plMover->RepopAtGraveyard();
                 }
             }
-			//movement anticheat >>>
-			if (plMover->m_anti_AlarmCount > 0)
+            //movement anticheat >>>
+            if (plMover->m_anti_AlarmCount > 0)
             {
-				#ifdef MOVEMENT_ANTICHEAT_DEBUG
-					sLog->outError("IAC-%s produce %d anticheat alarms", plMover->GetName(), plMover->m_anti_AlarmCount);
-				#endif
-				plMover->m_anti_AlarmCount = 0;
-			}
-			// end movement anticheat
+                #ifdef MOVEMENT_ANTICHEAT_DEBUG
+                    sLog->outError("IAC-%s produce %d anticheat alarms", plMover->GetName(), plMover->m_anti_AlarmCount);
+                #endif
+                plMover->m_anti_AlarmCount = 0;
+            }
+            // end movement anticheat
         }
     }
     else if (plMover)
     {
-		if (plMover->IsMounted())
-			plMover->Unmount();
+        if (plMover->IsMounted())
+            plMover->Unmount();
 
-		if (vehMover)
-			vehMover->Dismiss();
+        if (vehMover)
+            vehMover->Dismiss();
 
-		plMover->m_anti_AlarmCount++;
-		WorldPacket data;
-		plMover->SetUnitMovementFlags(0);
+        plMover->m_anti_AlarmCount++;
+        WorldPacket data;
+        plMover->SetUnitMovementFlags(0);
         plMover->SendTeleportAckPacket();
-		plMover->BuildHeartBeatMsg(&data);
-		plMover->SendMessageToSet(&data, true);
+        plMover->BuildHeartBeatMsg(&data);
+        plMover->SendMessageToSet(&data, true);
     }
-	else if (vehMover)
-	{
+    else if (vehMover)
+    {
          vehMover->Dismiss();
-	}
+    }
     if(plMover && plMover->getStandState() == UNIT_STAND_STATE_SIT)
         plMover->SetStandState(0);
 }

@@ -467,9 +467,9 @@ AuraState GetSpellAuraState(SpellEntry const * spellInfo)
     if (spellInfo->Category == 1133)
         return AURA_STATE_FAERIE_FIRE;
 
-	// Touch of Zanzil
-	if (spellInfo->Id == 9991)
-		return AURA_STATE_FAERIE_FIRE;
+    // Touch of Zanzil
+    if (spellInfo->Id == 9991)
+        return AURA_STATE_FAERIE_FIRE;
 
     // Victorious
     if (spellInfo->SpellFamilyName == SPELLFAMILY_WARRIOR &&  spellInfo->SpellFamilyFlags[1] & 0x00040000)
@@ -873,7 +873,7 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
                 case 61987: // Avenging Wrath Marker
                 case 61988: // Divine Shield exclude aura
                 case 34709: // Shadow Sigh
-				case 40477: // Forceful Strike
+                case 40477: // Forceful Strike
                     return false;
                 case 30877: // Tag Murloc
                     return true;
@@ -1005,7 +1005,7 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
                     break;
                 case SPELL_AURA_MOD_CRIT_PCT:
                 case SPELL_AURA_MOD_SPELL_CRIT_CHANCE:
-				case SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT:
+                case SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT:
                     if (SpellMgr::CalculateSpellEffectAmount(spellproto, effIndex) > 0)
                         return true;                        // some expected positive spells have SPELL_ATTR1_NEGATIVE
                     break;
@@ -1053,14 +1053,14 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
                     return false;
                 case SPELL_AURA_PERIODIC_DAMAGE:            // used in positive spells also.
                     // part of negative spell if casted at self (prevent cancel)
-					if (spellproto->EffectImplicitTargetA[effIndex] == TARGET_UNIT_CASTER ||
-						spellproto->EffectImplicitTargetA[effIndex] == TARGET_DEST_DEST)
+                    if (spellproto->EffectImplicitTargetA[effIndex] == TARGET_UNIT_CASTER ||
+                        spellproto->EffectImplicitTargetA[effIndex] == TARGET_DEST_DEST)
                         return false;
                     break;
                 case SPELL_AURA_MOD_DECREASE_SPEED:         // used in positive spells also
                     // part of positive spell if casted at self
-					if (spellproto->EffectImplicitTargetA[effIndex] != TARGET_UNIT_CASTER ||
-						spellproto->EffectImplicitTargetA[effIndex] != TARGET_DEST_DEST)
+                    if (spellproto->EffectImplicitTargetA[effIndex] != TARGET_UNIT_CASTER ||
+                        spellproto->EffectImplicitTargetA[effIndex] != TARGET_DEST_DEST)
                         return false;
                     if (spellproto->Attributes & SPELL_ATTR0_NEGATIVE_1 && effIndex == 0)
                         return false;
@@ -1171,34 +1171,34 @@ bool SpellMgr::_isPositiveSpell(uint32 spellId, bool deep) const
 
 bool IsExplicitPositiveTarget(uint32 targetA)
 {
-	// positive targets
-	switch(targetA)
-	{
-		case TARGET_UNIT_TARGET_ALLY:
-		case TARGET_UNIT_TARGET_PARTY:
-		case TARGET_UNIT_CHAINHEAL:
-		case TARGET_UNIT_TARGET_RAID:
-		case TARGET_UNIT_CLASS_TARGET:
-			return true;
-		default:
-			break;
-	}
-	return false;
+    // positive targets
+    switch(targetA)
+    {
+        case TARGET_UNIT_TARGET_ALLY:
+        case TARGET_UNIT_TARGET_PARTY:
+        case TARGET_UNIT_CHAINHEAL:
+        case TARGET_UNIT_TARGET_RAID:
+        case TARGET_UNIT_CLASS_TARGET:
+            return true;
+        default:
+            break;
+    }
+    return false;
 }
 
 bool IsExplicitNegativeTarget(uint32 targetA)
 {
-	// non-positive targets
-	switch(targetA)
-	{
-		case TARGET_UNIT_TARGET_ENEMY:
-		case TARGET_DST_TARGET_ENEMY:
-		case TARGET_UNIT_CHANNEL_TARGET:
-			return true;
-		default:
-			break;
-	}
-	return false;
+    // non-positive targets
+    switch(targetA)
+    {
+        case TARGET_UNIT_TARGET_ENEMY:
+        case TARGET_DST_TARGET_ENEMY:
+        case TARGET_UNIT_CHANNEL_TARGET:
+            return true;
+        default:
+            break;
+    }
+    return false;
 }
 
 bool IsSingleTargetSpell(SpellEntry const *spellInfo)
@@ -3302,13 +3302,13 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
             }
          case 58730: // No fly Zone - Wintergrasp
             {
-				if (sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
-				{
-					OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197);
-					if ((pvpWG && !pvpWG->isWarTime()) || !player || (!player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !player->HasAuraType(SPELL_AURA_FLY)) || player->HasAura(45472) || player->HasAura(44795))
-						return false;
-				}
-			}
+                if (sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+                {
+                    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197);
+                    if ((pvpWG && !pvpWG->isWarTime()) || !player || (!player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !player->HasAuraType(SPELL_AURA_FLY)) || player->HasAura(45472) || player->HasAura(44795))
+                        return false;
+                }
+            }
             break;
          case 58045: // Essence of Wintergrasp - Wintergrasp
          case 57940: // Essence of Wintergrasp - Northrend
@@ -4277,7 +4277,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 61469:
         case 61465:
         case 61467:
-		case 126: // Eye of Kilrogg
+        case 126: // Eye of Kilrogg
             spellInfo->AttributesEx4 |= SPELL_ATTR4_NOT_USABLE_IN_ARENA;
             count++;
             break;

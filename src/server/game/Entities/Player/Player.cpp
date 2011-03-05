@@ -523,7 +523,7 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
     rest_type=REST_TYPE_NO;
     ////////////////////Rest System/////////////////////
 
-	//movement anticheat
+    //movement anticheat
     m_anti_LastClientTime      = 0;   //last movement client time
     m_anti_LastServerTime      = 0;   //last movement server time
     m_anti_DeltaClientTime     = 0;   //client side session time
@@ -542,7 +542,7 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
     m_anti_AlarmCount         = 0;     //alarm counter
 
     m_anti_JustJumped         = 0;     //Jump already began, anti air jump check
-	m_anti_JustChangedSpeed     = 0;        
+    m_anti_JustChangedSpeed     = 0;        
     m_anti_JumpBaseZ          = 0;     //Z coord before jump (AntiGrav)
     // << movement anticheat
     /////////////////////////////////
@@ -680,6 +680,14 @@ Player::~Player ()
     delete m_runes;
 
     sWorld->DecreasePlayerCount();
+    
+    // spectator
+    for(std::vector<StringList*>::iterator itr = twovtwo.begin(); itr != twovtwo.end();)
+    {
+        (*itr)->clear();
+        twovtwo.erase(itr);
+        itr = twovtwo.begin();
+    }
 }
 
 void Player::CleanupsBeforeDelete(bool finalCleanup)
@@ -2587,7 +2595,7 @@ void Player::SetGameMaster(bool on)
 
         m_ExtraFlags &= ~ PLAYER_EXTRA_GM_ON;
         setFactionForRace(getRace());
-		RemoveFlag(PLAYER_FLAGS, GetSession()->GetSecurity() > SEC_GAMEMASTER ? PLAYER_FLAGS_DEVELOPER : PLAYER_FLAGS_GM);
+        RemoveFlag(PLAYER_FLAGS, GetSession()->GetSecurity() > SEC_GAMEMASTER ? PLAYER_FLAGS_DEVELOPER : PLAYER_FLAGS_GM);
 
         if (Pet* pet = GetPet())
         {
@@ -2833,50 +2841,50 @@ void Player::GiveLevel(uint8 level)
     {
         //- TODO: Poor design of mail system
         SQLTransaction trans = CharacterDatabase.BeginTransaction();
-		if (mailReward->subject.empty())
-		{
-			MailDraft(mailReward->mailTemplateId).SendMailTo(trans, this, MailSender(MAIL_CREATURE, mailReward->senderEntry));
-		}
-		else
-		{
-			Item* ToMailItem = NULL;
-			ItemPrototype const* item_proto = NULL;
+        if (mailReward->subject.empty())
+        {
+            MailDraft(mailReward->mailTemplateId).SendMailTo(trans, this, MailSender(MAIL_CREATURE, mailReward->senderEntry));
+        }
+        else
+        {
+            Item* ToMailItem = NULL;
+            ItemPrototype const* item_proto = NULL;
 
-			uint32 item_reward_count = mailReward->ItemCount;
+            uint32 item_reward_count = mailReward->ItemCount;
 
-			MailDraft draft(mailReward->subject, mailReward->message);
+            MailDraft draft(mailReward->subject, mailReward->message);
 
-			if (mailReward->ItemID)
-				item_proto = sObjectMgr->GetItemPrototype(mailReward->ItemID);
+            if (mailReward->ItemID)
+                item_proto = sObjectMgr->GetItemPrototype(mailReward->ItemID);
 
-			if(item_proto)
-			{
-				if ( item_reward_count < 1 || (item_proto->MaxCount > 0 && item_reward_count > uint32(item_proto->MaxCount)) )
-				{
-					sLog->outDetail("MailLevelReward: Warning: invalid ItemCount of %u, setting to 1", item_reward_count);
-					item_reward_count = 1;
-				}
+            if(item_proto)
+            {
+                if ( item_reward_count < 1 || (item_proto->MaxCount > 0 && item_reward_count > uint32(item_proto->MaxCount)) )
+                {
+                    sLog->outDetail("MailLevelReward: Warning: invalid ItemCount of %u, setting to 1", item_reward_count);
+                    item_reward_count = 1;
+                }
 
-				if ( item_reward_count > 1 && item_reward_count > item_proto->GetMaxStackSize() )
-				{
-					sLog->outDetail("MailLevelReward: Warning: invalid ItemCount of %u, setting to %u.", item_reward_count, item_proto->GetMaxStackSize());
-					item_reward_count = item_proto->GetMaxStackSize();
-				}
+                if ( item_reward_count > 1 && item_reward_count > item_proto->GetMaxStackSize() )
+                {
+                    sLog->outDetail("MailLevelReward: Warning: invalid ItemCount of %u, setting to %u.", item_reward_count, item_proto->GetMaxStackSize());
+                    item_reward_count = item_proto->GetMaxStackSize();
+                }
 
-				ToMailItem = Item::CreateItem(mailReward->ItemID, item_reward_count, this);
-			}
+                ToMailItem = Item::CreateItem(mailReward->ItemID, item_reward_count, this);
+            }
 
-			if (ToMailItem)
-			{
-				ToMailItem->SaveToDB(trans);
-				draft.AddItem(ToMailItem);				
-			}
+            if (ToMailItem)
+            {
+                ToMailItem->SaveToDB(trans);
+                draft.AddItem(ToMailItem);                
+            }
 
-			if (mailReward->money)
-				draft.AddMoney(mailReward->money);
+            if (mailReward->money)
+                draft.AddMoney(mailReward->money);
 
-			draft.SendMailTo(trans, this, MailSender(MAIL_CREATURE, mailReward->senderEntry));
-		}
+            draft.SendMailTo(trans, this, MailSender(MAIL_CREATURE, mailReward->senderEntry));
+        }
         CharacterDatabase.CommitTransaction(trans);
     }
 
@@ -6652,10 +6660,10 @@ void Player::CheckAreaExploreAndOutdoor()
                 int32 diff = int32(getLevel()) - p->area_level;
                 uint32 XP = 0;
 
-				float rate_multiplier = (GetSession()->HasPremiumByType(PREMIUM_TYPE_XP_EXPLORE) && CanGainPremiumXP()) ? sWorld->getRate(RATE_PREMIUM_XP_EXPLORE) :  sWorld->getRate(RATE_XP_EXPLORE);
+                float rate_multiplier = (GetSession()->HasPremiumByType(PREMIUM_TYPE_XP_EXPLORE) && CanGainPremiumXP()) ? sWorld->getRate(RATE_PREMIUM_XP_EXPLORE) :  sWorld->getRate(RATE_XP_EXPLORE);
 
-				if (GetsRecruitAFriendBonus(true))
-					rate_multiplier = rate_multiplier + 3.0f;
+                if (GetsRecruitAFriendBonus(true))
+                    rate_multiplier = rate_multiplier + 3.0f;
 
                 if (diff < -5)
                 {
@@ -11727,14 +11735,14 @@ Item* Player::StoreNewItem(ItemPosCountVec const& dest, uint32 item, bool update
             CharacterDatabase.Execute(stmt);
         }
 
-		if (pItem->GetProto()->Quality >= ITEM_QUALITY_EPIC && (pItem->GetProto()->ItemLevel >= 200 || (pItem->GetProto()->Class == ITEM_CLASS_MISC && pItem->GetProto()->ItemLevel >= 80)))
-		{
-			PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_LOG_ADDITEM);
-			stmt->setUInt32(0, pItem->GetGUIDLow());
-			stmt->setString(1, m_name.c_str());
-			stmt->setUInt32(2, pItem->GetProto()->ItemId);
-			CharacterDatabase.Execute(stmt);
-		}
+        if (pItem->GetProto()->Quality >= ITEM_QUALITY_EPIC && (pItem->GetProto()->ItemLevel >= 200 || (pItem->GetProto()->Class == ITEM_CLASS_MISC && pItem->GetProto()->ItemLevel >= 80)))
+        {
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_LOG_ADDITEM);
+            stmt->setUInt32(0, pItem->GetGUIDLow());
+            stmt->setString(1, m_name.c_str());
+            stmt->setUInt32(2, pItem->GetProto()->ItemId);
+            CharacterDatabase.Execute(stmt);
+        }
     }
     return pItem;
 }
@@ -14729,10 +14737,10 @@ void Player::RewardQuest(Quest const *pQuest, uint32 reward, Object* questGiver,
 
     // Not give XP in case already completed once repeatable quest
 
-	float rate_multiplier = (GetSession()->HasPremiumByType(PREMIUM_TYPE_XP_QUEST) && CanGainPremiumXP()) ? sWorld->getRate(RATE_PREMIUM_XP_QUEST) :  sWorld->getRate(RATE_XP_QUEST);
+    float rate_multiplier = (GetSession()->HasPremiumByType(PREMIUM_TYPE_XP_QUEST) && CanGainPremiumXP()) ? sWorld->getRate(RATE_PREMIUM_XP_QUEST) :  sWorld->getRate(RATE_XP_QUEST);
 
-	if (GetsRecruitAFriendBonus(true))
-		rate_multiplier = rate_multiplier + 3.0f;
+    if (GetsRecruitAFriendBonus(true))
+        rate_multiplier = rate_multiplier + 3.0f;
 
     uint32 XP = rewarded ? 0 : uint32(pQuest->XPValue(this)*rate_multiplier);
 
@@ -15466,19 +15474,19 @@ void Player::GroupEventHappens(uint32 questId, WorldObject const* pEventObject)
 
 void Player::GroupKillHappens( uint32 entry, WorldObject const* pEventObject, uint64 creatureGUID )
 {
-	if (Group *pGroup = GetGroup())
-	{
-		for (GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
-		{
-			Player *pGroupGuy = itr->getSource();
+    if (Group *pGroup = GetGroup())
+    {
+        for (GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
+        {
+            Player *pGroupGuy = itr->getSource();
 
-			// for any leave or dead (with not released body) group member at appropriate distance
-			if (pGroupGuy && pGroupGuy->IsAtGroupRewardDistance(pEventObject) && !pGroupGuy->GetCorpse())
-				pGroupGuy->KilledMonsterCredit(entry, creatureGUID);
-		}
-	}
-	else
-		KilledMonsterCredit(entry, creatureGUID);
+            // for any leave or dead (with not released body) group member at appropriate distance
+            if (pGroupGuy && pGroupGuy->IsAtGroupRewardDistance(pEventObject) && !pGroupGuy->GetCorpse())
+                pGroupGuy->KilledMonsterCredit(entry, creatureGUID);
+        }
+    }
+    else
+        KilledMonsterCredit(entry, creatureGUID);
 }
 
 void Player::ItemAddedQuestCheck(uint32 entry, uint32 count)

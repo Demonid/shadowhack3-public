@@ -2725,18 +2725,18 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                                 unitList.push_back(m_caster);
                                 break;
                             }
-		                    // Replenishment: refresh existing auras
-			   		        if (m_spellInfo->Id == 57669)
-					            for (std::list<Unit *>::iterator itr = unitList.begin(); itr != unitList.end();)
-							         if (AuraEffect * aurEff = (*itr)->GetAuraEffect(SPELL_AURA_PERIODIC_ENERGIZE, SPELLFAMILY_GENERIC, 3184, 0))
-								   	 {
-		                                 aurEff->SetAmount((*itr)->GetMaxPower(POWER_MANA) * 20 / 10000);
-				                         aurEff->GetBase()->RefreshDuration();
+                            // Replenishment: refresh existing auras
+                               if (m_spellInfo->Id == 57669)
+                                for (std::list<Unit *>::iterator itr = unitList.begin(); itr != unitList.end();)
+                                     if (AuraEffect * aurEff = (*itr)->GetAuraEffect(SPELL_AURA_PERIODIC_ENERGIZE, SPELLFAMILY_GENERIC, 3184, 0))
+                                        {
+                                         aurEff->SetAmount((*itr)->GetMaxPower(POWER_MANA) * 20 / 10000);
+                                         aurEff->GetBase()->RefreshDuration();
 
-				                         itr = unitList.erase(itr);
-					                }
-					                 else
-					                     ++itr;
+                                         itr = unitList.erase(itr);
+                                    }
+                                     else
+                                         ++itr;
                             maxSize = 10;
                             power = POWER_MANA;
                             break;
@@ -5019,52 +5019,52 @@ SpellCastResult Spell::CheckCast(bool strict)
 
         // who can give me an example to show what is the use of this
         // even if we need check, check by effect rather than whole spell, otherwise 57108,57143 are broken
-		if (non_caster_target)
-		{
-			// simple cases
-			if (IsExplicitPositiveTarget(m_spellInfo->EffectImplicitTargetA[0]))
-			{
-				if (m_originalCaster && m_originalCaster != m_caster)
-				{
-					if(m_originalCaster->IsHostileTo(target))
-						return SPELL_FAILED_BAD_TARGETS;
-				}
-				else
-				{
-					if(m_caster->IsHostileTo(target))
-						return SPELL_FAILED_BAD_TARGETS;
-				}
-			}
-			else if (IsExplicitNegativeTarget(m_spellInfo->EffectImplicitTargetA[0]))
-			{
-				if (m_originalCaster && m_originalCaster != m_caster)
-				{
-					if(m_originalCaster->IsFriendlyTo(target))
-						return SPELL_FAILED_BAD_TARGETS;
-				}
-				else
-				{
-					if(m_caster->IsFriendlyTo(target))
-						return SPELL_FAILED_BAD_TARGETS;
-				}
-			}
-			// TODO: this check can be applied and for player to prevent cheating when IsPositiveSpell will return always correct result.
-			// check target for pet/charmed casts (not self targeted), self targeted cast used for area effects and etc
-			else if (m_caster->GetTypeId() == TYPEID_UNIT && m_caster->GetCharmerOrOwnerGUID())
-			{
-				// check correctness positive/negative cast target (pet cast real check and cheating check)
-				if(IsPositiveSpell(m_spellInfo->Id))
-				{
-					if(m_caster->IsHostileTo(target) && !IsDispel(m_spellInfo))
-						return SPELL_FAILED_BAD_TARGETS;
-				}
-				else
-				{
-					if(m_caster->IsFriendlyTo(target))
-						return SPELL_FAILED_BAD_TARGETS;
-				}
-			}
-		}
+        if (non_caster_target)
+        {
+            // simple cases
+            if (IsExplicitPositiveTarget(m_spellInfo->EffectImplicitTargetA[0]))
+            {
+                if (m_originalCaster && m_originalCaster != m_caster)
+                {
+                    if(m_originalCaster->IsHostileTo(target))
+                        return SPELL_FAILED_BAD_TARGETS;
+                }
+                else
+                {
+                    if(m_caster->IsHostileTo(target))
+                        return SPELL_FAILED_BAD_TARGETS;
+                }
+            }
+            else if (IsExplicitNegativeTarget(m_spellInfo->EffectImplicitTargetA[0]))
+            {
+                if (m_originalCaster && m_originalCaster != m_caster)
+                {
+                    if(m_originalCaster->IsFriendlyTo(target))
+                        return SPELL_FAILED_BAD_TARGETS;
+                }
+                else
+                {
+                    if(m_caster->IsFriendlyTo(target))
+                        return SPELL_FAILED_BAD_TARGETS;
+                }
+            }
+            // TODO: this check can be applied and for player to prevent cheating when IsPositiveSpell will return always correct result.
+            // check target for pet/charmed casts (not self targeted), self targeted cast used for area effects and etc
+            else if (m_caster->GetTypeId() == TYPEID_UNIT && m_caster->GetCharmerOrOwnerGUID())
+            {
+                // check correctness positive/negative cast target (pet cast real check and cheating check)
+                if(IsPositiveSpell(m_spellInfo->Id))
+                {
+                    if(m_caster->IsHostileTo(target) && !IsDispel(m_spellInfo))
+                        return SPELL_FAILED_BAD_TARGETS;
+                }
+                else
+                {
+                    if(m_caster->IsFriendlyTo(target))
+                        return SPELL_FAILED_BAD_TARGETS;
+                }
+            }
+        }
 
         if (target)
             if (IsPositiveSpell(m_spellInfo->Id))
@@ -5619,10 +5619,10 @@ SpellCastResult Spell::CheckCast(bool strict)
                         if (bg->GetStatus() == STATUS_IN_PROGRESS)
                             return SPELL_FAILED_NOT_IN_BATTLEGROUND;
                 break;
-			case SPELL_EFFECT_SUMMON_OBJECT_SLOT1:
-			case SPELL_EFFECT_SUMMON_OBJECT_SLOT2:
-			case SPELL_EFFECT_SUMMON_OBJECT_SLOT3:
-			case SPELL_EFFECT_SUMMON_OBJECT_SLOT4:
+            case SPELL_EFFECT_SUMMON_OBJECT_SLOT1:
+            case SPELL_EFFECT_SUMMON_OBJECT_SLOT2:
+            case SPELL_EFFECT_SUMMON_OBJECT_SLOT3:
+            case SPELL_EFFECT_SUMMON_OBJECT_SLOT4:
             {
                 if (m_caster->GetTypeId() == TYPEID_PLAYER)
                     if (m_caster->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT) ||
@@ -5781,33 +5781,33 @@ SpellCastResult Spell::CheckCast(bool strict)
                 if (m_originalCaster && m_originalCaster->GetTypeId() == TYPEID_PLAYER && m_originalCaster->isAlive())
                 {
                     if (AreaTableEntry const* pArea = GetAreaEntryByAreaID(m_originalCaster->GetAreaId()))
-					{
+                    {
                         if (pArea->flags & AREA_FLAG_NO_FLY_ZONE)
                             return m_IsTriggeredSpell ? SPELL_FAILED_DONT_REPORT : SPELL_FAILED_NOT_HERE;
-						// Wintergrasp Antifly check
+                        // Wintergrasp Antifly check
                         if (sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED) && m_originalCaster->GetZoneId() == 4197)
                         {
-							OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197);
-							if (pvpWG && pvpWG->isWarTime())
-								return m_IsTriggeredSpell ? SPELL_FAILED_DONT_REPORT : SPELL_FAILED_NOT_HERE;
+                            OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197);
+                            if (pvpWG && pvpWG->isWarTime())
+                                return m_IsTriggeredSpell ? SPELL_FAILED_DONT_REPORT : SPELL_FAILED_NOT_HERE;
                         }
-					}
+                    }
                 }
                 break;
             }
-		case SPELL_AURA_SCHOOL_IMMUNITY:
-		{
-			switch(m_spellInfo->Id)
-			{
-				// Hand of Protection
-			    case 1022:
-				case 5599:
-				case 10278:
-					if (m_caster->HasUnitState(UNIT_STAT_CONTROLLED))
+        case SPELL_AURA_SCHOOL_IMMUNITY:
+        {
+            switch(m_spellInfo->Id)
+            {
+                // Hand of Protection
+                case 1022:
+                case 5599:
+                case 10278:
+                    if (m_caster->HasUnitState(UNIT_STAT_CONTROLLED))
                    return SPELL_FAILED_STUNNED;
-			}
-			break;
-		}
+            }
+            break;
+        }
             case SPELL_AURA_PERIODIC_MANA_LEECH:
             {
                 if (!m_targets.getUnitTarget())
