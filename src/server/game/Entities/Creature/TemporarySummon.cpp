@@ -314,6 +314,7 @@ void Guardian::InitStats(uint32 duration)
         m_charmInfo->InitCharmCreateSpells();
 
     SetReactState(REACT_AGGRESSIVE);
+    m_corpseDelay = 1;
 }
 
 void Guardian::InitSummon()

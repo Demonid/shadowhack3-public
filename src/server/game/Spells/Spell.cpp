@@ -4929,10 +4929,11 @@ SpellCastResult Spell::CheckCast(bool strict)
             if (m_caster->GetTypeId() == TYPEID_PLAYER)
             {
                 // Do not allow to banish target tapped by someone not in caster's group
-                if (m_spellInfo->Mechanic == MECHANIC_BANISH)
-                    if (Creature *targetCreature = target->ToCreature())
-                        if (targetCreature->hasLootRecipient() && !targetCreature->isTappedBy(m_caster->ToPlayer()))
-                            return SPELL_FAILED_CANT_CAST_ON_TAPPED;
+                if (m_spellInfo->Mechanic == MECHANIC_BANISH && m_spellInfo->Id != 33786)
+                    if (target->GetTypeId() == TYPEID_UNIT && 
+                        !target->ToCreature()->HasUnitTypeMask(UNIT_MASK_SUMMON|UNIT_MASK_GUARDIAN|UNIT_MASK_PET|UNIT_MASK_HUNTER_PET) &&
+                        !m_caster->ToPlayer()->isAllowedToLoot(target->ToCreature()))
+                        return SPELL_FAILED_CANT_CAST_ON_TAPPED;
 
                 if (m_customAttr & SPELL_ATTR0_CU_PICKPOCKET)
                 {
@@ -4956,7 +4957,9 @@ SpellCastResult Spell::CheckCast(bool strict)
                 }
             }
 
-            if (!m_IsTriggeredSpell && VMAP::VMapFactory::checkSpellForLoS(m_spellInfo->Id) && !m_caster->IsWithinLOSInMap(target))
+            // Slice and dice can be used throw the LOS
+            if (m_spellInfo->SpellIconID != 515 && !m_IsTriggeredSpell && 
+                VMAP::VMapFactory::checkSpellForLoS(m_spellInfo->Id) && !m_caster->IsWithinLOSInMap(target))
                 return SPELL_FAILED_LINE_OF_SIGHT;
 
         }
@@ -5208,19 +5211,27 @@ SpellCastResult Spell::CheckCast(bool strict)
         // for effects of spells that have only one target
         switch(m_spellInfo->Effect[i])
         {
+            case SPELL_EFFECT_TRIGGER_SPELL:
+            {
+                // Shadowstep
+                if(m_spellInfo->Id == 36554 && m_caster->HasUnitState(UNIT_STAT_ROOT))
+                    return SPELL_FAILED_ROOTED;
+                break;
+            }
             case SPELL_EFFECT_DUMMY:
             {
-                if (m_spellInfo->Id == 51582)          // Rocket Boots Engaged
-                {
-                    if (m_caster->IsInWater())
-                        return SPELL_FAILED_ONLY_ABOVEWATER;
-                }
-                else if (m_spellInfo->SpellIconID == 156)    // Holy Shock
+                if (m_spellInfo->SpellIconID == 156)    // Holy Shock
                 {
                     // spell different for friends and enemies
                     // hurt version required facing
                     if (m_targets.getUnitTarget() && !m_caster->IsFriendlyTo(m_targets.getUnitTarget()) && !m_caster->HasInArc(static_cast<float>(M_PI), m_targets.getUnitTarget()))
                         return SPELL_FAILED_UNIT_NOT_INFRONT;
+                }
+                else if (m_spellInfo->Id == 72202) //Blood Link
+                {
+                    Creature* saurfang = m_caster->FindNearestCreature(37813, 500.0f, true);
+                    if(saurfang && saurfang->isAlive())
+                        saurfang->CastSpell(saurfang, 72195, true);
                 }
                 else if (m_spellInfo->SpellIconID == 33 && m_spellInfo->SpellFamilyName == SPELLFAMILY_SHAMAN && m_spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_SHAMAN_FIRE_NOVA)
                 {
@@ -5232,29 +5243,54 @@ SpellCastResult Spell::CheckCast(bool strict)
                     Unit* target = m_targets.getUnitTarget();
                     if (!target || (target->IsFriendlyTo(m_caster) && target->GetCreatureType() != CREATURE_TYPE_UNDEAD))
                         return SPELL_FAILED_BAD_TARGETS;
-                    if (!target->IsFriendlyTo(m_caster) && !m_caster->HasInArc(static_cast<float>(M_PI), target))
+                    if(!target->IsFriendlyTo(m_caster) && !m_caster->HasInArc(static_cast<float>(M_PI), target))
                         return SPELL_FAILED_UNIT_NOT_INFRONT;
                 }
-                else if (m_spellInfo->Id == 19938)          // Awaken Peon
+                else switch(m_spellInfo->Id)          
                 {
-                    Unit *unit = m_targets.getUnitTarget();
-                    if (!unit || !unit->HasAura(17743))
-                        return SPELL_FAILED_BAD_TARGETS;
-                }
-                else if (m_spellInfo->Id == 52264)          // Deliver Stolen Horse
-                {
-                    if (!m_caster->FindNearestCreature(28653,5))
-                        return SPELL_FAILED_OUT_OF_RANGE;
-                }
-                else if (m_spellInfo->Id == 31789)          // Righteous Defense
-                {
-                    if (m_caster->GetTypeId() != TYPEID_PLAYER)
-                        return SPELL_FAILED_DONT_REPORT;
+                    case 53271:         // Master's Call
+                    {
+                        if(m_caster->GetTypeId() == TYPEID_PLAYER)
+                        {
+                            Unit* target = m_targets.getUnitTarget();
+                            Pet* pet = m_caster->ToPlayer()->GetPet();
+                            if(!pet || !pet->isAlive())
+                                return SPELL_FAILED_NO_PET;
+                            if(target == (Unit*)pet)
+                               return SPELL_FAILED_BAD_TARGETS;
+                        }
+                        break;
+                    }
+                    case 19938:          // Awaken Peon
+                    {
+                        Unit *unit = m_targets.getUnitTarget();
+                        if (!unit || !unit->HasAura(17743))
+                            return SPELL_FAILED_BAD_TARGETS;
+                        break;
+                    }
+                    case 52264:          // Deliver Stolen Horse
+                    {
+                        if (!m_caster->FindNearestCreature(28653,5))
+                            return SPELL_FAILED_OUT_OF_RANGE;
+                        break;
+                    }
+                    case 31789:          // Righteous Defense
+                    {
+                        if (m_caster->GetTypeId() != TYPEID_PLAYER)
+                            return SPELL_FAILED_DONT_REPORT;
 
-                    Unit* target = m_targets.getUnitTarget();
-                    if (!target || !target->IsFriendlyTo(m_caster) || target->getAttackers().empty())
-                        return SPELL_FAILED_BAD_TARGETS;
-
+                        Unit* target = m_targets.getUnitTarget();
+                        if (!target || !target->IsFriendlyTo(m_caster) || target->getAttackers().empty())
+                            return SPELL_FAILED_BAD_TARGETS;
+                        break;
+                    }
+                    case 51582:          // Rocket Boots Engaged
+                    {
+                        if (m_caster->IsInWater())
+                            return SPELL_FAILED_ONLY_ABOVEWATER;
+                        break;
+                    }
+                    default:break;
                 }
                 break;
             }
@@ -5351,7 +5387,8 @@ SpellCastResult Spell::CheckCast(bool strict)
                     if (strict && m_caster->IsScriptOverriden(m_spellInfo, 6953))
                         m_caster->RemoveMovementImpairingAuras();
                 }
-                if (m_caster->HasUnitState(UNIT_STAT_ROOT))
+                // Master's call can be used whatever time
+                if (m_caster->HasUnitState(UNIT_STAT_ROOT) && m_spellInfo->Id != 54216)
                     return SPELL_FAILED_ROOTED;
                 break;
             }
@@ -5464,8 +5501,21 @@ SpellCastResult Spell::CheckCast(bool strict)
                 SummonPropertiesEntry const *SummonProperties = sSummonPropertiesStore.LookupEntry(m_spellInfo->EffectMiscValueB[i]);
                 if (!SummonProperties)
                     break;
-                switch(SummonProperties->Category)
+                // Eye of Kilrogg sploit
+                if(m_spellInfo->Id == 126)
+                //Do not allow to cast it before BG starts.
+                if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                   if (Battleground const *bg = m_caster->ToPlayer()->GetBattleground())
+                        if (bg->GetStatus() != STATUS_IN_PROGRESS)
+                            return SPELL_FAILED_TRY_AGAIN;
+                if (m_caster->GetPetGUID() && m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->getClass() == CLASS_WARLOCK)                  //let warlock do a replacement summon
                 {
+                    if (strict)                         //starting cast, trigger pet stun (cast by pet so it doesn't attack player)
+                        if (Pet* pet = m_caster->ToPlayer()->GetPet())
+                            pet->CastSpell(pet, 32752, true, NULL, NULL, pet->GetGUID());
+                }
+                else switch(SummonProperties->Category)
+                 {
                     case SUMMON_CATEGORY_PET:
                         if (m_caster->GetPetGUID())
                             return SPELL_FAILED_ALREADY_HAVE_SUMMON;

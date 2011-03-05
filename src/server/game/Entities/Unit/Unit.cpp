@@ -2336,7 +2336,7 @@ int32 Unit::GetMechanicResistChance(const SpellEntry *spell)
 }
 
 // Melee based spells hit result calculations
-SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
+SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell, Unit * Original)
 {
     WeaponAttackType attType = BASE_ATTACK;
 
@@ -2400,7 +2400,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     if (attType == RANGED_ATTACK)
     {
         // only if in front
-        if (pVictim->HasInArc(M_PI,this) || pVictim->HasAuraType(SPELL_AURA_IGNORE_HIT_DIRECTION))
+        if (pVictim->HasInArc(M_PI,Original) || pVictim->HasAuraType(SPELL_AURA_IGNORE_HIT_DIRECTION))
         {
             int32 deflect_chance = pVictim->GetTotalAuraModifier(SPELL_AURA_DEFLECT_SPELLS)*100;
             tmp+=deflect_chance;
@@ -2411,7 +2411,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     }
 
     // Check for attack from behind
-    if ((!pVictim->HasInArc(M_PI,this) && !pVictim->HasAuraType(SPELL_AURA_IGNORE_HIT_DIRECTION)) || pVictim->HasUnitState(UNIT_STAT_STUNNED))
+    if ((!pVictim->HasInArc(M_PI,Original) && !pVictim->HasAuraType(SPELL_AURA_IGNORE_HIT_DIRECTION)) || pVictim->HasUnitState(UNIT_STAT_STUNNED))
     {
         // Can`t dodge from behind in PvP (but its possible in PvE)
         if (pVictim->GetTypeId() == TYPEID_PLAYER)
@@ -2500,10 +2500,21 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
 }
 
 // TODO need use unit spell resistances in calculations
-SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
+SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell, Unit * Original)
 {
+    int32 rand = urand(0,10000);
+
+    // cast by caster in front of victim
+    if(!spell || (spell->Category != 1225 && spell->Id != 54757)) // not chaosbolt or pyro rocket
+        if (pVictim->HasInArc(M_PI,this) || pVictim->HasAuraType(SPELL_AURA_IGNORE_HIT_DIRECTION))
+        {
+            int32 deflect_chance = pVictim->GetTotalAuraModifier(SPELL_AURA_DEFLECT_SPELLS)*100;
+            if (rand < deflect_chance)
+                return SPELL_MISS_DEFLECT;
+        }
+
     // Can`t miss on dead target (on skinning for example)
-    if (!pVictim->isAlive() && pVictim->GetTypeId() != TYPEID_PLAYER)
+    if ((!pVictim->isAlive() && pVictim->GetTypeId() != TYPEID_PLAYER) || (spell && (spell->Id == 54757 || spell->Category == 1225)))
         return SPELL_MISS_NONE;
 
     SpellSchoolMask schoolMask = GetSpellSchoolMask(spell);
@@ -2544,8 +2555,6 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
 
     int32 tmp = 10000 - HitChance;
 
-    int32 rand = irand(0, 10000);
-
     if (rand < tmp)
         return SPELL_MISS_MISS;
 
@@ -2553,39 +2562,40 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     int32 resist_chance = pVictim->GetMechanicResistChance(spell) * 100;
     tmp += resist_chance;
 
-    // Chance resist debuff
-    if (!IsPositiveSpell(spell->Id))
-    {
-        bool bNegativeAura = false;
-        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-        {
-            if (spell->EffectApplyAuraName[i] != 0)
-            {
-                bNegativeAura = true;
-                break;
-            }
-        }
+    SpellSchools school = GetFirstSchoolInMask(GetSpellSchoolMask(spell));
 
-        if (bNegativeAura)
+    // resist system
+    if(IsCCSpell(spell))
+    {
+        if(school != SPELL_SCHOOL_NORMAL && school != SPELL_SCHOOL_HOLY)
         {
-            tmp += pVictim->GetMaxPositiveAuraModifierByMiscValue(SPELL_AURA_MOD_DEBUFF_RESISTANCE, int32(spell->Dispel)) * 100;
-            tmp += pVictim->GetMaxNegativeAuraModifierByMiscValue(SPELL_AURA_MOD_DEBUFF_RESISTANCE, int32(spell->Dispel)) * 100;
+            int32 resist = pVictim->GetResistance(school);
+            if(resist)
+                if (Player *modOwner = GetSpellModOwner())
+                    resist+=(float) modOwner->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, schoolMask)+
+                    modOwner->GetInt32Value(PLAYER_FIELD_MOD_TARGET_RESISTANCE);
+            if(resist<0)
+                resist=0;
+            uint32 level = getLevel();
+            float resistanceConstant = getLevel() == 83 ? 510: level * 5.0f;
+            float averageResist = resist / (resist + resistanceConstant);
+            tmp+=averageResist*10000;
         }
     }
 
-   // Roll chance
+    // Roll chance
     if (rand < tmp)
         return SPELL_MISS_RESIST;
 
-	if (!spell || (spell->Category != 1225 && spell->Id != 54757)) // Chaos Bolt and Pyro Rocket
-	    // cast by caster in front of victim
-	    if (pVictim->HasInArc(M_PI, this) || pVictim->HasAuraType(SPELL_AURA_IGNORE_HIT_DIRECTION))
-	    {
-	        int32 deflect_chance = pVictim->GetTotalAuraModifier(SPELL_AURA_DEFLECT_SPELLS) * 100;
-	        tmp += deflect_chance;
-		    if (rand < tmp)
-		        return SPELL_MISS_DEFLECT;
-		}
+
+    // cast by caster in front of victim
+    if ((pVictim->HasInArc(M_PI, Original) || Original->IsGuardianPetStuff()) || pVictim->HasAuraType(SPELL_AURA_IGNORE_HIT_DIRECTION))
+    {
+        int32 deflect_chance = pVictim->GetTotalAuraModifier(SPELL_AURA_DEFLECT_SPELLS) * 100;
+        tmp += deflect_chance;
+        if (rand < tmp)
+            return SPELL_MISS_DEFLECT;
+    }
 
     return SPELL_MISS_NONE;
 }
@@ -2634,17 +2644,17 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
             return SPELL_MISS_REFLECT;
         }
     }
-
+    Unit * checker = (GetTypeId() == TYPEID_UNIT && IsGuardianPetStuff() && GetOwner()) ? GetOwner() : this;
     switch (spell->DmgClass)
     {
         case SPELL_DAMAGE_CLASS_RANGED:
         case SPELL_DAMAGE_CLASS_MELEE:
-            return MeleeSpellHitResult(pVictim, spell);
+            return checker->MeleeSpellHitResult(pVictim, spell, this);
         case SPELL_DAMAGE_CLASS_NONE:
             if(!isdeathgrip && spell->Id != 55095)
                 return SPELL_MISS_NONE;
         case SPELL_DAMAGE_CLASS_MAGIC:
-            return MagicSpellHitResult(pVictim, spell);
+            return checker->MagicSpellHitResult(pVictim, spell, this);
     }
     return SPELL_MISS_NONE;
 }
@@ -14852,6 +14862,12 @@ void Unit::AddPetAura(PetAura const* petSpell)
     m_petAuras.insert(petSpell);
     if (Pet* pet = this->ToPlayer()->GetPet())
         pet->CastPetAura(petSpell);
+    else for (Unit::ControlList::iterator itr = ToPlayer()->m_Controlled.begin(); itr != ToPlayer()->m_Controlled.end(); ++itr)
+        if((*itr)->GetEntry() == 89)
+        {
+            (*itr)->CastSpell(this, petSpell->GetAura((*itr)->GetEntry()), true);
+            break;
+        }
 }
 
 void Unit::RemovePetAura(PetAura const* petSpell)
@@ -15983,8 +15999,16 @@ void Unit::GetRaidMember(std::list<Unit*> &nearMembers, float radius)
     Player *owner = GetCharmerOrOwnerPlayerOrPlayerItself();
     if (!owner)
         return;
-
-    Group *pGroup = owner->GetGroup();
+    if(owner->ToUnit() != this)
+    {
+        owner->GetRaidMember(nearMembers, radius);
+        return;
+    }
+    Group *pGroup = NULL;
+    if (GetTypeId() == TYPEID_PLAYER)
+        pGroup = ToPlayer()->GetGroup();
+    else if(isTotem() && GetOwner() && GetOwner()->GetTypeId() == TYPEID_PLAYER)
+        pGroup = GetOwner()->ToPlayer()->GetGroup();
     if (pGroup)
     {
         for (GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
@@ -15993,12 +16017,18 @@ void Unit::GetRaidMember(std::list<Unit*> &nearMembers, float radius)
 
             if (Target && !IsHostileTo(Target))
             {
-                if (Target->isAlive() && IsWithinDistInMap(Target, radius))
+                if (Target->IsInWorld() && Target->isAlive() && IsWithinDistInMap(Target, radius))
                     nearMembers.push_back(Target);
-
+            /*if(badaura)
+            {
                 if (Guardian* pet = Target->GetGuardianPet())
                     if (pet->isAlive() &&  IsWithinDistInMap(pet, radius))
                         nearMembers.push_back(pet);
+            }
+            else */if (Target && !IsHostileTo(Target) && !Target->m_Controlled.empty())
+                for (ControlList::const_iterator itr = Target->m_Controlled.begin(); itr != Target->m_Controlled.end(); ++itr)
+                    if((*itr)->IsInWorld() && IsWithinDistInMap((*itr), radius))
+                        nearMembers.push_back(*itr);
             }
         }
     }
@@ -16006,22 +16036,30 @@ void Unit::GetRaidMember(std::list<Unit*> &nearMembers, float radius)
     {
         if (owner->isAlive() && (owner == this || IsWithinDistInMap(owner, radius)))
             nearMembers.push_back(owner);
-        if (Guardian* pet = owner->GetGuardianPet())
-            if (pet->isAlive() && (pet == this && IsWithinDistInMap(pet, radius)))
-                nearMembers.push_back(pet);
+        /*if(badaura)
+        {
+            if (Guardian* pet = GetGuardianPet())
+                if (pet->isAlive() &&  IsWithinDistInMap(pet, radius))
+                    nearMembers.push_back(pet);
+        }
+        else*/ if(!m_Controlled.empty())
+            for (ControlList::const_iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
+                if((*itr)->IsInWorld() && IsWithinDistInMap((*itr), radius))
+                    nearMembers.push_back(*itr);
+
     }
 }
 
 void Unit::GetPartyMemberInDist(std::list<Unit*> &TagUnitMap, float radius)
 {
-    Unit *owner = GetCharmerOrOwnerOrSelf();
     Group *pGroup = NULL;
-    if (owner->GetTypeId() == TYPEID_PLAYER)
-        pGroup = owner->ToPlayer()->GetGroup();
-
+    if (GetTypeId() == TYPEID_PLAYER)
+        pGroup = ToPlayer()->GetGroup();
+    else if(isTotem() && GetOwner() && GetOwner()->GetTypeId() == TYPEID_PLAYER)
+        pGroup = GetOwner()->ToPlayer()->GetGroup();
     if (pGroup)
     {
-        uint8 subgroup = owner->ToPlayer()->GetSubGroup();
+        uint8 subgroup = isTotem() ? GetOwner()->ToPlayer()->GetSubGroup() : ToPlayer()->GetSubGroup();
 
         for (GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
         {
@@ -16033,19 +16071,22 @@ void Unit::GetPartyMemberInDist(std::list<Unit*> &TagUnitMap, float radius)
                 if (Target->isAlive() && IsWithinDistInMap(Target, radius))
                     TagUnitMap.push_back(Target);
 
-                if (Guardian* pet = Target->GetGuardianPet())
-                    if (pet->isAlive() &&  IsWithinDistInMap(pet, radius))
-                        TagUnitMap.push_back(pet);
+                if(!Target->m_Controlled.empty())
+                    for (ControlList::const_iterator itr = Target->m_Controlled.begin(); itr != Target->m_Controlled.end(); ++itr)
+                        if((*itr)->IsInWorld() && (*itr)->IsWithinDistInMap(this, radius))
+                            TagUnitMap.push_back(*itr);
             }
         }
     }
     else
     {
+        Unit *owner = GetCharmerOrOwnerOrSelf();
         if (owner->isAlive() && (owner == this || IsWithinDistInMap(owner, radius)))
             TagUnitMap.push_back(owner);
-        if (Guardian* pet = owner->GetGuardianPet())
-            if (pet->isAlive() && (pet == this && IsWithinDistInMap(pet, radius)))
-                TagUnitMap.push_back(pet);
+        if (!owner->m_Controlled.empty())
+            for (ControlList::const_iterator itr = owner->m_Controlled.begin(); itr != owner->m_Controlled.end(); ++itr)
+                if((*itr)->IsInWorld() && (*itr)->IsWithinDistInMap(owner, radius))
+                    TagUnitMap.push_back(*itr);
     }
 }
 

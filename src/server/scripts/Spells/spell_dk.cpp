@@ -209,15 +209,19 @@ class spell_dk_corpse_explosion : public SpellScriptLoader
                     int32 bp = 0;
                     // Living ghoul as a target
                     if (unitTarget->isAlive())
+                    {
                         bp = int32(unitTarget->CountPctFromMaxHealth(25));
+                        int32 bp2 = unitTarget->GetHealth();
+                        unitTarget->CastCustomSpell(unitTarget,47496,&bp,&bp2,NULL,false);
+                    }
                     // Some corpse
                     else
+                    {
                         bp = GetEffectValue();
-                    GetCaster()->CastCustomSpell(unitTarget, SpellMgr::CalculateSpellEffectAmount(GetSpellInfo(), 1), &bp, NULL, NULL, true);
-                    // Corpse Explosion (Suicide)
-                    unitTarget->CastCustomSpell(unitTarget, DK_SPELL_CORPSE_EXPLOSION_TRIGGERED, &bp, NULL, NULL, true);
-                    // Set corpse look
-                    unitTarget->SetDisplayId(DISPLAY_GHOUL_CORPSE + urand(0, 3));
+                        bp += GetCaster()->GetTotalAttackPowerValue(BASE_ATTACK/*, NULL*/)*0.126;
+                        GetCaster()->CastCustomSpell(unitTarget, SpellMgr::CalculateSpellEffectAmount(GetSpellInfo(), 1), &bp,NULL,NULL,true);
+                        unitTarget->SetDisplayId(25537+urand(0,3));
+                    }
                 }
             }
 

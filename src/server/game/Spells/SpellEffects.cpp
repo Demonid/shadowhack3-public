@@ -347,6 +347,15 @@ void Spell::SpellDamageSchoolDmg(SpellEffIndex effIndex)
 
                 switch(m_spellInfo->Id)                     // better way to check unknown
                 {
+                    // Wandering Plague
+                    case 50526:
+                        apply_direct_bonus = false;
+                        break;
+                    // Corpse Explose
+                    case 47496:
+                        if(effIndex == 1)
+                            m_caster->Kill(m_caster);
+                        break;
                     // Positive/Negative Charge
                     case 28062:
                     case 28085:
@@ -465,8 +474,16 @@ void Spell::SpellDamageSchoolDmg(SpellEffIndex effIndex)
                     ApplyPctF(damage, m_caster->GetTotalAttackPowerValue(BASE_ATTACK));
                 // Shield Slam
                 else if (m_spellInfo->SpellFamilyFlags[1] & 0x200 && m_spellInfo->Category == 1209)
-                    damage += int32(m_caster->ApplyEffectModifiers(m_spellInfo, effIndex, float(m_caster->GetShieldBlockValue())));
-                // Victory Rush
+                {
+                    uint32 block =  m_caster->GetShieldBlockValue();
+                    bool hasshieldblock = m_caster->HasAura(2565);
+                    uint32 cap = hasshieldblock?1960*2:1960;
+                    uint32 bonusdamage = block > cap?cap + (block - cap) *  (112.0f/1200.0f):block;
+                    // Gag Order
+                    if(AuraEffect* AuraEff= m_caster->GetAuraEffect(SPELL_AURA_ADD_PCT_MODIFIER, SPELLFAMILY_WARRIOR, 280, 1))
+                        bonusdamage*=AuraEff->GetAmount()/100.0f+1.0f;
+                    damage+=bonusdamage;
+                }
                 else if (m_spellInfo->SpellFamilyFlags[1] & 0x100)
                 {
                     ApplyPctF(damage, m_caster->GetTotalAttackPowerValue(BASE_ATTACK));
@@ -736,12 +753,19 @@ void Spell::SpellDamageSchoolDmg(SpellEffIndex effIndex)
                     float average = (m_caster->GetFloatValue(UNIT_FIELD_MINDAMAGE) + m_caster->GetFloatValue(UNIT_FIELD_MAXDAMAGE)) *0.5f;
                     int32 count = m_caster->CalculateSpellDamage(unitTarget, m_spellInfo, EFFECT_2);
                     damage += count * int32(average * IN_MILLISECONDS) / m_caster->GetAttackTime(BASE_ATTACK);
-                    break;
+                    m_damage += damage;
+                    // Item - Paladin T10 Protection 2P Bonus
+                    if(AuraEffect * aur = m_caster->GetAuraEffect(70758, 0))
+                        m_damage*=aur->GetAmount()/100.0f+1.0f;
+                    // Item - Paladin T9 Protection 2P Bonus
+                    if(AuraEffect * aur = m_caster->GetAuraEffect(67186, 1))
+                        m_damage*=aur->GetAmount()/100.0f+1.0f;
+                    return;
                 }
                 // Shield of Righteousness
                 if (m_spellInfo->SpellFamilyFlags[EFFECT_1] & 0x100000)
                 {
-                    damage += CalculatePctN(m_caster->GetShieldBlockValue(), SpellMgr::CalculateSpellEffectAmount(m_spellInfo, EFFECT_1));
+                    damage += int32(m_caster->GetShieldBlockValue()>2760?2760:m_caster->GetShieldBlockValue());
                     break;
                 }
                 break;
@@ -754,6 +778,10 @@ void Spell::SpellDamageSchoolDmg(SpellEffIndex effIndex)
                     damage += m_damage *0.5f;
                     damage += int32(m_caster->GetTotalAttackPowerValue(RANGED_ATTACK)* 0.035f);
                 }
+                // Howling blast
+                if(m_spellInfo->Category == 1248)
+                    damage += int32(m_caster->GetTotalAttackPowerValue(BASE_ATTACK/*, unitTarget*/)* 0.2f);
+
                 break;
             }
         }
@@ -2624,6 +2652,8 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
         case 68082:                                         // Glyph of Seal of Command
             damage = int32(CalculatePctN(unitTarget->GetCreateMana(), damage));
             break;
+        case 71132:                                         // Glyph of Shadow Word: Pain
+            damage = 1 * unitTarget->GetCreateMana() / 100;
         case 48542:                                         // Revitalize
             damage = int32(CalculatePctN(unitTarget->GetMaxPower(power), damage));
             break;
