@@ -540,6 +540,10 @@ m_caster(Caster), m_spellValue(new SpellValue(m_spellInfo))
             else
                 m_canReflect = (!IsPositiveEffect(m_spellInfo->Id, j) || m_spellInfo->AttributesEx & SPELL_ATTR1_NEGATIVE) ? true : false;
 
+            // mind control
+            if (m_spellInfo->Id == 605)
+                break;
+                
             if (m_canReflect)
                 continue;
             else
@@ -1327,7 +1331,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         if (canEffectTrigger && missInfo != SPELL_MISS_REFLECT)
         {
             caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, damageInfo.damage, damageInfo.absorb, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
-            if (caster->GetTypeId() == TYPEID_PLAYER && (m_spellInfo->Attributes & SPELL_ATTR0_STOP_ATTACK_TARGET) == 0 &&
+            if (caster->GetTypeId() == TYPEID_PLAYER && (m_spellInfo->Attributes & SPELL_ATTR0_STOP_ATTACK_TARGET) == 0 && !m_triggeredByAuraSpell && 
                (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MELEE || m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_RANGED))
                 caster->ToPlayer()->CastItemCombatSpell(unitTarget, m_attackType, procVictim, procEx);
         }

@@ -3925,8 +3925,16 @@ void SpellMgr::LoadSpellCustomAttr()
 
         switch (i)
         {
-         // Shaman T9 Elemental 4P Bonus
-         case 71824:
+        // SOTA teleport
+        case 54643:
+            spellInfo->Effect[1] = 0;
+            break;
+        // Invisibility
+        case 66:
+            spellInfo->EffectAmplitude[1] = 333;
+            break;
+        // Shaman T9 Elemental 4P Bonus
+        case 71824:
             spellInfo->EffectBasePoints[0] = 1;
             count++;
             break;

@@ -2396,7 +2396,17 @@ void AuraEffect::TriggerSpell(Unit * target, Unit * caster) const
                 {
                     // Invisibility
                     case 66:
-                    // Here need periodic triger reducing threat spell (or do it manually)
+                        if(caster)
+                        {
+                            AuraEffect * auraeff = caster->GetAuraEffect(SPELL_AURA_ADD_FLAT_MODIFIER, SPELLFAMILY_MAGE, 2126, 1);
+                            int32 bonusamount = auraeff ? auraeff->GetAmount() : 0;
+                            if(GetBase()->GetDuration() < (3000+bonusamount)/3)
+                            {
+                                triggerSpellId = 32612;
+                                caster->RemoveAura(GetBase());
+                                break;
+                            }
+                        }
                         return;
                 }
                 break;
