@@ -1116,6 +1116,8 @@ void AuraEffect::Update(uint32 diff, Unit * caster)
             }
         }
     }
+    else if(GetAuraType() == SPELL_AURA_MOUNTED && caster && (caster->HasAura(23335) || caster->HasAura(23333)))
+        caster->RemoveAurasDueToSpell(GetId());
 }
 
 void AuraEffect::UpdatePeriodic(Unit * caster)
