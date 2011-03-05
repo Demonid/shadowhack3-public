@@ -527,7 +527,8 @@ m_caster(Caster), m_spellValue(new SpellValue(m_spellInfo))
     if (m_spellInfo->Id == 49575 || m_spellInfo->Id == 49560)
         m_canReflect = true;
 
-    if (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC && !IsAreaOfEffectSpell(m_spellInfo) && !(m_spellInfo->AttributesEx2 & SPELL_ATTR2_CANT_REFLECTED))
+    if (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC && !IsAreaOfEffectSpell(m_spellInfo) && 
+        !(m_spellInfo->AttributesEx2 & SPELL_ATTR2_CANT_REFLECTED) && !(m_spellInfo->AttributesEx & SPELL_ATTR1_UNK9))
     {
         for (int j = 0; j < MAX_SPELL_EFFECTS; ++j)
         {
@@ -6030,6 +6031,8 @@ SpellCastResult Spell::CheckCasterAuras() const
 
 bool Spell::CanAutoCast(Unit* target)
 {
+    if(m_spellInfo->Id == 47468 && m_caster->GetPower(POWER_ENERGY) < 70)
+        return false;
     uint64 targetguid = target->GetGUID();
 
     for (uint32 j = 0; j < MAX_SPELL_EFFECTS; ++j)
@@ -6704,7 +6707,7 @@ void Spell::Delayed() // only called in DealDamage()
 
 void Spell::DelayedChannel()
 {
-    if (!m_caster || m_caster->GetTypeId() != TYPEID_PLAYER || getState() != SPELL_STATE_CASTING)
+    if (!m_caster || getState() != SPELL_STATE_CASTING)
         return;
 
     if (isDelayableNoMore())                                    // Spells may only be delayed twice
@@ -6713,7 +6716,8 @@ void Spell::DelayedChannel()
     //check pushback reduce
     int32 delaytime = CalculatePctN(GetSpellDuration(m_spellInfo), 25); // channeling delay is normally 25% of its time per hit
     int32 delayReduce = 100;                                    // must be initialized to 100 for percent modifiers
-    m_caster->ToPlayer()->ApplySpellMod(m_spellInfo->Id, SPELLMOD_NOT_LOSE_CASTING_TIME, delayReduce, this);
+    if(m_caster->GetTypeId() == TYPEID_PLAYER)
+        m_caster->ToPlayer()->ApplySpellMod(m_spellInfo->Id, SPELLMOD_NOT_LOSE_CASTING_TIME, delayReduce, this);
     delayReduce += m_caster->GetTotalAuraModifier(SPELL_AURA_REDUCE_PUSHBACK) - 100;
     if (delayReduce >= 100)
         return;

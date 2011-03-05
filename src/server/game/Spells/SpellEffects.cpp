@@ -4042,7 +4042,27 @@ void Spell::SpellDamageWeaponDmg(SpellEffIndex effIndex)
     float totalDamagePercentMod  = 1.0f;                    // applied to final bonus+weapon damage
     int32 fixed_bonus = 0;
     int32 spell_bonus = 0;                                  // bonus specific for spell
-
+    bool normalized = false;
+    float weaponDamagePercentMod = 1.0;
+    for (int j = 0; j < 3; ++j)
+    {
+        switch(m_spellInfo->Effect[j])
+        {
+            case SPELL_EFFECT_WEAPON_DAMAGE:
+            case SPELL_EFFECT_WEAPON_DAMAGE_NOSCHOOL:
+                fixed_bonus += CalculateDamage(j, unitTarget);
+                break;
+            case SPELL_EFFECT_NORMALIZED_WEAPON_DMG:
+                fixed_bonus += CalculateDamage(j, unitTarget);
+                normalized = true;
+                break;
+            case SPELL_EFFECT_WEAPON_PERCENT_DAMAGE:
+                weaponDamagePercentMod *= float(CalculateDamage(j,unitTarget)) / 100.0f;
+                break;
+            default:
+                break;                                      // not weapon damage effect, just skip
+        }
+    }
     switch (m_spellInfo->SpellFamilyName)
     {
         case SPELLFAMILY_GENERIC:
@@ -4230,28 +4250,6 @@ void Spell::SpellDamageWeaponDmg(SpellEffIndex effIndex)
                 break;
             }
             break;
-        }
-    }
-
-    bool normalized = false;
-    float weaponDamagePercentMod = 1.0f;
-    for (int j = 0; j < MAX_SPELL_EFFECTS; ++j)
-    {
-        switch (m_spellInfo->Effect[j])
-        {
-            case SPELL_EFFECT_WEAPON_DAMAGE:
-            case SPELL_EFFECT_WEAPON_DAMAGE_NOSCHOOL:
-                fixed_bonus += CalculateDamage(j, unitTarget);
-                break;
-            case SPELL_EFFECT_NORMALIZED_WEAPON_DMG:
-                fixed_bonus += CalculateDamage(j, unitTarget);
-                normalized = true;
-                break;
-            case SPELL_EFFECT_WEAPON_PERCENT_DAMAGE:
-                ApplyPctN(weaponDamagePercentMod, CalculateDamage(j, unitTarget));
-                break;
-            default:
-                break;                                      // not weapon damage effect, just skip
         }
     }
 
