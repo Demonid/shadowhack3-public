@@ -383,6 +383,7 @@ m_periodicTimer(0), m_tickNumber(0)
     CalculatePeriodic(caster, true);
 
     m_amount = CalculateAmount(caster);
+    hidencooldown=0;
 
     CalculateSpellMod();
 }
@@ -1612,6 +1613,16 @@ void AuraEffect::PeriodicTick(AuraApplication * aurApp, Unit * caster) const
                 if (maxval_hot)
                     AddPctF(TakenTotalMod, maxval_hot);
 
+                // Fel Armor
+                if(GetSpellProto()->SpellIconID == 2297)
+                    // Demonic Aegis 
+                    for (uint32 i = 30143; i<30146; ++i)
+                        if(AuraEffect * aur = target->GetAuraEffect(i, 0))
+                        {
+                            TakenTotalMod *= 1.0f+aur->GetAmount()/100.0f;
+                            break;
+                        }
+
                 TakenTotalMod = std::max(TakenTotalMod, 0.0f);
 
                 damage = uint32(target->CountPctFromMaxHealth(damage));
@@ -1714,6 +1725,15 @@ void AuraEffect::PeriodicTick(AuraApplication * aurApp, Unit * caster) const
                 // max value
                 uint32 maxmana = CalculatePctF(caster->GetMaxPower(power), damage * 2.0f);
                 ApplyPctU(damage, target->GetMaxPower(power));
+                // Viper Sting
+                if(GetSpellProto()->Id == 3034)
+                    // Improved Stings  
+                    for (uint32 i = 19464; i<19467; ++i)
+                        if(AuraEffect * aur = caster->GetAuraEffect(i, 0))
+                        {
+                            damage *= 1.0f+aur->GetAmount()/100.0f;
+                            break;
+                        }
                 if (damage > maxmana)
                     damage = maxmana;
             }
@@ -2094,6 +2114,16 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
 
                         cell.Visit(p, grid_object_checker,  *GetBase()->GetOwner()->GetMap(), *caster, radius);
                         cell.Visit(p, world_object_checker, *GetBase()->GetOwner()->GetMap(), *caster, radius);
+                        for(UnitList::iterator itr = targets.begin(); itr!=targets.end();)
+                        {
+                            // NOT EVEN FUCKING TOTEM
+                            if((*itr)->isTotem())
+                            {
+                                targets.erase(itr);
+                                itr = targets.begin();
+                            }
+                            else ++itr;
+                        }
                     }
 
                     if (targets.empty())
@@ -3080,9 +3110,9 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const * aurApp, uint8 m
         case FORM_BERSERKERSTANCE:                          // 0x13
             PowerType = POWER_RAGE;
             break;
-
+        case FORM_TRAVEL:
+            target->ApplyPercentModFloatValue(OBJECT_FIELD_SCALE_X,-30,apply);
         case FORM_TREE:                                     // 0x02
-        case FORM_TRAVEL:                                   // 0x03
         case FORM_AQUA:                                     // 0x04
         case FORM_AMBIENT:                                  // 0x06
 
@@ -5794,7 +5824,7 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                 if (target->GetTypeId() != TYPEID_PLAYER)
                     return;
                 //  ..while they are casting
-                if (target->IsNonMeleeSpellCasted(false, false, true, false, false))
+                if (target->IsNonMeleeSpellCasted(false, false, true))
                     if (AuraEffect * aurEff = caster->GetAuraEffect(SPELL_AURA_ADD_FLAT_MODIFIER, SPELLFAMILY_WARRIOR, 2775, 0))
                         switch (aurEff->GetId())
                         {
@@ -5835,7 +5865,7 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                     {
                         owner_aura->SetStackAmount(owner_aura->GetSpellProto()->StackAmount);
                     }
-                    if (pet_aura)
+                    if (pet_aura && owner_aura)
                     {
                         pet_aura->SetCharges(0);
                         pet_aura->SetStackAmount(owner_aura->GetSpellProto()->StackAmount);
@@ -6031,6 +6061,12 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                                 target->CastSpell(target, 58601, true);
                                 target->CastSpell(target, 45472, true);
                             }
+                        // Shadowmourne - Item, Legendary
+                        case 71903:
+                            target->RemoveAurasDueToSpell(72521);
+                            target->RemoveAurasDueToSpell(72523);
+                            target->RemoveAurasDueToSpell(71905);
+                            break;
                     }
                     break;
                 case SPELLFAMILY_MAGE:
@@ -6070,6 +6106,16 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                         }
                     }
                     break;
+                case SPELLFAMILY_PRIEST:
+                     // Stop caster Penance chanelling on death
+                     if (m_spellProto->SpellFamilyName == SPELLFAMILY_PRIEST &&
+                        (m_spellProto->SpellFamilyFlags[2] & 0x00000080))
+                     {
+                         if (Unit* caster = GetCaster())
+                             caster->InterruptSpell(CURRENT_CHANNELED_SPELL);
+                         return;
+                     }
+                     break;
                 case SPELLFAMILY_ROGUE:
                 case SPELLFAMILY_HUNTER:
                     // Misdirection, Tricks of the Trade
@@ -6123,6 +6169,18 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                 break;
             switch(GetId())
             {
+                // Deadly Precision
+                case 71563:
+                {
+                    if(apply)
+                    {
+                        SpellEntry const * spell = sSpellStore.LookupEntry(71564);
+                        for (int i=0; i < spell->StackAmount; ++i)
+                            caster->CastSpell(target, spell->Id, true, NULL, NULL, GetCasterGUID());
+                    }
+                    else caster->RemoveAurasDueToSpell(71564);
+                    break;
+                }
                 // Recently Bandaged
                 case 11196:
                     target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, GetMiscValue(), apply);

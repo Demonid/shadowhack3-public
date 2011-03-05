@@ -81,6 +81,7 @@ class AuraEffect
 
         // add/remove SPELL_AURA_MOD_SHAPESHIFT (36) linked auras
         void HandleShapeshiftBoosts(Unit * target, bool apply) const;
+        time_t hidencooldown;
     private:
         Aura * const m_base;
 
