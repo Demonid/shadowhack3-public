@@ -4710,7 +4710,7 @@ bool ChatHandler::HandleUnbindSightCommand(const char * /*args*/)
 
 bool ChatHandler::HandleMmap(const char* args)
 {
-	bool on;
+    bool on;
     if (strncmp(args, "on", 3) == 0)
     {
         sWorld->setBoolConfig(CONFIG_MOVEMAP_ENABLE, true);

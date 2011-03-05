@@ -608,8 +608,8 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
         case SPELL_AURA_DAMAGE_SHIELD:
             if (!caster)
                 break;
-		// Retribution Aura
-		if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_PALADIN && m_spellProto->SpellFamilyFlags[0] & 0x00000008)
+        // Retribution Aura
+        if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_PALADIN && m_spellProto->SpellFamilyFlags[0] & 0x00000008)
                 // 3.3% from sp bonus
                 DoneActualBenefit = caster->SpellBaseDamageBonus(GetSpellSchoolMask(m_spellProto)) * 0.033f;
             // Thorns
@@ -705,16 +705,16 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
                 if (AuraEffect* modHealing = caster->GetAuraEffect(55673, 0))
                     AddPctN(amount, modHealing->GetAmount());
             }
-		switch(GetSpellProto()->Id)
-			// Lifeblood
-			case 55428:
-			case 55480:
-			case 55500:
-			case 55501:
-			case 55502:
-			case 55503:
-				amount += caster->GetMaxHealth() * 15 / 1000 / 5;
-			break;
+        switch(GetSpellProto()->Id)
+            // Lifeblood
+            case 55428:
+            case 55480:
+            case 55500:
+            case 55501:
+            case 55502:
+            case 55503:
+                amount += caster->GetMaxHealth() * 15 / 1000 / 5;
+            break;
             break;
         case SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN:
             if (!caster)
@@ -4201,18 +4201,18 @@ void AuraEffect::HandleAuraModStun(AuraApplication const * aurApp, uint8 mode, b
     target->SetControlled(apply, UNIT_STAT_STUNNED);
 
     if (target->HasAuraType(SPELL_AURA_MOD_STEALTH))
-		target->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
+        target->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
 
     // Seduction (Succubus spell)
     if (m_spellProto->Id == 6358)
     {
-	  Unit* pCaster = GetCaster();
+      Unit* pCaster = GetCaster();
 
         if (!pCaster)
             return;
 
         if(pCaster->GetOwner() && target->isAlive())
-		if(pCaster->GetOwner()->HasAura(56250))
+        if(pCaster->GetOwner()->HasAura(56250))
             {
                 target->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
                 target->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE_PERCENT);
@@ -5681,7 +5681,7 @@ void AuraEffect::HandleModDamagePercentDone(AuraApplication const * aurApp, uint
     }
 
     if (target->HasItemFitToSpellRequirements(GetSpellProto()))
-	{
+    {
         aurApp->GetTarget()->ApplyModSignedFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT, GetAmount()/100.0f, apply);
         aurApp->GetTarget()->UpdateDamagePhysical(BASE_ATTACK);
         aurApp->GetTarget()->UpdateDamagePhysical(OFF_ATTACK);

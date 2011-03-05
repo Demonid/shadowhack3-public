@@ -599,10 +599,10 @@ void Unit::DealDamageMods(Unit *pVictim, uint32 &damage, uint32* absorb)
         if (AuraEffect const * aurEff = pVictim->GetAuraEffect(53480, 0))
         {
             if (Unit * caster = aurEff->GetBase()->GetCaster())
-		{
+        {
                 int32 bp0 = damage * 0.2;
                 caster->CastCustomSpell(caster, 67481, &bp0, NULL, NULL, true);
-		}
+        }
         }
     }
 
@@ -6954,7 +6954,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                     basepoints0 = CalculatePctN(int32(damage), triggerAmount);
                     break;
                 }
-				// Paladin T8 Holy 2P Bonus
+                // Paladin T8 Holy 2P Bonus
                 case 64890:
                 {
                     triggered_spell_id = 64891;
@@ -7049,8 +7049,8 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                     if (!caster)
                         return false;
 
-					// Only from Earthbind Totem
-					if(procSpell->Id != 2484)
+                    // Only from Earthbind Totem
+                    if(procSpell->Id != 2484)
                        return false;
 
                     caster->CastSpell(caster, 59566, true, castItem, triggeredByAura, originalCaster);
@@ -12058,7 +12058,7 @@ void Unit::Unmount()
 
     SetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID, 0);
     RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_MOUNT);
-	RemoveAurasByType(SPELL_AURA_MOUNTED);
+    RemoveAurasByType(SPELL_AURA_MOUNTED);
 
     WorldPacket data(SMSG_DISMOUNT, 8);
     data.appendPackGUID(GetGUID());
@@ -17449,26 +17449,26 @@ bool Unit::IsWithinLOSInMap(const WorldObject* obj) const
 
 bool Unit::IsTargetReachable(Unit const* target) const
 {
-	if (!target)
-		return false;
+    if (!target)
+        return false;
 
 #ifdef PATHFIND_REACHABLE_CHECK
-	PathInfo* i_path = new PathInfo(this, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), true);
+    PathInfo* i_path = new PathInfo(this, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), true);
 
-	return i_path->getPathType() & PATHFIND_NORMAL;
+    return i_path->getPathType() & PATHFIND_NORMAL;
 #else
-	return true;
+    return true;
 #endif
 }
 
 bool Unit::IsDestinationReachable(float x, float y, float z) const
 {
 #ifdef PATHFIND_REACHABLE_CHECK
-	PathInfo* i_path = new PathInfo(this, x, y, z, true);
+    PathInfo* i_path = new PathInfo(this, x, y, z, true);
 
-	return i_path->getPathType() & PATHFIND_NORMAL;
+    return i_path->getPathType() & PATHFIND_NORMAL;
 #else
-	return true;
+    return true;
 #endif
 }
 
@@ -17477,7 +17477,7 @@ void Unit::MonsterMoveByPath(float x, float y, float z, uint32 speed, bool smoot
     PathInfo path(this, x, y, z, !smoothPath);
     PointPath pointPath = path.getFullPath();
 
-	uint32 size = pointPath.size();
+    uint32 size = pointPath.size();
     // tiny hack for underwater charge cases
     pointPath[size-1].x = x;
     pointPath[size-1].y = y;
@@ -17510,7 +17510,7 @@ void Unit::SendMonsterMoveByPath(Path<Elem,Node> const& path, uint32 start, uint
 
     uint32 pathSize = end - start;
 
-	uint32 packSize = ((GetUnitMovementFlags() & MOVEMENTFLAG_LEVITATING) || isInFlight()) ? pathSize*4*3 : 4*3 + (pathSize-1)*4;
+    uint32 packSize = ((GetUnitMovementFlags() & MOVEMENTFLAG_LEVITATING) || isInFlight()) ? pathSize*4*3 : 4*3 + (pathSize-1)*4;
     WorldPacket data( SMSG_MONSTER_MOVE, (GetPackGUID().size()+1+4+4+4+4+1+4+4+4+packSize) );
 
     data.append(GetPackGUID());

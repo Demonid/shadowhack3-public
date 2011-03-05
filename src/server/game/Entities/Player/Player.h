@@ -2285,8 +2285,8 @@ class Player : public Unit, public GridObject<Player>
         void SendCinematicStart(uint32 CinematicSequenceId);
         void SendMovieStart(uint32 MovieId);
 
-		bool CanGainPremiumXP() {return getLevel() <= sWorld->getIntConfig(CONFIG_PREMIUM_XP_LEVELLIMIT);}
-		bool CanGainPremiumSkill(uint32 SkillId) {return GetSkillValue(SkillId) <= sWorld->getIntConfig(CONFIG_PREMIUM_SKILL_GAIN_LIMIT);}
+        bool CanGainPremiumXP() {return getLevel() <= sWorld->getIntConfig(CONFIG_PREMIUM_XP_LEVELLIMIT);}
+        bool CanGainPremiumSkill(uint32 SkillId) {return GetSkillValue(SkillId) <= sWorld->getIntConfig(CONFIG_PREMIUM_SKILL_GAIN_LIMIT);}
 
         /*********************************************************/
         /***                 INSTANCE SYSTEM                   ***/
@@ -2408,6 +2408,10 @@ class Player : public Unit, public GridObject<Player>
         float GetAverageItemLevel();
         bool isDebugAreaTriggers;
 
+        // spectator
+        typedef std::list<std::string> StringList;
+        std::vector<StringList*> twovtwo;
+        
         void setJustChangedSpeed() {m_anti_JustChangedSpeed++;}
 
     protected:
@@ -2632,7 +2636,7 @@ class Player : public Unit, public GridObject<Player>
         RestType rest_type;
         ////////////////////Rest System/////////////////////
 
-		//movement anticheat
+        //movement anticheat
         uint32 m_anti_LastClientTime;     //last movement client time
         uint32 m_anti_LastServerTime;     //last movement server time
         uint32 m_anti_DeltaClientTime;    //client side session time
@@ -2651,7 +2655,7 @@ class Player : public Unit, public GridObject<Player>
         uint64 m_anti_AlarmCount;         //alarm counter
 
         uint32 m_anti_JustJumped;         //Jump already began, anti air jump check
-		uint64 m_anti_JustChangedSpeed;   //Speed changed
+        uint64 m_anti_JustChangedSpeed;   //Speed changed
         float  m_anti_JumpBaseZ;          //Z coord before jump
         // << movement anticheat
 
