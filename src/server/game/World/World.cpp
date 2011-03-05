@@ -1199,6 +1199,7 @@ void World::LoadConfigSettings(bool reload)
     sLog->outString("WORLD: VMap data directory is: %svmaps",m_dataPath.c_str());
 
     m_bool_configs[CONFIG_MOVEMAP_ENABLE] = sConfig->GetBoolDefault("PathFinding.Enable", true);
+    m_int_configs[CONFIG_MAX_PATH_LENGTH] = sConfig.GetIntDefault("PathFinding.MaxPathLength", 50);
     if(sConfig->GetBoolDefault("PathFinding.MovemapType", true))
         MAP_VERSION_MAGIC = "v2.1";
     else

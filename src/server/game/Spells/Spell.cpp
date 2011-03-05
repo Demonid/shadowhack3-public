@@ -1468,7 +1468,8 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
                 if (m_caster->GetTypeId() == TYPEID_PLAYER)
                     m_caster->ToPlayer()->UpdatePvP(true);
             }
-            if (unit->isInCombat() && !(m_spellInfo->AttributesEx3 & SPELL_ATTR3_NO_INITIAL_AGGRO))
+            if (unit->isInCombat() && !(m_spellInfo->AttributesEx3 & SPELL_ATTR3_NO_INITIAL_AGGRO) && 
+                (!IsPositiveSpell(m_spellInfo->Id) || (GetSpellDuration(m_spellInfo)<60000 && !m_triggeredByAuraSpell)))
             {
                 m_caster->SetInCombatState(unit->GetCombatTimer() > 0, unit);
                 unit->getHostileRefManager().threatAssist(m_caster, 0.0f);
@@ -5500,6 +5501,14 @@ SpellCastResult Spell::CheckCast(bool strict)
 
                 break;
             }
+            case SPELL_EFFECT_INSTAKILL:
+            {
+                if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                    if (Battleground const *bg = m_caster->ToPlayer()->GetBattleground())
+                        if (bg->GetStatus() != STATUS_IN_PROGRESS)
+                            return SPELL_FAILED_TRY_AGAIN;
+                break;
+            }
             // This is generic summon effect
             case SPELL_EFFECT_SUMMON:
             {
@@ -5603,7 +5612,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             case SPELL_EFFECT_LEAP_BACK:
             {
                 // Spell 781 (Disengage) requires player to be in combat
-                if (m_caster->GetTypeId() == TYPEID_PLAYER && m_spellInfo->Id == 781 && !m_caster->isInCombat())
+                if (m_caster->GetTypeId() == TYPEID_PLAYER && m_spellInfo->Id == 781 && (!m_caster->isInCombat() || m_caster->hasUnitState(UNIT_STAT_ROOT)))
                     return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
 
                 Unit* target = m_targets.getUnitTarget();

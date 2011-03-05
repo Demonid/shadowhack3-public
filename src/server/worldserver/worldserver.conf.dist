@@ -310,6 +310,13 @@ vmap.enableIndoorCheck = 1
 
 PathFinding.Enable = 0
 
+#    PathFinding.MaxPathLength
+#       Max long path for creatures and charging effects
+#        Default: 50
+#
+
+PathFinding.MaxPathLength = 50
+
 #
 #    PathFinding.ignoreMapIds
 #        Map id that will be ignored by PathFinding

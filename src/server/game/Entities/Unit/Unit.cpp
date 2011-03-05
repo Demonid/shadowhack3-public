@@ -17484,7 +17484,11 @@ void Unit::MonsterMoveByPath(float x, float y, float z, uint32 speed, bool smoot
 {
     PathInfo path(this, x, y, z, !smoothPath);
     PointPath pointPath = path.getFullPath();
-
+    if (pointPath.GetTotalLength() > sWorld.getIntConfig(CONFIG_MAX_PATH_LENGTH))
+    {
+        path.BuildShortcut();
+        pointPath = path.getFullPath();
+    }
     uint32 size = pointPath.size();
     // tiny hack for underwater charge cases
     pointPath[size-1].x = x;
