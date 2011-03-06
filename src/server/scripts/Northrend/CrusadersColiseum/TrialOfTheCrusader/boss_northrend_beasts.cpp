@@ -123,7 +123,8 @@ public:
     {
         boss_gormokAI(Creature* pCreature) : ScriptedAI(pCreature), Summons(me)
         {
-            m_pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+            m_pInstance = pCreature->GetInstanceScript();
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
         }
 
         InstanceScript* m_pInstance;
@@ -239,9 +240,10 @@ public:
     {
         mob_snobold_vassalAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
-            m_pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+            m_pInstance = pCreature->GetInstanceScript();
             if (m_pInstance)
                 m_pInstance->SetData(DATA_SNOBOLD_COUNT, INCREASE);
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
         }
 
         InstanceScript* m_pInstance;
@@ -364,6 +366,7 @@ struct boss_jormungarAI : public ScriptedAI
     boss_jormungarAI(Creature* creature) : ScriptedAI(creature)
     {
         instanceScript = creature->GetInstanceScript();
+        creature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
     }
 
     void Reset()
@@ -579,7 +582,10 @@ class boss_acidmaw : public CreatureScript
 
     struct boss_acidmawAI : public boss_jormungarAI
     {
-        boss_acidmawAI(Creature* pCreature) : boss_jormungarAI(pCreature) { }
+        boss_acidmawAI(Creature* pCreature) : boss_jormungarAI(pCreature)
+        {
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+        }
 
         void Reset()
         {
@@ -612,7 +618,10 @@ public:
 
     struct boss_dreadscaleAI : public boss_jormungarAI
     {
-        boss_dreadscaleAI(Creature* pCreature) : boss_jormungarAI(pCreature) { }
+        boss_dreadscaleAI(Creature* pCreature) : boss_jormungarAI(pCreature)
+        {
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+        }
 
         void Reset()
         {
@@ -651,6 +660,7 @@ public:
     {
         mob_slime_poolAI(Creature *pCreature) : ScriptedAI(pCreature)
         {
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
         }
 
         bool casted;
@@ -686,7 +696,8 @@ public:
     {
         boss_icehowlAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
-            m_pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+            m_pInstance = pCreature->GetInstanceScript();
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
         }
 
         InstanceScript* m_pInstance;

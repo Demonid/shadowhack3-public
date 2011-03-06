@@ -113,6 +113,7 @@ public:
         boss_black_knightAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
             pInstance = pCreature->GetInstanceScript();
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
         }
 
         InstanceScript* pInstance;
