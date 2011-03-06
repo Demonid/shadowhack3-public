@@ -136,7 +136,7 @@ class boss_halazzi : public CreatureScript
 
             void JustSummoned(Creature* summon)
             {
-                summon->AI()->AttackStart(me->getVictim());
+                if (summon->AI()) summon->AI()->AttackStart(me->getVictim());
                 if (summon->GetEntry() == MOB_SPIRIT_LYNX)
                     LynxGUID = summon->GetGUID();
             }
@@ -186,7 +186,7 @@ class boss_halazzi : public CreatureScript
                     break;
                 case PHASE_HUMAN:
                     //DoCast(me, SPELL_SUMMON_LYNX, true);
-                    DoSpawnCreature(MOB_SPIRIT_LYNX, 5,5,0,0, TEMPSUMMON_CORPSE_DESPAWN, 0);
+                    DoSpawnCreature(MOB_SPIRIT_LYNX, 5.0f,5.0f,0.0f,0.0f, TEMPSUMMON_CORPSE_DESPAWN, 0);
                     me->SetMaxHealth(400000);
                     me->SetHealth(400000);
                     ShockTimer = 10000;

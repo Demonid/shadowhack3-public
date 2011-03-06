@@ -217,6 +217,7 @@ public:
                     ++i;
                 }
             }
+            //Q: targets.clear() ?
         }
 
         void UpdateAI(const uint32 diff)
@@ -309,7 +310,7 @@ public:
             {
                 if (!me->IsNonMeleeSpellCasted(false))
                 {
-                    Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true);
+                    Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.f, true);
                     if (!pTarget)
                         return;
 
@@ -351,7 +352,7 @@ public:
                         DoCast(me, SPELL_AOE_CS);
                         break;
                     case 1:
-                        if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                        if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.f, true))
                             DoCast(pTarget, SPELL_CHAINSOFICE);
                         break;
                 }

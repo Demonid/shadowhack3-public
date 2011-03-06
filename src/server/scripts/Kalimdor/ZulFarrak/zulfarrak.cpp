@@ -55,6 +55,7 @@ enum blySpells
 };
 
 #define GOSSIP_BLY                  "[PH] In that case, I will take my reward!"
+#define GOSSIP_BLY_RU               "[PH] Если так, я возьму свою награду!"
 
 class npc_sergeant_bly : public CreatureScript
 {
@@ -79,7 +80,7 @@ public:
         {
             if (pInstance->GetData(EVENT_PYRAMID) == PYRAMID_KILLED_ALL_TROLLS)
             {
-                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_BLY, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, (pPlayer->isRussianLocale()) ? GOSSIP_BLY_RU:GOSSIP_BLY, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
                 pPlayer->SEND_GOSSIP_MENU(1517, pCreature->GetGUID());
             }
             else
@@ -208,7 +209,7 @@ void initBlyCrewMember(InstanceScript* pInstance, uint32 entry,float x,float y, 
    {
         crew->SetReactState(REACT_AGGRESSIVE);
         crew->AddUnitMovementFlag(MOVEMENTFLAG_WALKING);
-        crew->SetHomePosition(x,y,z,0);
+        crew->SetHomePosition(x,y,z,0.0f);
         crew->GetMotionMaster()->MovePoint(1,x,y,z);
         crew->setFaction(FACTION_FREED);
     }
@@ -422,10 +423,10 @@ public:
         {
             uint32 randomchance = urand(0,100);
             if (randomchance < ZOMBIE_CHANCE)
-                pGo->SummonCreature(ZOMBIE, pGo->GetPositionX(), pGo->GetPositionY(), pGo->GetPositionZ(), 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 30000);
+                pGo->SummonCreature(ZOMBIE, pGo->GetPositionX(), pGo->GetPositionY(), pGo->GetPositionZ(), 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 30000);
             else
                 if ((randomchance-ZOMBIE_CHANCE) < DEAD_HERO_CHANCE)
-                    pGo->SummonCreature(DEAD_HERO, pGo->GetPositionX(), pGo->GetPositionY(), pGo->GetPositionZ(), 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 30000);
+                    pGo->SummonCreature(DEAD_HERO, pGo->GetPositionX(), pGo->GetPositionY(), pGo->GetPositionZ(), 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 30000);
         }
         pGo->AddUse();
         return false;
