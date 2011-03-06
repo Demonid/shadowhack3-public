@@ -791,7 +791,7 @@ void WorldSession::HandleResurrectResponseOpcode(WorldPacket & recv_data)
         return;
 
     GetPlayer()->ResurectUsingRequestData();
-    if(!GetPlayer()->InBattleGround())
+    if(!GetPlayer()->InBattleground())
         GetPlayer()->CastSpell(GetPlayer(), 2479, true);
 }
 

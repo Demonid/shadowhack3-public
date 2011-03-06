@@ -470,7 +470,7 @@ void World::LoadConfigSettings(bool reload)
     rate_values[RATE_PREMIUM_XP_QUEST]    = sConfig->GetFloatDefault("Rate.Premium.XP.Quest", 2.0f);
     rate_values[RATE_PREMIUM_XP_EXPLORE]  = sConfig->GetFloatDefault("Rate.Premium.XP.Explore", 2.0f);
     rate_values[RATE_REPAIRCOST]  = sConfig->GetFloatDefault("Rate.RepairCost", 1.0f);
-    rate_values[RATE_LOYALITY]              = sConfig.GetFloatDefault("Rate.Loyalty", 1.0f);
+    rate_values[RATE_LOYALITY]              = sConfig->GetFloatDefault("Rate.Loyalty", 1.0f);
     if (rate_values[RATE_REPAIRCOST] < 0.0f)
     {
         sLog->outError("Rate.RepairCost (%f) must be >=0. Using 0.0 instead.",rate_values[RATE_REPAIRCOST]);
@@ -1200,7 +1200,7 @@ void World::LoadConfigSettings(bool reload)
     sLog->outString("WORLD: VMap data directory is: %svmaps",m_dataPath.c_str());
 
     m_bool_configs[CONFIG_MOVEMAP_ENABLE] = sConfig->GetBoolDefault("PathFinding.Enable", true);
-    m_int_configs[CONFIG_MAX_PATH_LENGTH] = sConfig.GetIntDefault("PathFinding.MaxPathLength", 50);
+    m_int_configs[CONFIG_MAX_PATH_LENGTH] = sConfig->GetIntDefault("PathFinding.MaxPathLength", 50);
     if(sConfig->GetBoolDefault("PathFinding.MovemapType", true))
         MAP_VERSION_MAGIC = "v2.1";
     else
