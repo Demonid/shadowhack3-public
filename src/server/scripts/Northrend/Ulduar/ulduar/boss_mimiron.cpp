@@ -380,8 +380,8 @@ public:
                         case 2:
                             if (instance)
                             {
-                                if (Creature *pLeviathan = me->GetCreature(*me, instance->GetData64(DATA_LEVIATHAN_MK_II)))
-                                    me->EnterVehicle(pLeviathan->GetVehicleKit(), 4);
+                                if (Unit *pLeviathan = me->GetUnit(*me, instance->GetData64(DATA_LEVIATHAN_MK_II)))
+                                    me->EnterVehicle(pLeviathan, 4);
                             }
                             JumpToNextStep(2000);
                             break;
@@ -454,8 +454,8 @@ public:
                         case 5:
                             if (instance)
                             {
-                                if (Creature *pVX_001 = me->GetCreature(*me, instance->GetData64(DATA_VX_001)))
-                                    me->EnterVehicle(pVX_001->GetVehicleKit(), 0);
+                                if (Unit *pVX_001 = me->GetUnit(*me, instance->GetData64(DATA_VX_001)))
+                                    me->EnterVehicle(pVX_001, 0);
                             }
                             JumpToNextStep(3500);
                             break;
@@ -556,25 +556,25 @@ public:
                             if (instance)
                             {
                                 DoScriptText(SAY_AERIAL_DEATH, me);
-                                if (Creature *pLeviathan = me->GetCreature(*me, instance->GetData64(DATA_LEVIATHAN_MK_II)))
-                                    if (Creature *pVX_001 = me->GetCreature(*me, instance->GetData64(DATA_VX_001)))
+                                if (Unit *pLeviathan = me->GetUnit(*me, instance->GetData64(DATA_LEVIATHAN_MK_II)))
+                                    if (Unit *pVX_001 = me->GetUnit(*me, instance->GetData64(DATA_VX_001)))
                                     {
                                         pLeviathan->GetMotionMaster()->MoveTargetedHome();
                                         pVX_001->SetStandState(UNIT_STAND_STATE_STAND);
-                                        pVX_001->EnterVehicle(pLeviathan->GetVehicleKit(), 7);
-                                        me->EnterVehicle(pVX_001->GetVehicleKit(), 1);
+                                        pVX_001->EnterVehicle(pLeviathan, 7);
+                                        me->EnterVehicle(pVX_001, 1);
                                     }
                             }
                             JumpToNextStep(8000);
                             break;
                         case 2:
                             if (instance)
-                                if (Creature *pVX_001 = me->GetCreature(*me, instance->GetData64(DATA_VX_001)))
+                                if (Unit *pVX_001 = me->GetUnit(*me, instance->GetData64(DATA_VX_001)))
                                     if (Creature *pAerialUnit = me->GetCreature(*me, instance->GetData64(DATA_AERIAL_UNIT)))
                                     {
                                         DoScriptText(SAY_V07TRON_ACTIVATE, me);
                                         pAerialUnit->SetFlying(false);
-                                        pAerialUnit->EnterVehicle(pVX_001->GetVehicleKit(), 3);
+                                        pAerialUnit->EnterVehicle(pVX_001, 3);
                                     }
                             JumpToNextStep(10000);
                             break;
