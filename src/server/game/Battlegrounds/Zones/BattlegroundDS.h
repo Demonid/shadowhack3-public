@@ -39,7 +39,7 @@ enum BattlegroundDSObjects
     BG_DS_OBJECT_TYPE_WATER_1   = 194395,
     BG_DS_OBJECT_TYPE_WATER_2   = 191877,
     BG_DS_OBJECT_TYPE_BUFF_1    = 184663,
-    BG_DS_OBJECT_TYPE_BUFF_2    = 184664
+    BG_DS_OBJECT_TYPE_BUFF_2    = 184663
 };
 
 enum BattlegroundDSData

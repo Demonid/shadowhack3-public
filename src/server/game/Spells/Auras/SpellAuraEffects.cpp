@@ -587,6 +587,11 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
                     break;
             }
             break;
+        case SPELLFAMILY_DEATHKNIGHT:
+            //  Anti-Magic Zone
+            if(GetSpellProto()->Id == 50461)
+                amount=uint32(10000+2*caster->GetTotalAttackPowerValue(BASE_ATTACK));
+            break;
         case SPELL_AURA_MANA_SHIELD:
             m_canBeRecalculated = false;
             if (!caster)
@@ -784,6 +789,11 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
             // Dash - do not set speed if not in cat form
             if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_DRUID && GetSpellProto()->SpellFamilyFlags[2] & 0x00000008)
                 amount = GetBase()->GetUnitOwner()->GetShapeshiftForm() == FORM_CAT ? amount : 0;
+            break;
+        case SPELL_AURA_MOD_IMMUNE_AURA_APPLY_SCHOOL:
+            // Anti-Magic Shell absorbs up to 50% of caster's health
+            if(GetSpellProto()->Id == 48707)
+                amount=uint32(caster->GetMaxHealth()*amount/100.0f);
             break;
         default:
             break;
