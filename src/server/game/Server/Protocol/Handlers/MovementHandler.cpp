@@ -869,6 +869,9 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                 }
             }
 
+            if(plMover->getStandState() == UNIT_STAND_STATE_SIT)
+                plMover->SetStandState(UNIT_STAND_STATE_STAND);
+
             //movement anticheat >>>
             if (plMover->m_anti_AlarmCount > 0)
             {
