@@ -940,8 +940,6 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
             // Totem of Wrath
             if (spellId == 30708)
                 return false;
-            if (spellId == 30708)
-                return false;
             break;
         default:
             break;

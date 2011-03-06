@@ -791,6 +791,8 @@ void WorldSession::HandleResurrectResponseOpcode(WorldPacket & recv_data)
         return;
 
     GetPlayer()->ResurectUsingRequestData();
+    if(!GetPlayer()->InBattleGround())
+        GetPlayer()->CastSpell(GetPlayer(), 2479, true);
 }
 
 void WorldSession::SendAreaTriggerMessage(const char* Text, ...)

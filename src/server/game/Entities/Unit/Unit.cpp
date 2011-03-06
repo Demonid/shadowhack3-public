@@ -645,7 +645,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
     }
     if (damagetype != NODAMAGE)
     {
-        if(!spellProto || damagetype == DOT || GetSpellMaxRangeForTarget(pVictim, GetSpellRangeStore()->LookupEntry(spellProto->rangeIndex))<100.0f)
+        if(!spellProto || !(spellProto->AttributesEx4 & SPELL_ATTR4_NOT_BREAK_CC))
         // interrupting auras with AURA_INTERRUPT_FLAG_DAMAGE before checking !damage (absorbed damage breaks that type of auras)
         pVictim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TAKE_DAMAGE, spellProto ? spellProto->Id : 0);
 
@@ -820,8 +820,8 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
             }
         }
 
-        if (!splited && damagetype != NODAMAGE && damage && pVictim != this && damagetype != DOT && (!spellProto ||
-            GetSpellMaxRangeForTarget(pVictim, GetSpellRangeStore()->LookupEntry(spellProto->rangeIndex))<100.0f)) // does not support creature push_back
+        if (!splited && damagetype != NODAMAGE && damage && pVictim != this && damagetype != DOT && 
+            (!spellProto || !(spellProto->AttributesEx4 & SPELL_ATTR4_NOT_BREAK_CC)) // does not support creature push_back
         {
             if (pVictim->GetTypeId() == TYPEID_PLAYER)
                 if (Spell* spell = pVictim->m_currentSpells[CURRENT_GENERIC_SPELL])
@@ -8179,6 +8179,15 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
             case SPELLFAMILY_GENERIC:
                 switch (auraSpellInfo->Id)
                 {
+                    case 64568: // blood draining enchant proc
+                        if(GetHealthPct() < 35.0f)
+                        {
+                            int32 basepoints = triggeredByAura->GetAmount();
+                            CastCustomSpell(this, 64569, &basepoints, 0, 0, true);
+                            RemoveAurasDueToSpell(64568);
+                            return true;
+                        }
+                        return false;
                     case 23780:             // Aegis of Preservation (Aegis of Preservation trinket)
                         trigger_spell_id = 23781;
                         break;
@@ -8325,6 +8334,12 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
                         return false;
                     }
                     basepoints0 = CalculatePctN(int32(damage), triggerAmount) / 3;
+                    if(Aura * aur = GetAura(trigger_spell_id, 0))
+                    {
+                        aur->GetEffect(0)->SetAmount(aur->GetEffect(0)->GetAmount()+basepoints0);
+                        aur->SetAuraTimer(aur->GetMaxDuration());
+                        return true;
+                    }
                     target = this;
                 }
                 break;
@@ -8383,6 +8398,9 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
                     basepoints0 += pVictim->GetRemainingDotDamage(GetGUID(), trigger_spell_id);
                     break;
                 }
+                // Culling the Herd proc from Claw, Bite, or Smack
+                if(auraSpellInfo->SpellIconID == 4115 && procSpell->SpellIconID != 262 && procSpell->SpellIconID != 146 && procSpell->SpellIconID != 473) 
+                    return false;
                 break;
             }
             case SPELLFAMILY_PALADIN:
@@ -12347,6 +12365,9 @@ int32 Unit::ModifyPower(Powers power, int32 dVal)
 {
     int32 gain = 0;
 
+    if(power == POWER_HAPPINESS && dVal < 0)
+        dVal*= sWorld.getRate(RATE_LOYALITY);
+
     if (dVal == 0)
         return 0;
 
@@ -14477,6 +14498,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit * pTarget, uint32 procFlag,
                     // Deadly Precision
                     if(Id == 71564)
                         i->aura->ModStackAmount(-1);
+                    takeCharges = false;
                     return;
                 }
                 //case SPELL_AURA_ADD_FLAT_MODIFIER:

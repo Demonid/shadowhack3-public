@@ -470,6 +470,7 @@ void World::LoadConfigSettings(bool reload)
     rate_values[RATE_PREMIUM_XP_QUEST]    = sConfig->GetFloatDefault("Rate.Premium.XP.Quest", 2.0f);
     rate_values[RATE_PREMIUM_XP_EXPLORE]  = sConfig->GetFloatDefault("Rate.Premium.XP.Explore", 2.0f);
     rate_values[RATE_REPAIRCOST]  = sConfig->GetFloatDefault("Rate.RepairCost", 1.0f);
+    rate_values[RATE_LOYALITY]              = sConfig.GetFloatDefault("Rate.Loyalty", 1.0f);
     if (rate_values[RATE_REPAIRCOST] < 0.0f)
     {
         sLog->outError("Rate.RepairCost (%f) must be >=0. Using 0.0 instead.",rate_values[RATE_REPAIRCOST]);

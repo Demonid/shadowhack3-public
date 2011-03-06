@@ -54,7 +54,7 @@ enum BattlegroundRVObjectTypes
 enum BattlegroundRVObjects
 {
     BG_RV_OBJECT_TYPE_BUFF_1                     = 184663,
-    BG_RV_OBJECT_TYPE_BUFF_2                     = 184664,
+    BG_RV_OBJECT_TYPE_BUFF_2                     = 184663,
     BG_RV_OBJECT_TYPE_FIRE_1                     = 192704,
     BG_RV_OBJECT_TYPE_FIRE_2                     = 192705,
 
