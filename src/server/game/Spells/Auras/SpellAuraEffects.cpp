@@ -63,7 +63,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleModConfuse,                                //  5 SPELL_AURA_MOD_CONFUSE
     &AuraEffect::HandleModCharm,                                  //  6 SPELL_AURA_MOD_CHARM
     &AuraEffect::HandleModFear,                                   //  7 SPELL_AURA_MOD_FEAR
-    &AuraEffect::HandleNoImmediateEffect,                         //  8 SPELL_AURA_PERIODIC_HEAL implemented in AuraEffect::PeriodicTick
+    &AuraEffect::HandleAuraPeriodicHeal,                          //  8 SPELL_AURA_PERIODIC_HEAL implemented in AuraEffect::PeriodicTick
     &AuraEffect::HandleModAttackSpeed,                            //  9 SPELL_AURA_MOD_ATTACKSPEED
     &AuraEffect::HandleModThreat,                                 // 10 SPELL_AURA_MOD_THREAT
     &AuraEffect::HandleModTaunt,                                  // 11 SPELL_AURA_MOD_TAUNT
@@ -583,14 +583,14 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
                         return amount;
                     }
                     break;
+                case SPELLFAMILY_DEATHKNIGHT:
+                    //  Anti-Magic Zone
+                    if(GetSpellProto()->Id == 50461)
+                        amount=uint32(10000+2*caster->GetTotalAttackPowerValue(BASE_ATTACK/*, NULL*/));
+                    break;
                 default:
                     break;
             }
-            break;
-        case SPELLFAMILY_DEATHKNIGHT:
-            //  Anti-Magic Zone
-            if(GetSpellProto()->Id == 50461)
-                amount=uint32(10000+2*caster->GetTotalAttackPowerValue(BASE_ATTACK));
             break;
         case SPELL_AURA_MANA_SHIELD:
             m_canBeRecalculated = false;
@@ -1669,7 +1669,7 @@ void AuraEffect::PeriodicTick(AuraApplication * aurApp, Unit * caster) const
             bool haveCastItem = GetBase()->GetCastItemGUID() != 0;
 
             // Health Funnel
-            // damage caster for heal amount
+            /* damage caster for heal amount
             if (target != caster && GetSpellProto()->AttributesEx2 & SPELL_ATTR2_HEALTH_FUNNEL)
             {
                 uint32 damage = SpellMgr::CalculateSpellEffectAmount(GetSpellProto(), 0); // damage is not affected by spell power
@@ -1681,7 +1681,7 @@ void AuraEffect::PeriodicTick(AuraApplication * aurApp, Unit * caster) const
 
                 CleanDamage cleanDamage =  CleanDamage(0, 0, BASE_ATTACK, MELEE_HIT_NORMAL);
                 caster->DealDamage(caster, damage, &cleanDamage, NODAMAGE, GetSpellSchoolMask(GetSpellProto()), GetSpellProto(), true);
-            }
+            }*/
 
             uint32 procAttacker = PROC_FLAG_DONE_PERIODIC;
             uint32 procVictim   = PROC_FLAG_TAKEN_PERIODIC;
@@ -6195,7 +6195,7 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                     if(apply)
                     {
                         SpellEntry const * spell = sSpellStore.LookupEntry(71564);
-                        for (int i=0; i < spell->StackAmount; ++i)
+                        for (uint32 i=0; i < spell->StackAmount; ++i)
                             caster->CastSpell(target, spell->Id, true, NULL, NULL, GetCasterGUID());
                     }
                     else caster->RemoveAurasDueToSpell(71564);

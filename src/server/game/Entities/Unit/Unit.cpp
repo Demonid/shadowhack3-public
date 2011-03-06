@@ -821,7 +821,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         }
 
         if (!splited && damagetype != NODAMAGE && damage && pVictim != this && damagetype != DOT && 
-            (!spellProto || !(spellProto->AttributesEx4 & SPELL_ATTR4_NOT_BREAK_CC)) // does not support creature push_back
+            (!spellProto || !(spellProto->AttributesEx4 & SPELL_ATTR4_NOT_BREAK_CC))) // does not support creature push_back
         {
             if (pVictim->GetTypeId() == TYPEID_PLAYER)
                 if (Spell* spell = pVictim->m_currentSpells[CURRENT_GENERIC_SPELL])
@@ -7553,23 +7553,23 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
             if (dummySpell->Id == 49028)
             {
                 // 1 dummy aura for dismiss rune blade
-                if (effIndex != 1)
-                    return false;
-
-                Unit* pPet = NULL;
+                /*if (effIndex!=2)
+                    return false;*/
+                uint64 PetGUID = NULL;
+                Unit* blade=NULL;
                 for (ControlList::const_iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr) //Find Rune Weapon
                     if ((*itr)->GetEntry() == 27893)
                     {
-                        pPet = (*itr);
+                        PetGUID = (*itr)->GetGUID();
+                        blade=(*itr);
                         break;
                     }
 
-                if (pPet && pPet->getVictim() && damage && procSpell)
+                if (PetGUID && pVictim && damage && blade)
                 {
-                    uint32 procDmg = damage / 2;
-                    pPet->SendSpellNonMeleeDamageLog(pPet->getVictim(),procSpell->Id,procDmg,GetSpellSchoolMask(procSpell),0,0,false,0,false);
-                    pPet->DealDamage(pPet->getVictim(),procDmg,NULL,SPELL_DIRECT_DAMAGE,GetSpellSchoolMask(procSpell),procSpell,true);
-                    break;
+                    blade->DealDamage(target, damage * 0.5, NULL, DIRECT_DAMAGE, procSpell?SpellSchoolMask(GetFirstSchoolInMask(GetSpellSchoolMask(procSpell))):
+                        SPELL_SCHOOL_MASK_NORMAL, procSpell, false);
+                    blade->SendAttackStateUpdate(HITINFO_NORMALSWING2, target, 1, SPELL_SCHOOL_MASK_NORMAL, damage * 0.5, 0, 0, VICTIMSTATE_HIT, 0);
                 }
                 else
                     return false;
@@ -12366,7 +12366,7 @@ int32 Unit::ModifyPower(Powers power, int32 dVal)
     int32 gain = 0;
 
     if(power == POWER_HAPPINESS && dVal < 0)
-        dVal*= sWorld.getRate(RATE_LOYALITY);
+        dVal*= sWorld->getRate(RATE_LOYALITY);
 
     if (dVal == 0)
         return 0;
@@ -17506,7 +17506,7 @@ void Unit::MonsterMoveByPath(float x, float y, float z, uint32 speed, bool smoot
 {
     PathInfo path(this, x, y, z, !smoothPath);
     PointPath pointPath = path.getFullPath();
-    if (pointPath.GetTotalLength() > sWorld.getIntConfig(CONFIG_MAX_PATH_LENGTH))
+    if (pointPath.GetTotalLength() > sWorld->getIntConfig(CONFIG_MAX_PATH_LENGTH))
     {
         path.BuildShortcut();
         pointPath = path.getFullPath();

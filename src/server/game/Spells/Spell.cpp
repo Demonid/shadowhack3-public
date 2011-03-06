@@ -3250,6 +3250,14 @@ void Spell::cast(bool skipCheck)
         {
             if (m_spellInfo->Mechanic == MECHANIC_BANDAGE) // Bandages
                 m_preCastSpell = 11196;                                // Recently Bandaged
+            if(m_caster->getRace() == RACE_UNDEAD_PLAYER)
+            {
+                // WOTF and trinket
+                if (m_spellInfo->Id == 7744)
+                    m_caster->CastSpell(m_caster, 72757, false);
+                else if(m_spellInfo->Id == 42292)
+                    m_caster->CastSpell(m_caster, 72752, false); 
+            }
             break;
         }
         case SPELLFAMILY_MAGE:
@@ -4789,6 +4797,13 @@ SpellCastResult Spell::CheckCast(bool strict)
                 return SPELL_FAILED_NOT_READY;
         }
     }
+    switch(m_spellInfo->Id)
+    {
+        case 72757: 
+        case 72752: // Wotf and trinket
+            return SPELL_CAST_OK;
+        default: break;
+    }
 
     // check global cooldown
     if (strict && !m_IsTriggeredSpell && HasGlobalCooldown())
@@ -5612,7 +5627,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             case SPELL_EFFECT_LEAP_BACK:
             {
                 // Spell 781 (Disengage) requires player to be in combat
-                if (m_caster->GetTypeId() == TYPEID_PLAYER && m_spellInfo->Id == 781 && (!m_caster->isInCombat() || m_caster->hasUnitState(UNIT_STAT_ROOT)))
+                if (m_caster->GetTypeId() == TYPEID_PLAYER && m_spellInfo->Id == 781 && (!m_caster->isInCombat() || m_caster->HasUnitState(UNIT_STAT_ROOT)))
                     return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
 
                 Unit* target = m_targets.getUnitTarget();
@@ -5766,7 +5781,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                 bool AllowMount = !m_caster->GetMap()->IsDungeon() || m_caster->GetMap()->IsBattlegroundOrArena();
                 InstanceTemplate const *it = ObjectMgr::GetInstanceTemplate(m_caster->GetMapId());
                 if (it)
-                    AllowMount = it->allowMount;
+                    AllowMount = it->allowMount || m_caster->GetMap()->IsBattlegroundOrArena();
                 if (m_caster->GetTypeId() == TYPEID_PLAYER && !AllowMount && !m_IsTriggeredSpell && !m_spellInfo->AreaGroupId)
                     return SPELL_FAILED_NO_MOUNTS_ALLOWED;
 

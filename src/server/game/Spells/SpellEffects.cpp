@@ -2653,7 +2653,7 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
             damage = int32(CalculatePctN(unitTarget->GetCreateMana(), damage));
             break;
         case 71132:                                         // Glyph of Shadow Word: Pain
-            damage = 1 * unitTarget->GetCreateMana() / 100;
+            damage = unitTarget->GetCreateMana() / 100;
         case 48542:                                         // Revitalize
             damage = int32(CalculatePctN(unitTarget->GetMaxPower(power), damage));
             break;
@@ -7133,6 +7133,8 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const *
         {
             if (uint32 weapon = m_caster->GetUInt32Value(PLAYER_VISIBLE_ITEM_16_ENTRYID))
             {
+                summon->SetReactState(REACT_DEFENSIVE);
+                ((Unit*)summon)->setAttackTimer(BASE_ATTACK, 60000);
                 summon->SetDisplayId(11686);
                 summon->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID, weapon);
             }
