@@ -354,15 +354,14 @@ public:
             {
                 for (uint8 i = RAID_MODE(2,0); i < 4; ++i)
                 {
-                    if (vehicle->GetPassenger(i))
-                        if (Vehicle *pSeat = vehicle->GetPassenger(i)->GetVehicleKit())
-                        {
-                            if (Creature* pTurret = (me->SummonCreature(NPC_TURRET, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN)))
-                                pTurret->EnterVehicle(pSeat, SEAT_TURRET);
+                    if (Unit *pSeat = vehicle->GetPassenger(i))
+                    {
+                        if (Creature* pTurret = (me->SummonCreature(NPC_TURRET, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN)))
+                            pTurret->EnterVehicle(pSeat, SEAT_TURRET);
 
-                            if (Creature* pDevice = (me->SummonCreature(NPC_DEVICE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN)))
-                                pDevice->EnterVehicle(pSeat, SEAT_DEVICE);
-                        }
+                        if (Creature* pDevice = (me->SummonCreature(NPC_DEVICE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN)))
+                            pDevice->EnterVehicle(pSeat, SEAT_DEVICE);
+                    }
                 }
             }
             else

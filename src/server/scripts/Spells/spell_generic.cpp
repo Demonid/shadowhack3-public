@@ -937,34 +937,6 @@ public:
 	}
 };
 
-        class spell_gen_profession_research_SpellScript : public SpellScript
-
-        {
-            PrepareSpellScript(spell_gen_profession_research_SpellScript);
-
-            SpellCastResult CheckRequirement()
-            {
-                if (GetCaster()->GetTypeId() == TYPEID_PLAYER && HasDiscoveredAllSpells(GetSpellInfo()->Id, GetCaster()->ToPlayer()))
-                {
-                    SetCustomCastResultMessage(SPELL_CUSTOM_ERROR_NOTHING_TO_DISCOVER);
-                    return SPELL_FAILED_CUSTOM_ERROR;
-                }
-
-                return SPELL_CAST_OK;
-            }
-
-            void Register()
-            {
-                OnCheckCast += SpellCheckCastFn(spell_gen_profession_research_SpellScript::CheckRequirement);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_gen_profession_research_SpellScript();
-        }
-};
-
 class spell_gen_dungeon_credit : public SpellScriptLoader
 {
     public:

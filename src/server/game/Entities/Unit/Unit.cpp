@@ -2623,7 +2623,7 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
         return SPELL_MISS_NONE;
 
     // Return evade for units in evade mode
-    if (pVictim->GetTypeId() == TYPEID_UNIT && pVictim->ToCreature()->IsInEvadeMode())
+    if (pVictim->GetTypeId() == TYPEID_UNIT && (pVictim->ToCreature()->IsInEvadeMode() || pVictim->ToCreature()->IsInTimedEvadeMode()))
         return SPELL_MISS_EVADE;
 
     // Try victim reflect spell

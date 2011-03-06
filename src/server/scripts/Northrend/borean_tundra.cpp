@@ -2901,7 +2901,7 @@ public:
 			    rescuedSoldiers++;
 			    DoCast(m_Driver, SPELL_SOLDIER_RESCUED);
 			    pTarget->HandleEmoteCommand(EMOTE_STATE_STAND);
-			    pTarget->EnterVehicle(me->GetVehicleKit());
+			    pTarget->EnterVehicle(me);
 		    }
 
 		    return;
