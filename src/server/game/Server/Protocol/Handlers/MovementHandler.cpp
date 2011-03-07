@@ -78,6 +78,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
         oldMap->Remove(GetPlayer(), false);
     }
 
+    uint32 Zone = GetPlayer()->GetZoneId();
     // relocate the player to the teleport destination
     Map * newMap = sMapMgr->CreateMap(loc.GetMapId(), GetPlayer(), 0);
     // the CanEnter checks are done in TeleporTo but conditions may change
@@ -123,6 +124,8 @@ void WorldSession::HandleMoveWorldportAckOpcode()
         {
             if (_player->IsInvitedForBattlegroundInstance(_player->GetBattlegroundId()))
                 bg->AddPlayer(_player);
+            if( bg->isArena() && sWorld->getBoolConfig(CONFIG_ANTIDODGE))
+                _player->Oldzone = Zone;
         }
     }
 

@@ -18,6 +18,14 @@
 
 #include "ScriptLoader.h"
 
+//custom
+void AddSC_petguy();
+void AddSC_npc_titlevendor();
+void AddSC_shadowmorn_vendor();
+void AddSC_teleguy();
+void AddSC_crw_scripts();
+void AddSC_strand_of_the_ancients();
+void AddSC_spectator();
 
 //examples
 void AddSC_example_creature();
@@ -1238,7 +1246,13 @@ void AddBattlegroundScripts()
 void AddCustomScripts()
 {
 #ifdef SCRIPTS
-    /* This is where custom scripts should be added. */
-
+    // custom scripts
+    AddSC_petguy();
+    AddSC_npc_titlevendor();
+    AddSC_shadowmorn_vendor();
+    AddSC_teleguy();
+    AddSC_crw_scripts();
+    AddSC_strand_of_the_ancients();
+    AddSC_spectator();
 #endif
 }

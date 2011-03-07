@@ -504,6 +504,7 @@ void World::LoadConfigSettings(bool reload)
     rate_values[RATE_AUCTION_DEPOSIT] = sConfig->GetFloatDefault("Rate.Auction.Deposit", 1.0f);
     rate_values[RATE_AUCTION_CUT] = sConfig->GetFloatDefault("Rate.Auction.Cut", 1.0f);
     rate_values[RATE_HONOR] = sConfig->GetFloatDefault("Rate.Honor",1.0f);
+    rate_values[RATE_PVP_RANK_EXTRA_HONOR] = sConfig->GetFloatDefault("Rate.Rank.ExtraHonor", 1.0f);
     rate_values[RATE_MINING_AMOUNT] = sConfig->GetFloatDefault("Rate.Mining.Amount",1.0f);
     rate_values[RATE_MINING_NEXT]   = sConfig->GetFloatDefault("Rate.Mining.Next",1.0f);
     rate_values[RATE_INSTANCE_RESET_TIME] = sConfig->GetFloatDefault("Rate.InstanceResetTime",1.0f);
@@ -641,6 +642,7 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_INTERVAL_SAVE] = sConfig->GetIntDefault("PlayerSaveInterval", 15 * MINUTE * IN_MILLISECONDS);
     m_int_configs[CONFIG_INTERVAL_DISCONNECT_TOLERANCE] = sConfig->GetIntDefault("DisconnectToleranceInterval", 0);
     m_bool_configs[CONFIG_STATS_SAVE_ONLY_ON_LOGOUT] = sConfig->GetBoolDefault("PlayerSave.Stats.SaveOnlyOnLogout", true);
+    m_bool_configs[CONFIG_DUEL_RESET_COOLDOWN] = sConfig->GetBoolDefault("DuelResetCooldown", false);
 
     m_int_configs[CONFIG_MIN_LEVEL_STAT_SAVE] = sConfig->GetIntDefault("PlayerSave.Stats.MinLevel", 0);
     if (m_int_configs[CONFIG_MIN_LEVEL_STAT_SAVE] > MAX_LEVEL)
@@ -678,6 +680,18 @@ void World::LoadConfigSettings(bool reload)
     else
         m_int_configs[CONFIG_PORT_WORLD] = sConfig->GetIntDefault("WorldServerPort", 8085);
 
+    std::string s_pvp_ranks = sConfig->GetStringDefault("PvPRank.HKPerRank", "10,50,100,200,450,750,1300,2000,3500,6000,9500,15000,21000,30000");
+    char *c_pvp_ranks = const_cast<char*>(s_pvp_ranks.c_str());
+    for (int i = 0; i !=HKRANKMAX; i++)
+    {
+        if (i==0)
+            pvp_ranks[0] = 0;
+        else if (i==1)
+            pvp_ranks[1] = atoi(strtok (c_pvp_ranks, ","));
+        else
+            pvp_ranks[i] = atoi(strtok (NULL, ","));
+    } 
+        
     m_int_configs[CONFIG_SOCKET_TIMEOUTTIME] = sConfig->GetIntDefault("SocketTimeOutTime", 900000);
     m_int_configs[CONFIG_SESSION_ADD_DELAY] = sConfig->GetIntDefault("SessionAddDelay", 10000);
 
@@ -719,6 +733,8 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_STRICT_PLAYER_NAMES]                 = sConfig->GetIntDefault ("StrictPlayerNames",  0);
     m_int_configs[CONFIG_STRICT_CHARTER_NAMES]                = sConfig->GetIntDefault ("StrictCharterNames", 0);
     m_int_configs[CONFIG_STRICT_PET_NAMES]                    = sConfig->GetIntDefault ("StrictPetNames",     0);
+    m_bool_configs[CONFIG_ANTIPERELIV]                        = sConfig->GetBoolDefault("AntiPereliv", false);
+    m_bool_configs[CONFIG_ANTIDODGE]                          = sConfig->GetBoolDefault("AntiDodge", false);
 
     m_int_configs[CONFIG_MIN_PLAYER_NAME]                     = sConfig->GetIntDefault ("MinPlayerName",  2);
     if (m_int_configs[CONFIG_MIN_PLAYER_NAME] < 1 || m_int_configs[CONFIG_MIN_PLAYER_NAME] > MAX_PLAYER_NAME)
@@ -1083,6 +1099,7 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_BATTLEGROUND_PREMATURE_FINISH_TIMER]        = sConfig->GetIntDefault ("Battleground.PrematureFinishTimer", 5 * MINUTE * IN_MILLISECONDS);
     m_int_configs[CONFIG_BATTLEGROUND_PREMADE_GROUP_WAIT_FOR_MATCH]  = sConfig->GetIntDefault ("Battleground.PremadeGroupWaitForMatch", 30 * MINUTE * IN_MILLISECONDS);
     m_bool_configs[CONFIG_BG_XP_FOR_KILL]                            = sConfig->GetBoolDefault("Battleground.GiveXPForKills", false);
+    m_bool_configs[CONFIG_BG_GIVEMARKS]                              = sConfig->GetBoolDefault("Battleground.GiveMarks", false);
     m_int_configs[CONFIG_ARENA_MAX_RATING_DIFFERENCE]                = sConfig->GetIntDefault ("Arena.MaxRatingDifference", 150);
     m_int_configs[CONFIG_ARENA_RATING_DISCARD_TIMER]                 = sConfig->GetIntDefault ("Arena.RatingDiscardTimer", 10 * MINUTE * IN_MILLISECONDS);
     m_bool_configs[CONFIG_ARENA_AUTO_DISTRIBUTE_POINTS]              = sConfig->GetBoolDefault("Arena.AutoDistributePoints", false);
@@ -1095,6 +1112,10 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_ARENA_START_MATCHMAKER_RATING]              = sConfig->GetIntDefault ("Arena.ArenaStartMatchmakerRating", 1500);
     m_bool_configs[CONFIG_ARENA_SEASON_IN_PROGRESS]                  = sConfig->GetBoolDefault("Arena.ArenaSeason.InProgress", true);
     m_bool_configs[CONFIG_ARENA_LOG_EXTENDED_INFO]                   = sConfig->GetBoolDefault("ArenaLog.ExtendedInfo", false);
+    m_bool_configs[CONFIG_ARENA_2v2_BRACKET_ENABLE]                  = sConfig->GetBoolDefault("Arena.2v2.Bracket.Enable", true);
+    m_bool_configs[CONFIG_ARENA_3v3_BRACKET_ENABLE]                  = sConfig->GetBoolDefault("Arena.3v3.Bracket.Enable", true);
+    m_bool_configs[CONFIG_ARENA_5v5_BRACKET_ENABLE]                  = sConfig->GetBoolDefault("Arena.5v5.Bracket.Enable", true);
+    m_bool_configs[CONFIG_ARENA_MARK_OF_WIN_ENABLE]                  = sConfig->GetBoolDefault("Arena.MarkOfWin.Enable", false);
 
     m_bool_configs[CONFIG_OFFHAND_CHECK_AT_SPELL_UNLEARN]            = sConfig->GetBoolDefault("OffhandCheckAtSpellUnlearn", true);
 
