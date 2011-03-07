@@ -11699,9 +11699,12 @@ bool Unit::IsImmunedToSpellEffect(SpellEntry const* spellInfo, uint32 index) con
         // Check for immune to application of harmful magical effects
         AuraEffectList const& immuneAuraApply = GetAuraEffectsByType(SPELL_AURA_MOD_IMMUNE_AURA_APPLY_SCHOOL);
         for (AuraEffectList::const_iterator iter = immuneAuraApply.begin(); iter != immuneAuraApply.end(); ++iter)
-            if (spellInfo->Dispel == DISPEL_MAGIC &&                                      // Magic debuff
-                ((*iter)->GetMiscValue() & GetSpellSchoolMask(spellInfo)) &&  // Check school
-                !IsPositiveEffect(spellInfo->Id, index))                                  // Harmful
+            if (((*iter)->GetMiscValue() & GetSpellSchoolMask(spellInfo)) && !IsPositiveEffect(spellInfo->Id, index))        // Harmful
+                return true;
+        AuraEffectList const& immuneMechanicAuraApply = GetAuraEffectsByType(SPELL_AURA_MECHANIC_IMMUNITY_MASK);
+        for(AuraEffectList::const_iterator i = immuneMechanicAuraApply.begin(); i != immuneMechanicAuraApply.end(); ++i)
+            if(spellInfo->EffectMechanic[index] && spellInfo->Mechanic && ((1 << (spellInfo->EffectMechanic[index])) & (*i)->GetMiscValue() ||
+            (1 << (spellInfo->Mechanic)) & (*i)->GetMiscValue()))
                 return true;
     }
 
