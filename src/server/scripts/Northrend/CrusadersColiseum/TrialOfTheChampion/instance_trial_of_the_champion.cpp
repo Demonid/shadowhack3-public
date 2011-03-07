@@ -196,6 +196,7 @@ public:
     				{
     					VehicleList.push_back(pCreature->GetGUID());
     					pCreature->SetPhaseMask(1, true);
+                        pCreature->setFaction(35);
     				}
 					else
 					{
@@ -207,6 +208,7 @@ public:
     				{
     					VehicleList.push_back(pCreature->GetGUID());
     					pCreature->SetPhaseMask(1, true);
+                        pCreature->setFaction(35);
     				}
 					else
 					{
