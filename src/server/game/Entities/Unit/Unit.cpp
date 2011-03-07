@@ -4357,7 +4357,10 @@ bool Unit::HasNegativeAuraWithAttribute(uint32 flag, uint64 guid)
     {
         Aura const *aura = iter->second->GetBase();
         if (!iter->second->IsPositive() && aura->GetSpellProto()->Attributes & flag && (!guid || aura->GetCasterGUID() == guid))
-            return true;
+            for (int i=0; i<3; ++i)
+                if(AuraEffect * AuraEff = aura->GetEffect(i))
+                    if(AuraEff->GetAmount()==0)
+                        return true;
     }
     return false;
 }
