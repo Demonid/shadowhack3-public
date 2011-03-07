@@ -443,6 +443,12 @@ void Battleground::Update(uint32 diff)
 
                         plr->RemoveAurasDueToSpell(SPELL_ARENA_PREPARATION);
                         plr->ResetAllPowers();
+                        if(Pet * pet = plr->GetPet())
+                        {
+                            pet->RemoveAurasDueToSpell(SPELL_ARENA_PREPARATION);
+                            pet->SetHealth(pet->GetMaxHealth());
+                        }
+                        plr->SetHealth(plr->GetMaxHealth());
                         // remove auras with duration lower than 30s
                         Unit::AuraApplicationMap & auraMap = plr->GetAppliedAuras();
                         for (Unit::AuraApplicationMap::iterator iter = auraMap.begin(); iter != auraMap.end();)
@@ -995,7 +1001,8 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
                 // unsummon current and summon old pet if there was one and there isn't a current pet
                 plr->RemovePet(NULL, PET_SAVE_NOT_IN_SLOT);
                 plr->ResummonPetTemporaryUnSummonedIfAny();
-
+                if(Pet * pet = plr->GetPet())
+                    pet->RemoveAurasDueToSpell(SPELL_ARENA_PREPARATION);
                 if (isRated() && GetStatus() == STATUS_IN_PROGRESS)
                 {
                     //left a rated match while the encounter was in progress, consider as loser
@@ -1178,8 +1185,17 @@ void Battleground::AddPlayer(Player *plr)
     }
     else
     {
+        plr->RemoveArenaSpellCooldowns();
+        plr->SetHealth(plr->GetMaxHealth());
+        plr->ResetAllPowers();
+        plr->RemoveArenaAuras();
         if (GetStatus() == STATUS_WAIT_JOIN)                 // not started yet
+        {
             plr->CastSpell(plr, SPELL_PREPARATION, true);   // reduces all mana cost of spells.
+            plr->CastSpell(plr, SPELL_BG_DAMPENING, true);
+        }
+        plr->RemoveAurasByType(SPELL_AURA_MOUNTED);
+        plr->ExitVehicle();
     }
 
     plr->GetAchievementMgr().ResetAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HEALING_DONE, ACHIEVEMENT_CRITERIA_CONDITION_MAP, GetMapId());
