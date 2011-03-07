@@ -16879,6 +16879,12 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
                 if (extraflags & PLAYER_EXTRA_GM_ON)
                     SetGameMaster(true);
                 break;
+            case 3:                                         // uberstate for 3-4 level gm on, other - gm off.
+            {
+                if(GetSession()->GetSecurity()>2 && GetSession()->GetSecurity()<5)
+                    SetGameMaster(true);
+                break;
+            }
         }
 
         switch (sWorld->getIntConfig(CONFIG_GM_VISIBLE_STATE))
