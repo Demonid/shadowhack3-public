@@ -2841,9 +2841,13 @@ void AuraEffect::HandleShapeshiftBoosts(Unit * target, bool apply) const
         }
 
         Unit::AuraApplicationMap& tAuras = target->GetAppliedAuras();
+        Unit::AuraEffectList const &list=target->GetAuraEffectsByType(SPELL_AURA_MOD_SHAPESHIFT);
+        uint32 stances=0;
+        for (Unit::AuraEffectList::const_iterator itr = list.begin(); itr != list.end(); ++itr)
+            stances |= 1<<((*itr)->GetMiscValue()-1);
         for (Unit::AuraApplicationMap::iterator itr = tAuras.begin(); itr != tAuras.end();)
         {
-            if (itr->second->GetBase()->IsRemovedOnShapeLost(target))
+            if (itr->second->GetBase()->IsRemovedOnShapeLost(target) && !(itr->second->GetBase()->GetSpellProto()->Stances & stances))
                 target->RemoveAura(itr);
             else
                 ++itr;
@@ -3283,23 +3287,10 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const * aurApp, uint8 m
                 target->RemoveMovementImpairingAuras();
             }
         }
+
         if (modelid > 0)
-            target->SetDisplayId(target->GetNativeDisplayId());
-        target->m_ShapeShiftFormSpellId = 0;
-        target->m_form = FORM_NONE;
-        // stealth
-        if(target->HasAura(1784))
-        {
-            target->m_form = FORM_STEALTH;
-            target->m_ShapeShiftFormSpellId = 1784;
-        }
-        // shadow dance
-        else if(target->HasAura(51713))
-        {
-            target->m_form = FORM_SHADOW_DANCE;
-            target->m_ShapeShiftFormSpellId = 51713;
-        }
-        target->SetByteValue(UNIT_FIELD_BYTES_2, 3, target->m_form);
+            target->RestoreDisplayId();
+
         switch (form)
         {
             // Nordrassil Harness - bonus
