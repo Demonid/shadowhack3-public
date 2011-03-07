@@ -12142,7 +12142,11 @@ void Unit::Mount(uint32 mount, uint32 VehicleId, uint32 creatureEntry)
             if (bg && bg->isArena())
                 pet->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
             else
+            {
+                ToPlayer()->Pethealth   =pet->GetHealth();
+                ToPlayer()->Petmana     =pet->GetPower(POWER_MANA);
                 plr->UnsummonPetTemporaryIfAny();
+            }
         }
 
         if (VehicleId)

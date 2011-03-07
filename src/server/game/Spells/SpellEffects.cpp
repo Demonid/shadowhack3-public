@@ -6430,10 +6430,10 @@ void Spell::EffectDispelMechanic(SpellEffIndex effIndex)
 
 void Spell::EffectSummonDeadPet(SpellEffIndex /*effIndex*/)
 {
-    if (m_caster->GetTypeId() != TYPEID_PLAYER)
+    if (m_spellInfo->Id != 54114 && m_caster->GetTypeId() != TYPEID_PLAYER)
         return;
-    Player *_player = (Player*)m_caster;
-    Pet *pet = _player->GetPet();
+    Player *_player = m_spellInfo->Id == 54114 ? (Player*)m_caster->GetOwner(): (Player*)m_caster;
+    Pet *pet = m_spellInfo->Id == 54114 ? (Pet*)m_caster: _player->GetPet();
     if (!pet)
         return;
     if (pet->isAlive())

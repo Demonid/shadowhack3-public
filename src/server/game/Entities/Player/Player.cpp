@@ -639,6 +639,8 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
         m_powerFraction[i] = 0;
 
     m_ConditionErrorMsgId = 0;
+    Pethealth = 0;
+    Petmana = 0;
 
     isDebugAreaTriggers = false;
 
@@ -23756,7 +23758,11 @@ void Player::ResummonPetTemporaryUnSummonedIfAny()
     Pet* NewPet = new Pet(this);
     if (!NewPet->LoadPetFromDB(this, 0, m_temporaryUnsummonedPetNumber, true))
         delete NewPet;
-
+    if(Pethealth && Petmana && NewPet->IsInWorld())
+    {
+        NewPet->SetHealth(Pethealth);
+        NewPet->SetPower(POWER_MANA, Petmana);
+    }
     m_temporaryUnsummonedPetNumber = 0;
 }
 
