@@ -2249,8 +2249,17 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
             Position pos;
             if (cur == TARGET_DEST_CASTER_FRONT_LEAP)
                 m_caster->GetFirstCollisionPosition(pos, dist, angle);
-            else
+            else for (uint8 i=0; i<10; ++i)
+            {
                 m_caster->GetNearPosition(pos, dist, angle);
+                if(m_caster->IsWithinLOS(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ()))
+                    break;
+                if(dist!=0)
+                    angle = rand_norm()*2*M_PI;
+                else dist = 1;
+                if(i>=8)
+                    dist=0;
+            }
             m_targets.setDst(*m_caster);
             m_targets.modDst(pos);
             break;
@@ -3282,6 +3291,7 @@ void Spell::cast(bool skipCheck)
               m_preCastSpell = 68391;
              break;
         }
+        default:break;
     }
 
     // traded items have trade slot instead of guid in m_itemTargetGUID

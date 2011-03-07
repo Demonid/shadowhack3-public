@@ -10104,6 +10104,7 @@ Unit* Unit::SelectMagnetTarget(Unit *victim, SpellEntry const *spellInfo)
     bool isdeathgrip = spellInfo && (spellInfo->Id == 49560 || spellInfo->Id == 49576 || spellInfo->Id == 49575); 
     // Magic case
     if (spellInfo && ( isdeathgrip || (spellInfo->SchoolMask != SPELL_SCHOOL_MASK_NORMAL && spellInfo->Dispel !=DISPEL_POISON && 
+        GetSpellSpecific(spellInfo) != SPELL_SPECIFIC_JUDGEMENT && 
         !sSpellMgr->_isPositiveSpell(spellInfo->Id, true) && !IsAreaOfEffectSpell(spellInfo) && IsHostileTo(victim))))
     {
         //I am not sure if this should be redirected.
