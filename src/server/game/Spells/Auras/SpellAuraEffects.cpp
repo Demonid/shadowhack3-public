@@ -3283,10 +3283,23 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const * aurApp, uint8 m
                 target->RemoveMovementImpairingAuras();
             }
         }
-
         if (modelid > 0)
-            target->RestoreDisplayId();
-
+            target->SetDisplayId(target->GetNativeDisplayId());
+        target->m_ShapeShiftFormSpellId = 0;
+        target->m_form = FORM_NONE;
+        // stealth
+        if(target->HasAura(1784))
+        {
+            target->m_form = FORM_STEALTH;
+            target->m_ShapeShiftFormSpellId = 1784;
+        }
+        // shadow dance
+        else if(target->HasAura(51713))
+        {
+            target->m_form = FORM_SHADOW_DANCE;
+            target->m_ShapeShiftFormSpellId = 51713;
+        }
+        target->SetByteValue(UNIT_FIELD_BYTES_2, 3, target->m_form);
         switch (form)
         {
             // Nordrassil Harness - bonus

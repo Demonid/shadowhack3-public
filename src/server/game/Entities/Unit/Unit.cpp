@@ -3839,13 +3839,18 @@ void Unit::RemoveAurasDueToSpellBySteal(uint32 spellId, uint64 casterGUID, Unit 
             else
             {
                 int32 dur = (2*MINUTE*IN_MILLISECONDS < aura->GetDuration() || aura->GetDuration() < 0) ? 2*MINUTE*IN_MILLISECONDS : aura->GetDuration();
+                if (aura->IsSingleTarget())
+                    aura->UnregisterSingleTarget();
 
                 newAura = Aura::TryCreate(aura->GetSpellProto(), effMask, stealer, NULL, &baseDamage[0], NULL, aura->GetCasterGUID());
                 if (!newAura)
                     return;
                 // strange but intended behaviour: Stolen single target auras won't be treated as single targeted
                 if (newAura->IsSingleTarget())
+                {
                     newAura->UnregisterSingleTarget();
+                    aura->RegisterSingleTarget();
+                }
                 newAura->SetLoadedState(dur, dur, stealCharge ? 1 : aura->GetCharges(), aura->GetStackAmount(), recalculateMask, &damage[0]);
                 newAura->ApplyForTargets();
             }
@@ -12282,6 +12287,9 @@ void Unit::SetInCombatState(bool PvP, Unit* enemy)
 
     if (isInCombat() || HasUnitState(UNIT_STAT_EVADE))
         return;
+    if(Spell *sp=m_currentSpells[CURRENT_GENERIC_SPELL])
+        if(IsNonCombatSpell(sp->m_spellInfo))
+            InterruptSpell(CURRENT_GENERIC_SPELL, false);
 
     SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
 
@@ -13248,8 +13256,9 @@ void Unit::ModSpellCastTime(SpellEntry const* spellProto, int32 & castTime, Spel
     if (!spellProto || castTime < 0)
         return;
     //called from caster
-    if (Player* modOwner = GetSpellModOwner())
-        modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_CASTING_TIME, castTime, spell);
+    if (!IsChanneledSpell(spellProto))
+        if (Player* modOwner = GetSpellModOwner())
+            modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_CASTING_TIME, castTime, spell);
 
     if (!(spellProto->Attributes & (SPELL_ATTR0_UNK4|SPELL_ATTR0_TRADESPELL)) && spellProto->SpellFamilyName)
         castTime = int32(float(castTime) * GetFloatValue(UNIT_MOD_CAST_SPEED));

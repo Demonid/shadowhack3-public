@@ -840,6 +840,18 @@ void Aura::UnregisterSingleTarget()
     SetIsSingleTarget(false);
 }
 
+void Aura::RegisterSingleTarget()
+{
+    ASSERT(!m_isSingleTarget);
+    Unit * caster = GetCaster();
+    // TODO: find a better way to do this.
+    if (!caster)
+        caster = ObjectAccessor::GetObjectInOrOutOfWorld(GetCasterGUID(), (Unit*)NULL);
+    ASSERT(caster);
+    caster->GetSingleCastAuras().push_back(this);
+    SetIsSingleTarget(true);
+}
+
 void Aura::SetLoadedState(int32 maxduration, int32 duration, int32 charges, uint8 stackamount, uint8 recalculateMask, int32 * amount)
 {
     m_maxDuration = maxduration;
