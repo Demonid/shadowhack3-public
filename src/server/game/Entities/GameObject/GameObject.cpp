@@ -1658,7 +1658,10 @@ void GameObject::CastSpell(Unit* target, uint32 spellId)
     if (Unit *owner = GetOwner())
     {
         trigger->setFaction(owner->getFaction());
-        trigger->CastSpell(target ? target : trigger, spellInfo, true, 0, 0, owner->GetGUID());
+        if(spellId == 49065)
+            owner->CastSpell(target ? target : trigger, spellInfo, true, 0, 0, owner->GetGUID());
+        else 
+            trigger->CastSpell(target ? target : trigger, spellInfo, true, 0, 0, owner->GetGUID());
     }
     else
     {
