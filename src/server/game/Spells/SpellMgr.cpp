@@ -2849,6 +2849,7 @@ SpellCastResult SpellMgr::GetSpellAllowedInLocationError(SpellEntry const *spell
             return zone_id == 4197 || (mapEntry->IsBattleground() && player && player->InBattleground()) ? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA;
         }
         case 44521:                                         // Preparation
+        case 74411:                                         // Dampening Battleground
         {
             if (!player)
                 return SPELL_FAILED_REQUIRES_AREA;
@@ -2861,7 +2862,7 @@ SpellCastResult SpellMgr::GetSpellAllowedInLocationError(SpellEntry const *spell
                 return SPELL_FAILED_REQUIRES_AREA;
 
             Battleground* bg = player->GetBattleground();
-            return bg && bg->GetStatus() == STATUS_WAIT_JOIN ? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA;
+            return (bg && (bg->GetStatus() == STATUS_WAIT_JOIN || spellInfo->Id == 74410))? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA;
         }
         case 32724:                                         // Gold Team (Alliance)
         case 32725:                                         // Green Team (Alliance)
@@ -2874,6 +2875,7 @@ SpellCastResult SpellMgr::GetSpellAllowedInLocationError(SpellEntry const *spell
 
             return mapEntry->IsBattleArena() && player && player->InBattleground() ? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA;
         }
+        case 74410:                                         // Dampening Arena
         case 32727:                                         // Arena Preparation
         {
             if (!player)
