@@ -279,6 +279,7 @@ class UnitAI
         virtual void sQuestComplete(Player* /*player*/, Quest const* /*quest*/) {}
         virtual void sQuestReward(Player* /*player*/, Quest const* /*quest*/, uint32 /*opt*/) {}
         virtual bool sOnDummyEffect(Unit* /*caster*/, uint32 /*spellId*/, SpellEffIndex /*effIndex*/) { return false; }
+        static bool _CheckTargetCC(Unit *target) { return target->HasNegativeAuraWithAttribute(SPELL_ATTR0_BREAKABLE_BY_DAMAGE);}
 };
 
 class PlayerAI : public UnitAI

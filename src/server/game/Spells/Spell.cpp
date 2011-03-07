@@ -4850,6 +4850,14 @@ SpellCastResult Spell::CheckCast(bool strict)
     if (!m_IsTriggeredSpell && !m_caster->isAlive() && !(m_spellInfo->Attributes & SPELL_ATTR0_PASSIVE) && !(m_spellInfo->Attributes & SPELL_ATTR0_CASTABLE_WHILE_DEAD))
         return SPELL_FAILED_CASTER_DEAD;
 
+    switch(m_spellInfo->Id)
+    {
+        case 72757: 
+        case 72752: // Wotf and trinket
+            return SPELL_CAST_OK;
+        default: break;
+    }
+
     // check cooldowns to prevent cheating
     if (m_caster->GetTypeId() == TYPEID_PLAYER && !(m_spellInfo->Attributes & SPELL_ATTR0_PASSIVE))
     {
@@ -4864,13 +4872,6 @@ SpellCastResult Spell::CheckCast(bool strict)
             else
                 return SPELL_FAILED_NOT_READY;
         }
-    }
-    switch(m_spellInfo->Id)
-    {
-        case 72757: 
-        case 72752: // Wotf and trinket
-            return SPELL_CAST_OK;
-        default: break;
     }
 
     // check global cooldown
@@ -5072,6 +5073,8 @@ SpellCastResult Spell::CheckCast(bool strict)
                 if (m_spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && m_spellInfo->SpellFamilyFlags[0] & 0x0008000)
                     if (target->HasAura(61988)) // Immunity shield marker
                         return SPELL_FAILED_TARGET_AURASTATE;
+                if (m_spellInfo->Id == 642 && m_caster->HasAura(61987))
+                    return SPELL_FAILED_TARGET_AURASTATE;
             }
         }
 
@@ -5256,6 +5259,9 @@ SpellCastResult Spell::CheckCast(bool strict)
                     break;
                 default: return SPELL_FAILED_BAD_TARGETS;
             }
+        if(m_caster->IsGuardianPetStuff() && target && UnitAI::_CheckTargetCC(target) && !IsPositiveSpell(m_spellInfo->Id) && 
+            !target->IsFriendlyTo(m_caster) && !IsCCSpell(m_spellInfo))
+            return SPELL_FAILED_BAD_TARGETS;
     }
     
     // script hook
@@ -5581,6 +5587,9 @@ SpellCastResult Spell::CheckCast(bool strict)
             }
             case SPELL_EFFECT_SUMMON_DEAD_PET:
             {
+                // Heart of the Phoenix
+                if(m_spellInfo->Id == 54114)
+                    break;
                 Creature *pet = m_caster->GetGuardianPet();
                 if (!pet)
                     return SPELL_FAILED_NO_PET;
@@ -5597,6 +5606,19 @@ SpellCastResult Spell::CheckCast(bool strict)
                         if (bg->GetStatus() != STATUS_IN_PROGRESS)
                             return SPELL_FAILED_TRY_AGAIN;
                 break;
+            }
+            case SPELL_EFFECT_TRANS_DOOR:
+            {
+                bool dobreak = false;
+                switch(m_spellInfo->Id)
+                {
+                    case 698:   // Ritual of Summoning
+                    case 50977: // Death Gate
+                        break;
+                    default: dobreak = true;
+                }
+                if(dobreak)
+                    break;
             }
             // This is generic summon effect
             case SPELL_EFFECT_SUMMON:
