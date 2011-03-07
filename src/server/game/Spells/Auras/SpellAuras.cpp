@@ -230,7 +230,7 @@ Aura * Aura::TryCreate(SpellEntry const* spellproto, uint8 tryEffMask, WorldObje
         case TYPEID_PLAYER:
             for (uint8 i = 0; i< MAX_SPELL_EFFECTS; ++i)
             {
-                if (IsUnitOwnedAuraEffect(spellproto->Effect[i]))
+                if (IsUnitOwnedAuraEffect(spellproto->Effect[i]) && !owner->ToUnit()->IsImmunedToSpellEffect(spellproto, i))
                     effMask |= 1 << i;
             }
             break;
