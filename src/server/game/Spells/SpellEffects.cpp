@@ -2654,6 +2654,7 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
             break;
         case 71132:                                         // Glyph of Shadow Word: Pain
             damage = unitTarget->GetCreateMana() / 100;
+            break; 
         case 48542:                                         // Revitalize
             damage = int32(CalculatePctN(unitTarget->GetMaxPower(power), damage));
             break;
