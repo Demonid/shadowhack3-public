@@ -105,6 +105,8 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     }
 
     // battleground state prepare (in case join to BG), at relogin/tele player not invited
+    // resummon pet
+    GetPlayer()->ResummonPetTemporaryUnSummonedIfAny();
     // only add to bg group and object, if the player was invited (else he entered through command)
     if (_player->InBattleground())
     {
@@ -187,9 +189,6 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     // in friendly area
     else if (GetPlayer()->IsPvP() && !GetPlayer()->HasFlag(PLAYER_FLAGS,PLAYER_FLAGS_IN_PVP))
         GetPlayer()->UpdatePvP(false, false);
-
-    // resummon pet
-    GetPlayer()->ResummonPetTemporaryUnSummonedIfAny();
 
     //lets process all delayed operations on successful teleport
     GetPlayer()->ProcessDelayedOperations();
