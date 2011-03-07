@@ -790,6 +790,15 @@ void Spell::SpellDamageSchoolDmg(SpellEffIndex effIndex)
             damage = m_originalCaster->SpellDamageBonus(unitTarget, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE);
 
         m_damage += damage;
+        // chain spells damage redution
+        if(m_spellInfo->SpellFamilyName == SPELLFAMILY_SHAMAN && m_spellInfo->Category == 85)
+        {
+            int8 i = 0;
+            for (std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit, ++i)
+                if(ihit->targetGUID == unitTarget->GetGUID())
+                    break;
+            damage /=pow(1.3f, i);
+        }
     }
 }
 
@@ -2382,7 +2391,15 @@ void Spell::SpellDamageHeal(SpellEffIndex /*effIndex*/)
         // Remove Grievious bite if fully healed
         if (unitTarget->HasAura(48920) && (unitTarget->GetHealth() + addhealth >= unitTarget->GetMaxHealth()))
             unitTarget->RemoveAura(48920);
-
+        // chain spells damage redution
+        if(m_spellInfo->SpellFamilyName == SPELLFAMILY_SHAMAN && m_spellInfo->SpellIconID == 963)
+        {
+            int8 i = 0;
+            for (std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit, ++i)
+                if(ihit->targetGUID == unitTarget->GetGUID())
+                    break;
+            addhealth /=pow(1.4f, i);
+        }
         m_damage -= addhealth;
     }
 }

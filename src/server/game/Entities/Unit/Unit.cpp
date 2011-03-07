@@ -9086,6 +9086,13 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
                 return false;
             break;
         }
+        // Winter's Chill self debuf fix
+        case 12579:
+        {
+            if(pVictim && GetGUID() == pVictim->GetGUID())
+                return true;
+            break;
+        }
     }
 
     if (cooldown && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(trigger_spell_id))
