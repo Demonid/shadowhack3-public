@@ -95,6 +95,7 @@ enum WorldBoolConfigs
     CONFIG_CLEAN_CHARACTER_DB,
     CONFIG_GRID_UNLOAD,
     CONFIG_STATS_SAVE_ONLY_ON_LOGOUT,
+    CONFIG_DUEL_RESET_COOLDOWN,
     CONFIG_ALLOW_TWO_SIDE_ACCOUNTS,
     CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHAT,
     CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHANNEL,
@@ -137,6 +138,7 @@ enum WorldBoolConfigs
     CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_ENABLE,
     CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_PLAYERONLY,
     CONFIG_BG_XP_FOR_KILL,
+    CONFIG_BG_GIVEMARKS,
     CONFIG_ARENA_AUTO_DISTRIBUTE_POINTS,
     CONFIG_ARENA_QUEUE_ANNOUNCER_ENABLE,
     CONFIG_ARENA_QUEUE_ANNOUNCER_PLAYERONLY,
@@ -171,6 +173,12 @@ enum WorldBoolConfigs
     CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED,
     CONFIG_OUTDOORPVP_WINTERGRASP_ANTIFARM_ENABLE,
     CONFIG_OUTDOORPVP_WINTERGRASP_CUSTOM_HONOR,
+    CONFIG_ARENA_2v2_BRACKET_ENABLE,
+    CONFIG_ARENA_3v3_BRACKET_ENABLE,
+    CONFIG_ARENA_5v5_BRACKET_ENABLE,
+    CONFIG_ARENA_MARK_OF_WIN_ENABLE,
+    CONFIG_ANTIDODGE,
+    CONFIG_ANTIPERELIV,
     BOOL_CONFIG_VALUE_COUNT
 };
 
@@ -397,6 +405,7 @@ enum Rates
     RATE_AUCTION_DEPOSIT,
     RATE_AUCTION_CUT,
     RATE_HONOR,
+    RATE_PVP_RANK_EXTRA_HONOR,
     RATE_MINING_AMOUNT,
     RATE_MINING_NEXT,
     RATE_TALENT,
@@ -425,6 +434,26 @@ enum BillingPlanFlags
     SESSION_TIME_MIXTURE    = 0x20,
     SESSION_RESTRICTED      = 0x40,
     SESSION_ENABLE_CAIS     = 0x80,
+};
+
+enum HonorKillPvPRank
+{
+    HKRANK00,
+    HKRANK01,
+    HKRANK02,
+    HKRANK03,
+    HKRANK04,
+    HKRANK05,
+    HKRANK06,
+    HKRANK07,
+    HKRANK08,
+    HKRANK09,
+    HKRANK10,
+    HKRANK11,
+    HKRANK12,
+    HKRANK13,
+    HKRANK14,
+    HKRANKMAX
 };
 
 /// Type of server, this is values from second column of Cfg_Configs.dbc
@@ -670,6 +699,8 @@ class World
         void SendZoneMessage(uint32 zone, WorldPacket *packet, WorldSession *self = 0, uint32 team = 0);
         void SendZoneText(uint32 zone, const char *text, WorldSession *self = 0, uint32 team = 0);
         void SendServerMessage(ServerMessageType type, const char *text = "", Player* player = NULL);
+        
+        uint32 pvp_ranks[HKRANKMAX];
 
         /// Are we in the middle of a shutdown?
         bool IsShutdowning() const { return m_ShutdownTimer > 0; }
