@@ -196,6 +196,7 @@ SpellSpecific GetSpellSpecific(SpellEntry const * spellInfo);
 bool IsNondamageAuraSpell(SpellEntry const * spellInfo);
 bool IsCCSpell(SpellEntry const *spellProto, uint8 EffMask= 0);
 bool IsNoCombatSpells (uint32 spellId);
+bool IsBreakingStealthSpells (SpellEntry const *spellProto);
 bool IsNeedAdditionalLosChecks(SpellEntry const *spellProto);
 AuraState GetSpellAuraState(SpellEntry const * spellInfo);
 

@@ -8637,6 +8637,31 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Item - Chamber of Aspects 25 Tank Trinket
+        case 75475:
+        case 75481:
+            if(GetHealthPct() > 35.0f)
+                return false;
+            break;
+        // Primal Fury
+        case 16961:
+        case 16958:
+            if(m_form != FORM_DIREBEAR && m_form != FORM_BEAR)
+                return false;
+            break;
+        case 16952:
+        case 16954:
+            if(m_form != FORM_CAT)
+                return false;
+            break;
+        // Item - Icecrown 25 Tank Trinket 1
+        case 71640:
+        case 71634:
+        {
+            if(GetHealthPct()>35.0f)
+                return false;
+            break;
+        }
         // Persistent Shield (Scarab Brooch trinket)
         // This spell originally trigger 13567 - Dummy Trigger (vs dummy efect)
         case 26467:

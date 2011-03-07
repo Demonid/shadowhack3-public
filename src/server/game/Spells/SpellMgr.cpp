@@ -4408,6 +4408,16 @@ void SpellMgr::LoadSpellCustomAttr()
         case 51167:
             spellInfo->EffectSpellClassMask[1][0] |= 0x800000;
             break;
+        // Primal Fury 
+        case 37116:
+        case 37117:
+        case 16961:
+        case 16958:
+        case 16952:
+        case 16954:
+            spellInfo->Stances = 0;
+            count++;
+            break;
         case 18754:     // Improved Succubus
         case 18755:
         case 18756:
@@ -4969,4 +4979,33 @@ bool IsNeedAdditionalLosChecks(SpellEntry const *spellProto)
     if(spellProto->SpellFamilyFlags[1] == 0x01000000 && spellProto->SpellFamilyName == SPELLFAMILY_DRUID)
         return true;
     return false;
+}
+
+bool IsBreakingStealthSpells(SpellEntry const *spellProto)
+{
+    if(IsPositiveSpell(spellProto->Id))
+        return false;
+    if(IsAreaOfEffectSpell(spellProto))
+    {
+        // dispel etc spells
+        switch(spellProto->Effect[0])
+        {
+            case SPELL_EFFECT_DISPEL:
+            case SPELL_EFFECT_DISPEL_MECHANIC:
+            case SPELL_EFFECT_THREAT:
+            case SPELL_EFFECT_MODIFY_THREAT_PERCENT:
+            case SPELL_EFFECT_DISTRACT:
+                return false;
+            default:break;
+        }
+        //
+        switch(spellProto->Id)
+        {
+            // Earthbind Totem
+            case 3600:
+                return false;
+            default:break;
+        }
+    }
+    return true;
 }

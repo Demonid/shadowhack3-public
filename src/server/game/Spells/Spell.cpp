@@ -1344,6 +1344,16 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
             AuraEffect * aurEff = m_spellAura->GetEffect(1);
             aurEff->SetAmount(CalculatePctU(aurEff->GetAmount(), damageInfo.damage));
         }
+        // Conflagrate
+        if(m_spellInfo->Id == 17962 &&  m_spellAura && m_spellAura->GetEffect(1))
+        {
+            AuraEffect * aurEff = m_spellAura->GetEffect(1);
+            float newdamage = m_damage*4/(6*3);
+            float tmp=100;
+            m_caster->ToPlayer()->ApplySpellMod(17962, SPELLMOD_DAMAGE, tmp);
+            newdamage/=(tmp/100.0f);
+            aurEff->SetAmount(uint32(newdamage));
+        }
     }
     // Passive spell hits/misses or active spells only misses (only triggers)
     else
@@ -1449,8 +1459,13 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
 
             unit->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_HITBYSPELL);
             //TODO: This is a hack. But we do not know what types of stealth should be interrupted by CC
-            if ((m_customAttr & SPELL_ATTR0_CU_AURA_CC) && unit->IsControlledByPlayer())
-                unit->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
+            if(IsBreakingStealthSpells(m_spellInfo))
+            {
+                unit->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_HITBYSPELL);
+                //TODO: This is a hack. But we do not know what types of stealth should be interrupted by CC
+                if ((m_customAttr & SPELL_ATTR_CU_AURA_CC) && unit->IsControlledByPlayer())
+                    unit->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
+            }
         }
         else
         {
