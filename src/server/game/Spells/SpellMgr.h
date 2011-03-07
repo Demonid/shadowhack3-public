@@ -699,6 +699,14 @@ struct SpellBonusEntry
     float  ap_dot_bonus;
 };
 
+struct PetSpellBonusEntry
+{
+    float master_direct_damage;
+    float master_dot_damage;
+    float pet_direct_damage;
+    float pet_dot_damage;
+};
+
 typedef UNORDERED_MAP<uint32, SpellProcEventEntry> SpellProcEventMap;
 
 struct SpellEnchantProcEntry
@@ -710,6 +718,7 @@ struct SpellEnchantProcEntry
 
 typedef UNORDERED_MAP<uint32, SpellEnchantProcEntry> SpellEnchantProcEventMap;
 typedef UNORDERED_MAP<uint32, SpellBonusEntry>     SpellBonusMap;
+typedef UNORDERED_MAP<uint32, PetSpellBonusEntry>     PetSpellBonusMap;
 
 enum SpellGroup
 {
@@ -1071,6 +1080,23 @@ class SpellMgr
             return NULL;
         }
 
+        // Pet spell bonus data
+        PetSpellBonusEntry const* GetPetSpellBonusData(uint32 spellId) const
+        {
+            // Lookup data
+            PetSpellBonusMap::const_iterator itr = mPetSpellBonusMap.find(spellId);
+            if( itr != mPetSpellBonusMap.end( ) )
+                return &itr->second;
+            // Not found, try lookup for 1 spell rank if exist
+            if (uint32 rank_1 = GetFirstSpellInChain(spellId))
+            {
+                PetSpellBonusMap::const_iterator itr2 = mPetSpellBonusMap.find(rank_1);
+                if( itr2 != mPetSpellBonusMap.end( ) )
+                    return &itr2->second;
+            }
+            return NULL;
+        }
+
         // Spell Difficulty data
         SpellEntry const* GetSpellForDifficultyFromSpell(SpellEntry const* spell, Unit* Caster)
         {
@@ -1268,7 +1294,7 @@ class SpellMgr
 
         bool IsSkillBonusSpell(uint32 spellId) const;
         bool IsSkillTypeSpell(uint32 spellId, SkillType type) const;
-        static int32 CalculateSpellEffectAmount(SpellEntry const * spellEntry, uint8 effIndex, Unit const * caster = NULL, int32 const * basePoints = NULL, Unit const * target = NULL);
+        static int32 CalculateSpellEffectAmount(SpellEntry const * spellEntry, uint8 effIndex, Unit const * caster = NULL, int32 const * basePoints = NULL, Unit const * target = NULL, bool withmods = true);
         static int32 CalculateSpellEffectBaseAmount(int32 value, SpellEntry const * spellEntry, uint8 effIndex);
         static float CalculateSpellEffectValueMultiplier(SpellEntry const * spellEntry, uint8 effIndex, Unit * caster, Spell * spell = NULL);
         static float CalculateSpellEffectDamageMultiplier(SpellEntry const * spellEntry, uint8 effIndex, Unit * caster, Spell * spell = NULL);
@@ -1408,6 +1434,7 @@ class SpellMgr
         void LoadSpellGroups();
         void LoadSpellProcEvents();
         void LoadSpellBonusess();
+        void LoadPetSpellBonusess();
         void LoadSpellTargetPositions();
         void LoadSpellThreats();
         void LoadSkillLineAbilityMap();
@@ -1434,6 +1461,7 @@ class SpellMgr
         SpellThreatMap     mSpellThreatMap;
         SpellProcEventMap  mSpellProcEventMap;
         SpellBonusMap      mSpellBonusMap;
+        PetSpellBonusMap      mPetSpellBonusMap;
         SkillLineAbilityMap mSkillLineAbilityMap;
         SpellPetAuraMap     mSpellPetAuraMap;
         SpellCustomAttribute  mSpellCustomAttr;

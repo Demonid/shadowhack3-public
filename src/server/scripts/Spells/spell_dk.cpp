@@ -164,7 +164,7 @@ class spell_dk_anti_magic_zone : public SpellScriptLoader
                 amount = SpellMgr::CalculateSpellEffectAmount(talentSpell, EFFECT_0, GetCaster());
                 // assume caster is a player here
                 if (Unit * caster = GetCaster())
-                     amount += int32(2 * caster->ToPlayer()->GetTotalAttackPowerValue(BASE_ATTACK));
+                     amount += int32(2 * caster->ToPlayer()->GetTotalAttackPowerValue(BASE_ATTACK, NULL));
             }
 
             void Absorb(AuraEffect * /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
@@ -218,7 +218,7 @@ class spell_dk_corpse_explosion : public SpellScriptLoader
                     else
                     {
                         bp = GetEffectValue();
-                        bp += GetCaster()->GetTotalAttackPowerValue(BASE_ATTACK/*, NULL*/)*0.126;
+                        bp += GetCaster()->GetTotalAttackPowerValue(BASE_ATTACK, NULL)*0.126;
                         GetCaster()->CastCustomSpell(unitTarget, SpellMgr::CalculateSpellEffectAmount(GetSpellInfo(), 1), &bp,NULL,NULL,true);
                         unitTarget->SetDisplayId(25537+urand(0,3));
                     }

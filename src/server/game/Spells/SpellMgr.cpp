@@ -1543,6 +1543,46 @@ void SpellMgr::LoadSpellBonusess()
     sLog->outString();
 }
 
+void SpellMgr::LoadPetSpellBonusess()
+{
+    mPetSpellBonusMap.clear();                             // need for reload case
+    uint32 count = 0;
+    //                                                          0                   1             2                 3              4
+    QueryResult result = WorldDatabase.Query("SELECT entry, master_direct_damage, master_dot_damage, pet_direct_damage, pet_dot_damage FROM pet_spell_bonus_data");
+    if( !result )
+    {
+        sLog->outString();
+        sLog->outString( ">> Loaded %u pet spell bonus data", count);
+        return;
+    }
+
+    do
+    {
+        Field *fields = result->Fetch();
+        uint32 entry = fields[0].GetUInt32();
+
+        const SpellEntry *spell = sSpellStore.LookupEntry(entry);
+        if (!spell)
+        {
+            sLog->outErrorDb("Spell %u listed in `spell_bonus_data` does not exist", entry);
+            continue;
+        }
+
+        PetSpellBonusEntry psbe;
+
+        psbe.master_direct_damage = fields[1].GetFloat();
+        psbe.master_dot_damage    = fields[2].GetFloat();
+        psbe.pet_direct_damage      = fields[3].GetFloat();
+        psbe.pet_dot_damage   = fields[4].GetFloat();
+
+        mPetSpellBonusMap[entry] = psbe;
+        ++count;
+    } while( result->NextRow() );
+
+    sLog->outString();
+    sLog->outString( ">> Loaded %u extra pet spell bonus data",  count);
+}
+
 bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const* spellProcEvent, uint32 EventProcFlag, SpellEntry const * procSpell, uint32 procFlags, uint32 procExtra, bool active)
 {
     // No extra req need
@@ -1946,7 +1986,7 @@ bool SpellMgr::IsSkillTypeSpell(uint32 spellId, SkillType type) const
 }
 
 // basepoints provided here have to be valid basepoints (use SpellMgr::CalculateSpellEffectBaseAmount)
-int32 SpellMgr::CalculateSpellEffectAmount(SpellEntry const * spellEntry, uint8 effIndex, Unit const * caster, int32 const * effBasePoints, Unit const * /*target*/)
+int32 SpellMgr::CalculateSpellEffectAmount(SpellEntry const * spellEntry, uint8 effIndex, Unit const * caster, int32 const * effBasePoints, Unit const * /*target*/, bool withmods)
 {
     float basePointsPerLevel = spellEntry->EffectRealPointsPerLevel[effIndex];
     int32 basePoints = effBasePoints ? *effBasePoints : spellEntry->EffectBasePoints[effIndex];
@@ -1990,7 +2030,8 @@ int32 SpellMgr::CalculateSpellEffectAmount(SpellEntry const * spellEntry, uint8 
                 if (float comboDamage = spellEntry->EffectPointsPerComboPoint[effIndex])
                     value += comboDamage * comboPoints;
 
-        value = caster->ApplyEffectModifiers(spellEntry, effIndex, value);
+        if(withmods)
+            value = caster->ApplyEffectModifiers(spellEntry, effIndex, value);
 
         // amount multiplication based on caster's level
         if (!basePointsPerLevel && (spellEntry->Attributes & SPELL_ATTR0_LEVEL_DAMAGE_CALCULATION && spellEntry->spellLevel) &&
