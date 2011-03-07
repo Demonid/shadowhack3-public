@@ -2899,7 +2899,7 @@ void Unit::_UpdateSpells(uint32 time)
     // remove finished spells from current pointers
     for (uint32 i = 0; i < CURRENT_MAX_SPELL; ++i)
     {
-        if (m_currentSpells[i] && m_currentSpells[i]->getState() == SPELL_STATE_FINISHED)
+        if (m_currentSpells[i] && m_currentSpells[i]->getState() == SPELL_STATE_FINISHED && !IsChanneledSpell(m_currentSpells[i]->m_spellInfo))
         {
             m_currentSpells[i]->SetReferencedFromCurrent(false);
             m_currentSpells[i] = NULL;                      // remove pointer
@@ -9619,7 +9619,7 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
     //if (GetTypeId() == TYPEID_UNIT)
     //    this->ToCreature()->SetCombatStartPosition(GetPositionX(), GetPositionY(), GetPositionZ());
 
-    if (GetTypeId() == TYPEID_UNIT && !this->ToCreature()->isPet())
+    if (GetTypeId() == TYPEID_UNIT && !isPet() && !HasUnitTypeMask(UNIT_MASK_CONTROLABLE_GUARDIAN))
     {
         // should not let player enter combat by right clicking target
         SetInCombatWith(victim);
