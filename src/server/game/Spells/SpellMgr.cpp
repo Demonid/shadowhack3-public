@@ -3911,6 +3911,11 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->Attributes |= SPELL_ATTR0_PASSIVE;
             count++;
         }
+        if(spellInfo->SpellIconID == 2287) // Water Shield 
+        {
+            spellInfo->EffectRealPointsPerLevel[0] = 0;
+            count++;
+        }
         // Arcane Missiles 
         if (spellInfo->SpellIconID == 225 && spellInfo->SpellFamilyFlags[0] == 0x200000)
         {
@@ -3923,13 +3928,52 @@ void SpellMgr::LoadSpellCustomAttr()
 
         switch (i)
         {
-        // SOTA teleport
-        case 54643:
+        case 54643: // SOTA teleport
             spellInfo->Effect[1] = 0;
             break;
-        // Invisibility
-        case 66:
+        case 66:    // Invisibility
             spellInfo->EffectAmplitude[1] = 333;
+            break;
+        case 57879: // Snake Trap
+            spellInfo->EffectImplicitTargetA[0] = TARGET_DST_TARGET_ENEMY;
+            spellInfo->EffectImplicitTargetB[0] = 0;
+            count++;
+            break;
+        case 49065: // Explosive Trap
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
+            spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_AREA_ENTRY_DST;
+            count++;
+            break;
+        case 67150: // Item - Hunter T9 2P Bonus
+        case 67118: // Item - Death Knight T9 Melee 4P Bonus
+            spellInfo->Effect[1] = 0;
+            count++;
+            break;
+        // Blessed Life
+        case 31828:
+        case 31829:
+        case 31830:
+            spellInfo->EffectApplyAuraName[0] = SPELL_AURA_SCHOOL_ABSORB;
+            spellInfo->EffectMiscValue[0] = SPELL_SCHOOL_MASK_ALL;
+            spellInfo->EffectBasePoints[0] = spellInfo->procChance;
+            count++;
+            break;
+        case 5215: // prowl
+        case 1784: // stealth
+            spellInfo->AuraInterruptFlags&= ~ AURA_INTERRUPT_FLAG_TAKE_DAMAGE;
+            count++;
+            break;
+        // Earthen Power
+        case 51524:
+        case 51523:
+            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_CAN_PROC_TRIGGERED;
+            count++;
+            break;
+        // tmp
+        case 55078:
+        case 55095:
+            spellInfo->EffectBasePoints[0] = 2;
+            count++;
             break;
         // Shaman T9 Elemental 4P Bonus
         case 71824:
