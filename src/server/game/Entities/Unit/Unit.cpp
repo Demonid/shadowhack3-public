@@ -3996,7 +3996,26 @@ void Unit::RemoveAurasWithFamily(SpellFamilyNames family, uint32 familyFlag1, ui
 
 void Unit::RemoveMovementImpairingAuras()
 {
-    RemoveAurasWithMechanic((1<<MECHANIC_SNARE)|(1<<MECHANIC_ROOT));
+    uint32 mechanic_mask = (1<<MECHANIC_SNARE)|(1<<MECHANIC_ROOT);
+    for (AuraApplicationMap::iterator iter = m_appliedAuras.begin(); iter != m_appliedAuras.end();)
+    {
+        Aura const * aura = iter->second->GetBase();
+        SpellEntry const * aurSpellInfo = aura->GetSpellProto();
+        uint32 aurMechMask = GetAllSpellMechanicMask(aurSpellInfo);
+        if (aurMechMask & mechanic_mask)
+        {
+            if(aurSpellInfo->Dispel == 0 && (aurMechMask & MECHANIC_NOT_REMOVED_BY_SHAPESHIFT || 
+                // some Daze spells have these parameters instead of MECHANIC_DAZE (skip snare spells)
+                (aurSpellInfo->SpellIconID == 15 && (aurMechMask & (1 << MECHANIC_SNARE))==0)))
+            {
+                ++iter;
+                continue;
+            }
+            RemoveAura(iter, AURA_REMOVE_BY_DEFAULT);
+            continue;
+        }
+        ++iter;
+    }
 }
 
 void Unit::RemoveAurasWithMechanic(uint32 mechanic_mask, AuraRemoveMode removemode, uint32 except)
