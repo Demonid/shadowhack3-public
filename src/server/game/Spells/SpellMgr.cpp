@@ -3949,15 +3949,6 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->Effect[1] = 0;
             count++;
             break;
-        // Blessed Life
-        case 31828:
-        case 31829:
-        case 31830:
-            spellInfo->EffectApplyAuraName[0] = SPELL_AURA_SCHOOL_ABSORB;
-            spellInfo->EffectMiscValue[0] = SPELL_SCHOOL_MASK_ALL;
-            spellInfo->EffectBasePoints[0] = spellInfo->procChance;
-            count++;
-            break;
         case 5215: // prowl
         case 1784: // stealth
             spellInfo->AuraInterruptFlags&= ~ AURA_INTERRUPT_FLAG_TAKE_DAMAGE;
