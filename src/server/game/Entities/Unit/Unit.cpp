@@ -12248,8 +12248,19 @@ void Unit::SetInCombatWith(Unit* enemy)
 {
     if(IsGuardianPetStuff())
         if(Unit * owner = this->ToCreature()->GetOwner())
-            owner->SetInCombatWith(enemy);
-
+        {
+            const AuraType CCs[5] = {SPELL_AURA_MOD_CONFUSE, SPELL_AURA_MOD_FEAR, SPELL_AURA_MOD_STUN, 
+                SPELL_AURA_MOD_ROOT, SPELL_AURA_TRANSFORM};
+            bool hascc = false;
+            for(int i = 0; i<5; ++i)
+                if(owner->HasAuraType(CCs[i]))
+                {
+                    hascc=true;
+                    break;
+                }
+            if(!hascc)
+                owner->SetInCombatWith(enemy);
+        }
     Unit* eOwner = enemy->GetCharmerOrOwnerOrSelf();
     if (eOwner->IsPvP())
     {
