@@ -908,8 +908,6 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     {
         vehMover->Dismiss();
     }
-    if(plMover && plMover->getStandState() == UNIT_STAND_STATE_SIT)
-        plMover->SetStandState(0);
 }
 
 void WorldSession::HandleForceSpeedChangeAck(WorldPacket &recv_data)
