@@ -8538,6 +8538,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
                             return false;
                         // stacking
                         CastSpell(this, 67713, true, NULL, triggeredByAura);
+                        this->ToPlayer()->AddSpellCooldown(67713, 0, time(NULL)+2);
 
                         Aura * dummy = GetAura(67713);
                         // release at 3 aura in stack (cont contain in basepoint of trigger aura)
@@ -8556,6 +8557,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
                             return false;
                         // stacking
                         CastSpell(this, 67759, true, NULL, triggeredByAura);
+                        this->ToPlayer()->AddSpellCooldown(67759, 0, time(NULL)+2);
 
                         Aura * dummy = GetAura(67759);
                         // release at 3 aura in stack (cont contain in basepoint of trigger aura)
