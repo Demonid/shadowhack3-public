@@ -4298,6 +4298,14 @@ bool Unit::HasAura(uint32 spellId, uint64 casterGUID, uint64 itemCasterGUID, uin
     return false;
 }
 
+bool Unit::HasRemovedAura(uint32 spellId) const
+{
+    for (AuraList::const_iterator itr = m_removedAuras.begin(); itr!= m_removedAuras.end(); ++itr)
+        if((*itr)->GetId() == spellId)
+            return true;
+    return false;
+}
+
 bool Unit::HasAuraType(AuraType auraType) const
 {
     return (!m_modAuras[auraType].empty());
@@ -13687,7 +13695,7 @@ float Unit::GetTotalAttackPowerValue(WeaponAttackType attType) const
 
 float Unit::GetWeaponDamageRange(WeaponAttackType attType ,WeaponDamageRange type) const
 {
-    if (attType == OFF_ATTACK && !haveOffhandWeapon() || !CanUseAttackType(attType)))
+    if (attType == OFF_ATTACK && !haveOffhandWeapon() || !CanUseAttackType(attType))
         return 0.0f;
 
     return m_weaponDamage[attType][type];
