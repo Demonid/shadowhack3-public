@@ -1016,9 +1016,17 @@ bool Guardian::UpdateStats(Stats stat)
             ownersBonus = CalculatePctN(owner->GetStat(STAT_STAMINA), 75);
             value += ownersBonus;
         }
+    else if (stat == STAT_STAMINA)
+    {
+        if (owner->getClass() == CLASS_WARLOCK && isPet())
+        {
+            ownersBonus = float(owner->GetStat(STAT_STAMINA)) * 0.75f;
+            value += ownersBonus;
+        }
         else
         {
-            mod = 0.45f;
+            // snake trap wtf bug
+            mod = GetEntry() == 19921 || GetEntry() == 19833 ? 0.0f : 0.45f;
             if (isPet())
             {
                 PetSpellMap::const_iterator itr = (ToPet()->m_spells.find(62758)); // Wild Hunt rank 1
