@@ -117,7 +117,7 @@ inline void CreatureUnitRelocationWorker(Creature* c, Unit* u)
         return;
 
     if (c->HasReactState(REACT_AGGRESSIVE) && !c->HasUnitState(UNIT_STAT_SIGHTLESS))
-        if (c->IsAIEnabled && c->canSeeOrDetect(u, false, true) && c->IsAIEnabled)
+        if (c->IsAIEnabled && c->canSeeOrDetect(u, false, true))
             c->AI()->MoveInLineOfSight_Safe(u);
 }
 

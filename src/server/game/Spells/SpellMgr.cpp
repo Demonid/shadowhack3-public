@@ -3951,15 +3951,10 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->Effect[1] = 0;
             count++;
             break;
-        case 5215: // prowl
-        case 1784: // stealth
-            spellInfo->AuraInterruptFlags&= ~ AURA_INTERRUPT_FLAG_TAKE_DAMAGE;
-            count++;
-            break;
         // Earthen Power
         case 51524:
         case 51523:
-            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_CAN_PROC_TRIGGERED;
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_CAN_PROC_TRIGGERED;
             count++;
             break;
         // tmp

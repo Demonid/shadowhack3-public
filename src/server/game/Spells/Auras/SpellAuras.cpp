@@ -1628,6 +1628,16 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                         caster->RemoveAurasDueToSpell(200000);
                 }
             }
+            //Improved Health Funnel
+            if(GetSpellProto()->AttributesEx2 & SPELL_ATTR_EX2_HEALTH_FUNNEL && target != caster)
+            {
+                uint32 ihf=caster->HasAura(18703)?60955:
+                    (caster->HasAura(18704)?60956:0);
+                if(apply)
+                    target->CastSpell(target, ihf, true, 0, 0, caster->GetGUID());
+                else
+                    target->RemoveAurasDueToSpell(ihf, caster->GetGUID());
+            }
             break;
     }
 }
