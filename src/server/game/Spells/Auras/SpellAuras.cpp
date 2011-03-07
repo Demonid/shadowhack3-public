@@ -1900,8 +1900,10 @@ void UnitAura::_ApplyForTarget(Unit * target, Unit * caster, AuraApplication * a
     Aura::_ApplyForTarget(target, caster, aurApp);
 
     // register aura diminishing on apply
-    if (DiminishingGroup group = GetDiminishGroup())
-        target->ApplyDiminishingAura(group,true);
+    diminished = !GetDuration();
+    if(!diminished)
+        if (DiminishingGroup group = GetDiminishGroup())
+            target->ApplyDiminishingAura(group,true);
 }
 
 void UnitAura::_UnapplyForTarget(Unit * target, Unit * caster, AuraApplication * aurApp)
@@ -1909,8 +1911,9 @@ void UnitAura::_UnapplyForTarget(Unit * target, Unit * caster, AuraApplication *
     Aura::_UnapplyForTarget(target, caster, aurApp);
 
     // unregister aura diminishing (and store last time)
-    if (DiminishingGroup group = GetDiminishGroup())
-        target->ApplyDiminishingAura(group,false);
+    if(!diminished)
+        if (DiminishingGroup group = GetDiminishGroup())
+            target->ApplyDiminishingAura(group,false);
 }
 
 void UnitAura::Remove(AuraRemoveMode removeMode)

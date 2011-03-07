@@ -20515,10 +20515,10 @@ void Player::AddSpellAndCategoryCooldowns(SpellEntry const* spellInfo, uint32 it
             rec = GetAttackTime(RANGED_ATTACK);
 
         // Now we have cooldown data (if found any), time to apply mods
-        if (rec > 0)
+        if (rec > 0 || cat == 290)
             ApplySpellMod(spellInfo->Id, SPELLMOD_COOLDOWN, rec, spell);
 
-        if (catrec > 0)
+        if (catrec > 0 || cat == 290)
             ApplySpellMod(spellInfo->Id, SPELLMOD_COOLDOWN, catrec, spell);
 
         // replace negative cooldowns by 0
