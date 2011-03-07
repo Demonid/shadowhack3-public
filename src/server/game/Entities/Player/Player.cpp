@@ -523,7 +523,7 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
     rest_type=REST_TYPE_NO;
     ////////////////////Rest System/////////////////////
 
-	//movement anticheat
+    //movement anticheat
     m_anti_LastClientTime      = 0;   //last movement client time
     m_anti_LastServerTime      = 0;   //last movement server time
     m_anti_DeltaClientTime     = 0;   //client side session time
@@ -542,7 +542,7 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
     m_anti_AlarmCount         = 0;     //alarm counter
 
     m_anti_JustJumped         = 0;     //Jump already began, anti air jump check
-	m_anti_temporaryImmunity  = 0;        
+    m_anti_temporaryImmunity     = 0;        
     m_anti_JumpBaseZ          = 0;     //Z coord before jump (AntiGrav)
     // << movement anticheat
     /////////////////////////////////
@@ -680,6 +680,14 @@ Player::~Player ()
     delete m_runes;
 
     sWorld->DecreasePlayerCount();
+    
+    // spectator
+    for(std::vector<StringList*>::iterator itr = twovtwo.begin(); itr != twovtwo.end();)
+    {
+        (*itr)->clear();
+        twovtwo.erase(itr);
+        itr = twovtwo.begin();
+    }
 }
 
 void Player::CleanupsBeforeDelete(bool finalCleanup)
@@ -1367,7 +1375,7 @@ void Player::Update(uint32 p_time)
                     }
                 }
                 //120 degrees of radiant range
-                else if (!HasInArc(2*M_PI/3, pVictim))
+                else if (!HasInArc(2*M_PI/3, pVictim) || !IsWithinLOSInMap(pVictim))
                 {
                     setAttackTimer(BASE_ATTACK,100);
                     if (m_swingErrorMsg != 2)               // send single time (client auto repeat)
@@ -2587,7 +2595,7 @@ void Player::SetGameMaster(bool on)
 
         m_ExtraFlags &= ~ PLAYER_EXTRA_GM_ON;
         setFactionForRace(getRace());
-		RemoveFlag(PLAYER_FLAGS, GetSession()->GetSecurity() > SEC_GAMEMASTER ? PLAYER_FLAGS_DEVELOPER : PLAYER_FLAGS_GM);
+        RemoveFlag(PLAYER_FLAGS, GetSession()->GetSecurity() > SEC_GAMEMASTER ? PLAYER_FLAGS_DEVELOPER : PLAYER_FLAGS_GM);
 
         if (Pet* pet = GetPet())
         {
@@ -2833,50 +2841,50 @@ void Player::GiveLevel(uint8 level)
     {
         //- TODO: Poor design of mail system
         SQLTransaction trans = CharacterDatabase.BeginTransaction();
-		if (mailReward->subject.empty())
-		{
-			MailDraft(mailReward->mailTemplateId).SendMailTo(trans, this, MailSender(MAIL_CREATURE, mailReward->senderEntry));
-		}
-		else
-		{
-			Item* ToMailItem = NULL;
-			ItemPrototype const* item_proto = NULL;
+        if (mailReward->subject.empty())
+        {
+            MailDraft(mailReward->mailTemplateId).SendMailTo(trans, this, MailSender(MAIL_CREATURE, mailReward->senderEntry));
+        }
+        else
+        {
+            Item* ToMailItem = NULL;
+            ItemPrototype const* item_proto = NULL;
 
-			uint32 item_reward_count = mailReward->ItemCount;
+            uint32 item_reward_count = mailReward->ItemCount;
 
-			MailDraft draft(mailReward->subject, mailReward->message);
+            MailDraft draft(mailReward->subject, mailReward->message);
 
-			if (mailReward->ItemID)
-				item_proto = sObjectMgr->GetItemPrototype(mailReward->ItemID);
+            if (mailReward->ItemID)
+                item_proto = sObjectMgr->GetItemPrototype(mailReward->ItemID);
 
-			if(item_proto)
-			{
-				if ( item_reward_count < 1 || (item_proto->MaxCount > 0 && item_reward_count > uint32(item_proto->MaxCount)) )
-				{
-					sLog->outDetail("MailLevelReward: Warning: invalid ItemCount of %u, setting to 1", item_reward_count);
-					item_reward_count = 1;
-				}
+            if(item_proto)
+            {
+                if ( item_reward_count < 1 || (item_proto->MaxCount > 0 && item_reward_count > uint32(item_proto->MaxCount)) )
+                {
+                    sLog->outDetail("MailLevelReward: Warning: invalid ItemCount of %u, setting to 1", item_reward_count);
+                    item_reward_count = 1;
+                }
 
-				if ( item_reward_count > 1 && item_reward_count > item_proto->GetMaxStackSize() )
-				{
-					sLog->outDetail("MailLevelReward: Warning: invalid ItemCount of %u, setting to %u.", item_reward_count, item_proto->GetMaxStackSize());
-					item_reward_count = item_proto->GetMaxStackSize();
-				}
+                if ( item_reward_count > 1 && item_reward_count > item_proto->GetMaxStackSize() )
+                {
+                    sLog->outDetail("MailLevelReward: Warning: invalid ItemCount of %u, setting to %u.", item_reward_count, item_proto->GetMaxStackSize());
+                    item_reward_count = item_proto->GetMaxStackSize();
+                }
 
-				ToMailItem = Item::CreateItem(mailReward->ItemID, item_reward_count, this);
-			}
+                ToMailItem = Item::CreateItem(mailReward->ItemID, item_reward_count, this);
+            }
 
-			if (ToMailItem)
-			{
-				ToMailItem->SaveToDB(trans);
-				draft.AddItem(ToMailItem);				
-			}
+            if (ToMailItem)
+            {
+                ToMailItem->SaveToDB(trans);
+                draft.AddItem(ToMailItem);                
+            }
 
-			if (mailReward->money)
-				draft.AddMoney(mailReward->money);
+            if (mailReward->money)
+                draft.AddMoney(mailReward->money);
 
-			draft.SendMailTo(trans, this, MailSender(MAIL_CREATURE, mailReward->senderEntry));
-		}
+            draft.SendMailTo(trans, this, MailSender(MAIL_CREATURE, mailReward->senderEntry));
+        }
         CharacterDatabase.CommitTransaction(trans);
     }
 
@@ -4016,7 +4024,8 @@ void Player::RemoveArenaSpellCooldowns(bool removeActivePetCooldowns)
         // check if spellentry is present and if the cooldown is less or equal to 10 min
         if (entry &&
             entry->RecoveryTime <= 10 * MINUTE * IN_MILLISECONDS &&
-            entry->CategoryRecoveryTime <= 10 * MINUTE * IN_MILLISECONDS)
+            entry->CategoryRecoveryTime <= 10 * MINUTE * IN_MILLISECONDS &&
+            entry->SpellIconID != 3056 && entry->SpellIconID != 2718)
         {
             // remove & notify
             RemoveSpellCooldown(itr->first, true);
@@ -5689,6 +5698,15 @@ void Player::ApplyRatingMod(CombatRating cr, int32 value, bool apply)
     {
         case CR_HASTE_MELEE:
         {
+            switch(getClass())
+            {
+                case CLASS_DEATH_KNIGHT:
+                case CLASS_SHAMAN:
+                case CLASS_PALADIN:
+                case CLASS_DRUID:
+                    value*=1.3f;
+                default: break;
+            }
             float RatingChange = value / GetRatingCoefficient(cr);
             ApplyAttackTimePercentMod(BASE_ATTACK,RatingChange,apply);
             ApplyAttackTimePercentMod(OFF_ATTACK,RatingChange,apply);
@@ -6642,10 +6660,10 @@ void Player::CheckAreaExploreAndOutdoor()
                 int32 diff = int32(getLevel()) - p->area_level;
                 uint32 XP = 0;
 
-				float rate_multiplier = (GetSession()->HasPremiumByType(PREMIUM_TYPE_XP_EXPLORE) && CanGainPremiumXP()) ? sWorld->getRate(RATE_PREMIUM_XP_EXPLORE) :  sWorld->getRate(RATE_XP_EXPLORE);
+                float rate_multiplier = (GetSession()->HasPremiumByType(PREMIUM_TYPE_XP_EXPLORE) && CanGainPremiumXP()) ? sWorld->getRate(RATE_PREMIUM_XP_EXPLORE) :  sWorld->getRate(RATE_XP_EXPLORE);
 
-				if (GetsRecruitAFriendBonus(true))
-					rate_multiplier = rate_multiplier + 3.0f;
+                if (GetsRecruitAFriendBonus(true))
+                    rate_multiplier = rate_multiplier + 3.0f;
 
                 if (diff < -5)
                 {
@@ -7944,6 +7962,9 @@ void Player::ApplyEquipSpell(SpellEntry const* spellInfo, Item* item, bool apply
                 return;                                     // and remove only not compatible at form change
         }
 
+        // delete buff after relic swap
+        if (spellInfo->EffectTriggerSpell[0])
+            RemoveAurasDueToSpell(spellInfo->EffectTriggerSpell[0]);
         if (item)
             RemoveAurasDueToItemSpell(item,spellInfo->Id);  // un-apply all spells, not only at-equipped
         else
@@ -10155,12 +10176,9 @@ bool Player::HasItemOrGemWithLimitCategoryEquipped(uint32 limitCategory, uint32 
                 return true;
         }
 
-        if (pProto->Socket[0].Color || pItem->GetEnchantmentId(PRISMATIC_ENCHANTMENT_SLOT))
-        {
-            tempcount += pItem->GetGemCountWithLimitCategory(limitCategory);
-            if (tempcount >= count)
-                return true;
-        }
+        tempcount += pItem->GetGemCountWithLimitCategory(limitCategory);
+        if (tempcount >= count)
+            return true;
     }
 
     return false;
@@ -11720,14 +11738,14 @@ Item* Player::StoreNewItem(ItemPosCountVec const& dest, uint32 item, bool update
             CharacterDatabase.Execute(stmt);
         }
 
-		if (pItem->GetProto()->Quality >= ITEM_QUALITY_EPIC && (pItem->GetProto()->ItemLevel >= 200 || (pItem->GetProto()->Class == ITEM_CLASS_MISC && pItem->GetProto()->ItemLevel >= 80)))
-		{
-			PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_LOG_ADDITEM);
-			stmt->setUInt32(0, pItem->GetGUIDLow());
-			stmt->setString(1, m_name.c_str());
-			stmt->setUInt32(2, pItem->GetProto()->ItemId);
-			CharacterDatabase.Execute(stmt);
-		}
+        if (pItem->GetProto()->Quality >= ITEM_QUALITY_EPIC && (pItem->GetProto()->ItemLevel >= 200 || (pItem->GetProto()->Class == ITEM_CLASS_MISC && pItem->GetProto()->ItemLevel >= 80)))
+        {
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_LOG_ADDITEM);
+            stmt->setUInt32(0, pItem->GetGUIDLow());
+            stmt->setString(1, m_name.c_str());
+            stmt->setUInt32(2, pItem->GetProto()->ItemId);
+            CharacterDatabase.Execute(stmt);
+        }
     }
     return pItem;
 }
@@ -13339,6 +13357,11 @@ void Player::ApplyEnchantment(Item *item, EnchantmentSlot slot, bool apply, bool
     if (!pEnchant)
         return;
 
+    if (slot>TEMP_ENCHANTMENT_SLOT && slot<BONUS_ENCHANTMENT_SLOT && item->GetProto()->Socket[slot-SOCK_ENCHANTMENT_SLOT].Color == 0 && 
+    item->GetSlot() !=EQUIPMENT_SLOT_WAIST && ((Player*)this)->GetSkillValue(SKILL_BLACKSMITHING)<400)
+        return;
+    /*if (apply)
+    {*/
     if (!ignore_condition && pEnchant->EnchantmentCondition && !EnchantmentFitsRequirements(pEnchant->EnchantmentCondition, -1))
         return;
 
@@ -13347,17 +13370,6 @@ void Player::ApplyEnchantment(Item *item, EnchantmentSlot slot, bool apply, bool
 
     if (pEnchant->requiredSkill > 0 && pEnchant->requiredSkillValue > GetSkillValue(pEnchant->requiredSkill))
         return;
-
-    // If we're dealing with a gem inside a prismatic socket we need to check the prismatic socket requirements
-    // rather than the gem requirements itself. If the socket has no color it is a prismatic socket.
-    if((slot == SOCK_ENCHANTMENT_SLOT || slot == SOCK_ENCHANTMENT_SLOT_2 || slot == SOCK_ENCHANTMENT_SLOT_3)
-        && !item->GetProto()->Socket[slot-SOCK_ENCHANTMENT_SLOT].Color)
-    {
-        // Check if the requirements for the prismatic socket are met before applying the gem stats
-         SpellItemEnchantmentEntry const *pPrismaticEnchant = sSpellItemEnchantmentStore.LookupEntry(item->GetEnchantmentId(PRISMATIC_ENCHANTMENT_SLOT));
-         if (!pPrismaticEnchant || (pPrismaticEnchant->requiredSkill > 0 && pPrismaticEnchant->requiredSkillValue > GetSkillValue(pPrismaticEnchant->requiredSkill)))
-             return;
-    }
 
     if (!item->IsBroken())
     {
@@ -13723,18 +13735,13 @@ void Player::UpdateSkillEnchantments(uint16 skill_id, uint16 curr_value, uint16 
 
                 // If we're dealing with a gem inside a prismatic socket we need to check the prismatic socket requirements
                 // rather than the gem requirements itself. If the socket has no color it is a prismatic socket.
-                if ((slot == SOCK_ENCHANTMENT_SLOT || slot == SOCK_ENCHANTMENT_SLOT_2 || slot == SOCK_ENCHANTMENT_SLOT_3)
-                    && !m_items[i]->GetProto()->Socket[slot-SOCK_ENCHANTMENT_SLOT].Color)
+                if (skill_id == SKILL_BLACKSMITHING && slot>TEMP_ENCHANTMENT_SLOT && slot<BONUS_ENCHANTMENT_SLOT && 
+                    m_items[i]->GetProto()->Socket[slot-SOCK_ENCHANTMENT_SLOT].Color == 0 && m_items[i]->GetSlot() !=EQUIPMENT_SLOT_WAIST)
                 {
-                    SpellItemEnchantmentEntry const *pPrismaticEnchant = sSpellItemEnchantmentStore.LookupEntry(m_items[i]->GetEnchantmentId(PRISMATIC_ENCHANTMENT_SLOT));
-
-                    if (pPrismaticEnchant && pPrismaticEnchant->requiredSkill == skill_id)
-                    {
-                        if (curr_value < pPrismaticEnchant->requiredSkillValue && new_value >= pPrismaticEnchant->requiredSkillValue)
-                            ApplyEnchantment(m_items[i], EnchantmentSlot(slot), true);
-                        else if (new_value < pPrismaticEnchant->requiredSkillValue && curr_value >= pPrismaticEnchant->requiredSkillValue)
-                            ApplyEnchantment(m_items[i], EnchantmentSlot(slot), false);
-                    }
+                    if (curr_value < 400 && new_value >= 400)
+                        ApplyEnchantment(m_items[i], EnchantmentSlot(slot), true);
+                    else if (new_value < 400 && curr_value >= 400)
+                        ApplyEnchantment(m_items[i], EnchantmentSlot(slot), false);
                 }
             }
         }
@@ -13762,6 +13769,9 @@ void Player::SendNewItem(Item *item, uint32 count, bool received, bool created, 
     if (!item)                                               // prevent crash
         return;
 
+    // arena points item
+    if(item->GetEntry()==43307)
+        ModifyArenaPoints(count);
                                                             // last check 2.0.10
     WorldPacket data(SMSG_ITEM_PUSH_RESULT, (8+4+4+4+1+4+4+4+4+4));
     data << uint64(GetGUID());                              // player GUID
@@ -14733,10 +14743,10 @@ void Player::RewardQuest(Quest const *pQuest, uint32 reward, Object* questGiver,
 
     // Not give XP in case already completed once repeatable quest
 
-	float rate_multiplier = (GetSession()->HasPremiumByType(PREMIUM_TYPE_XP_QUEST) && CanGainPremiumXP()) ? sWorld->getRate(RATE_PREMIUM_XP_QUEST) :  sWorld->getRate(RATE_XP_QUEST);
+    float rate_multiplier = (GetSession()->HasPremiumByType(PREMIUM_TYPE_XP_QUEST) && CanGainPremiumXP()) ? sWorld->getRate(RATE_PREMIUM_XP_QUEST) :  sWorld->getRate(RATE_XP_QUEST);
 
-	if (GetsRecruitAFriendBonus(true))
-		rate_multiplier = rate_multiplier + 3.0f;
+    if (GetsRecruitAFriendBonus(true))
+        rate_multiplier = rate_multiplier + 3.0f;
 
     uint32 XP = rewarded ? 0 : uint32(pQuest->XPValue(this)*rate_multiplier);
 
@@ -15470,19 +15480,19 @@ void Player::GroupEventHappens(uint32 questId, WorldObject const* pEventObject)
 
 void Player::GroupKillHappens( uint32 entry, WorldObject const* pEventObject, uint64 creatureGUID )
 {
-	if (Group *pGroup = GetGroup())
-	{
-		for (GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
-		{
-			Player *pGroupGuy = itr->getSource();
+    if (Group *pGroup = GetGroup())
+    {
+        for (GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
+        {
+            Player *pGroupGuy = itr->getSource();
 
-			// for any leave or dead (with not released body) group member at appropriate distance
-			if (pGroupGuy && pGroupGuy->IsAtGroupRewardDistance(pEventObject) && !pGroupGuy->GetCorpse())
-				pGroupGuy->KilledMonsterCredit(entry, creatureGUID);
-		}
-	}
-	else
-		KilledMonsterCredit(entry, creatureGUID);
+            // for any leave or dead (with not released body) group member at appropriate distance
+            if (pGroupGuy && pGroupGuy->IsAtGroupRewardDistance(pEventObject) && !pGroupGuy->GetCorpse())
+                pGroupGuy->KilledMonsterCredit(entry, creatureGUID);
+        }
+    }
+    else
+        KilledMonsterCredit(entry, creatureGUID);
 }
 
 void Player::ItemAddedQuestCheck(uint32 entry, uint32 count)
@@ -16248,6 +16258,34 @@ float Player::GetFloatValueFromArray(Tokens const& data, uint16 index)
     memcpy(&result, &temp, sizeof(result));
 
     return result;
+}
+
+int32 Player::GetItemidByCode(const char* code)
+{
+    if(QueryResult result = CharacterDatabase.PQuery
+        ("SELECT `item` from `donate` where secretcode='%s' AND (playerguid='%u' OR playerguid = 0)", code, GetGUID()))
+        if(Field *fields = result->Fetch())
+            if(fields)
+            {
+                int32 itemid=fields[0].GetInt32();
+                CharacterDatabase.PQuery("Delete from `donate` where `secretcode`='%s'",code);
+                sLog->outCommand(GetSession()->GetAccountId(), "Player named %s geted item/spell %i by code %s", m_name.c_str(), itemid, code);
+                return itemid;
+            }
+    return NULL;
+}
+
+void Player::SendMail(uint32 itemid)
+{
+    // fill mail
+    MailDraft draft("Crokodil v vannoi", "Crokodil v vannoi");
+
+    Item* item = Item::CreateItem(itemid, 1);
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+    item->SaveToDB(trans);                               // save for prevent lost at next mail load, if send fail then item will deleted
+    draft.AddItem(item);
+    draft.SendMailTo(trans, MailReceiver(this), MailSender(this, MAIL_STATIONERY_GM));
+    CharacterDatabase.CommitTransaction(trans);
 }
 
 bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
@@ -19401,6 +19439,10 @@ bool Player::IsAffectedBySpellmod(SpellEntry const *spellInfo, SpellModifier *mo
      if (!mod || !spellInfo)
          return false;
 
+    // Inner Focus & Surge of Light
+    if (mod->spellId == 14751 && HasAura(33151))
+        return false;
+
     // Mod out of charges
     if (spell && mod->charges == -1 && spell->m_appliedMods.find(mod->ownerAura) == spell->m_appliedMods.end())
         return false;
@@ -19498,16 +19540,71 @@ void Player::RestoreSpellMods(Spell *spell, uint32 ownerAuraId)
     }
 }
 
+void Player::RemovePrecastSpellMods(Spell * spell)
+{
+    if (!spell)
+        return;
+    bool active=true;
+    spell->bugged_mod = NULL;
+    for (uint8 i=SPELLMOD_CASTING_TIME; i!=SPELLMOD_COST || !active; i=SPELLMOD_COST, active=!active)
+    {
+        switch(i)
+        {
+            case SPELLMOD_CASTING_TIME:
+            case SPELLMOD_COST:
+            case SPELLMOD_COOLDOWN:
+                for (SpellModList::iterator itr = m_spellMods[i].begin(); itr != m_spellMods[i].end();)
+                { 
+                    SpellModifier *mod = *itr;
+                    ++itr;
+                    if(i == SPELLMOD_CASTING_TIME && spell->GetCastTime() != 0 && mod->value == -100)
+                    {
+                        spell->bugged_mod = mod;
+                        continue;
+                    }
+                    // spellmods without aura set cannot be charged
+                    if (!mod->ownerAura || !mod->ownerAura->GetCharges() || (spell->bugged_mod && mod->ownerAura == spell->bugged_mod->ownerAura))
+                        continue;
+
+                    // check if mod affected this spell
+                    Spell::UsedSpellMods::iterator iterMod = spell->m_appliedMods.find(mod->ownerAura);
+                    if (iterMod == spell->m_appliedMods.end())
+                        continue;
+
+                    // remove from list
+                    spell->m_appliedMods.erase(iterMod);
+
+                    if (mod->ownerAura->DropCharge())
+                        itr = m_spellMods[i].begin();
+                }
+                break;
+            default:break;
+        }
+    }
+}
+
 void Player::RemoveSpellMods(Spell * spell)
 {
     if (!spell)
         return;
+
+    // Fingers of Frost
+    if (Aura * aura = GetAura(74396))
+    {
+        if (spell->m_spellInfo->SpellFamilyFlags & aura->GetSpellProto()->EffectSpellClassMask[0]
+            && aura->GetDuration() != aura->GetMaxDuration())
+            aura->DropCharge();
+    }
 
     if (spell->m_appliedMods.empty())
         return;
 
     for (uint8 i=0; i<MAX_SPELLMOD; ++i)
     {
+        // Used in Player::RemovePrecastSpellMods
+        if (i == SPELLMOD_CASTING_TIME || i == SPELLMOD_COST || i == SPELLMOD_COOLDOWN)
+            continue;
+
         for (SpellModList::iterator itr = m_spellMods[i].begin(); itr != m_spellMods[i].end();)
         {
             SpellModifier *mod = *itr;
@@ -19535,14 +19632,14 @@ void Player::DropModCharge(SpellModifier * mod, Spell * spell)
 {
     if (spell && mod->ownerAura && mod->charges > 0)
     {
-        if (spell && spell->getState() == SPELL_STATE_FINISHED || IsChanneledSpell(spell->m_spellInfo))
+        /*if (spell && (spell->getState() == SPELL_STATE_FINISHED || IsChanneledSpell(spell->m_spellInfo)))
         {
             --mod->charges;
             if (mod->charges == 0)
             {
                 mod->charges = -1;
             }
-        }
+        }*/
         spell->m_appliedMods.insert(mod->ownerAura);
     }
     // Cobra Strikes
@@ -20418,10 +20515,10 @@ void Player::AddSpellAndCategoryCooldowns(SpellEntry const* spellInfo, uint32 it
             rec = GetAttackTime(RANGED_ATTACK);
 
         // Now we have cooldown data (if found any), time to apply mods
-        if (rec > 0)
+        if (rec > 0 || cat == 290)
             ApplySpellMod(spellInfo->Id, SPELLMOD_COOLDOWN, rec, spell);
 
-        if (catrec > 0)
+        if (catrec > 0 || cat == 290)
             ApplySpellMod(spellInfo->Id, SPELLMOD_COOLDOWN, catrec, spell);
 
         // replace negative cooldowns by 0
@@ -21953,7 +22050,7 @@ void Player::RemoveItemDependentAurasAndCasts(Item * pItem)
 
         // skip passive (passive item dependent spells work in another way) and not self applied auras
         SpellEntry const* spellInfo = aura->GetSpellProto();
-        if (aura->IsPassive() ||  aura->GetCasterGUID() != GetGUID())
+        if (aura->IsPassive() || aura->GetCasterGUID() != GetGUID() || aura->GetId() == 46924 ) // dunno howtofix bladestorm resap.
         {
             ++itr;
             continue;
@@ -22878,16 +22975,12 @@ void Player::UpdateCharmedAI()
 uint32 Player::GetRuneBaseCooldown(uint8 index)
 {
     uint8 rune = GetBaseRune(index);
-    uint32 cooldown = RUNE_COOLDOWN;
+    float cooldown = RUNE_COOLDOWN;
 
-    AuraEffectList const& regenAura = GetAuraEffectsByType(SPELL_AURA_MOD_POWER_REGEN_PERCENT);
-    for (AuraEffectList::const_iterator i = regenAura.begin();i != regenAura.end(); ++i)
-    {
-        if ((*i)->GetMiscValue() == POWER_RUNE && (*i)->GetMiscValueB() == rune)
-            cooldown = cooldown*(100-(*i)->GetAmount())*0.01f;
-    }
+    if(AuraEffect * aur = GetAuraEffect(63622, 0, GetGUID()))
+        cooldown*=(100.0f-aur->GetAmount())/100.0f;
 
-    return cooldown;
+    return uint32(cooldown);
 }
 
 void Player::RemoveRunesByAuraEffect(AuraEffect const * aura)

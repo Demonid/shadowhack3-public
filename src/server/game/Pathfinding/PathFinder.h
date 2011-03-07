@@ -79,6 +79,7 @@ class PathInfo
 
         inline PointPath& getFullPath() { return m_pathPoints; }
         inline PathType getPathType() const { return m_type; }
+        void BuildShortcut();
 
     private:
 
@@ -117,7 +118,6 @@ class PathInfo
 
         void BuildPolyPath(PathNode startPos, PathNode endPos);
         void BuildPointPath(float *startPoint, float *endPoint);
-        void BuildShortcut();
         bool HaveTiles(const PathNode startPos, const PathNode endPos) const;
 
         NavTerrain getNavTerrain(float x, float y, float z);

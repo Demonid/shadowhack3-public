@@ -360,7 +360,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
         movementInfo.t_pos.Relocate(0.0f, 0.0f, 0.0f, 0.0f);
         movementInfo.t_time = 0;
         movementInfo.t_seat = -1;
-        plMover->m_anti_TransportGUID = 0; 
+        plMover->m_anti_TransportGUID = 0;        
     }
 
     
@@ -909,6 +909,8 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     {
         vehMover->Dismiss();
     }
+    if(plMover && plMover->getStandState() == UNIT_STAND_STATE_SIT)
+        plMover->SetStandState(0);
 }
 
 void WorldSession::HandleForceSpeedChangeAck(WorldPacket &recv_data)

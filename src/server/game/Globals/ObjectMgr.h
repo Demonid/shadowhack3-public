@@ -42,6 +42,7 @@
 #include <map>
 #include <limits>
 #include "ConditionMgr.h"
+#include "ArenaTeam.h"
 
 extern SQLStorage sCreatureStorage;
 extern SQLStorage sCreatureDataAddonStorage;
@@ -406,22 +407,24 @@ struct PetLevelInfo
     uint16 health;
     uint16 mana;
     uint16 armor;
+    uint16 min_dmg;
+    uint16 max_dmg;
 };
 
 struct MailLevelReward
 {
     MailLevelReward() : raceMask(0), mailTemplateId(0), senderEntry(0),  subject(""), message(""), money(0), ItemID(0), ItemCount(0){}
     MailLevelReward(uint32 _raceMask, uint32 _mailTemplateId, uint32 _senderEntry, std::string _subject, std::string _message, uint32 _money, uint32 _ItemID, uint32 _ItemCount) :
-	raceMask(_raceMask), mailTemplateId(_mailTemplateId), senderEntry(_senderEntry), subject(_subject), message(_message), money(_money), ItemID(_ItemID), ItemCount(_ItemCount) {}
+    raceMask(_raceMask), mailTemplateId(_mailTemplateId), senderEntry(_senderEntry), subject(_subject), message(_message), money(_money), ItemID(_ItemID), ItemCount(_ItemCount) {}
 
     uint32 raceMask;
     uint32 mailTemplateId;
     uint32 senderEntry;
-	std::string subject;
-	std::string message;
-	uint32 money;
-	uint32 ItemID;
-	uint32 ItemCount;
+    std::string subject;
+    std::string message;
+    uint32 money;
+    uint32 ItemID;
+    uint32 ItemCount;
 };
 
 typedef std::list<MailLevelReward> MailLevelRewardList;
@@ -979,8 +982,8 @@ class ObjectMgr
 
         void ReturnOrDeleteOldMails(bool serverUp);
 
-		// External Mail
-		void SendExternalMails();
+        // External Mail
+        void SendExternalMails();
 
         CreatureBaseStats const* GetCreatureBaseStats(uint8 level, uint8 unitClass);
 
