@@ -4177,7 +4177,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 59725:                             // Improved Spell Reflection - aoe aura
             // Target entry seems to be wrong for this spell :/
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_PARTY_CASTER;
-            spellInfo->EffectRadiusIndex[0] = 45;
+            spellInfo->EffectRadiusIndex[0] = 9;
             count++;
             break;
         case 27820:                             // Mana Detonation
