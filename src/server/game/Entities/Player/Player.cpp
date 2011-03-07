@@ -7868,9 +7868,9 @@ void Player::_ApplyWeaponDependentAuraCritMod(Item *item, WeaponAttackType attac
 
 void Player::_ApplyWeaponDependentAuraDamageMod(Item *item, WeaponAttackType attackType, AuraEffect const* aura, bool apply)
 {
-    //don't apply mod if item is broken
+    /*don't apply mod if item is broken
     if (item->IsBroken() || !CanUseAttackType(attackType))
-        return;
+        return;*/
 
     // ignore spell mods for not wands
     if ((aura->GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL) == 0 && (getClassMask() & CLASSMASK_WAND_USERS) == 0)
@@ -7893,16 +7893,20 @@ void Player::_ApplyWeaponDependentAuraDamageMod(Item *item, WeaponAttackType att
     switch (aura->GetAuraType())
     {
         case SPELL_AURA_MOD_DAMAGE_DONE:         unitModType = TOTAL_VALUE; break;
+        case SPELL_AURA_MOD_DAMAGE_PERCENT_DONE: unitModType = TOTAL_PCT;   break;
         default: return;
     }
 
-    if (item->IsFitToSpellRequirements(aura->GetSpellProto()))
+    if (!item->IsBroken()&&item->IsFitToSpellRequirements(aura->GetSpellProto()))
     {
-        HandleStatModifier(unitMod, unitModType, float(aura->GetAmount()), apply);
-        ApplyModUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS, aura->GetAmount(), apply);
+        HandleStatModifier(unitMod, unitModType, float(aura->GetAmount()),apply);
+
+        if (unitModType == TOTAL_PCT)
+            ApplyModSignedFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT,aura->GetAmount()/100.0f,apply);
+        else
+            ApplyModUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS,aura->GetAmount(),apply);
     }
 }
-
 void Player::ApplyItemEquipSpell(Item *item, bool apply, bool form_change)
 {
     if (!item)
@@ -8261,7 +8265,7 @@ void Player::_RemoveAllItemMods()
             if (proto->ItemSet)
                 RemoveItemsSetItem(this,proto);
 
-            if (m_items[i]->IsBroken() || !CanUseAttackType(GetAttackBySlot(i)))
+            if (m_items[i]->IsBroken() /*|| !CanUseAttackType(GetAttackBySlot(i))*/)
                 continue;
 
             ApplyItemEquipSpell(m_items[i], false);
@@ -8273,7 +8277,7 @@ void Player::_RemoveAllItemMods()
     {
         if (m_items[i])
         {
-            if (m_items[i]->IsBroken() || !CanUseAttackType(GetAttackBySlot(i)))
+            if (m_items[i]->IsBroken() /*|| !CanUseAttackType(GetAttackBySlot(i))*/)
                 continue;
             ItemPrototype const *proto = m_items[i]->GetProto();
             if (!proto)
@@ -8301,7 +8305,7 @@ void Player::_ApplyAllItemMods()
     {
         if (m_items[i])
         {
-            if (m_items[i]->IsBroken() || !CanUseAttackType(GetAttackBySlot(i)))
+            if (m_items[i]->IsBroken() /*|| !CanUseAttackType(GetAttackBySlot(i))*/)
                 continue;
 
             ItemPrototype const *proto = m_items[i]->GetProto();
@@ -8331,7 +8335,7 @@ void Player::_ApplyAllItemMods()
             if (proto->ItemSet)
                 AddItemsSetItem(this,m_items[i]);
 
-            if (m_items[i]->IsBroken() || !CanUseAttackType(GetAttackBySlot(i)))
+            if (m_items[i]->IsBroken() /*|| !CanUseAttackType(GetAttackBySlot(i))*/)
                 continue;
 
             ApplyItemEquipSpell(m_items[i],true);
@@ -8348,7 +8352,7 @@ void Player::_ApplyAllLevelScaleItemMods(bool apply)
     {
         if (m_items[i])
         {
-            if (m_items[i]->IsBroken() || !CanUseAttackType(GetAttackBySlot(i)))
+            if (m_items[i]->IsBroken() /*|| !CanUseAttackType(GetAttackBySlot(i))*/)
                 continue;
 
             ItemPrototype const *proto = m_items[i]->GetProto();

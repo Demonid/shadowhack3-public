@@ -13635,7 +13635,7 @@ float Unit::GetTotalAttackPowerValue(WeaponAttackType attType) const
 
 float Unit::GetWeaponDamageRange(WeaponAttackType attType ,WeaponDamageRange type) const
 {
-    if (attType == OFF_ATTACK && !haveOffhandWeapon())
+    if (attType == OFF_ATTACK && !haveOffhandWeapon() || !CanUseAttackType(attType)))
         return 0.0f;
 
     return m_weaponDamage[attType][type];
@@ -14467,6 +14467,13 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit * pTarget, uint32 procFlag,
                     SendSpellNonMeleeDamageLog(&damageInfo);
                     DealSpellDamage(&damageInfo, true);
                     takeCharges = true;
+                    break;
+                }
+                case SPELL_AURA_MOD_DAMAGE_PERCENT_DONE:
+                {
+                    // Cinderglacier
+                    if(triggeredByAura->GetId() == 53386) 
+                        takeCharges=true;
                     break;
                 }
                 case SPELL_AURA_MANA_SHIELD:
@@ -15527,7 +15534,8 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
                 pVictim->SetUInt32Value(PLAYER_SELF_RES_SPELL,ressSpellId);
 
                 // FORM_SPIRITOFREDEMPTION and related auras
-                pVictim->CastSpell(pVictim,27827,true,NULL,aurEff);
+                int32 basepoints= pVictim->GetMaxHealth();
+                pVictim->CastCustomSpell(pVictim,27827,&basepoints, 0, 0, true,NULL,*itr);
                 SpiritOfRedemption = true;
                 break;
             }

@@ -1430,21 +1430,21 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                 // Master of subtlety
                 if (AuraEffect const * aurEff = target->GetAuraEffectOfRankedSpell(31221, 0))
                 {
-                    if (!apply)
-                        target->CastSpell(target,31666,true);
-                    else
+                    if (apply)
                     {
                         int32 basepoints0 = aurEff->GetAmount();
                         target->CastCustomSpell(target,31665, &basepoints0, NULL, NULL ,true);
                     }
+                    else if (Aura* aur=target->GetAura(31665))
+                        aur->SetAuraTimer(6000);
                 }
                 // Overkill
                 if (target->HasAura(58426))
                 {
-                    if (!apply)
-                        target->CastSpell(target,58428,true);
-                    else
+                    if (apply)
                         target->CastSpell(target,58427,true);
+                    else if (Aura* aur=target->GetAura(58427))
+                        aur->SetAuraTimer(20000);
                 }
                 break;
             }
