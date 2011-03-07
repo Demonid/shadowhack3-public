@@ -392,6 +392,17 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 
     Spell *spell = new Spell(mover, spellInfo, false);
     spell->m_cast_count = castCount;                       // set count of casts
+    // writed for a motherfucking clicking dumbs
+    if(spellInfo->EffectApplyAuraName[0] == SPELL_AURA_MOD_SHAPESHIFT && 
+        (mover->HasRemovedAura(spellId) || mover->m_form == spellInfo->EffectMiscValue[0]) && 
+        (spellInfo->activeIconID == 122 || spellInfo->activeIconID == 55))
+    {
+        mover->RemoveAurasDueToSpell(spellId, mover->GetGUID());
+        spell->SendCastResult(SPELL_FAILED_SUCCESS);
+        spell->finish(false);
+        //mover->InterruptNonMeleeSpells(true, spellId, true);
+        return;
+    }
     spell->prepare(&targets);
 }
 

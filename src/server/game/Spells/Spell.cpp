@@ -3062,7 +3062,7 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const * triggere
 
     // don't allow channeled spells / spells with cast time to be casted while moving
     // (even if they are interrupted on moving, spells with almost immediate effect get to have their effect processed before movement interrupter kicks in)
-    if ((IsChanneledSpell(m_spellInfo) || m_casttime)
+    if (!triggeredByAura && (IsChanneledSpell(m_spellInfo) || m_casttime)
         && m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->isMoving()
         && m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT)
     {
@@ -4372,9 +4372,6 @@ void Spell::SendChannelUpdate(uint32 time)
         m_caster->SetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT, 0);
         m_caster->SetUInt32Value(UNIT_CHANNEL_SPELL, 0);
     }
-
-    if (m_caster->GetTypeId() != TYPEID_PLAYER)
-        return;
 
     WorldPacket data(MSG_CHANNEL_UPDATE, 8+4);
     data.append(m_caster->GetPackGUID());
