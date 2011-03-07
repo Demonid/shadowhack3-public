@@ -435,20 +435,20 @@ void WorldSession::HandleCancelAuraOpcode(WorldPacket& recvPacket)
         return;
     }
 
-	for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-	{
-		if (spellInfo->EffectApplyAuraName[i] == SPELL_AURA_FLY || spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED ||
-			spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED || spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED ||
-			spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS || spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_SPEED ||
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+    {
+        if (spellInfo->EffectApplyAuraName[i] == SPELL_AURA_FLY || spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED ||
+            spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED || spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED ||
+            spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS || spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_SPEED ||
             spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_MOUNTED_SPEED)
-				_player->addAnticheatTemporaryImmunity(250);
-	}
+            _player->addAnticheatTemporaryImmunity(250);
+    }
 
     // non channeled case
     // maybe should only remove one buff when there are multiple?
     _player->RemoveOwnedAura(spellId, 0, 0, AURA_REMOVE_BY_CANCEL);
 
-	
+    
 }
 
 void WorldSession::HandlePetCancelAuraOpcode(WorldPacket& recvPacket)

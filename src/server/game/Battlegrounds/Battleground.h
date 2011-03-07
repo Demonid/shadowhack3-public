@@ -98,7 +98,10 @@ enum BattlegroundSpells
     SPELL_RECENTLY_DROPPED_FLAG     = 42792,                // Recently Dropped Flag
     SPELL_AURA_PLAYER_INACTIVE      = 43681,                // Inactive
     SPELL_HONORABLE_DEFENDER_25Y    = 68652,                // +50% honor when standing at a capture point that you control, 25yards radius (added in 3.2)
-    SPELL_HONORABLE_DEFENDER_60Y    = 66157                 // +50% honor when standing at a capture point that you control, 60yards radius (added in 3.2), probably for 40+ player battlegrounds
+    SPELL_HONORABLE_DEFENDER_60Y    = 66157,                // +50% honor when standing at a capture point that you control, 60yards radius (added in 3.2), probably for 40+ player battlegrounds
+    SPELL_ARENA_DAMPENING           = 74410,                // Arena - Dampening
+    SPELL_BG_DAMPENING              = 74411                 // Battleground - Dampening
+
 };
 
 enum BattlegroundTimeIntervals
@@ -447,9 +450,10 @@ class Battleground
 
         /* Map pointers */
         void SetBgMap(BattlegroundMap* map) { m_Map = map; }
-        BattlegroundMap* GetBgMap()
+        BattlegroundMap* GetBgMap(bool WithAssert=true)
         {
-            ASSERT(m_Map);
+            if(WithAssert)
+                ASSERT(m_Map);
             return m_Map;
         }
 
@@ -587,6 +591,15 @@ class Battleground
         void RewardXPAtKill(Player* plr, Player* victim);
         bool CanAwardArenaPoints() const { return m_LevelMin >= BG_AWARD_ARENA_POINTS_MIN_LEVEL; }
 
+        /* Arena team ids by team */
+        uint32 m_ArenaTeamIds[BG_TEAMS_COUNT];
+
+        /* Players count by team */
+        uint32 m_PlayersCount[BG_TEAMS_COUNT];
+
+        /* Player lists, those need to be accessible by inherited classes */
+        BattlegroundPlayerMap  m_Players;
+
     protected:
         //this method is called, when BG cannot spawn its own spirit guide, or something is wrong, It correctly ends Battleground
         void EndNow();
@@ -597,9 +610,6 @@ class Battleground
         BattlegroundScoreMap m_PlayerScores;                // Player scores
         // must be implemented in BG subclass
         virtual void RemovePlayer(Player * /*player*/, uint64 /*guid*/) {}
-
-        /* Player lists, those need to be accessible by inherited classes */
-        BattlegroundPlayerMap  m_Players;
                                                             // Spirit Guide guid + Player list GUIDS
         std::map<uint64, std::vector<uint64> >  m_ReviveQueue;
 
@@ -650,12 +660,6 @@ class Battleground
 
         /* Raid Group */
         Group *m_BgRaids[BG_TEAMS_COUNT];                                // 0 - alliance, 1 - horde
-
-        /* Players count by team */
-        uint32 m_PlayersCount[BG_TEAMS_COUNT];
-
-        /* Arena team ids by team */
-        uint32 m_ArenaTeamIds[BG_TEAMS_COUNT];
 
         int32 m_ArenaTeamRatingChanges[BG_TEAMS_COUNT];
         uint32 m_ArenaTeamMMR[BG_TEAMS_COUNT];

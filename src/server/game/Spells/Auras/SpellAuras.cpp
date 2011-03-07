@@ -559,7 +559,8 @@ void Aura::UpdateTargetMap(Unit * caster, bool apply)
                     for (Unit::AuraApplicationMap::iterator iter = itr->first->GetAppliedAuras().begin(); iter != itr->first->GetAppliedAuras().end(); ++iter)
                     {
                         Aura const * aura = iter->second->GetBase();
-                        if (!sSpellMgr->CanAurasStack(this, aura, aura->GetCasterGUID() == GetCasterGUID()))
+                        if (!sSpellMgr->CanAurasStack(GetSpellProto(), aura->GetSpellProto(), aura->GetCasterGUID() == GetCasterGUID()) 
+                            && aura->GetCastItemGUID() == GetCastItemGUID())
                         {
                             addUnit = false;
                             break;
@@ -682,6 +683,8 @@ void Aura::Update(uint32 diff, Unit * caster)
                     Powers powertype = Powers(m_spellProto->powerType);
                     if (powertype == POWER_HEALTH)
                     {
+                        if(caster == GetOwner())
+                            return;
                         if (int32(caster->GetHealth()) > manaPerSecond)
                             caster->ModifyHealth(-manaPerSecond);
                         else
@@ -1181,11 +1184,13 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                         break;
                     case 74396: // Fingers of Frost
                         // Remove the IGNORE_AURASTATE aura
-                        target->RemoveAurasDueToSpell(44544);
+                        if(removeMode != AURA_REMOVE_BY_STACK)
+                            target->RemoveAurasDueToSpell(44544);
                         break;
+                    case 57761: //Fireball!
+                        target->ToPlayer()->AddSpellCooldown(57761, 0, time(NULL)+2);
                     case 44401: //Missile Barrage
                     case 48108: //Hot Streak
-                    case 57761: //Fireball!
                         if (removeMode != AURA_REMOVE_BY_EXPIRE || aurApp->GetBase()->IsExpired())
                             break;
                         if (target->HasAura(70752)) //Item - Mage T10 2P Bonus
@@ -1485,7 +1490,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                     break;
             }
             if (GetSpellSpecific(GetSpellProto()) == SPELL_SPECIFIC_AURA)
-		{
+        {
                 // Improved devotion aura
                 if (caster->HasAura(20140) || caster->HasAura(20138) || caster->HasAura(20139))
                     if (apply)
@@ -1895,8 +1900,10 @@ void UnitAura::_ApplyForTarget(Unit * target, Unit * caster, AuraApplication * a
     Aura::_ApplyForTarget(target, caster, aurApp);
 
     // register aura diminishing on apply
-    if (DiminishingGroup group = GetDiminishGroup())
-        target->ApplyDiminishingAura(group,true);
+    diminished = !GetDuration();
+    if(!diminished)
+        if (DiminishingGroup group = GetDiminishGroup())
+            target->ApplyDiminishingAura(group,true);
 }
 
 void UnitAura::_UnapplyForTarget(Unit * target, Unit * caster, AuraApplication * aurApp)
@@ -1904,8 +1911,9 @@ void UnitAura::_UnapplyForTarget(Unit * target, Unit * caster, AuraApplication *
     Aura::_UnapplyForTarget(target, caster, aurApp);
 
     // unregister aura diminishing (and store last time)
-    if (DiminishingGroup group = GetDiminishGroup())
-        target->ApplyDiminishingAura(group,false);
+    if(!diminished)
+        if (DiminishingGroup group = GetDiminishGroup())
+            target->ApplyDiminishingAura(group,false);
 }
 
 void UnitAura::Remove(AuraRemoveMode removeMode)
@@ -2046,3 +2054,37 @@ void DynObjAura::FillTargetMap(std::map<Unit *, uint8> & targets, Unit * /*caste
     }
 }
 
+void Aura::SetAuraTimer(int32 time, uint64 guid)
+{
+    if(GetDuration() == -1 || GetDuration()>time)
+    {
+        SetDuration(time);
+        SetMaxDuration(time);
+        if(AuraApplication *aur= GetApplicationOfTarget(guid?guid:m_casterGuid))
+            aur->ClientUpdate();
+    }
+}
+
+bool Aura::IsUniqueVisibleAuraBuff()
+{
+    for(uint8 i=0; i<3; ++i)
+    {
+        if(!(GetEffectMask() & (1 << i)))
+            continue;
+        
+        switch(GetSpellProto()->EffectImplicitTargetA[i])
+        {
+            case TARGET_UNIT_CASTER:
+                if(!GetSpellProto()->EffectRadiusIndex[i])
+                    break;
+            case TARGET_UNIT_RAID_CASTER:
+            case TARGET_UNIT_TARGET_ALLY:
+            /*    if(!poisitve)
+                break;
+            case*/ 
+                return true;
+            default:break;
+        }
+    }
+    return false;
+}

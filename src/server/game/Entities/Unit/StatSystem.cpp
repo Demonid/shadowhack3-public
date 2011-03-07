@@ -289,6 +289,7 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
     uint16 index = UNIT_FIELD_ATTACK_POWER;
     uint16 index_mod = UNIT_FIELD_ATTACK_POWER_MODS;
     uint16 index_mult = UNIT_FIELD_ATTACK_POWER_MULTIPLIER;
+    float attPowerMultiplier = GetModifierValue(unitMod, TOTAL_PCT) - 1.0f;
 
     if (ranged)
     {
@@ -396,10 +397,24 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
             AuraEffectList const& mRAPbyStat = GetAuraEffectsByType(SPELL_AURA_MOD_RANGED_ATTACK_POWER_OF_STAT_PERCENT);
             for (AuraEffectList::const_iterator i = mRAPbyStat.begin(); i != mRAPbyStat.end(); ++i)
                 attPowerMod += CalculatePctN(GetStat(Stats((*i)->GetMiscValue())), (*i)->GetAmount());
+            float APbonus=1;
+            if(Unit * versus=GetSelectedUnit())
+            {
+                attPowerMod+= versus->GetTotalAuraModifier(SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS);
+
+                // ..done (base at attack power and creature type)
+                attPowerMod+=GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_RANGED_ATTACK_POWER_VERSUS, versus->GetCreatureTypeMask());
+            }
         }
     }
     else
     {
+        if(Unit * versus=GetSelectedUnit())
+        // ..done (base at attack power and creature type)
+        {
+            attPowerMod += versus->GetTotalAuraModifier(SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS);
+            attPowerMod +=GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_MELEE_ATTACK_POWER_VERSUS, versus->GetCreatureTypeMask());
+        }
         AuraEffectList const& mAPbyStat = GetAuraEffectsByType(SPELL_AURA_MOD_ATTACK_POWER_OF_STAT_PERCENT);
         for (AuraEffectList::const_iterator i = mAPbyStat.begin(); i != mAPbyStat.end(); ++i)
             attPowerMod += CalculatePctN(GetStat(Stats((*i)->GetMiscValue())), (*i)->GetAmount());
@@ -409,8 +424,6 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
             // always: ((*i)->GetModifier()->m_miscvalue == 1 == SPELL_SCHOOL_MASK_NORMAL)
             attPowerMod += int32(GetArmor() / (*iter)->GetAmount());
     }
-
-    float attPowerMultiplier = GetModifierValue(unitMod, TOTAL_PCT) - 1.0f;
 
     SetInt32Value(index, (uint32)base_attPower);            //UNIT_FIELD_(RANGED)_ATTACK_POWER field
     SetInt32Value(index_mod, (uint32)attPowerMod);          //UNIT_FIELD_(RANGED)_ATTACK_POWER_MODS field
@@ -644,7 +657,23 @@ void Player::UpdateSpellCritChance(uint32 school)
     // Crit from Intellect
     crit += GetSpellCritFromIntellect();
     // Increase crit from SPELL_AURA_MOD_SPELL_CRIT_CHANCE
-    crit += GetTotalAuraModifier(SPELL_AURA_MOD_SPELL_CRIT_CHANCE);
+    AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(SPELL_AURA_MOD_SPELL_CRIT_CHANCE);
+    int32 modifer=0;
+    for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
+    {
+        switch((*i)->GetId())
+        {
+            case 24907: // Moonkin Aura
+            case 54646: // Focus Magic
+            case 51466: // Elemental Oath
+            case 51470: // --//-- rank 2
+                if(modifer<(*i)->GetAmount())
+                    modifer=(*i)->GetAmount();
+                break;
+            default: crit += (*i)->GetAmount();
+        }
+    }
+    crit+=modifer;
     // Increase crit from SPELL_AURA_MOD_CRIT_PCT
     crit += GetTotalAuraModifier(SPELL_AURA_MOD_CRIT_PCT);
     // Increase crit by school from SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL
@@ -655,6 +684,7 @@ void Player::UpdateSpellCritChance(uint32 school)
     // Store crit value
     SetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + school, crit);
 }
+
 
 void Player::UpdateArmorPenetration(int32 amount)
 {
@@ -983,12 +1013,13 @@ bool Guardian::UpdateStats(Stats stat)
     {
         if (owner->getClass() == CLASS_WARLOCK && isPet())
         {
-            ownersBonus = CalculatePctN(owner->GetStat(STAT_STAMINA), 75);
+            ownersBonus = float(owner->GetStat(STAT_STAMINA)) * 0.75f;
             value += ownersBonus;
         }
         else
         {
-            mod = 0.45f;
+            // snake trap wtf bug
+            mod = GetEntry() == 19921 || GetEntry() == 19833 ? 0.0f : 0.45f;
             if (isPet())
             {
                 PetSpellMap::const_iterator itr = (ToPet()->m_spells.find(62758)); // Wild Hunt rank 1
@@ -1022,6 +1053,7 @@ bool Guardian::UpdateStats(Stats stat)
     }
 */
 
+    value*=GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE, stat);
     SetStat(stat, int32(value));
     m_statFromOwner[stat] = ownersBonus;
     ApplyStatBuffMod(stat, m_statFromOwner[stat], true);
@@ -1102,7 +1134,7 @@ void Guardian::UpdateMaxHealth()
         case ENTRY_SUCCUBUS:    multiplicator = 9.1f;   break;
         case ENTRY_FELHUNTER:   multiplicator = 9.5f;   break;
         case ENTRY_FELGUARD:    multiplicator = 11.0f;  break;
-        case ENTRY_GHOUL:       multiplicator = 5.4f;   break;
+        case ENTRY_GHOUL:       multiplicator = 10.0f;  break;
         default:                multiplicator = 10.0f;  break;
     }
 
@@ -1154,6 +1186,10 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
         val = 2 * GetStat(STAT_STRENGTH) - 20.0f;
 
     Unit* owner = GetOwner();
+    //in BASE_VALUE of UNIT_MOD_ATTACK_POWER for creatures we store data of meleeattackpower field in DB
+    float base_attPower  = GetModifierValue(unitMod, BASE_VALUE) * GetModifierValue(unitMod, BASE_PCT);
+    float attPowerMod = GetModifierValue(unitMod, TOTAL_VALUE);
+    float attPowerMultiplier = GetModifierValue(unitMod, TOTAL_PCT) - 1.0f;
     if (owner && owner->GetTypeId() == TYPEID_PLAYER)
     {
         if (isHunterPet())                      //hunter pets benefit from owner's attack power
@@ -1192,21 +1228,55 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
             bonusAP = maximum * 0.57f;
         }
         //water elementals benefit from mage's frost damage
-        else if (GetEntry() == ENTRY_WATER_ELEMENTAL)
+        else switch (GetEntry())
         {
-            int32 frost = int32(owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FROST)) - owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_NEG + SPELL_SCHOOL_FROST);
-            if (frost < 0)
-                frost = 0;
-            SetBonusDamage(int32(frost * 0.4f));
+            case ENTRY_FELGUARD:
+            {
+                if(AuraEffect * aur = GetOwner()->GetAuraEffect(56246, 0))
+                {
+                    base_attPower *=(1.0f+aur->GetAmount()/100.0f);
+                    bonusAP*=(1.0f+aur->GetAmount()/100.0f);
+                }
+                break;
+            }
+
+            // Water Elemental
+            case ENTRY_WATER_ELEMENTAL:
+            {
+                int32 frost = int32(owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FROST)) - owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_NEG + SPELL_SCHOOL_FROST);
+                if(frost < 0)
+                    frost = 0;
+                SetBonusDamage( int32(frost * 0.4f));
+                break;
+            }
+            // Mirror Image
+            case 31216:
+            {
+                int32 frost = int32(owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FROST)) - owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_NEG + SPELL_SCHOOL_FROST);
+                int32 fire  = int32(owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FIRE)) - owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_NEG + SPELL_SCHOOL_FIRE);
+                if(frost < 0)
+                    frost = 0;
+                if (fire < 0)
+                    fire =0;
+                SetBonusDamage( int32(frost * 0.35f));
+                SetBonusDamage( int32(fire * 0.27f));
+                break;
+            }
+            // Shadowfiend
+            case 19668:
+            {
+                int32 shadow = int32(owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW)) - owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_NEG + SPELL_SCHOOL_SHADOW);
+                int32 maximum = shadow;
+                if(maximum < 0)
+                maximum = 0;
+                SetBonusDamage( int32(maximum * 0.75f));
+                bonusAP = maximum * 0.75f;
+                break;
+            }
         }
     }
 
     SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, val + bonusAP);
-
-    //in BASE_VALUE of UNIT_MOD_ATTACK_POWER for creatures we store data of meleeattackpower field in DB
-    float base_attPower  = GetModifierValue(unitMod, BASE_VALUE) * GetModifierValue(unitMod, BASE_PCT);
-    float attPowerMod = GetModifierValue(unitMod, TOTAL_VALUE);
-    float attPowerMultiplier = GetModifierValue(unitMod, TOTAL_PCT) - 1.0f;
 
     //UNIT_FIELD_(RANGED)_ATTACK_POWER field
     SetInt32Value(UNIT_FIELD_ATTACK_POWER, (int32)base_attPower);
@@ -1293,6 +1363,8 @@ void Guardian::UpdateDamagePhysical(WeaponAttackType attType)
                 break;
         }
     }
+    mindamage*=GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, SPELL_SCHOOL_MASK_NORMAL);
+    maxdamage*=GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, SPELL_SCHOOL_MASK_NORMAL);
 
     SetStatFloatValue(UNIT_FIELD_MINDAMAGE, mindamage);
     SetStatFloatValue(UNIT_FIELD_MAXDAMAGE, maxdamage);

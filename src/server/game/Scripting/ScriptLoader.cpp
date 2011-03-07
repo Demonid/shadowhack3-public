@@ -1206,7 +1206,7 @@ void AddNorthrendScripts()
     AddSC_storm_peaks();
     AddSC_zuldrak();
     AddSC_crystalsong_forest();
-	AddSC_wintergrasp();
+    AddSC_wintergrasp();
     AddSC_isle_of_conquest();
 #endif
 }
@@ -1220,7 +1220,7 @@ void AddOutdoorPvPScripts()
     AddSC_outdoorpvp_si();
     AddSC_outdoorpvp_tf();
     AddSC_outdoorpvp_zm();
-	AddSC_outdoorpvp_wg();
+    AddSC_outdoorpvp_wg();
 #endif
 }
 

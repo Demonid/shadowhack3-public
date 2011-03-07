@@ -310,6 +310,13 @@ vmap.enableIndoorCheck = 1
 
 PathFinding.Enable = 0
 
+#    PathFinding.MaxPathLength
+#       Max long path for creatures and charging effects
+#        Default: 50
+#
+
+PathFinding.MaxPathLength = 50
+
 #
 #    PathFinding.ignoreMapIds
 #        Map id that will be ignored by PathFinding
@@ -319,6 +326,13 @@ PathFinding.Enable = 0
 #        Example: "369,0,1,530"
 
 PathFinding.ignoreMapIds = ""
+
+#
+#    PathFinding.MovemapType
+#       Mmaps using type
+#        
+
+PathFinding.MovemapType = "1"
 
 #
 #    DetectPosCollision
@@ -2988,21 +3002,21 @@ OutdoorPvP.Wintergrasp.CustomHonorIntactBuilding = 1500
 
 #
 #   OutdoorPvP.Wintergrasp.Antifarm.Enable
-#		Enable or Disable antifarm system
+#        Enable or Disable antifarm system
 #              (Default: 0)
 
 OutdoorPvP.Wintergrasp.Antifarm.Enable = 1
 
 #
 #   OutdoorPvP.Wintergrasp.Antifarm.Atk
-#		Min count atack players for antifarm
+#        Min count atack players for antifarm
 #              (Default: 5)
 
 OutdoorPvP.Wintergrasp.Antifarm.Atk = 1
 
 #
 #   OutdoorPvP.Wintergrasp.Antifarm.Def
-#		Min count defense players for antifarm
+#        Min count defense players for antifarm
 #              (Default: 5)
 
 OutdoorPvP.Wintergrasp.Antifarm.Def = 1

@@ -38,7 +38,7 @@ enum BattlegroundNAObjects
     BG_NA_OBJECT_TYPE_DOOR_3    = 183977,
     BG_NA_OBJECT_TYPE_DOOR_4    = 183979,
     BG_NA_OBJECT_TYPE_BUFF_1    = 184663,
-    BG_NA_OBJECT_TYPE_BUFF_2    = 184664
+    BG_NA_OBJECT_TYPE_BUFF_2    = 184663
 };
 
 class BattlegroundNAScore : public BattlegroundScore
