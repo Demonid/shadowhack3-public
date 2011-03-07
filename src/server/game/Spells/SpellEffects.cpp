@@ -1440,12 +1440,19 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
             {
                 if (!unitTarget)
                     return;
-                // Restorative Totems
-                if (Unit *owner = m_caster->GetOwner())
-                    if (AuraEffect *dummy = owner->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_SHAMAN, 338, 1))
-                        AddPctN(damage, dummy->GetAmount());
 
-                    m_caster->CastCustomSpell(unitTarget, 52042, &damage, 0, 0, true, 0, 0, m_originalCasterGUID);
+                if (Unit *owner = m_caster->GetOwner())
+                {
+                    damage+= (owner->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_NATURE) +
+                             owner->SpellBaseDamageBonusForVictim(SPELL_SCHOOL_MASK_NATURE, unitTarget))*0.0827f+1;
+                    // Restorative Totems
+                    if (AuraEffect *dummy = owner->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_SHAMAN, 338, 1))
+                        damage *= (100.0f+ dummy->GetAmount())/ 100.0f;
+                    // Glyph of Healing Stream Totem
+                    if(AuraEffect *dummy = owner->GetAuraEffect(55456, 0, 0))
+                        damage *= (100.0f+ dummy->GetAmount())/ 100.0f;                        
+                }
+                m_caster->CastCustomSpell(unitTarget, 52042, &damage, 0, 0, true, 0, 0, m_originalCasterGUID);
                 return;
             }
             // Mana Spring Totem
@@ -1501,6 +1508,12 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
 
                     m_caster->CastCustomSpell(unitTarget, 47632, &bp, NULL, NULL, true);
                 }
+                return;
+            }
+            // Hungering Cold
+            if (m_spellInfo->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_DK_HUNGERING_COLD)
+            {
+                unitTarget->CastSpell(m_caster, 51209, true);
                 return;
             }
             switch (m_spellInfo->Id)

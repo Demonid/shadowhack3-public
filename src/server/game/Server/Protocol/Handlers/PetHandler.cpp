@@ -138,6 +138,9 @@ void WorldSession::HandlePetStopAttack(WorldPacket &recv_data)
 
 void WorldSession::HandlePetActionHelper(Unit *pet, uint64 guid1, uint16 spellid, uint16 flag, uint64 guid2)
 {
+    // heart of the phoenix
+    if(spellid != 55709 && !pet->isAlive())
+         return;
     CharmInfo *charmInfo = pet->GetCharmInfo();
     if (!charmInfo)
     {

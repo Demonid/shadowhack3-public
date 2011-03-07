@@ -3797,6 +3797,24 @@ void Spell::finish(bool ok)
     if (!ok)
         return;
 
+    for(uint8 i=0; i!=3; ++i)
+        if(m_spellInfo->Effect[i]==SPELL_EFFECT_WEAPON_DAMAGE || m_spellInfo->Effect[i]== SPELL_EFFECT_WEAPON_DAMAGE_NOSCHOOL ||
+            m_spellInfo->Effect[i]== SPELL_EFFECT_NORMALIZED_WEAPON_DMG || m_spellInfo->Effect[i]== SPELL_EFFECT_WEAPON_PERCENT_DAMAGE)
+        {
+            // not for bladestorm
+            if(m_spellInfo->Id == 50622)
+                break;
+            uint32 bonus=m_caster->m_modAttackSpeedPct[m_attackType]*m_caster->GetAttackTime(m_attackType);
+            uint32 inc=m_caster->getAttackTimer(m_attackType) + bonus*0.25f;
+            if(inc>bonus)
+            {
+                m_caster->resetAttackTimer(m_attackType);
+                break;
+            }
+            m_caster->setAttackTimer(m_attackType, inc);
+            break;
+        }
+
     if (m_caster->GetTypeId() == TYPEID_UNIT && m_caster->ToCreature()->isSummon())
     {
         // Unsummon statue
@@ -5930,7 +5948,7 @@ SpellCastResult Spell::CheckCast(bool strict)
     }
 
     // check if caster has at least 1 combo point for spells that require combo points
-    if (m_needComboPoints)
+    if (m_needComboPoints && !IsPassiveSpell(m_spellInfo->Id))
         if (Player* plrCaster = m_caster->ToPlayer())
             if (!plrCaster->GetComboPoints())
                 return SPELL_FAILED_NO_COMBO_POINTS;
