@@ -1757,6 +1757,10 @@ void AuraEffect::PeriodicTick(AuraApplication * aurApp, Unit * caster) const
             if (power == POWER_MANA)
                 drain_amount -= target->GetSpellCritDamageReduction(drain_amount);
 
+            //also break fear
+            target->RemoveSpellbyDamageTaken(SPELL_AURA_MOD_FEAR, drain_amount*3);
+            target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TAKE_DAMAGE, GetSpellProto() ? GetSpellProto()->Id : 0);
+
             target->ModifyPower(power, -drain_amount);
 
             float gain_multiplier = 0.0f;
@@ -1920,6 +1924,10 @@ void AuraEffect::PeriodicTick(AuraApplication * aurApp, Unit * caster) const
             // resilience reduce mana draining effect at spell crit damage reduction (added in 2.4)
             if (powerType == POWER_MANA)
                 damage -= target->GetSpellCritDamageReduction(damage);
+
+            //also break fear
+            target->RemoveSpellbyDamageTaken(SPELL_AURA_MOD_FEAR, damage*3);
+            target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TAKE_DAMAGE, GetSpellProto() ? GetSpellProto()->Id : 0);
 
             uint32 gain = uint32(-target->ModifyPower(powerType, -damage));
 

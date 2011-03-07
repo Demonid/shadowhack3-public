@@ -2174,6 +2174,10 @@ void Spell::EffectPowerDrain(SpellEffIndex effIndex)
     if (powerType == POWER_MANA)
         power -= unitTarget->GetSpellCritDamageReduction(power);
 
+    //also break fear
+    unitTarget->RemoveSpellbyDamageTaken(SPELL_AURA_MOD_FEAR, power*3);
+    unitTarget->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TAKE_DAMAGE, m_spellInfo ? m_spellInfo->Id : 0);
+
     int32 newDamage = -(unitTarget->ModifyPower(powerType, -int32(power)));
 
     float gainMultiplier = 0.0f;

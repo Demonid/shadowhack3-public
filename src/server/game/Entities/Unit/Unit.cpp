@@ -2129,7 +2129,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
     // parry & block chances
 
     // check if attack comes from behind, nobody can parry or block if attacker is behind
-    if (!pVictim->HasInArc(M_PI, this) && !pVictim->HasAuraType(SPELL_AURA_IGNORE_HIT_DIRECTION))
+    if ((!pVictim->HasInArc(M_PI,this) && !pVictim->HasAuraType(SPELL_AURA_IGNORE_HIT_DIRECTION)) || pVictim->hasUnitState(UNIT_STAT_STUNNED))
         sLog->outStaticDebug ("RollMeleeOutcomeAgainst: attack came from behind.");
     else
     {
@@ -12067,6 +12067,31 @@ void Unit::Mount(uint32 mount, uint32 VehicleId, uint32 creatureEntry)
         }
     }
 
+}
+
+void Unit::RemoveSpellbyDamageTaken(AuraType auraType, uint32 damage)
+{
+    if(!HasAuraType(auraType))
+        return;
+    AuraEffectList::const_iterator iter, next;
+    for (iter = m_modAuras[auraType].begin(); iter != m_modAuras[auraType].end(); iter = next)
+    {
+        next = iter;
+        ++next;
+
+        if (*iter)
+        {
+            uint32 damageLeft = (*iter)->GetAmount();
+            if(!damageLeft)
+                continue;
+            
+            // No damage left
+            if (damageLeft < damage )
+                (*iter)->GetBase()->Remove();
+            else
+                (*iter)->SetAmount(damageLeft-damage);
+        }
+    }
 }
 
 void Unit::Unmount()
