@@ -3914,7 +3914,7 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
     // if pet requested type already exist
     if (OldSummon)
     {
-        if (petentry == 0 || OldSummon->GetEntry() == petentry)
+        if (petentry == 0)
         {
             // pet in corpse state can't be summoned
             if (OldSummon->isDead())
@@ -3937,7 +3937,20 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
 
             return;
         }
-
+        else 
+        {
+            if (!OldSummon->m_CreatureSpellCooldowns.empty())
+            {
+                for (CreatureSpellCooldowns::const_iterator itr = OldSummon->m_CreatureSpellCooldowns.begin(); itr != OldSummon->m_CreatureSpellCooldowns.end(); ++itr)
+                {
+                    WorldPacket data(SMSG_CLEAR_COOLDOWN, 4+8);
+                    data << uint32(itr->first);
+                    data << uint64(owner->GetGUID());
+                    owner->SendDirectMessage(&data);
+                }
+                OldSummon->m_CreatureSpellCooldowns.clear();
+            }
+        }
         if (owner->GetTypeId() == TYPEID_PLAYER)
             owner->ToPlayer()->RemovePet(OldSummon,(OldSummon->getPetType() == HUNTER_PET ? PET_SAVE_AS_DELETED : PET_SAVE_NOT_IN_SLOT),false);
         else
