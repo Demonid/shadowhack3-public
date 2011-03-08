@@ -41,7 +41,7 @@ class PetAI : public CreatureAI
         void AttackStart(Unit *target);
         void MovementInform(uint32 moveType, uint32 data);
         void DoAttack(Unit *target, bool chase);
-
+        uint32 fakeautocast;
     private:
         bool _isVisible(Unit *) const;
         bool _needToStop(void);

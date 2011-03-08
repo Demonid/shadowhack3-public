@@ -42,6 +42,7 @@ PetAI::PetAI(Creature *c) : CreatureAI(c), i_tracker(TIME_INTERVAL_LOOK)
     m_AllySet.clear();
     UpdateAllies();
     targetHasCC = false;
+    fakeautocast = 0;
 }
 
 void PetAI::EnterEvadeMode()
@@ -127,9 +128,16 @@ void PetAI::UpdateAI(const uint32 diff)
         typedef std::vector<std::pair<Unit*, Spell*> > TargetSpellList;
         TargetSpellList targetSpellStore;
 
-        for (uint8 i = 0; i < me->GetPetAutoSpellSize(); ++i)
+        for (int8 i = fakeautocast ? -1: 0; i < me->GetPetAutoSpellSize(); ++i)
         {
-            uint32 spellID = me->GetPetAutoSpellOnPos(i);
+            uint32 spellID; 
+            if(fakeautocast)
+            {
+                if(i == -1)
+                    spellID = fakeautocast;
+                else break;
+            }
+            else spellID = me->GetPetAutoSpellOnPos(i);
             if (!spellID)
                 continue;
 
@@ -176,6 +184,15 @@ void PetAI::UpdateAI(const uint32 diff)
             if (me->getVictim() && _CanAttack(me->getVictim()) && spell->CanAutoCast(me->getVictim()))
             {
                 targetSpellStore.push_back(std::make_pair<Unit*, Spell*>(me->getVictim(), spell));
+                if(fakeautocast)
+                {
+                    fakeautocast = 0;
+                    if(me->GetReactState() == REACT_PASSIVE)
+                    {
+                        me->AttackStop();
+                        HandleReturnMovement();
+                    }
+                }
                 continue;
             }
             else

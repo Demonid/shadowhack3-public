@@ -16,6 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PetAI.h"
 #include "Common.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
@@ -149,6 +150,8 @@ void WorldSession::HandlePetActionHelper(Unit *pet, uint64 guid1, uint16 spellid
         return;
     }
 
+    if(pet->GetAI())
+        ((PetAI*)pet->GetAI())->fakeautocast = 0;
     switch(flag)
     {
         case ACT_COMMAND:                                   //0x07

@@ -570,6 +570,40 @@ bool ChatHandler::HandleLookupEventCommand(const char* args)
     return true;
 }
 
+void ChatHandler::HandleLearnSkillRecipesHelper(Player* player,uint32 skill_id)
+{
+    uint32 classmask = player->getClassMask();
+
+    for (uint32 j = 0; j < sSkillLineAbilityStore.GetNumRows(); ++j)
+    {
+        SkillLineAbilityEntry const *skillLine = sSkillLineAbilityStore.LookupEntry(j);
+        if (!skillLine)
+            continue;
+
+        // wrong skill
+        if (skillLine->skillId != skill_id)
+            continue;
+
+        // not high rank
+        if (skillLine->forward_spellid)
+            continue;
+
+        // skip racial skills
+        if (skillLine->racemask != 0)
+            continue;
+
+        // skip wrong class skills
+        if (skillLine->classmask && (skillLine->classmask & classmask) == 0)
+            continue;
+
+        SpellEntry const* spellInfo = sSpellStore.LookupEntry(skillLine->spellId);
+        if (!spellInfo || !SpellMgr::IsSpellValid(spellInfo,player,false))
+            continue;
+
+        player->learnSpell(skillLine->spellId, false);
+    }
+}
+
 bool ChatHandler::HandleCombatStopCommand(const char* args)
 {
     Player* target;
