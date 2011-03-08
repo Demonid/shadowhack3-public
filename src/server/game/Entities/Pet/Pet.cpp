@@ -340,6 +340,11 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
         owner->ToPlayer()->SetLastPetNumber(pet_number);
 
     m_loading = false;
+    if (getPetType() == SUMMON_PET && !current)              //all (?) summon pets come with full health when called, but not when they are current
+    {
+        SetFullHealth();
+        SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
+    }
 
     return true;
 }
@@ -1070,13 +1075,13 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                     }
                     break;
                 }
-                case 27893: // Rune Weapon
+                /*case 27893: // Rune Weapon
                 {
                     float dmg_multiplier = 0.3f;
                     SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE,float((petlevel * 4 - petlevel) + (m_owner->GetTotalAttackPowerValue(BASE_ATTACK, NULL) * dmg_multiplier * 2 / 14)));
                     SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE,float((petlevel * 4 + petlevel) + (m_owner->GetTotalAttackPowerValue(BASE_ATTACK, NULL) * dmg_multiplier * 2 / 14)));
                     break;
-                }
+                }*/
                 case 27829: // Ebon Gargoyle
                 {
                     if (!pInfo)
