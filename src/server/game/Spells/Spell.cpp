@@ -2421,7 +2421,11 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
         {
             if (!m_originalCaster || !m_originalCaster->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
             {
-                sLog->outError("SPELL: no current channeled spell for spell ID %u", m_spellInfo->Id);
+                // 4 petguy
+                if(m_spellInfo->Id == 13481)
+                    AddUnitTarget(m_targets.getUnitTarget(), i);
+                else 
+                    sLog->outError("SPELL: no current channeled spell for spell ID %u", m_spellInfo->Id);
                 break;
             }
 
