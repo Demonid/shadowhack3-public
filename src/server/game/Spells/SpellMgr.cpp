@@ -4504,7 +4504,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 5215:     // Prowl
         case 1784:     // Stealth
         case 58984:    // Shadowmeld
-            spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_TAKE_DAMAGE;
+            spellInfo->AuraInterruptFlags&= ~ AURA_INTERRUPT_FLAG_TAKE_DAMAGE;
             count++;
             break;
         case 47201:    // Everlasting Affliction
