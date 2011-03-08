@@ -3174,7 +3174,7 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const * aurApp, uint8 m
             PowerType = POWER_RAGE;
             break;
         case FORM_TRAVEL:
-            target->ApplyPercentModFloatValue(OBJECT_FIELD_SCALE_X,-30,apply);
+        //    target->ApplyPercentModFloatValue(OBJECT_FIELD_SCALE_X,-30,apply);
         case FORM_TREE:                                     // 0x02
         case FORM_AQUA:                                     // 0x04
         case FORM_AMBIENT:                                  // 0x06
