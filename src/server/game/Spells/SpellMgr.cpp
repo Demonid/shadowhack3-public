@@ -874,6 +874,7 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
                 case 61988: // Divine Shield exclude aura
                 case 34709: // Shadow Sigh
                 case 40477: // Forceful Strike
+                case 2479:
                     return false;
                 case 30877: // Tag Murloc
                     return true;
@@ -4390,9 +4391,15 @@ void SpellMgr::LoadSpellCustomAttr()
         case 57724:     // Sated
         case 26013:     // Deserter
         case 15007:     // Resurrection Sickness
-        case 46705:     // Honorless Target
         case 2479:
             spellInfo->SchoolMask = SPELL_SCHOOL_MASK_NONE;
+            break;
+        // Honorless target
+        case 46705:
+            spellInfo->DurationIndex = 21;
+            spellInfo->Effect[0] = SPELL_EFFECT_APPLY_AREA_AURA_ENEMY;
+            spellInfo->EffectRadiusIndex[0] = 23;
+            count++;
             break;
         case 12323:    // Piercing Howl isn't magic.
         case 45334:    // Feral Charge Root isn't magic.
