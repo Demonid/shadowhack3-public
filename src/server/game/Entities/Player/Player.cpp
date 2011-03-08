@@ -6931,7 +6931,7 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, int32 honor, bool pvpt
 
     
     // Don't gain honor if Antipereliv on at all except bgs, orgrimar and stormwind
-    if (sWorld->getBoolConfig(CONFIG_ANTIPERELIV) && !InBattleground() && GetZoneId() !=45 && uVictim)
+    if (sWorld->getBoolConfig(CONFIG_ANTIPERELIV) && !InBattleground() && GetZoneId() !=41 && GetZoneId() != 8 && GetZoneId() != 10 && uVictim)
         return false;
     // 'Inactive' this aura prevents the player from gaining honor points and battleground tokens
     if (HasAura(SPELL_AURA_PLAYER_INACTIVE))
@@ -7097,7 +7097,7 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, int32 honor, bool pvpt
                 || (MapType == 2 && !HasByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP))
                 || (MapType == 3 && !InBattleground()))
                 return true;
-            if (MapType == 5 && GetZoneId() !=45)
+            if (MapType == 5 && GetZoneId() !=41 && GetZoneId() != 8 && GetZoneId() != 10)
                 return true;
             uint32 itemId = sWorld->getIntConfig(CONFIG_PVP_TOKEN_ID);
             int32 count = sWorld->getIntConfig(CONFIG_PVP_TOKEN_COUNT);
