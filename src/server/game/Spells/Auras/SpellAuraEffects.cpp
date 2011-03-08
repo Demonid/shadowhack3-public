@@ -6077,6 +6077,21 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                 default:
                     break;
             }
+
+            //remove possess when channeling interrupted
+            if (IsChanneledSpell(m_spellProto))
+            {
+                for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                {
+                    if (m_spellProto->EffectApplyAuraName[i] == SPELL_AURA_MOD_POSSESS)
+                    {
+                        if (caster && caster->GetCharmGUID())
+                            if (Unit *charm = caster->GetCharm())
+                                charm->RemoveCharmAuras();
+                    }
+                }                
+            }
+
         }
     }
 

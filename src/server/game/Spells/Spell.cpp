@@ -1511,7 +1511,8 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
         if (m_originalCaster)
         {
             m_spellAura = Aura::TryCreate(aurSpellInfo, effectMask, unit,
-                m_originalCaster,(aurSpellInfo == m_spellInfo)? &m_spellValue->EffectBasePoints[0] : &basePoints[0], m_CastItem);
+                m_originalCaster, (aurSpellInfo == m_spellInfo)? &m_spellValue->EffectBasePoints[0] : &basePoints[0], m_CastItem);
+
             if (m_spellAura)
             {
                 // Now Reduce spell duration using data received at spell hit
@@ -1524,19 +1525,6 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
                 {
                     m_spellAura->Remove();
                     return SPELL_MISS_IMMUNE;
-                }
-                // Mind Control
-                if(m_spellInfo->Id == 605)
-                 {
-                    Unit * unit2 = ObjectAccessor::GetUnit(*m_caster, m_UniqueTargetInfo.begin()->targetGUID);
-                    if (Aura * aur = unit2->GetAura(605))
-                    {
-                        if (aur != m_spellAura)
-                            duration = aur->GetDuration();
-                    }
-                    // no aura, returning
-                    else if(const_cast<Unit*>(m_caster) == unit)
-                        duration = 0;
                 }
 
                 ((UnitAura*)m_spellAura)->SetDiminishGroup(m_diminishGroup);
