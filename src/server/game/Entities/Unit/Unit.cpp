@@ -14845,6 +14845,35 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit * pTarget, uint32 procFlag,
                     takeCharges = false;
                     return;
                 }
+                case SPELL_AURA_MOD_STEALTH:
+                case SPELL_AURA_MOD_INVISIBILITY:
+                {
+                    if(!procSpell)
+                    {
+                        RemoveAura(i->aura);
+                        break;
+                    }
+                    // Arena prep
+                    if(Id == SPELL_ARENA_PREPARATION)
+                        continue;
+                    if (IsControlledByPlayer())
+                    {
+                        if(!IsBreakingStealthSpells(procSpell))
+                            continue;
+                        // not break stealth by cast targeting
+                        if (!(procSpell->AttributesEx & SPELL_ATTR1_NOT_BREAK_STEALTH) || procSpell->SpellIconID == 249)
+                            if(damage != 0 || !(procExtra & PROC_EX_ABSORB) || (!(procFlag & PROC_FLAG_TAKEN_PERIODIC)
+                                && !(procSpell->AttributesEx5 & SPELL_ATTR5_START_PERIODIC_AT_APPLY)))
+                            {
+                                // vanish
+                                if(GetAuraEffect(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE, 0x00000800, 0, 0))
+                                    if(IsCCSpell(procSpell) && !procSpell->Mechanic)
+                                        continue;
+                                RemoveAura(i->aura);
+                            }
+                    }
+                    break;
+                }
                 //case SPELL_AURA_ADD_FLAT_MODIFIER:
                 //case SPELL_AURA_ADD_PCT_MODIFIER:
                     // HandleSpellModAuraProc
