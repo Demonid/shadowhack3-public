@@ -332,6 +332,14 @@ void WorldSession::HandlePetActionHelper(Unit *pet, uint64 guid1, uint16 spellid
 
             SpellCastResult result = spell->CheckPetCast(unit_target);
 
+            if(SpellCastResult res = spell->CheckRange(true))
+                if((res != SPELL_CAST_OK || result == SPELL_FAILED_LINE_OF_SIGHT) && pet->GetAI())
+                {
+                    HandlePetActionHelper(pet, guid1, COMMAND_ATTACK, ACT_COMMAND, guid2);
+                    ((PetAI*)pet->GetAI())->fakeautocast = spellid;
+                    return;
+                }
+
             //auto turn to target unless possessed
             if (result == SPELL_FAILED_UNIT_NOT_INFRONT && !pet->isPossessed() && !pet->IsVehicle())
             {
