@@ -711,16 +711,18 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
                 if (AuraEffect* modHealing = caster->GetAuraEffect(55673, 0))
                     AddPctN(amount, modHealing->GetAmount());
             }
-		switch(GetSpellProto()->Id)
-			// Lifeblood
-			case 55428:
-			case 55480:
-			case 55500:
-			case 55501:
-			case 55502:
-			case 55503:
-				amount += caster->GetMaxHealth() * 15 / 1000 / 5;
-			break;
+            switch(GetSpellProto()->Id)
+            {
+                // Lifeblood
+                case 55428:
+                case 55480:
+                case 55500:
+                case 55501:
+                case 55502:
+                case 55503:
+                    amount += caster->GetMaxHealth() * 15 / 1000 / 5;
+                    break;
+            }
             break;
         case SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN:
             if (!caster)

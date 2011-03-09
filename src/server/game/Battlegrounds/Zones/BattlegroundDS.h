@@ -80,11 +80,14 @@ class BattlegroundDS : public Battleground
         bool HandlePlayerUnderMap(Player * plr);
     private:
         uint32 m_waterTimer;
+        uint32 m_KnockbackTimer;
         bool m_waterfallActive;
     protected:
         bool isWaterFallActive() { return m_waterfallActive; };
         void setWaterFallActive(bool active) { m_waterfallActive = active; };
         void setWaterFallTimer(uint32 timer) { m_waterTimer = timer; };
         uint32 getWaterFallTimer() { return m_waterTimer; };
+        void setKnockBackTimer(uint32 timer) { m_KnockbackTimer = timer; };
+        uint32 getKnockBackTimer() { return m_KnockbackTimer; };
 };
 #endif

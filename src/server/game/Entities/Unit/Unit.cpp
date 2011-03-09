@@ -1022,6 +1022,13 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
     if (damage < 0)
         return;
 
+    Unit *pVictim = damageInfo->target;
+    if (!pVictim || !pVictim->isAlive())
+        return;
+
+    SpellSchoolMask damageSchoolMask = SpellSchoolMask(damageInfo->schoolMask);
+    uint32 crTypeMask = pVictim->GetCreatureTypeMask();
+
     if (spellInfo->AttributesEx4 & SPELL_ATTR4_FIXED_DAMAGE)
     {
         // If crit add critical bonus
@@ -1034,16 +1041,11 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
             if (critPctDamageMod != 0) 
                 AddPctN(damage, critPctDamageMod);
         }
+        CalcAbsorbResist(pVictim, damageSchoolMask, SPELL_DIRECT_DAMAGE, damage, &damageInfo->absorb, &damageInfo->resist, spellInfo);
+        damage -= damageInfo->absorb + damageInfo->resist;
         damageInfo->damage = damage;
         return;
     }
-
-    Unit *pVictim = damageInfo->target;
-    if (!pVictim || !pVictim->isAlive())
-        return;
-
-    SpellSchoolMask damageSchoolMask = SpellSchoolMask(damageInfo->schoolMask);
-    uint32 crTypeMask = pVictim->GetCreatureTypeMask();
 
     if (IsDamageReducedByArmor(damageSchoolMask, spellInfo))
         damage = CalcArmorReducedDamage(pVictim, damage, spellInfo, attackType);
@@ -3035,8 +3037,6 @@ void Unit::InterruptSpell(CurrentSpellTypes spellType, bool withDelayed, bool wi
         if (!spell->IsInterruptable())
             return;
 
-        m_currentSpells[spellType] = NULL;
-
         // send autorepeat cancel message for autorepeat spells
         if (spellType == CURRENT_AUTOREPEAT_SPELL)
         {
@@ -3046,6 +3046,8 @@ void Unit::InterruptSpell(CurrentSpellTypes spellType, bool withDelayed, bool wi
 
         if (spell->getState() != SPELL_STATE_FINISHED)
             spell->cancel();
+	
+        m_currentSpells[spellType] = NULL;
         spell->SetReferencedFromCurrent(false);
     }
 }
@@ -12998,7 +13000,7 @@ void Unit::IncrDiminishing(DiminishingGroup group)
 
 float Unit::ApplyDiminishingToDuration(DiminishingGroup group, int32 &duration, Unit *caster, DiminishingLevels Level, int32 limitduration)
 {
-    if (duration == -1 || group == DIMINISHING_NONE ||(caster->IsFriendlyTo(this) && caster != this))
+    if (duration == -1 || group == DIMINISHING_NONE)
         return 1.0f;
 
     // test pet/charm masters instead pets/charmeds
@@ -13152,6 +13154,8 @@ bool Unit::HandleStatModifier(UnitMods unitMod, UnitModifierType modifierType, f
         return false;
     }
 
+    float val = 1.0f;
+
     switch (modifierType)
     {
         case BASE_VALUE:
@@ -13160,7 +13164,11 @@ bool Unit::HandleStatModifier(UnitMods unitMod, UnitModifierType modifierType, f
             break;
         case BASE_PCT:
         case TOTAL_PCT:
-            m_auraModifiersGroup[unitMod][modifierType] += (apply ? amount : -amount) / 100.0f;
+            if (amount <= -100.0f)                           //small hack-fix for -100% modifiers
+                amount = -200.0f;
+
+            val = (100.0f + amount) / 100.0f;
+            m_auraModifiersGroup[unitMod][modifierType] *= apply ? val : (1.0f/val);
             break;
         default:
             break;
@@ -16276,6 +16284,28 @@ void Unit::KnockbackFrom(float x, float y, float speedXY, float speedZ)
         player->GetSession()->SendPacket(&data);
         player->addAnticheatTemporaryImmunity(speedZ * 100);
     }
+}
+
+void Unit::KnockBackWithAngle(float angle, float horizontalSpeed, float verticalSpeed)
+{
+    float vsin = sin(angle);
+    float vcos = cos(angle);
+
+    // Effect propertly implemented only for players
+    if(GetTypeId()==TYPEID_PLAYER)
+    {
+        WorldPacket data(SMSG_MOVE_KNOCK_BACK, (8+4+4+4+4+4));
+        data.append(GetPackGUID());
+        data << uint32(0);                                  // Sequence
+        data << float(vcos);                                // x direction
+        data << float(vsin);                                // y direction
+        data << float(horizontalSpeed);                     // Horizontal speed
+        data << float(-verticalSpeed);                      // Z Movement speed (vertical)
+        ToPlayer()->addAnticheatTemporaryImmunity(verticalSpeed*100);
+        ToPlayer()->GetSession()->SendPacket(&data);
+    }
+    else
+        GetMotionMaster()->MoveKnockbackFrom(GetPositionX(), GetPositionY(), horizontalSpeed, verticalSpeed);
 }
 
 float Unit::GetCombatRatingReduction(CombatRating cr) const

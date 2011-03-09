@@ -1478,7 +1478,8 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
         m_diminishLevel = unit->GetDiminishing(m_diminishGroup);
         DiminishingReturnsType type = GetDiminishingReturnsGroupType(m_diminishGroup);
         // Increase Diminishing on unit, current informations for actually casts will use values above
-        if ((type == DRTYPE_PLAYER && (unit->GetTypeId() == TYPEID_PLAYER || unit->ToCreature()->isPet() || unit->ToCreature()->isPossessedByPlayer())) || type == DRTYPE_ALL)
+        if (unitTarget->GetGUID() != m_caster->GetGUID() && ((type == DRTYPE_PLAYER && (unit->GetTypeId() == TYPEID_PLAYER || unit->ToCreature()->isPet() || 
+            unit->ToCreature()->isGuardian() || unit->ToCreature()->isPossessedByPlayer())) || type == DRTYPE_ALL))
             unit->IncrDiminishing(m_diminishGroup);
     }
 
@@ -3060,10 +3061,6 @@ void Spell::cancel()
     if (m_spellState == SPELL_STATE_FINISHED)
         return;
 
-    SetReferencedFromCurrent(false);
-    if (m_selfContainer && *m_selfContainer == this)
-        *m_selfContainer = NULL;
-
     uint32 oldState = m_spellState;
     m_spellState = SPELL_STATE_FINISHED;
 
@@ -3097,6 +3094,10 @@ void Spell::cancel()
         default:
             break;
     }
+	
+    SetReferencedFromCurrent(false);
+    if (m_selfContainer && *m_selfContainer == this)
+        *m_selfContainer = NULL;
 
     m_caster->RemoveDynObject(m_spellInfo->Id);
     m_caster->RemoveGameObject(m_spellInfo->Id,true);
