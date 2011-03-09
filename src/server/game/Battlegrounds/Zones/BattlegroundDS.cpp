@@ -76,6 +76,32 @@ void BattlegroundDS::Update(uint32 diff)
     }
     else
         setWaterFallTimer(getWaterFallTimer() - diff);
+    if (GetStatus() == STATUS_IN_PROGRESS)
+    {
+        // knockback
+        if(getKnockBackTimer() < diff)
+        {
+            for(BattlegroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
+            {
+                Player * plr = sObjectMgr->GetPlayer(itr->first);
+                if (plr && plr->IsWithinLOS(1214, 765, 14) && plr->GetDistance2d(1214, 765) <= 50)
+                {
+                    plr->KnockBackWithAngle(6.40f, 35, 6);
+                    if (Pet* pet = plr->GetPet())
+                        pet->KnockBackWithAngle(6.40f, 35, 6);
+                }
+                if (plr && plr->IsWithinLOS(1369, 817, 14) && plr->GetDistance2d(1369, 817) <= 50)
+                {
+                    plr->KnockBackWithAngle(3.03f, 35, 6);
+                    if (Pet* pet = plr->GetPet())
+                        pet->KnockBackWithAngle(3.03f, 35, 6);
+                }
+            }
+            setKnockBackTimer(3000);
+        }
+        else
+            setKnockBackTimer(getKnockBackTimer() - diff);
+    }
 }
 
 void BattlegroundDS::StartingEventCloseDoors()
@@ -93,6 +119,7 @@ void BattlegroundDS::StartingEventOpenDoors()
         SpawnBGObject(i, 60);
 
     setWaterFallTimer(urand(BG_DS_WATERFALL_TIMER_MIN, BG_DS_WATERFALL_TIMER_MAX));
+    setKnockBackTimer(3000);
     setWaterFallActive(false);
 
     for (uint32 i = BG_DS_OBJECT_WATER_1; i <= BG_DS_OBJECT_WATER_2; ++i)
@@ -169,6 +196,7 @@ void BattlegroundDS::Reset()
 {
     //call parent's class reset
     Battleground::Reset();
+    setKnockBackTimer(3000);
 }
 
 

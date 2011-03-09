@@ -3202,18 +3202,28 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
     {
 		switch (entry)
 		{
-		case 30230: // Risen Ally
-			{
-				uint32 petlevel = summon->getLevel();
-				summon->setPowerType(POWER_ENERGY);
-				summon->SetMaxHealth(3000 + petlevel * 100);
-				summon->SetHealth(summon->GetMaxHealth());
-				summon->SetPower(POWER_ENERGY, 100);
-				summon->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float((petlevel * 4 - petlevel) + (m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.3 * 2 / 14)));
-				summon->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float((petlevel * 4 + petlevel) + (m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.3 * 2 / 14)));
-				summon->CastSpell(summon, 35177, true); //spawn animation effect
-				break;
-			}
+       case 30230: // Risen Ally
+            {
+                uint32 petlevel = summon->getLevel();
+                summon->setPowerType(POWER_ENERGY);
+                summon->SetMaxHealth(3000 + petlevel * 100);
+                summon->SetHealth(summon->GetMaxHealth());
+                summon->SetPower(POWER_ENERGY, 100);
+                summon->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float((petlevel * 4 - petlevel) + (m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.3 * 2 / 14)));
+                summon->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float((petlevel * 4 + petlevel) + (m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.3 * 2 / 14)));
+                summon->CastSpell(summon, 35177, true); //spawn animation effect
+                break;
+            }
+       case 4277: // Eye of Kilrogg
+            {
+                if (!summon->HasAura(2585))
+                   summon->AddAura(2585, summon);
+                // Glyph of Kilrogg
+                uint32 v_map = GetVirtualMapForMapAndZone(summon->GetMapId(), summon->GetZoneId());
+                if (v_map == 530 || v_map == 571)
+                   summon->AddAura(58083, summon);
+                break;
+            }
 		}
         summon->SetUInt32Value(UNIT_CREATED_BY_SPELL, m_spellInfo->Id);
         summon->SetCreatorGUID(m_originalCaster->GetGUID());
