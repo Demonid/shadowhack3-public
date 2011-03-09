@@ -1427,9 +1427,10 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
     if (!unit || !effectMask)
         return SPELL_MISS_EVADE;
 
-    // Recheck immune (only for delayed spells)
-    if (m_spellInfo->speed && (unit->IsImmunedToDamage(m_spellInfo) || unit->IsImmunedToSpell(m_spellInfo)))
-        return SPELL_MISS_IMMUNE;
+    SpellMissInfo missinfo = SPELL_MISS_NONE;
+    if (m_spellInfo->speed)
+        missinfo = m_caster->SpellHitResult(unit, m_spellInfo, true);
+    if (missinfo == SPELL_MISS_IMMUNE)
 
     PrepareScriptHitHandlers();
     CallScriptBeforeHitHandlers();
@@ -1508,7 +1509,8 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
         m_diminishLevel = unit->GetDiminishing(m_diminishGroup);
         DiminishingReturnsType type = GetDiminishingReturnsGroupType(m_diminishGroup);
         // Increase Diminishing on unit, current informations for actually casts will use values above
-        if ((type == DRTYPE_PLAYER && (unit->GetTypeId() == TYPEID_PLAYER || unit->ToCreature()->isPet() || unit->ToCreature()->isPossessedByPlayer())) || type == DRTYPE_ALL)
+        if (unitTarget->GetGUID() != m_caster->GetGUID() && ((type == DRTYPE_PLAYER && (unit->GetTypeId() == TYPEID_PLAYER || unit->ToCreature()->isPet() || 
+            unit->ToCreature()->isGuardian() || unit->ToCreature()->isPossessedByPlayer())) || type == DRTYPE_ALL))
             unit->IncrDiminishing(m_diminishGroup);
     }
 
@@ -1540,56 +1542,60 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
 
         if (m_originalCaster)
         {
-            m_spellAura = Aura::TryCreate(aurSpellInfo, effectMask, unit,
-                m_originalCaster,(aurSpellInfo == m_spellInfo)? &m_spellValue->EffectBasePoints[0] : &basePoints[0], m_CastItem);
+            if(unit->IsImmunedToSpell(aurSpellInfo))
+            {
+                if(IsNondamageAuraSpell(aurSpellInfo))
+                {
+                    // cc's break vanish/stealth
+                    if(aurSpellInfo->Mechanic && (1<<(aurSpellInfo->Mechanic-1)) & IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK )
+                        unit->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
+                }
+                return SPELL_MISS_IMMUNE;
+            }
+            else if(irand(0, 100) >= unit->GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_DEBUFF_RESISTANCE, int32(aurSpellInfo->Dispel)))
+                m_spellAura = Aura::TryCreate(aurSpellInfo, effectMask, unit,
+                    m_originalCaster,(aurSpellInfo == m_spellInfo)? &m_spellValue->EffectBasePoints[0] : &basePoints[0], m_CastItem);
             if (m_spellAura)
             {
                 // Now Reduce spell duration using data received at spell hit
                 int32 duration = m_spellAura->GetMaxDuration();
                 int32 limitduration = GetDiminishingReturnsLimitDuration(m_diminishGroup,aurSpellInfo);
-                float diminishMod = unit->ApplyDiminishingToDuration(m_diminishGroup, duration, m_originalCaster, m_diminishLevel,limitduration);
+                if( duration== -1 && m_caster->isTotem())
+                    duration = m_caster->ToTotem()->GetTotemDuration();
+                // Earth grab    
+                if(m_spellInfo->Id != 64695)
+                    unit->ApplyDiminishingToDuration(m_diminishGroup, duration, m_originalCaster, m_diminishLevel,limitduration);
+                ((UnitAura*)m_spellAura)->SetDiminishGroup(m_diminishGroup);
 
-                // unit is immune to aura if it was diminished to 0 duration
-                if (diminishMod == 0.0f)
-                {
-                    m_spellAura->Remove();
-                    return SPELL_MISS_IMMUNE;
-                }
+                bool positive = m_originalCaster->IsFriendlyTo(unit);
+                //AuraApplication * aurApp = m_spellAura->GetApplicationOfTarget(m_originalCaster->GetGUID());
                 // Mind Control
                 if(m_spellInfo->Id == 605)
-                 {
+                {
                     Unit * unit2 = ObjectAccessor::GetUnit(*m_caster, m_UniqueTargetInfo.begin()->targetGUID);
                     if (Aura * aur = unit2->GetAura(605))
                     {
                         if (aur != m_spellAura)
-                            duration = aur->GetDuration();
+                        duration = aur->GetDuration();
                     }
                     // no aura, returning
                     else if(const_cast<Unit*>(m_caster) == unit)
                         duration = 0;
+                } 
+                if(!duration && !damage)
+                {
+                    if(m_spellInfo->Id == 66)
+                        m_originalCaster->CastSpell(m_originalCaster, 32612, true);
+                    m_spellAura->Remove(AURA_REMOVE_BY_EXPIRE);
+                    if(m_diminishLevel>=DIMINISHING_LEVEL_IMMUNE)
+                        return SPELL_MISS_IMMUNE;
                 }
-
-                ((UnitAura*)m_spellAura)->SetDiminishGroup(m_diminishGroup);
-
-                bool positive = IsPositiveSpell(m_spellAura->GetId());
-                AuraApplication * aurApp = m_spellAura->GetApplicationOfTarget(m_originalCaster->GetGUID());
-                if (aurApp)
-                    positive = aurApp->IsPositive();
-
-                duration = m_originalCaster->ModSpellDuration(aurSpellInfo, unit, duration, positive);
-
-                // Haste modifies duration of channeled spells
-                if (IsChanneledSpell(m_spellInfo) && !(m_spellInfo->Id == 6358))
-                    m_originalCaster->ModSpellCastTime(aurSpellInfo, duration, this);
-
-                // and duration of auras affected by SPELL_AURA_PERIODIC_HASTE
-                if (m_originalCaster->HasAuraTypeWithAffectMask(SPELL_AURA_PERIODIC_HASTE, aurSpellInfo))
-                    duration = int32(duration * m_originalCaster->GetFloatValue(UNIT_MOD_CAST_SPEED));
-
-                if (duration != m_spellAura->GetMaxDuration())
+                else if(duration != m_spellAura->GetMaxDuration())
                 {
                     m_spellAura->SetMaxDuration(duration);
                     m_spellAura->SetDuration(duration);
+                    if(IsChanneledSpell(m_spellInfo))
+                        SendChannelStart(duration);
                 }
                 m_spellAura->_RegisterForTargets();
             }
@@ -3394,7 +3400,48 @@ void Spell::cast(bool skipCheck)
 
     // we must send smsg_spell_go packet before m_castItem delete in TakeCastItem()...
     SendSpellGo();
+    if(!IsChanneledSpell(m_spellInfo))
+        if(Player* modOwner = m_caster->GetSpellModOwner())
+            modOwner->RemovePrecastSpellMods(this);
+    if (!IsPositiveSpell(m_spellInfo->Id) && !(IsNoCombatSpells(m_spellInfo->Id)) && !(m_spellInfo->AttributesEx & SPELL_ATTR1_NO_THREAT))
+    {
+        bool isnoaggro = !(m_spellInfo->AttributesEx3 & SPELL_ATTR3_NO_INITIAL_AGGRO);
+        if(m_UniqueTargetInfo.size())
+        {
+            for (std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
+            {
+                if(m_caster->GetGUID() == ihit->targetGUID)
+                    continue;
+                if(unitTarget && ihit->targetGUID == unitTarget->GetGUID())
+                {
+                    if(!m_caster->IsFriendlyTo(unitTarget))
+                        m_caster->CombatStart(unitTarget, isnoaggro);
+                    continue;
+                }
+                if (Unit* unit = ObjectAccessor::GetUnit(*m_caster, ihit->targetGUID))
+                    if(!m_caster->IsFriendlyTo(unit))
+                        m_caster->CombatStart(unit, isnoaggro);
+            }
+        }
+        else if(unitTarget)
+            if(!m_caster->IsFriendlyTo(unitTarget))
+                m_caster->CombatStart(unitTarget, isnoaggro);
+    }
 
+    // stealth must be removed at cast starting (at show channel bar)
+    // skip triggered spell (item equip spell casting and other not explicit character casts/item uses)
+    if (!m_IsTriggeredSpell && isSpellBreakStealth(m_spellInfo))
+    {
+        m_caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_CAST);
+        for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        {
+            if (EffectTargetType[m_spellInfo->Effect[i]] == SPELL_REQUIRE_UNIT)
+            {
+                m_caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_SPELL_ATTACK);
+                break;
+            }
+        }
+    }
     // Okay, everything is prepared. Now we need to distinguish between immediate and evented delayed spells
     if ((m_spellInfo->speed > 0.0f || m_delayMoment) && !IsChanneledSpell(m_spellInfo) || m_spellInfo->Id == 14157 || m_spellInfo->Id == 14189 || m_spellInfo->Id == 70802)
     {
