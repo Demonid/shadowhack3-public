@@ -1582,7 +1582,7 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
                     else if(const_cast<Unit*>(m_caster) == unit)
                         duration = 0;
                 } 
-                if(!duration && !damage)
+                if(!duration && !m_damage)
                 {
                     if(m_spellInfo->Id == 66)
                         m_originalCaster->CastSpell(m_originalCaster, 32612, true);
