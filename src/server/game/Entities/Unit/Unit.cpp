@@ -15473,6 +15473,19 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit *pVictim, Aura * aura, SpellEntry co
 
     // Get EventProcFlag
     uint32 EventProcFlag;
+    // for caster or for Nether Protection
+    if (!active)
+    {
+        if (!isVictim && (procFlag & (PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG | PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS))
+            || (procExtra & PROC_EX_ABSORB))
+        {
+            if (spellProto->SpellIconID == 2961) // taste for blood
+                return false;
+            active = true;
+        }
+        else if (spellProto->SpellIconID == 1985 && (procFlag == PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_NEG || procFlag == PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG))
+            active = true;
+    }
     if (spellProcEvent && spellProcEvent->procFlags) // if exist get custom spellProcEvent->procFlags
         EventProcFlag = spellProcEvent->procFlags;
     else
