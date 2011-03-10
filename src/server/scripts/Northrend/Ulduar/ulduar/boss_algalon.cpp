@@ -197,7 +197,7 @@ public:
         {
             if (pSummoned->GetEntry() == CREATURE_COLLAPSING_STAR)
             {
-                Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
                 if (me->getVictim() && pSummoned->AI())
                     pSummoned->AI()->AttackStart(pTarget ? pTarget : me->getVictim());
                 summons.Summon(pSummoned);
@@ -289,7 +289,7 @@ public:
                         events.ScheduleEvent(EVENT_PHASE_PUNCH, 9*IN_MILLISECONDS); // maybe 8 in the Phase 2
                         break;
                     case EVENT_COSMIC_SMASH:
-                        DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), RAID_MODE(SPELL_COSMIC_SMASH_SPELLTRIGGER,H_SPELL_COSMIC_SMASH_SPELLTRIGGER), true);
+                        DoCast(SelectTarget(SELECT_TARGET_RANDOM, 0), RAID_MODE(SPELL_COSMIC_SMASH_SPELLTRIGGER,H_SPELL_COSMIC_SMASH_SPELLTRIGGER), true);
                         events.ScheduleEvent(EVENT_COSMIC_SMASH, urand(30*IN_MILLISECONDS, 60*IN_MILLISECONDS));
                         break;
                     case EVENT_COLLAPSING_STAR:
