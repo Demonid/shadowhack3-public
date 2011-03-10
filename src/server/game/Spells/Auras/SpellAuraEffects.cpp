@@ -1610,6 +1610,16 @@ void AuraEffect::PeriodicTick(AuraApplication * aurApp, Unit * caster) const
                 if (maxval_hot)
                     AddPctF(TakenTotalMod, maxval_hot);
 
+                // Fel Armor
+                if(GetSpellProto()->SpellIconID == 2297)
+                    // Demonic Aegis 
+                    for (uint32 i = 30143; i<30146; ++i)
+                        if(AuraEffect * aur = target->GetAuraEffect(i, 0))
+                        {
+                            TakenTotalMod *= 1.0f+aur->GetAmount()/100.0f;
+                            break;
+                        }
+
                 TakenTotalMod = std::max(TakenTotalMod, 0.0f);
 
                 damage = uint32(target->CountPctFromMaxHealth(damage));
@@ -1712,6 +1722,17 @@ void AuraEffect::PeriodicTick(AuraApplication * aurApp, Unit * caster) const
                 // max value
                 uint32 maxmana = CalculatePctF(caster->GetMaxPower(power), damage * 2.0f);
                 ApplyPctU(damage, target->GetMaxPower(power));
+
+                // Viper Sting
+                if(GetSpellProto()->Id == 3034)
+                    // Improved Stings  
+                    for (uint32 i = 19464; i<19467; ++i)
+                        if(AuraEffect * aur = caster->GetAuraEffect(i, 0))
+                        {
+                            damage *= 1.0f+aur->GetAmount()/100.0f;
+                            break;
+                        }
+
                 if (damage > maxmana)
                     damage = maxmana;
             }
