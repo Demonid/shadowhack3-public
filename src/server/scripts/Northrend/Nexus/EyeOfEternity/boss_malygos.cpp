@@ -712,7 +712,7 @@ public:
                 if(Creature *pScion = me->SummonCreature(NPC_SCION_OF_ETERNITY, VortexLoc[tmp].x, VortexLoc[tmp].y, FLOOR_Z + 10.0f, 0.0f, TEMPSUMMON_CORPSE_DESPAWN, 0))
                 {
 				    //pScion->Mount(MOUNT_HOVER_DISC);
-                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         if (pScion->AI()) pScion->AI()->AttackStart(pTarget);
     					
                 }
@@ -1349,7 +1349,7 @@ public:
                 //Static field
                 if(m_uiStaticFieldTimer <= uiDiff)
                 {
-                    if(Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if(Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         if(Creature *pField = DoSummon(NPC_STATIC_FIELD, pTarget, 0.0f, 25000, TEMPSUMMON_TIMED_DESPAWN))
                         {
                             pField->SetMaxHealth(1000000);
@@ -1653,7 +1653,7 @@ public:
             
             if(m_uiArcaneBarrageTimer <= uiDiff)
             {
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                 {
                     if (pTarget->GetVehicle())
                         return;
@@ -1826,7 +1826,7 @@ public:
             
             if(m_uiArcaneShockTimer <= uiDiff)
             {
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(pTarget, m_uiIs10Man ? SPELL_ARCANE_SHOCK : SPELL_ARCANE_SHOCK_H);
 
                 m_uiArcaneShockTimer = 3000 + rand()%19000;
