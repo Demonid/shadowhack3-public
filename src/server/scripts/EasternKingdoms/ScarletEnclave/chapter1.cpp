@@ -886,7 +886,7 @@ public:
         npc_scarlet_miner_cartAI(Creature *c) : PassiveAI(c), minerGUID(0)
         {
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
-            me->SetDisplayId(me->GetCreatureInfo()->Modelid1); // Modelid1 is a horse. //Q: check id1 or id2
+            me->SetDisplayId(me->GetCreatureInfo()->Modelid1); // Modelid2 is a horse.
         }
 
         uint64 minerGUID;

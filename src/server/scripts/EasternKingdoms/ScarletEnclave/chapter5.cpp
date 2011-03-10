@@ -1701,7 +1701,7 @@ public:
     {
         if (Creature* pTemp = Unit::GetCreature(*me, ui_GUID))
             if (pTemp->isAlive())
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     if (pTarget->isAlive())
                     {
                         pTemp->AddThreat(pTarget, 0.0f);
