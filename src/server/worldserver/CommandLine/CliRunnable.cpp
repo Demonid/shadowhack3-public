@@ -35,7 +35,7 @@
 #include "Player.h"
 #include "Util.h"
 
-#if PLATFORM != WINDOWS
+#if PLATFORM != PLATFORM_WINDOWS
 #include <readline/readline.h>
 #include <readline/history.h>
 
@@ -114,7 +114,7 @@ void utf8print(void* /*arg*/, const char* str)
 
 void commandFinished(void*, bool /*success*/)
 {
-    printf("IC> ");
+    printf("TC> ");
     fflush(stdout);
 }
 /**
@@ -564,7 +564,7 @@ void CliRunnable::run()
 {
     ///- Display the list of available CLI functions then beep
     //sLog->outString("");
-    #if PLATFORM != WINDOWS
+    #if PLATFORM != PLATFORM_WINDOWS
     rl_attempted_completion_function = cli_completion;
     rl_event_hook = cli_hook_func;
     #endif
@@ -573,7 +573,7 @@ void CliRunnable::run()
 
     // print this here the first time
     // later it will be printed after command queue updates
-    printf("IC>");
+    printf("TC>");
 
     ///- As long as the World is running (no World::m_stopEvent), get the command line and handle it
     while (!World::IsStopped())
@@ -582,11 +582,11 @@ void CliRunnable::run()
 
         char *command_str ;             // = fgets(commandbuf,sizeof(commandbuf),stdin);
 
-        #if PLATFORM == WINDOWS
+        #if PLATFORM == PLATFORM_WINDOWS
         char commandbuf[256];
-        command_str = fgets(commandbuf,sizeof(commandbuf),stdin);
+        command_str = fgets(commandbuf, sizeof(commandbuf), stdin);
         #else
-        command_str = readline("IC>");
+        command_str = readline("TC>");
         rl_bind_key('\t',rl_complete);
         #endif
         if (command_str != NULL)
@@ -600,23 +600,23 @@ void CliRunnable::run()
 
             if (!*command_str)
             {
-                #if PLATFORM == WINDOWS
-                printf("IC>");
+                #if PLATFORM == PLATFORM_WINDOWS
+                printf("TC>");
                 #endif
                 continue;
             }
 
             std::string command;
-            if (!consoleToUtf8(command_str,command))         // convert from console encoding to utf8
+            if (!consoleToUtf8(command_str, command))         // convert from console encoding to utf8
             {
-                #if PLATFORM == WINDOWS
-                printf("IC>");
+                #if PLATFORM == PLATFORM_WINDOWS
+                printf("TC>");
                 #endif
                 continue;
             }
             fflush(stdout);
             sWorld->QueueCliCommand(new CliCommandHolder(NULL, command.c_str(), &utf8print, &commandFinished));
-            #if PLATFORM != WINDOWS
+            #if PLATFORM != PLATFORM_WINDOWS
             add_history(command.c_str());
             #endif
 
