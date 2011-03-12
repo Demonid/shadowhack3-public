@@ -11623,8 +11623,6 @@ uint32 Unit::SpellHealingBonus(Unit *pVictim, SpellEntry const *spellProto, uint
                 DoneAdvertisedBenefit=0;break;
             default:break;
         }
-        factorMod *= CalculateLevelPenalty(spellProto)* stack;
-        TakenTotal += int32(TakenAdvertisedBenefit * coeff * factorMod);
         if (Player* modOwner = GetSpellModOwner())
         {
             coeff *= 100.0f;
