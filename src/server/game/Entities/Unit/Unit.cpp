@@ -1122,10 +1122,13 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
                     damage -= damageInfo->blocked;
                 }
 
-                if (attackType != RANGED_ATTACK)
-                    ApplyResilience(pVictim, NULL, &damage, crit, CR_CRIT_TAKEN_MELEE);
-                else
-                    ApplyResilience(pVictim, NULL, &damage, crit, CR_CRIT_TAKEN_RANGED);
+                if (!(spellInfo->AttributesEx4 & SPELL_ATTR4_FIXED_DAMAGE))
+                {
+                    if (attackType != RANGED_ATTACK)
+                        ApplyResilience(pVictim, NULL, &damage, crit, CR_CRIT_TAKEN_MELEE);
+                    else
+                        ApplyResilience(pVictim, NULL, &damage, crit, CR_CRIT_TAKEN_RANGED);
+                }
             }
             break;
         // Magical Attacks
