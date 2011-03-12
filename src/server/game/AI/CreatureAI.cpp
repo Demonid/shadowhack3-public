@@ -102,28 +102,28 @@ void CreatureAI::DoZoneInCombat(Creature* creature)
 
 void CreatureAI::AggroAllPlayersInRange(float fMaxSearchRange, Creature* creature)
 {
-	if (!creature)
-		creature = me;
+    if (!creature)
+        creature = me;
 
-	std::list<Player*> PlList;
+    std::list<Player*> PlList;
 
-	creature->GetPlayerListInDistance(PlList, fMaxSearchRange);
+    creature->GetPlayerListInDistance(PlList, fMaxSearchRange);
 
-	if(PlList.empty())
-		return;
+    if(PlList.empty())
+        return;
 
-	for (std::list<Player*>::const_iterator itr = PlList.begin(); itr != PlList.end(); ++itr)
-	{
-		if (Player* pPlayer = (*itr))
-		{		
-			if(pPlayer->isGameMaster() || !pPlayer->isAlive())
-				continue;
+    for (std::list<Player*>::const_iterator itr = PlList.begin(); itr != PlList.end(); ++itr)
+    {
+        if (Player* pPlayer = (*itr))
+        {        
+            if(pPlayer->isGameMaster() || !pPlayer->isAlive())
+                continue;
 
-			creature->SetInCombatWith(pPlayer);
-			pPlayer->SetInCombatWith(creature);
-			creature->AddThreat(pPlayer, 0.0f);
-		}
-	}
+            creature->SetInCombatWith(pPlayer);
+            pPlayer->SetInCombatWith(creature);
+            creature->AddThreat(pPlayer, 0.0f);
+        }
+    }
 
 }
 

@@ -991,11 +991,20 @@ BattlegroundQueueTypeId BattlegroundMgr::BGQueueTypeId(BattlegroundTypeId bgType
             switch(arenaType)
             {
                 case ARENA_TYPE_2v2:
-                    return BATTLEGROUND_QUEUE_2v2;
+                    if (sWorld->getBoolConfig(CONFIG_ARENA_2v2_BRACKET_ENABLE))
+                        return BATTLEGROUND_QUEUE_2v2;
+                    else 
+                        return BATTLEGROUND_QUEUE_NONE;
                 case ARENA_TYPE_3v3:
-                    return BATTLEGROUND_QUEUE_3v3;
+                    if (sWorld->getBoolConfig(CONFIG_ARENA_3v3_BRACKET_ENABLE))
+                        return BATTLEGROUND_QUEUE_3v3;
+                    else 
+                        return BATTLEGROUND_QUEUE_NONE;
                 case ARENA_TYPE_5v5:
-                    return BATTLEGROUND_QUEUE_5v5;
+                    if (sWorld->getBoolConfig(CONFIG_ARENA_5v5_BRACKET_ENABLE))
+                        return BATTLEGROUND_QUEUE_5v5;
+                    else 
+                        return BATTLEGROUND_QUEUE_NONE;
                 default:
                     return BATTLEGROUND_QUEUE_NONE;
             }

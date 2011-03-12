@@ -115,16 +115,16 @@ void ChatLog::Initialize()
         {
             // initialize lexics cutter
             Lexics = new LexicsCutter;
-			if (Lexics)
-			{
-				Lexics->Read_Letter_Analogs(fn_analogsfile);
-				Lexics->Read_Innormative_Words(fn_wordsfile);
-				Lexics->Map_Innormative_Words();
+            if (Lexics)
+            {
+                Lexics->Read_Letter_Analogs(fn_analogsfile);
+                Lexics->Read_Innormative_Words(fn_wordsfile);
+                Lexics->Map_Innormative_Words();
 
-				// read additional parameters
-				Lexics->IgnoreLetterRepeat = sConfig->GetBoolDefault("LexicsCutterIgnoreRepeats", true);
-				Lexics->IgnoreMiddleSpaces = sConfig->GetBoolDefault("LexicsCutterIgnoreSpaces", true);
-			}
+                // read additional parameters
+                Lexics->IgnoreLetterRepeat = sConfig->GetBoolDefault("LexicsCutterIgnoreRepeats", true);
+                Lexics->IgnoreMiddleSpaces = sConfig->GetBoolDefault("LexicsCutterIgnoreSpaces", true);
+            }
             fn_innormative = sConfig->GetStringDefault("LexicsCutterLogFile", "");
         }
     }
