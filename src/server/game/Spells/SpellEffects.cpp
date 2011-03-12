@@ -544,6 +544,13 @@ void Spell::SpellDamageSchoolDmg(SpellEffIndex effIndex)
                     {
                         int32 damagetick = aura->GetAmount();
                         damage += isimmolate ? damagetick * 3: damagetick * 4;
+                        float TakenTotalMod = 1.0f;
+                        // ..taken
+                        std::list<AuraEffect *> const& mModDamagePercentTaken = unitTarget->GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN);
+                        for (std::list<AuraEffect *>::const_iterator i = mModDamagePercentTaken.begin(); i != mModDamagePercentTaken.end(); ++i)
+                            if ((*i)->GetMiscValue() & unitTarget->GetMeleeDamageSchoolMask())
+                                AddPctN(TakenTotalMod, (*i)->GetAmount());
+                        damage *=TakenTotalMod;
                         apply_direct_bonus = false;
                         // Glyph of Conflagrate
                         if (!m_caster->HasAura(56235))
