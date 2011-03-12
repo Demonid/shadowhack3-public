@@ -13462,6 +13462,10 @@ int32 Unit::ModSpellDuration(SpellEntry const* spellProto, Unit const* target, i
                 break;
         }
     }
+    // and duration of auras affected by SPELL_AURA_PERIODIC_HASTE
+    if (HasAuraTypeWithAffectMask(SPELL_AURA_PERIODIC_HASTE, spellProto) || IsChanneledSpell(spellProto))
+        duration *= GetFloatValue(UNIT_MOD_CAST_SPEED);
+
     return std::max(duration, 0);
 }
 
