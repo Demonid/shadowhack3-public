@@ -95,6 +95,7 @@ enum WorldBoolConfigs
     CONFIG_CLEAN_CHARACTER_DB,
     CONFIG_GRID_UNLOAD,
     CONFIG_STATS_SAVE_ONLY_ON_LOGOUT,
+    CONFIG_DUEL_RESET_COOLDOWN,
     CONFIG_ALLOW_TWO_SIDE_ACCOUNTS,
     CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHAT,
     CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHANNEL,
@@ -137,6 +138,7 @@ enum WorldBoolConfigs
     CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_ENABLE,
     CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_PLAYERONLY,
     CONFIG_BG_XP_FOR_KILL,
+    CONFIG_BG_GIVEMARKS,
     CONFIG_ARENA_AUTO_DISTRIBUTE_POINTS,
     CONFIG_ARENA_QUEUE_ANNOUNCER_ENABLE,
     CONFIG_ARENA_QUEUE_ANNOUNCER_PLAYERONLY,
@@ -167,9 +169,16 @@ enum WorldBoolConfigs
     CONFIG_DBC_ENFORCE_ITEM_ATTRIBUTES,
     CONFIG_PRESERVE_CUSTOM_CHANNELS,
     CONFIG_MOVEMAP_ENABLE,
-	CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED,
-	CONFIG_OUTDOORPVP_WINTERGRASP_ANTIFARM_ENABLE,
-	CONFIG_OUTDOORPVP_WINTERGRASP_CUSTOM_HONOR,
+    CONFIG_MOVEMAP_TYPE,
+    CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED,
+    CONFIG_OUTDOORPVP_WINTERGRASP_ANTIFARM_ENABLE,
+    CONFIG_OUTDOORPVP_WINTERGRASP_CUSTOM_HONOR,
+    CONFIG_ARENA_2v2_BRACKET_ENABLE,
+    CONFIG_ARENA_3v3_BRACKET_ENABLE,
+    CONFIG_ARENA_5v5_BRACKET_ENABLE,
+    CONFIG_ARENA_MARK_OF_WIN_ENABLE,
+    CONFIG_ANTIDODGE,
+    CONFIG_ANTIPERELIV,
     BOOL_CONFIG_VALUE_COUNT
 };
 
@@ -249,10 +258,10 @@ enum WorldIntConfigs
     CONFIG_SKILL_CHANCE_MINING_STEPS,
     CONFIG_SKILL_CHANCE_SKINNING_STEPS,
     CONFIG_SKILL_GAIN_CRAFTING,
-	CONFIG_PREMIUM_SKILL_GAIN_CRAFTING,
+    CONFIG_PREMIUM_SKILL_GAIN_CRAFTING,
     CONFIG_SKILL_GAIN_DEFENSE,
     CONFIG_SKILL_GAIN_GATHERING,
-	CONFIG_PREMIUM_SKILL_GAIN_GATHERING,
+    CONFIG_PREMIUM_SKILL_GAIN_GATHERING,
     CONFIG_SKILL_GAIN_WEAPON,
     CONFIG_MAX_OVERSPEED_PINGS,
     CONFIG_EXPANSION,
@@ -319,20 +328,22 @@ enum WorldIntConfigs
     CONFIG_PRESERVE_CUSTOM_CHANNEL_DURATION,
     CONFIG_PERSISTENT_CHARACTER_CLEAN_FLAGS,
     CONFIG_MAX_INSTANCES_PER_HOUR,
-	CONFIG_EXTERNAL_MAIL_INTERVAL,
-	CONFIG_PREMIUM_XP_LEVELLIMIT,
-	CONFIG_PREMIUM_SKILL_GAIN_LIMIT,
-	CONFIG_OUTDOORPVP_WINTERGRASP_START_TIME,
-	CONFIG_OUTDOORPVP_WINTERGRASP_BATTLE_TIME,
-	CONFIG_OUTDOORPVP_WINTERGRASP_ANTIFARM_ATK,
-	CONFIG_OUTDOORPVP_WINTERGRASP_ANTIFARM_DEF,
-	CONFIG_OUTDOORPVP_WINTERGRASP_WIN_BATTLE,
-	CONFIG_OUTDOORPVP_WINTERGRASP_LOSE_BATTLE,
-	CONFIG_OUTDOORPVP_WINTERGRASP_DAMAGED_TOWER,
-	CONFIG_OUTDOORPVP_WINTERGRASP_DESTROYED_TOWER,
-	CONFIG_OUTDOORPVP_WINTERGRASP_INTACT_BUILDING,
-	CONFIG_OUTDOORPVP_WINTERGRASP_DAMAGED_BUILDING,
-	CONFIG_OUTDOORPVP_WINTERGRASP_INTERVAL,
+    CONFIG_EXTERNAL_MAIL_INTERVAL,
+    CONFIG_PREMIUM_XP_LEVELLIMIT,
+    CONFIG_PREMIUM_SKILL_GAIN_LIMIT,
+    CONFIG_OUTDOORPVP_WINTERGRASP_START_TIME,
+    CONFIG_OUTDOORPVP_WINTERGRASP_BATTLE_TIME,
+    CONFIG_OUTDOORPVP_WINTERGRASP_ANTIFARM_ATK,
+    CONFIG_OUTDOORPVP_WINTERGRASP_ANTIFARM_DEF,
+    CONFIG_OUTDOORPVP_WINTERGRASP_WIN_BATTLE,
+    CONFIG_OUTDOORPVP_WINTERGRASP_LOSE_BATTLE,
+    CONFIG_OUTDOORPVP_WINTERGRASP_DAMAGED_TOWER,
+    CONFIG_OUTDOORPVP_WINTERGRASP_DESTROYED_TOWER,
+    CONFIG_OUTDOORPVP_WINTERGRASP_INTACT_BUILDING,
+    CONFIG_OUTDOORPVP_WINTERGRASP_DAMAGED_BUILDING,
+    CONFIG_OUTDOORPVP_WINTERGRASP_INTERVAL,
+    CONFIG_ARENA_SPECTATOR_PRICE_HONOR,
+    CONFIG_MAX_PATH_LENGTH,
     INT_CONFIG_VALUE_COUNT
 };
 
@@ -345,6 +356,7 @@ enum Rates
     RATE_POWER_RAGE_LOSS,
     RATE_POWER_RUNICPOWER_INCOME,
     RATE_POWER_RUNICPOWER_LOSS,
+    RATE_LOYALITY,
     RATE_POWER_FOCUS,
     RATE_POWER_ENERGY,
     RATE_SKILL_DISCOVERY,
@@ -361,9 +373,9 @@ enum Rates
     RATE_XP_KILL,
     RATE_XP_QUEST,
     RATE_XP_EXPLORE,
-	RATE_PREMIUM_XP_KILL,
-	RATE_PREMIUM_XP_QUEST,
-	RATE_PREMIUM_XP_EXPLORE,
+    RATE_PREMIUM_XP_KILL,
+    RATE_PREMIUM_XP_QUEST,
+    RATE_PREMIUM_XP_EXPLORE,
     RATE_REPAIRCOST,
     RATE_REPUTATION_GAIN,
     RATE_REPUTATION_LOWLEVEL_KILL,
@@ -393,6 +405,7 @@ enum Rates
     RATE_AUCTION_DEPOSIT,
     RATE_AUCTION_CUT,
     RATE_HONOR,
+    RATE_PVP_RANK_EXTRA_HONOR,
     RATE_MINING_AMOUNT,
     RATE_MINING_NEXT,
     RATE_TALENT,
@@ -421,6 +434,26 @@ enum BillingPlanFlags
     SESSION_TIME_MIXTURE    = 0x20,
     SESSION_RESTRICTED      = 0x40,
     SESSION_ENABLE_CAIS     = 0x80,
+};
+
+enum HonorKillPvPRank
+{
+    HKRANK00,
+    HKRANK01,
+    HKRANK02,
+    HKRANK03,
+    HKRANK04,
+    HKRANK05,
+    HKRANK06,
+    HKRANK07,
+    HKRANK08,
+    HKRANK09,
+    HKRANK10,
+    HKRANK11,
+    HKRANK12,
+    HKRANK13,
+    HKRANK14,
+    HKRANKMAX
 };
 
 /// Type of server, this is values from second column of Cfg_Configs.dbc
@@ -554,11 +587,11 @@ struct CliCommandHolder
 };
 
 typedef UNORDERED_MAP<uint32, WorldSession*> SessionMap;
-
 /// The World
 class World
 {
     public:
+        char *MAP_VERSION_MAGIC;
         static volatile uint32 m_worldLoopCounter;
 
         World();
@@ -666,6 +699,8 @@ class World
         void SendZoneMessage(uint32 zone, WorldPacket *packet, WorldSession *self = 0, uint32 team = 0);
         void SendZoneText(uint32 zone, const char *text, WorldSession *self = 0, uint32 team = 0);
         void SendServerMessage(ServerMessageType type, const char *text = "", Player* player = NULL);
+        
+        uint32 pvp_ranks[HKRANKMAX];
 
         /// Are we in the middle of a shutdown?
         bool IsShutdowning() const { return m_ShutdownTimer > 0; }
@@ -752,7 +787,7 @@ class World
         static int32 GetVisibilityNotifyPeriodInInstances() { return m_visibility_notify_periodInInstances;  }
         static int32 GetVisibilityNotifyPeriodInBGArenas()  { return m_visibility_notify_periodInBGArenas;   }
 
-	    //movement anticheat
+        //movement anticheat
         static bool GetEnableMvAnticheat()     {return m_EnableMvAnticheat;}
         static uint32 GetTeleportToPlaneAlarms()  {return m_TeleportToPlaneAlarms;}
         static uint32 GetMistimingDelta()  {return m_MistimingDelta;}
@@ -779,19 +814,19 @@ class World
 
         void UpdateAreaDependentAuras();
 
-		void SendWintergraspState();
+        void SendWintergraspState();
 
-		void SetWintergraspTimer(uint32 timer, uint32 state)
-		{
-			m_WintergraspTimer = timer;
-			m_WintergraspState = state;
-		}
+        void SetWintergraspTimer(uint32 timer, uint32 state)
+        {
+            m_WintergraspTimer = timer;
+            m_WintergraspState = state;
+        }
 
-		uint32 GetWintergraspTimer() const { return m_WintergraspTimer; }
-		uint32 GetWintergraspState() const { return m_WintergraspState; }
+        uint32 GetWintergraspTimer() const { return m_WintergraspTimer; }
+        uint32 GetWintergraspState() const { return m_WintergraspState; }
 
-		uint32 m_WintergraspTimer;
-		uint32 m_WintergraspState;
+        uint32 m_WintergraspTimer;
+        uint32 m_WintergraspState;
 
         void ProcessStartEvent();
         void ProcessStopEvent();

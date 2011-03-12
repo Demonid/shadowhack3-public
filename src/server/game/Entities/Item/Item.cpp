@@ -935,6 +935,8 @@ bool Item::GemsFitSockets() const
         }
 
         fits &= (GemColor & SocketColor) ? true : false;
+        if(GemColor && !SocketColor) 
+            fits=true;
     }
     return fits;
 }

@@ -2894,7 +2894,7 @@ bool ChatHandler::HandleBanCharacterCommand(const char *args)
         return false;
     }
 
-    switch (sWorld->BanCharacter(name, duration, reason, m_session ? m_session->GetPlayerName() : ""))
+    switch (sWorld->BanAccount(BAN_CHARACTER, name, duration, reason, m_session ? m_session->GetPlayerName() : ""))
     {
         case BAN_SUCCESS:
         {
@@ -3799,15 +3799,8 @@ bool ChatHandler::HandleServerPLimitCommand(const char *args)
     switch(allowedAccountType)
     {
         case SEC_PLAYER:        secName = "Player";        break;
-        case SEC_MODERATOR:     secName = "Moderator";     break;
-		case SEC_GAMEMASTER_LOW:
-		case SEC_GAMEMASTER_MED:
-        case SEC_GAMEMASTER:    
-			secName = "Gamemaster";
-			break;
-		case SEC_DEVELOPER:     secName = "Developer";     break;
-        case SEC_ADMINISTRATOR: secName = "Administrator"; break;
-        default:                secName = "<unknown>";     break;
+        case SEC_MODERATOR:     secName = "Moderator";     break;    
+        default:                secName = "Gamemaster";     break;
     }
 
     PSendSysMessage("Player limits: amount %u, min. security level %s.",pLimit,secName);
@@ -4720,7 +4713,7 @@ bool ChatHandler::HandleUnbindSightCommand(const char * /*args*/)
 
 bool ChatHandler::HandleMmap(const char* args)
 {
-	bool on;
+    bool on;
     if (strncmp(args, "on", 3) == 0)
     {
         sWorld->setBoolConfig(CONFIG_MOVEMAP_ENABLE, true);
