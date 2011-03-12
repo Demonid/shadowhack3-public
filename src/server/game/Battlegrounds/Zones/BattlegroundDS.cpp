@@ -107,15 +107,15 @@ void BattlegroundDS::Update(uint32 diff)
                 Player * plr = sObjectMgr->GetPlayer(itr->first);
                 if (plr && plr->IsWithinLOS(1214, 765, 14) && plr->GetDistance2d(1214, 765) <= 50)
                 {
-                    plr->KnockBackWithAngle(6.40f, 35, 6);
+                    plr->KnockBackPlayerWithAngle(6.40f, 35, 6);
                     if (Pet* pet = plr->GetPet())
-                        pet->KnockBackWithAngle(6.40f, 35, 6);
+                        pet->KnockBackPlayerWithAngle(6.40f, 35, 6);
                 }
                 if (plr && plr->IsWithinLOS(1369, 817, 14) && plr->GetDistance2d(1369, 817) <= 50)
                 {
-                    plr->KnockBackWithAngle(3.03f, 35, 6);
+                    plr->KnockBackPlayerWithAngle(3.03f, 35, 6);
                     if (Pet* pet = plr->GetPet())
-                        pet->KnockBackWithAngle(3.03f, 35, 6);
+                        pet->KnockBackPlayerWithAngle(3.03f, 35, 6);
                 }
             }
             setKnockBackTimer(3000);
