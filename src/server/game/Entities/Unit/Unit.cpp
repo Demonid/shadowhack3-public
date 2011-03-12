@@ -14854,7 +14854,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit * pTarget, uint32 procFlag,
                     if(Id == 71564)
                         i->aura->ModStackAmount(-1);
                     takeCharges = false;
-                    return;
+                    break;
                 }
                 case SPELL_AURA_MOD_STEALTH:
                 case SPELL_AURA_MOD_INVISIBILITY:

@@ -2925,7 +2925,6 @@ SpellCastResult SpellMgr::GetSpellAllowedInLocationError(SpellEntry const *spell
         }
         case 74410:                                         // Dampening Arena
         case 32727:                                         // Arena Preparation
-        case 74410:                                         // Dampening Arena
         {
             if (!player)
                 return SPELL_FAILED_REQUIRES_AREA;
