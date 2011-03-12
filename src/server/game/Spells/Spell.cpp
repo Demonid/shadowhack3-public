@@ -2867,6 +2867,38 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                             ++itr;
                     }
                     break;
+                case SPELLFAMILY_DEATHKNIGHT:
+                {
+                    // Death Pact
+                    if(m_spellInfo->SpellFamilyFlags[0] & 0x00080000)
+                    {
+                        Unit * unit_to_add = NULL;
+                        for (std::list<Unit*>::iterator itr = unitList.begin() ; itr != unitList.end(); ++itr)
+                        {
+                            if ((*itr)->GetTypeId() == TYPEID_UNIT
+                                && (*itr)->GetOwnerGUID() == m_caster->GetGUID()
+                                && (*itr)->ToCreature()->GetCreatureInfo()->type == CREATURE_TYPE_UNDEAD)
+                            {
+                                unit_to_add = (*itr);
+                                break;
+                            }
+                        }
+                        if (unit_to_add)
+                        {
+                            unitList.clear();
+                            unitList.push_back(unit_to_add);
+                        }
+                        // Pet not found - remove cooldown
+                        else
+                        {
+                            if (modOwner->GetTypeId() == TYPEID_PLAYER)
+                                modOwner->RemoveSpellCooldown(m_spellInfo->Id,true);
+                            SendCastResult(SPELL_FAILED_NO_PET);
+                            finish(false);
+                        }
+                        break;
+                    }
+                }
                 default:
                     break;
             }
