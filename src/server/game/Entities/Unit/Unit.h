@@ -2119,6 +2119,7 @@ class Unit : public WorldObject
         Totem* ToTotem(){ if (isTotem()) return reinterpret_cast<Totem*>(this); else return NULL; }
         TempSummon* ToTempSummon() { if (isSummon()) return reinterpret_cast<TempSummon*>(this); else return NULL; }
         const TempSummon* ToTempSummon() const { if (isSummon()) return reinterpret_cast<const TempSummon*>(this); else return NULL; }
+        virtual SpellSchoolMask GetMeleeDamageSchoolMask() const;
 
     protected:
         explicit Unit ();
@@ -2172,8 +2173,6 @@ class Unit : public WorldObject
 
         CharmInfo *m_charmInfo;
         SharedVisionList m_sharedVision;
-
-        virtual SpellSchoolMask GetMeleeDamageSchoolMask() const;
 
         MotionMaster i_motionMaster;
         //uint32 m_unit_movement_flags;
