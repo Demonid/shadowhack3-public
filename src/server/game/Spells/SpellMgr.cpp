@@ -325,8 +325,14 @@ uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell * spell)
 
     int32 castTime = spellCastTimeEntry->CastTime;
 
-    if (spell && spell->GetCaster())
-        spell->GetCaster()->ModSpellCastTime(spellInfo, castTime, spell);
+    if (spell)
+        if (Unit * caster = spell->GetCaster())
+        {
+            caster->ModSpellCastTime(spellInfo, castTime, spell);
+            if (IsChanneledSpell(spellInfo))
+                if (Player* modOwner = caster->GetSpellModOwner())
+                    modOwner->ApplySpellMod(spellInfo->Id, SPELLMOD_CASTING_TIME, castTime, spell);
+        }
 
     if (spellInfo->Attributes & SPELL_ATTR0_REQ_AMMO && (!spell || !(spell->IsAutoRepeat())))
         castTime += 500;
