@@ -1672,7 +1672,7 @@ void AuraEffect::PeriodicTick(AuraApplication * aurApp, Unit * caster) const
                     damage += int32(float(damage * GetTotalTicks()) * ((6-float(2*(GetTickNumber()-1)))*0.01f));
                 }
 
-                damage = caster->SpellHealingBonus(target, GetSpellProto(), damage, DOT, GetBase()->GetStackAmount());
+                damage = caster->SpellHealingBonus(target, GetSpellProto(), damage, DOT, GetBase()->GetStackAmount(), MOD_TARGET);
             }
 
             bool crit = IsPeriodicTickCrit(target, caster);
