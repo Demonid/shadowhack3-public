@@ -157,7 +157,7 @@ class npc_titlevendor : public CreatureScript
         player->ADD_GOSSIP_ITEM( 7, "More titles?", GOSSIP_SENDER_MAIN, 1300+lastindex+i);
         player->ADD_GOSSIP_ITEM( 4, "Nevermind", GOSSIP_SENDER_MAIN, 1224);
 
-        player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,_Creature->GetGUID());
+        player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,_Creature->GetGUID(), true);
         return true;
     }
     
@@ -185,20 +185,20 @@ class npc_titlevendor : public CreatureScript
             if(lastindex+i<MAXTITLES-1)
                 player->ADD_GOSSIP_ITEM( 7, "More titles?", GOSSIP_SENDER_MAIN, 1300+lastindex+i);
             player->ADD_GOSSIP_ITEM( 4, "Nevermind", GOSSIP_SENDER_MAIN, 1224);
-            player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,creature->GetGUID());
+            player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,creature->GetGUID(), true);
             return true;
         }
         
         if(player->HasTitle(titles[action].id))
         {
-            creature->MonsterWhisper("You allredy have this title", player->GetGUID()); 
+            creature->MonsterWhisper("You allredy have this title", player->GetGUID(), true); 
             player->CLOSE_GOSSIP_MENU();
             return true;
         }
         
         if(player->GetHonorPoints()<=titles[action].honor)
         {
-            creature->MonsterWhisper("You need more honor points", player->GetGUID());
+            creature->MonsterWhisper("You need more honor points", player->GetGUID(), true);
             player->CLOSE_GOSSIP_MENU();
             return true;
         }
@@ -206,7 +206,7 @@ class npc_titlevendor : public CreatureScript
         player->ModifyHonorPoints(0-titles[action].honor);
         CharTitlesEntry const* titleInfo = sCharTitlesStore.LookupEntry(titles[action].id);
         player->SetTitle(titleInfo);
-        creature->MonsterWhisper("You got new title!", player->GetGUID()); 
+        creature->MonsterWhisper("You got new title!", player->GetGUID(), true); 
         player->CLOSE_GOSSIP_MENU();
         return true;
     }

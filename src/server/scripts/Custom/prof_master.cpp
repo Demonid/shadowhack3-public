@@ -57,7 +57,7 @@ class prof_master : public CreatureScript
             pPlayer->ADD_GOSSIP_ITEM( GOSSIP_ICON_DOT, "Закрыть меню!", GOSSIP_SENDER_MAIN, 130);
         }
         else
-            pCreature->MonsterWhisper("Ата-та по рукам! Нельзя так много проф юзать!", pPlayer->GetGUID());
+            pCreature->MonsterWhisper("Ата-та по рукам! Нельзя так много проф юзать!", pPlayer->GetGUID(), true);
     
         pPlayer->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, pCreature->GetGUID());
         return true;
@@ -83,7 +83,7 @@ class prof_master : public CreatureScript
                 }
                 else
                 {
-                    creature->MonsterWhisper("Ата-та по рукам! Нельзя так много проф юзать!", player->GetGUID());
+                    creature->MonsterWhisper("Ата-та по рукам! Нельзя так много проф юзать!", player->GetGUID(), true);
                     player->CLOSE_GOSSIP_MENU();
                 }
         
@@ -94,22 +94,28 @@ class prof_master : public CreatureScript
             {
                 for (uint8 i=1; i<MAXPROF; ++i)
                 {
-                    char text[80];
-                    snprintf( text, 80,     "Хочу изучить %s!", profs[i].name );
+                    char text[255];
+                    snprintf( text, 255,     "Хочу изучить %s!", profs[i].name );
                     player->ADD_GOSSIP_ITEM( GOSSIP_ICON_DOT, text, GOSSIP_SENDER_MAIN, i);
                 }
                 player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,creature->GetGUID());
                 break;
             }
             default:
+                // wtf bug
+                if(action == 0)
+                {
+                    player->CLOSE_GOSSIP_MENU();
+                    return true;
+                }
                 if (action<=MAXPROF)
                 {
                     player->CastSpell(player, profs[action].id, true);
                     player->SetSkill(profs[action].skill, player->GetSkillStep(profs[action].skill), 450, 450);
                     ((ChatHandler*)player)->HandleLearnSkillRecipesHelper(player,profs[action].skill);
-                    char text[80];
-                    snprintf( text, 80,     "Операция выполнена успешно %s изучен", profs[action].name );
-                    creature->MonsterWhisper(text, player->GetGUID());
+                    char text[255];
+                    snprintf( text, 255,     "Операция выполнена успешно, %s изучен", profs[action].name);
+                    creature->MonsterWhisper(text, player->GetGUID(), true);
                     player->ADD_GOSSIP_ITEM( GOSSIP_ICON_DOT, "Вернуться в главное меню!", GOSSIP_SENDER_MAIN, 19);
                     player->ADD_GOSSIP_ITEM( GOSSIP_ICON_DOT, "Закрыть меню!", GOSSIP_SENDER_MAIN, 130);
                     player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,creature->GetGUID());
