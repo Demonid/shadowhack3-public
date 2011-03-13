@@ -57,7 +57,7 @@ class prof_master : public CreatureScript
             pPlayer->ADD_GOSSIP_ITEM( GOSSIP_ICON_DOT, "Закрыть меню!", GOSSIP_SENDER_MAIN, 130);
         }
         else
-            pCreature->MonsterWhisper("Ата-та по рукам! Нельзя так много проф юзать!", player->GetGUID());
+            pCreature->MonsterWhisper("Ата-та по рукам! Нельзя так много проф юзать!", pPlayer->GetGUID());
     
         pPlayer->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, pCreature->GetGUID());
         return true;
