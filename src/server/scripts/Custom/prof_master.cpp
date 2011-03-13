@@ -7,7 +7,7 @@
 struct prof
 {
     uint32 id;
-    std::string name;
+    char* name;
     uint32 skill;
 };
 
@@ -77,7 +77,7 @@ class prof_master : public CreatureScript
                 }
                 else
                 {
-                    creature->MonsterSay("Ата-та по рукам! Нельзя так много проф юзать!", LANG_UNIVERSAL, NULL);
+                    creature->MonsterWhisper("Ата-та по рукам! Нельзя так много проф юзать!", LANG_UNIVERSAL, NULL);
                     player->CLOSE_GOSSIP_MENU();
                 }
         
@@ -107,8 +107,8 @@ class prof_master : public CreatureScript
                     player->SetSkill(profs[action].skill, player->GetSkillStep(profs[action].skill), 450, 450);
                     ((ChatHandler*)player)->HandleLearnSkillRecipesHelper(player,profs[action].skill);
                     char text[80];
-                    snprintf( text, 80,     "Операция выполнена успешно %s изучен", profs[i].name );
-                    creature->MonsterSay(text.c_str(), LANG_UNIVERSAL, NULL);
+                    snprintf( text, 80,     "Операция выполнена успешно %s изучен", profs[action].name );
+                    creature->MonsterWhisper(text, LANG_UNIVERSAL, NULL);
                     player->ADD_GOSSIP_ITEM( GOSSIP_ICON_DOT, "Вернуться в главное меню!", GOSSIP_SENDER_MAIN, 19);
                     player->ADD_GOSSIP_ITEM( GOSSIP_ICON_DOT, "Закрыть меню!", GOSSIP_SENDER_MAIN, 130);
                     player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,creature->GetGUID());
