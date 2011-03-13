@@ -157,7 +157,7 @@ class npc_titlevendor : public CreatureScript
         player->ADD_GOSSIP_ITEM( 7, "More titles?", GOSSIP_SENDER_MAIN, 1300+lastindex+i);
         player->ADD_GOSSIP_ITEM( 4, "Nevermind", GOSSIP_SENDER_MAIN, 1224);
 
-        player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,_Creature->GetGUID(), true);
+        player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,_Creature->GetGUID());
         return true;
     }
     
@@ -185,7 +185,7 @@ class npc_titlevendor : public CreatureScript
             if(lastindex+i<MAXTITLES-1)
                 player->ADD_GOSSIP_ITEM( 7, "More titles?", GOSSIP_SENDER_MAIN, 1300+lastindex+i);
             player->ADD_GOSSIP_ITEM( 4, "Nevermind", GOSSIP_SENDER_MAIN, 1224);
-            player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,creature->GetGUID(), true);
+            player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,creature->GetGUID());
             return true;
         }
         
