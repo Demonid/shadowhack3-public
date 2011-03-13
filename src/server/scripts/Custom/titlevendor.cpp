@@ -191,14 +191,14 @@ class npc_titlevendor : public CreatureScript
         
         if(player->HasTitle(titles[action].id))
         {
-            creature->MonsterWhisper("You allredy have this title", 0, player->GetGUID()); 
+            creature->MonsterWhisper("You allredy have this title", player->GetGUID()); 
             player->CLOSE_GOSSIP_MENU();
             return true;
         }
         
         if(player->GetHonorPoints()<=titles[action].honor)
         {
-            creature->MonsterWhisper("You need more honor points", 0, player->GetGUID());
+            creature->MonsterWhisper("You need more honor points", player->GetGUID());
             player->CLOSE_GOSSIP_MENU();
             return true;
         }
@@ -206,7 +206,7 @@ class npc_titlevendor : public CreatureScript
         player->ModifyHonorPoints(0-titles[action].honor);
         CharTitlesEntry const* titleInfo = sCharTitlesStore.LookupEntry(titles[action].id);
         player->SetTitle(titleInfo);
-        creature->MonsterWhisper("You got new title!", 0, player->GetGUID()); 
+        creature->MonsterWhisper("You got new title!", player->GetGUID()); 
         player->CLOSE_GOSSIP_MENU();
         return true;
     }
