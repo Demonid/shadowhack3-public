@@ -4330,13 +4330,10 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->procCharges = 2;
             count++;
             break;
+        case 74396:
+            spellInfo->procCharges = 2;
         case 44544:    // Fingers of Frost
             spellInfo->EffectSpellClassMask[0] = flag96(685904631, 1151048, 0);
-            count++;
-            break;
-        case 74396:    // Fingers of Frost visual buff
-            spellInfo->procCharges = 2;
-            spellInfo->StackAmount = 0;
             count++;
             break;
         case 28200:    // Ascendance (Talisman of Ascendance trinket)
