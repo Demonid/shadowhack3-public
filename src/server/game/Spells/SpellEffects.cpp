@@ -5801,14 +5801,14 @@ void Spell::EffectStuck(SpellEffIndex /*effIndex*/)
         bg->EventPlayerDroppedFlag(pTarget);
     }
 
-    pTarget->RepopAtGraveyard();
+    pTarget->TeleportTo(pTarget->GetStartPosition(), unitTarget == m_caster ? TELE_TO_SPELL : 0);
+    // homebind location is loaded always
+    // pTarget->TeleportTo(pTarget->m_homebindMapId,pTarget->m_homebindX,pTarget->m_homebindY,pTarget->m_homebindZ,pTarget->GetOrientation(), (unitTarget == m_caster ? TELE_TO_SPELL : 0));
 
     // Stuck spell trigger Hearthstone cooldown
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(8690);
-
     if (!spellInfo)
         return;
-
     Spell spell(pTarget, spellInfo, true, 0);
     spell.SendSpellCooldown();
 }
