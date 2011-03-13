@@ -4537,6 +4537,10 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectMiscValue[0] |= 1;
             count++;
             break;
+        case 6474:
+            spellInfo->AttributesEx5 |= SPELL_ATTR5_START_PERIODIC_AT_APPLY;
+            count++;
+            break;
         // Shaman totem attributes for procs with "Call of the ..." spells
         case 2484:  //Earthbind Totem
         case 30706: //Totem of Wrath
