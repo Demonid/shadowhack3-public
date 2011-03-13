@@ -5929,6 +5929,8 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                 // Sweeping Strikes
                 case 12328:
                 {
+                    if(procSpell && procSpell->Id == 50622)
+                        return false;
                     target = SelectNearbyTarget();
                     if (!target)
                         return false;
