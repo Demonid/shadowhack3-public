@@ -6161,20 +6161,18 @@ SpellCastResult Spell::CheckCasterAuras() const
     uint32 unitflag = m_caster->GetUInt32Value(UNIT_FIELD_FLAGS);     // Get unit state
     if (unitflag & UNIT_FLAG_STUNNED)
         if (m_spellInfo->AttributesEx5 & SPELL_ATTR5_USABLE_WHILE_STUNNED)
-           if (m_caster->HasAuraState(AURA_STATE_FROZEN) && !(m_spellInfo->Id == 22812)) // Barkskin
-                prevented_reason = SPELL_FAILED_STUNNED;
-           else {
-                Unit::AuraApplicationMap& Auras = m_caster->GetAppliedAuras();
-                for (Unit::AuraApplicationMap::iterator iter = Auras.begin(); iter != Auras.end(); ++iter)
+        {
+            Unit::AuraApplicationMap& Auras = m_caster->GetAppliedAuras();
+            for (Unit::AuraApplicationMap::iterator iter = Auras.begin(); iter != Auras.end(); ++iter)
+            {
+                Aura const * aura = iter->second->GetBase();
+                if (GetAllSpellMechanicMask(aura->GetSpellProto()) & ((1<<MECHANIC_KNOCKOUT) | (1<<MECHANIC_SAPPED)) && !(m_spellInfo->Id == 22812))
                 {
-                    Aura const * aura = iter->second->GetBase();
-                    if (GetAllSpellMechanicMask(aura->GetSpellProto()) & ((1<<MECHANIC_KNOCKOUT) | (1<<MECHANIC_SAPPED)) && !(m_spellInfo->Id == 22812))
-                    {
-                        prevented_reason = SPELL_FAILED_STUNNED;
-                        break;
-                    }
+                    prevented_reason = SPELL_FAILED_STUNNED;
+                    break;
                 }
             }
+        }
         else
             prevented_reason = SPELL_FAILED_STUNNED;
     else if (unitflag & UNIT_FLAG_CONFUSED && !(m_spellInfo->AttributesEx5 & SPELL_ATTR5_USABLE_WHILE_CONFUSED))
