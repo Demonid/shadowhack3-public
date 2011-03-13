@@ -4537,7 +4537,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectMiscValue[0] |= 1;
             count++;
             break;
-        case 6474:
+        case 6474: // Earhbind totem need this to correct earthen power
             spellInfo->AttributesEx5 |= SPELL_ATTR5_START_PERIODIC_AT_APPLY;
             count++;
             break;
