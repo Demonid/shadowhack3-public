@@ -88,9 +88,8 @@ class prof_master : public CreatureScript
             {
                 for (uint8 i=1; i<MAXPROF; ++i)
                 {
-                    std::string text= "Хочу изучить ";
-                    text+=profs[i].name;
-                    text+="!";
+                    char text[80];
+                    snprintf( text, 80,     "Хочу изучить %s!", profs[i].name );
                     player->ADD_GOSSIP_ITEM( GOSSIP_ICON_DOT, text, GOSSIP_SENDER_MAIN, i);
                 }
                 player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,creature->GetGUID());
@@ -107,9 +106,8 @@ class prof_master : public CreatureScript
                     player->CastSpell(player, profs[action].id, true);
                     player->SetSkill(profs[action].skill, player->GetSkillStep(profs[action].skill), 450, 450);
                     ((ChatHandler*)player)->HandleLearnSkillRecipesHelper(player,profs[action].skill);
-                    std::string text = "Операция выполнена успешно, ";
-                    text+=profs[action].name;
-                    text+=" изучен";
+                    char text[80];
+                    snprintf( text, 80,     "Операция выполнена успешно %s изучен", profs[i].name );
                     creature->MonsterSay(text.c_str(), LANG_UNIVERSAL, NULL);
                     player->ADD_GOSSIP_ITEM( GOSSIP_ICON_DOT, "Вернуться в главное меню!", GOSSIP_SENDER_MAIN, 19);
                     player->ADD_GOSSIP_ITEM( GOSSIP_ICON_DOT, "Закрыть меню!", GOSSIP_SENDER_MAIN, 130);
