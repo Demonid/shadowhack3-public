@@ -3084,7 +3084,7 @@ void Unit::InterruptSpell(CurrentSpellTypes spellType, bool withDelayed, bool wi
 
         if (spell->getState() != SPELL_STATE_FINISHED)
             spell->cancel();
-	
+    
         m_currentSpells[spellType] = NULL;
         spell->SetReferencedFromCurrent(false);
     }
@@ -14872,7 +14872,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit * pTarget, uint32 procFlag,
                         if(!IsBreakingStealthSpells(procSpell))
                             continue;
                         // not break stealth by cast targeting
-                        if (!(procSpell->AttributesEx & SPELL_ATTR1_NOT_BREAK_STEALTH) || procSpell->SpellIconID == 249)
+                        if (!(procSpell->AttributesEx & SPELL_ATTR1_NOT_BREAK_STEALTH) || procSpell->SpellIconID == 249 || procSpell->SpellIconID != 2903)
                             if(damage != 0 || !(procExtra & PROC_EX_ABSORB) || (!(procFlag & PROC_FLAG_TAKEN_PERIODIC)
                                 && !(procSpell->AttributesEx5 & SPELL_ATTR5_START_PERIODIC_AT_APPLY)))
                             {

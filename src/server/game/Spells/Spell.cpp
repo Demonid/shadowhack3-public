@@ -3202,7 +3202,7 @@ void Spell::cancel()
         default:
             break;
     }
-	
+    
     SetReferencedFromCurrent(false);
     if (m_selfContainer && *m_selfContainer == this)
         *m_selfContainer = NULL;
