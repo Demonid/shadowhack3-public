@@ -7093,6 +7093,8 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
     //Check targets for LOS visibility (except spells without range limitations)
     switch(m_spellInfo->Effect[eff])
     {
+        case SPELL_EFFECT_INSTAKILL:
+            return true;
         case SPELL_EFFECT_SUMMON_PLAYER:                    // from anywhere
             break;
         case SPELL_EFFECT_DUMMY:
