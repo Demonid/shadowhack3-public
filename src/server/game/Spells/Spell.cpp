@@ -3356,9 +3356,14 @@ void Spell::cast(bool skipCheck)
         {
              // Permafrost
              if (m_spellInfo->SpellFamilyFlags[1] & 0x00001000 ||  m_spellInfo->SpellFamilyFlags[0] & 0x00100220)
-              m_preCastSpell = 68391;
+                m_preCastSpell = 68391;
              break;
         }
+        case SPELLFAMILY_DEATHKNIGHT:
+            // Chains of Ice correct Frost Fever
+            if(m_spellInfo->Id == 45524)
+                m_caster->CastSpell(unitTarget, 55095, false);
+            break;
         default:break;
     }
 

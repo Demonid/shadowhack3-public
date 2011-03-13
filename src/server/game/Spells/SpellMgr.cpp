@@ -4046,6 +4046,11 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->DurationIndex = 9;
             count++;
             break;
+        // Chains of Ice
+        case 45524:
+            spellInfo->Effect[2] = 0;
+            count++;
+            break;
         case 14185: // Preparation
         //case 11958: // Cold snap
         //case 23989: // Readiness
