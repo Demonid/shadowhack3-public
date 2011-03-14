@@ -543,6 +543,8 @@ class Spell
         void CleanupTargetList();
 
         void SetSpellValue(SpellValueMod mod, int32 value);
+
+        SpellModifier *bugged_mod;
     protected:
 
         bool HasGlobalCooldown();

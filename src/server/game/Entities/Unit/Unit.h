@@ -433,6 +433,14 @@ enum BaseModType
 
 #define MOD_END (PCT_MOD+1)
 
+enum ModType
+{
+    MOD_NONE = 0,
+    MOD_CASTER = 1,
+    MOD_TARGET = 2,
+    MOD_MAX = 3
+};
+
 enum DeathState
 {
     ALIVE       = 0,
@@ -1160,6 +1168,7 @@ struct SpellProcEventEntry;                                 // used only private
 class Unit : public WorldObject
 {
     public:
+        bool IsWithinLOSInMap(const WorldObject* obj) const;
         typedef std::set<Unit*> AttackerSet;
         typedef std::set<Unit*> ControlList;
         typedef std::pair<uint32, uint8> spellEffectPair;
@@ -1368,14 +1377,17 @@ class Unit : public WorldObject
         void Mount(uint32 mount, uint32 vehicleId = 0, uint32 creatureEntry = 0);
         void Unmount();
 
+        void RemoveSpellbyDamageTaken(AuraType auraType, uint32 damage);
+
         uint16 GetMaxSkillValueForLevel(Unit const* target = NULL) const { return (target ? getLevelForTarget(target) : getLevel()) * 5; }
         void DealDamageMods(Unit *pVictim, uint32 &damage, uint32* absorb);
-        uint32 DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDamage = NULL, DamageEffectType damagetype = DIRECT_DAMAGE, SpellSchoolMask damageSchoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellEntry const *spellProto = NULL, bool durabilityLoss = true);
+        uint32 DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDamage = NULL, DamageEffectType damagetype = DIRECT_DAMAGE, SpellSchoolMask damageSchoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellEntry const *spellProto = NULL, bool durabilityLoss = true, bool splited = false);
+
         void Kill(Unit *pVictim, bool durabilityLoss = true);
         int32 DealHeal(Unit *pVictim, uint32 addhealth);
 
-        void ProcDamageAndSpell(Unit *pVictim, uint32 procAttacker, uint32 procVictim, uint32 procEx, uint32 amount, WeaponAttackType attType = BASE_ATTACK, SpellEntry const *procSpell = NULL, SpellEntry const * procAura = NULL);
-        void ProcDamageAndSpellFor(bool isVictim, Unit * pTarget, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, SpellEntry const * procSpell, uint32 damage , SpellEntry const * procAura = NULL);
+        void ProcDamageAndSpell(Unit *pVictim, uint32 procAttacker, uint32 procVictim, uint32 procEx, uint32 amount, uint32 abosrb, WeaponAttackType attType = BASE_ATTACK, SpellEntry const *procSpell = NULL, SpellEntry const * procAura = NULL);
+        void ProcDamageAndSpellFor(bool isVictim, Unit * pTarget, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, SpellEntry const * procSpell, uint32 damage ,uint32 abosrb, SpellEntry const * procAura = NULL);
 
         void HandleEmoteCommand(uint32 anim_id);
         void AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType = BASE_ATTACK, bool extra = false);
@@ -1407,8 +1419,8 @@ class Unit : public WorldObject
         void ApplyResilience(const Unit * pVictim, float * crit, int32 * damage, bool isCrit, CombatRating type) const;
 
         float MeleeSpellMissChance(const Unit *pVictim, WeaponAttackType attType, int32 skillDiff, uint32 spellId) const;
-        SpellMissInfo MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell);
-        SpellMissInfo MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell);
+        SpellMissInfo MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell, Unit * Original);
+        SpellMissInfo MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell, Unit * Original);
         SpellMissInfo SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool canReflect = false);
 
         float GetUnitDodgeChance()    const;
@@ -1522,7 +1534,7 @@ class Unit : public WorldObject
         bool SetPosition(const Position &pos, bool teleport = false) { return SetPosition(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), teleport); }
 
         void KnockbackFrom(float x, float y, float speedXY, float speedZ);
-        void KnockBackWithAngle(float angle, float horizontalSpeed, float verticalSpeed);
+        void KnockBackPlayerWithAngle(float angle, float horizontalSpeed, float verticalSpeed);
         void JumpTo(float speedXY, float speedZ, bool forward = true);
         void JumpTo(WorldObject *obj, float speedZ);
 
@@ -1676,7 +1688,7 @@ class Unit : public WorldObject
         void RemoveAurasDueToSpell(uint32 spellId, uint64 caster = NULL, uint8 reqEffMask = 0, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
         void RemoveAuraFromStack(uint32 spellId, uint64 caster = NULL, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
         inline void RemoveAuraFromStack(AuraMap::iterator &iter,AuraRemoveMode removeMode);
-        void RemoveAurasDueToSpellByDispel(uint32 spellId, uint64 casterGUID, Unit *dispeller);
+        void RemoveAurasDueToSpellByDispel(uint32 spellId, uint64 casterGUID, Unit *dispeller, uint8 count = 1);;
         void RemoveAurasDueToSpellBySteal(uint32 spellId, uint64 casterGUID, Unit *stealer);
         void RemoveAurasDueToItemSpell(Item* castItem,uint32 spellId);
         void RemoveAurasByType(AuraType auraType, uint64 casterGUID = 0, Aura * except = NULL, bool negative = true, bool positive = true);
@@ -1716,6 +1728,7 @@ class Unit : public WorldObject
         bool HasAuraEffect(uint32 spellId, uint8 effIndex, uint64 caster = 0) const;
         uint32 GetAuraCount(uint32 spellId) const;
         bool HasAura(uint32 spellId, uint64 casterGUID = 0, uint64 itemCasterGUID = 0, uint8 reqEffMask = 0) const;
+        bool HasRemovedAura(uint32 spellId) const;
         bool HasAuraType(AuraType auraType) const;
         bool HasAuraTypeWithCaster(AuraType auratype, uint64 caster) const;
         bool HasAuraTypeWithMiscvalue(AuraType auratype, int32 miscvalue) const;
@@ -1842,7 +1855,7 @@ class Unit : public WorldObject
         virtual void UpdateMaxPower(Powers power) = 0;
         virtual void UpdateAttackPowerAndDamage(bool ranged = false) = 0;
         virtual void UpdateDamagePhysical(WeaponAttackType attType) = 0;
-        float GetTotalAttackPowerValue(WeaponAttackType attType) const;
+        float GetTotalAttackPowerValue(WeaponAttackType attType, Unit* versus) const;
         float GetWeaponDamageRange(WeaponAttackType attType ,WeaponDamageRange type) const;
         void SetBaseWeaponDamage(WeaponAttackType attType ,WeaponDamageRange damageRange, float value) { m_weaponDamage[attType][damageRange] = value; }
 
@@ -1928,8 +1941,8 @@ class Unit : public WorldObject
         int32 SpellBaseHealingBonus(SpellSchoolMask schoolMask);
         int32 SpellBaseDamageBonusForVictim(SpellSchoolMask schoolMask, Unit *pVictim);
         int32 SpellBaseHealingBonusForVictim(SpellSchoolMask schoolMask, Unit *pVictim);
-        uint32 SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint32 damage, DamageEffectType damagetype, uint32 stack = 1);
-        uint32 SpellHealingBonus(Unit *pVictim, SpellEntry const *spellProto, uint32 healamount, DamageEffectType damagetype, uint32 stack = 1);
+        uint32 SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint32 damage, DamageEffectType damagetype, uint32 stack = 1, uint32 modtype = MOD_MAX );
+        uint32 SpellHealingBonus(Unit *pVictim, SpellEntry const *spellProto, uint32 healamount, DamageEffectType damagetype, uint32 stack = 1, uint32 modtype = MOD_MAX );
         bool   isSpellBlocked(Unit *pVictim, SpellEntry const *spellProto, WeaponAttackType attackType = BASE_ATTACK);
         bool   isBlockCritical();
         bool   isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolMask schoolMask, WeaponAttackType attackType = BASE_ATTACK) const;
@@ -1946,6 +1959,7 @@ class Unit : public WorldObject
 
         uint32 GetRemainingDotDamage(uint64 caster, uint32 spellId, uint8 effectIndex = 0) const;
 
+        void ApplyUberImmune(uint32 spellid, bool apply);
         void ApplySpellImmune(uint32 spellId, uint32 op, uint32 type, bool apply);
         void ApplySpellDispelImmunity(const SpellEntry * spellProto, DispelType type, bool apply);
         virtual bool IsImmunedToSpell(SpellEntry const* spellInfo);
@@ -2017,7 +2031,7 @@ class Unit : public WorldObject
         // reactive attacks
         void ClearAllReactives();
         void StartReactiveTimer(ReactiveType reactive) { m_reactiveTimer[reactive] = REACTIVE_TIMER_START;}
-        bool HasReactiveTimer ( ReactiveType reactive )	{return m_reactiveTimer[reactive] > 0;}	
+        bool HasReactiveTimer ( ReactiveType reactive )    {return m_reactiveTimer[reactive] > 0;}    
         void UpdateReactives(uint32 p_time);
 
         // group updates
@@ -2104,6 +2118,7 @@ class Unit : public WorldObject
         Totem* ToTotem(){ if (isTotem()) return reinterpret_cast<Totem*>(this); else return NULL; }
         TempSummon* ToTempSummon() { if (isSummon()) return reinterpret_cast<TempSummon*>(this); else return NULL; }
         const TempSummon* ToTempSummon() const { if (isSummon()) return reinterpret_cast<const TempSummon*>(this); else return NULL; }
+        virtual SpellSchoolMask GetMeleeDamageSchoolMask() const;
 
     protected:
         explicit Unit ();
@@ -2157,8 +2172,6 @@ class Unit : public WorldObject
 
         CharmInfo *m_charmInfo;
         SharedVisionList m_sharedVision;
-
-        virtual SpellSchoolMask GetMeleeDamageSchoolMask() const;
 
         MotionMaster i_motionMaster;
         //uint32 m_unit_movement_flags;

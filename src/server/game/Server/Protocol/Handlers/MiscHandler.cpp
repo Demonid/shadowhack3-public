@@ -276,6 +276,8 @@ void WorldSession::HandleWhoOpcode(WorldPacket & recv_data)
         uint32 pzoneid = itr->second->GetZoneId();
         uint8 gender = itr->second->getGender();
 
+        if(itr->second->GetMap()->IsBattleArena() && sWorld->getBoolConfig(CONFIG_ANTIDODGE))
+            pzoneid = itr->second->Oldzone;
         bool z_show = true;
         for (uint32 i = 0; i < zones_count; ++i)
         {
@@ -791,6 +793,8 @@ void WorldSession::HandleResurrectResponseOpcode(WorldPacket & recv_data)
         return;
 
     GetPlayer()->ResurectUsingRequestData();
+    if(!GetPlayer()->InBattleground())
+        GetPlayer()->CastSpell(GetPlayer(), 2479, true);
 }
 
 void WorldSession::SendAreaTriggerMessage(const char* Text, ...)

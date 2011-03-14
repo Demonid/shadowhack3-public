@@ -166,7 +166,7 @@ bool ArenaTeam::AddMember(const uint64& PlayerGuid)
     newmember.games_week        = 0;
     newmember.wins_season       = 0;
     newmember.wins_week         = 0;
-    newmember.personal_rating   = plPRating;
+    newmember.personal_rating   = sWorld->getIntConfig(CONFIG_ARENA_START_PERSONAL_RATING);
     newmember.matchmaker_rating = plMMRating;
 
     m_members.push_back(newmember);
