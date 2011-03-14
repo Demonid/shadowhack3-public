@@ -516,13 +516,9 @@ m_caster(Caster), m_spellValue(new SpellValue(m_spellInfo))
     // determine reflection
     m_canReflect = false;
 
-    // Thunderstorm
-    if (m_spellInfo->SpellFamilyName == SPELLFAMILY_SHAMAN && m_spellInfo->SpellFamilyFlags[1] == 0x00002000)
-        m_canReflect = true;
-
-    // Blastwave
-    if (m_spellInfo->SpellFamilyName == SPELLFAMILY_MAGE && m_spellInfo->SpellFamilyFlags[1] == 0x00000040)
-        m_canReflect = true;
+    // Mind Control
+    if (m_spellInfo->Id == 605)
+		m_canReflect = true;
 
     // Death Grip
     if (m_spellInfo->Id == 49575 || m_spellInfo->Id == 49560 || m_spellInfo->Id == 49576)
@@ -1519,36 +1515,46 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
                 // Now Reduce spell duration using data received at spell hit
                 int32 duration = m_spellAura->GetMaxDuration();
                 int32 limitduration = GetDiminishingReturnsLimitDuration(m_diminishGroup,aurSpellInfo);
-                float diminishMod = unit->ApplyDiminishingToDuration(m_diminishGroup, duration, m_originalCaster, m_diminishLevel,limitduration);
-
-                // unit is immune to aura if it was diminished to 0 duration
-                if (diminishMod == 0.0f)
-                {
-                    m_spellAura->Remove();
-                    return SPELL_MISS_IMMUNE;
-                }
-
+                if (duration== -1 && m_caster->isTotem())
+                    duration = m_caster->ToTotem()->GetTotemDuration();
+                // Earth grab    
+                if (m_spellInfo->Id != 64695)
+                    unit->ApplyDiminishingToDuration(m_diminishGroup, duration, m_originalCaster, m_diminishLevel,limitduration);
                 ((UnitAura*)m_spellAura)->SetDiminishGroup(m_diminishGroup);
 
-                bool positive = IsPositiveSpell(m_spellAura->GetId());
-                AuraApplication * aurApp = m_spellAura->GetApplicationOfTarget(m_originalCaster->GetGUID());
-                if (aurApp)
-                    positive = aurApp->IsPositive();
+                bool positive = m_originalCaster->IsFriendlyTo(unit);
+                //AuraApplication * aurApp = m_spellAura->GetApplicationOfTarget(m_originalCaster->GetGUID());
 
-                duration = m_originalCaster->ModSpellDuration(aurSpellInfo, unit, duration, positive);
+                 // Mind Control
+                 if (m_spellInfo->Id == 605)
+                 {
+                     Unit * unit2 = ObjectAccessor::GetUnit(*m_caster, m_UniqueTargetInfo.begin()->targetGUID);
+                     if (Aura * aur = unit2->GetAura(605))
+                     {
+                         if (aur != m_spellAura)
+                         duration = aur->GetDuration();
+                     }
+                     // no aura, returning
+                     else if (const_cast<Unit*>(m_caster) == unit)
+                         duration = 0;
+                } 
+                else duration = m_originalCaster->ModSpellDuration(aurSpellInfo, unit, duration, positive);
 
-                // Haste modifies duration of channeled spells
-                if (IsChanneledSpell(m_spellInfo) && !(m_spellInfo->Id == 6358))
-                    m_originalCaster->ModSpellCastTime(aurSpellInfo, duration, this);
+                if (!duration && !damage)
+                {
+                    if (m_spellInfo->Id == 66)
+                        m_originalCaster->CastSpell(m_originalCaster, 32612, true);
+                    m_spellAura->Remove(AURA_REMOVE_BY_EXPIRE);
+                    if (m_diminishLevel>=DIMINISHING_LEVEL_IMMUNE)
+                        return SPELL_MISS_IMMUNE;
+                }
 
-                // and duration of auras affected by SPELL_AURA_PERIODIC_HASTE
-                if (m_originalCaster->HasAuraTypeWithAffectMask(SPELL_AURA_PERIODIC_HASTE, aurSpellInfo))
-                    duration = int32(duration * m_originalCaster->GetFloatValue(UNIT_MOD_CAST_SPEED));
-
-                if (duration != m_spellAura->GetMaxDuration())
+                else if (duration != m_spellAura->GetMaxDuration())
                 {
                     m_spellAura->SetMaxDuration(duration);
                     m_spellAura->SetDuration(duration);
+                    if(IsChanneledSpell(m_spellInfo))
+                        SendChannelStart(duration);
                 }
                 m_spellAura->_RegisterForTargets();
             }
@@ -2220,10 +2226,20 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
             }
 
             Position pos;
-            if (cur == TARGET_DEST_CASTER_FRONT_LEAP)
-                m_caster->GetFirstCollisionPosition(pos, dist, angle);
-            else
-                m_caster->GetNearPosition(pos, dist, angle);
+
+            switch (cur)
+            {
+                case TARGET_DEST_CASTER_FRONT_LEAP:
+                case TARGET_DEST_CASTER_FRONT_LEFT:
+                case TARGET_DEST_CASTER_BACK_LEFT:
+                case TARGET_DEST_CASTER_BACK_RIGHT:
+                case TARGET_DEST_CASTER_FRONT_RIGHT:
+                    m_caster->GetFirstCollisionPosition(pos, dist, angle);
+                    break;
+                default:
+                    m_caster->GetNearPosition(pos, dist, angle);
+                    break;
+            }
             m_targets.setDst(*m_caster);
             m_targets.modDst(pos);
             break;
@@ -2762,6 +2778,38 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                             ++itr;
                     }
                     break;
+                case SPELLFAMILY_DEATHKNIGHT:
+                {
+                    // Death Pact
+                    if(m_spellInfo->SpellFamilyFlags[0] & 0x00080000)
+                    {
+                        Unit * unit_to_add = NULL;
+                        for (std::list<Unit*>::iterator itr = unitList.begin() ; itr != unitList.end(); ++itr)
+                        {
+                            if ((*itr)->GetTypeId() == TYPEID_UNIT
+                                && (*itr)->GetOwnerGUID() == m_caster->GetGUID()
+                                && (*itr)->ToCreature()->GetCreatureInfo()->type == CREATURE_TYPE_UNDEAD)
+                            {
+                                unit_to_add = (*itr);
+                                break;
+                            }
+                        }
+                        if (unit_to_add)
+                        {
+                            unitList.clear();
+                            unitList.push_back(unit_to_add);
+                        }
+                        // Pet not found - remove cooldown
+                        else
+                        {
+                            if (modOwner->GetTypeId() == TYPEID_PLAYER)
+                                modOwner->RemoveSpellCooldown(m_spellInfo->Id,true);
+                            SendCastResult(SPELL_FAILED_NO_PET);
+                            finish(false);
+                        }
+                        break;
+                    }
+                }
                 case SPELLFAMILY_DRUID:
                     if (m_spellInfo->SpellFamilyFlags[1] == 0x04000000) // Wild Growth
                     {
@@ -3243,6 +3291,11 @@ void Spell::cast(bool skipCheck)
               m_preCastSpell = 68391;
              break;
         }
+        case SPELLFAMILY_DEATHKNIGHT:
+            // Chains of Ice correct Frost Fever
+            if(m_spellInfo->Id == 45524)
+                m_caster->CastSpell(unitTarget, 55095, false);
+            break;
     }
 
     // traded items have trade slot instead of guid in m_itemTargetGUID
@@ -5695,19 +5748,26 @@ SpellCastResult Spell::CheckCast(bool strict)
                 }
                 break;
             }
-		case SPELL_AURA_SCHOOL_IMMUNITY:
-		{
-			switch(m_spellInfo->Id)
-			{
-				// Hand of Protection
-			    case 1022:
-				case 5599:
-				case 10278:
-					if (m_caster->HasUnitState(UNIT_STAT_CONTROLLED))
-                   return SPELL_FAILED_STUNNED;
-			}
-			break;
-		}
+            case SPELL_AURA_MOD_INVISIBILITY:
+            {
+                // Prevent stacking of Invisibility auras
+                if (m_caster->HasAuraType(SPELL_AURA_MOD_INVISIBILITY))
+                   return SPELL_FAILED_TARGET_AURASTATE;
+            }
+            case SPELL_AURA_SCHOOL_IMMUNITY:
+            {
+                switch(m_spellInfo->Id)
+                {
+                // Hand of Protection
+                case 1022:
+                case 5599:
+                case 10278:
+                    if (m_caster->HasUnitState(UNIT_STAT_CONTROLLED))
+                       return SPELL_FAILED_STUNNED;
+                    break;
+                }
+                break;
+            }
             case SPELL_AURA_PERIODIC_MANA_LEECH:
             {
                 if (!m_targets.getUnitTarget())
@@ -5846,7 +5906,7 @@ SpellCastResult Spell::CheckCasterAuras() const
     uint32 unitflag = m_caster->GetUInt32Value(UNIT_FIELD_FLAGS);     // Get unit state
     if (unitflag & UNIT_FLAG_STUNNED)
         if (m_spellInfo->AttributesEx5 & SPELL_ATTR5_USABLE_WHILE_STUNNED)
-           if (m_caster->HasAuraState(AURA_STATE_FROZEN) && !(m_spellInfo->Id == 22812)) // Barkskin
+           if (m_caster->HasAuraState(AURA_STATE_FROZEN) && !(m_spellInfo->Id == 22812 || m_spellInfo->Id == 47585)) // Barkskin // Dispersion
                 prevented_reason = SPELL_FAILED_STUNNED;
            else {
                 Unit::AuraApplicationMap& Auras = m_caster->GetAppliedAuras();
@@ -6772,6 +6832,8 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
     //Check targets for LOS visibility (except spells without range limitations)
     switch(m_spellInfo->Effect[eff])
     {
+        case SPELL_EFFECT_INSTAKILL:
+            return true;
         case SPELL_EFFECT_SUMMON_PLAYER:                    // from anywhere
             break;
         case SPELL_EFFECT_DUMMY:
