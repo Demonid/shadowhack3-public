@@ -7213,12 +7213,13 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const *
                 summon->SetDisplayId(1126);
         }
 
-        if(m_spellInfo->Id == 57879)
+        if (m_spellInfo->Id == 57879)
         {
-            if(Unit * target = m_targets.getUnitTarget())
+            if (Unit * target = m_targets.getUnitTarget())
                 summon->GetMotionMaster()->MoveFollow(target, 3.0f, 0);
         }
-        else summon->AI()->EnterEvadeMode();
+        else if (m_spellInfo->Id != 1122)
+            summon->AI()->EnterEvadeMode();
         // only for gargoyle, cause bugs
         if(m_spellInfo->Id == 49206 || m_spellInfo->Id == 57879)
             if(Unit * target = m_targets.getUnitTarget())
