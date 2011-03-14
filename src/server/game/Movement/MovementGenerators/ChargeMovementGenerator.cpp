@@ -53,7 +53,7 @@ void ChargeMovementGenerator<T>::MoveToNextNode(T &unit)
 {
     Traveller<T> traveller(unit);
     PathNode &node = i_path[i_currentNode];
-    i_destinationHolder.SetDestination(traveller, node.x, node.y, node.z, false);
+    i_destinationHolder.SetDestination(traveller, node.x, node.y, node.z + 0.05f, false);
 }
 
 template<class T>
