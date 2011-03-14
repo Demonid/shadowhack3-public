@@ -1773,11 +1773,11 @@ void Unit::CalcAbsorbResist(Unit *pVictim, SpellSchoolMask schoolMask, DamageEff
         if (defaultPrevented)
             continue;
 
-        // Apply absorb mod auras
-        AddPctF(currentAbsorb, -auraAbsorbMod);
-
         // absorb must be smaller than the damage itself
         currentAbsorb = RoundToInterval(currentAbsorb, 0, int32(dmgInfo.GetDamage()));
+
+        // Apply absorb mod auras
+        AddPctF(currentAbsorb, -auraAbsorbMod);
 
         dmgInfo.AbsorbDamage(currentAbsorb);
 
@@ -1824,10 +1824,10 @@ void Unit::CalcAbsorbResist(Unit *pVictim, SpellSchoolMask schoolMask, DamageEff
         if (defaultPrevented)
             continue;
 
-        AddPctF(currentAbsorb, -auraAbsorbMod);
-
         // absorb must be smaller than the damage itself
         currentAbsorb = RoundToInterval(currentAbsorb, 0, int32(dmgInfo.GetDamage()));
+
+        AddPctF(currentAbsorb, -auraAbsorbMod);
 
         int32 manaReduction = currentAbsorb;
 
@@ -10770,7 +10770,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
                 for (AuraEffectList::const_iterator j = ResIgnoreAuras.begin(); j != ResIgnoreAuras.end(); ++j)
                 {
                     if ((*j)->GetMiscValue() & GetSpellSchoolMask(spellProto))
-                        sumNegativeMod*=(100-(*j)->GetAmount())/100;
+                        sumNegativeMod*=(100.0f-(*j)->GetAmount())/100.0f;
                 }
             }
 
@@ -12094,11 +12094,29 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage, WeaponAttackType att
             break;
         }
 
+    int32 maxPositiveMod = 0; // max of the positive amount aura (that increase the damage taken)
+    int32 sumNegativeMod = 0; // sum the negative amount aura (that reduce the damage taken)
+
     // ..taken
     AuraEffectList const& mModDamagePercentTaken = pVictim->GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN);
     for (AuraEffectList::const_iterator i = mModDamagePercentTaken.begin(); i != mModDamagePercentTaken.end(); ++i)
         if ((*i)->GetMiscValue() & GetMeleeDamageSchoolMask())
-            AddPctN(TakenTotalMod, (*i)->GetAmount());
+        {
+            if ((*i)->GetAmount() > 0)
+            {
+                if ((*i)->GetAmount() > maxPositiveMod)
+                    maxPositiveMod = (*i)->GetAmount();
+            }
+            else
+                sumNegativeMod += (*i)->GetAmount();
+            AuraEffectList const &ResIgnoreAuras = GetAuraEffectsByType(SPELL_AURA_MOD_IGNORE_TARGET_RESIST);
+            for (AuraEffectList::const_iterator j = ResIgnoreAuras.begin(); j != ResIgnoreAuras.end(); ++j)
+            {
+                if ((*j)->GetMiscValue() & GetMeleeDamageSchoolMask())
+                    sumNegativeMod*=(100.0f-(*j)->GetAmount())/100.0f;
+            }
+        }
+    TakenTotalMod *= (sumNegativeMod+maxPositiveMod+100.0f)/100.0f;
 
     // From caster spells
     AuraEffectList const& mOwnerTaken = pVictim->GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_FROM_CASTER);
