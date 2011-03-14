@@ -2238,9 +2238,9 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                             AddUnitTarget(*itr, i);
                     return;
                 }
-                // Earthen Power
+                /* Earthen Power
                 if (m_spellInfo->Id == 3600)
-                    AddUnitTarget(m_caster, i);
+                    AddUnitTarget(m_caster, i);*/
                 m_targets.setSrc(*m_caster);
                 break;
             }
