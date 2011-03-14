@@ -325,8 +325,14 @@ uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell * spell)
 
     int32 castTime = spellCastTimeEntry->CastTime;
 
-    if (spell && spell->GetCaster())
-        spell->GetCaster()->ModSpellCastTime(spellInfo, castTime, spell);
+    if (spell)
+        if (Unit * caster = spell->GetCaster())
+        {
+            caster->ModSpellCastTime(spellInfo, castTime, spell);
+            if (IsChanneledSpell(spellInfo))
+                if (Player* modOwner = caster->GetSpellModOwner())
+                    modOwner->ApplySpellMod(spellInfo->Id, SPELLMOD_CASTING_TIME, castTime, spell);
+        }
 
     if (spellInfo->Attributes & SPELL_ATTR0_REQ_AMMO && (!spell || !(spell->IsAutoRepeat())))
         castTime += 500;
@@ -3992,7 +3998,6 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 74396:    // Fingers of Frost visual buff
             spellInfo->procCharges = 2;
-            spellInfo->StackAmount = 0;
             count++;
             break;
         case 28200:    // Ascendance (Talisman of Ascendance trinket)
@@ -4089,6 +4094,11 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->spellLevel = 0;
             count++;
             break;
+        // Chains of Ice
+        case 45524:
+            spellInfo->Effect[2] = 0;
+            count++;
+            break;
         case 30451:     // Arcane Blast
         case 42894:
         case 42896:
@@ -4171,7 +4181,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 5215:     // Prowl
         case 1784:     // Stealth
         case 58984:    // Shadowmeld
-            spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_TAKE_DAMAGE;
+            spellInfo->AuraInterruptFlags&= ~ AURA_INTERRUPT_FLAG_TAKE_DAMAGE;
             count++;
             break;
         case 47201:    // Everlasting Affliction
@@ -4189,6 +4199,10 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 51852:    // The Eye of Acherus (no spawn in phase 2 in db)
             spellInfo->EffectMiscValue[0] |= 1;
+            count++;
+            break;
+        case 6474:     // Earthbind Totem
+            spellInfo->AttributesEx5 |= SPELL_ATTR5_START_PERIODIC_AT_APPLY;
             count++;
             break;
         // Shaman totem attributes for procs with "Call of the ..." spells
@@ -4515,9 +4529,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 // Roar
                 else if (spellInfo->SpellFamilyFlags[0] & 0x8)
                     mSpellCustomAttr[i] |= SPELL_ATTR0_CU_AURA_CC;
-                // Entangling Roots
-                else if (spellInfo->SpellFamilyFlags[0] & 0x200)
-                    spellInfo->CastingTimeIndex = 1;
                 else
                     break;
                 count++;

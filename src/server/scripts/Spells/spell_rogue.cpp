@@ -77,6 +77,7 @@ public:
             target->CastSpell(target, ROG_SPELL_CHEAT_DEATH_COOLDOWN, true);
             target->ToPlayer()->AddSpellCooldown(ROG_SPELL_CHEAT_DEATH_COOLDOWN, 0, time(NULL) + 60);
 
+            target->CastSpell(target, 45182, true);
             uint32 health10 = target->CountPctFromMaxHealth(10);
 
             // hp > 10% - absorb hp till 10%
