@@ -382,6 +382,7 @@ m_periodicTimer(0), m_tickNumber(0)
     CalculatePeriodic(caster, true);
 
     m_amount = CalculateAmount(caster);
+    hidencooldown = 0;
 
     CalculateSpellMod();
 }
@@ -2864,7 +2865,7 @@ void AuraEffect::HandleModInvisibility(AuraApplication const * aurApp, uint8 mod
         }
 
         // apply glow vision
-        if (target->GetTypeId() == TYPEID_PLAYER)
+        if (target->GetTypeId() == TYPEID_PLAYER && m_spellProto->Id != SPELL_ARENA_PREPARATION)
             target->SetByteFlag(PLAYER_FIELD_BYTES2, 3, PLAYER_FIELD_BYTE2_INVISIBILITY_GLOW);
 
         target->m_invisibility.AddFlag(type);
@@ -2876,7 +2877,7 @@ void AuraEffect::HandleModInvisibility(AuraApplication const * aurApp, uint8 mod
         {
             // if not have different invisibility auras.
             // remove glow vision
-            if (target->GetTypeId() == TYPEID_PLAYER)
+            if (target->GetTypeId() == TYPEID_PLAYER && m_spellProto->Id != SPELL_ARENA_PREPARATION)
                 target->RemoveByteFlag(PLAYER_FIELD_BYTES2, 3, PLAYER_FIELD_BYTE2_INVISIBILITY_GLOW);
 
             target->m_invisibility.DelFlag(type);
@@ -6038,6 +6039,12 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                                 target->CastSpell(target, 58601, true);
                                 target->CastSpell(target, 45472, true);
                             }
+                        // Shadowmourne - Item, Legendary
+                        case 71903:
+                            target->RemoveAurasDueToSpell(72521);
+                            target->RemoveAurasDueToSpell(72523);
+                            target->RemoveAurasDueToSpell(71905);
+                            break;
                     }
                     break;
                 case SPELLFAMILY_MAGE:
@@ -6138,6 +6145,18 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                 break;
             switch(GetId())
             {
+                // Deadly Precision
+                case 71563:
+                {
+                    if(apply)
+                    {
+                        SpellEntry const * spell = sSpellStore.LookupEntry(71564);
+                        for (uint32 i=0; i < spell->StackAmount; ++i)
+                            caster->CastSpell(target, spell->Id, true, NULL, NULL, GetCasterGUID());
+                    }
+                    else caster->RemoveAurasDueToSpell(71564);
+                    break;
+                }
                 // Recently Bandaged
                 case 11196:
                     target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, GetMiscValue(), apply);

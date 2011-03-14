@@ -5071,6 +5071,16 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
         {
             switch (dummySpell->Id)
             {
+                // Necrotic Touch
+                case 71875:
+                case 71877:
+                {
+                    if(!damage)
+                        return false;
+                    basepoints0=damage*triggeredByAura->GetAmount()/100.0f;
+                    triggered_spell_id = 71879;
+                    break;
+                }
                 // Bloodworms Health Leech
                 case 50453:
                 {
@@ -5836,6 +5846,8 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
 
                     if(target == pVictim)
                         return false;
+                    if (procSpell && procSpell->Id == 50622)
+                        this->ToPlayer()->AddSpellCooldown(12328, 0, time(NULL) + 0.5);
 
                     basepoints0 = damage;
                     triggered_spell_id = 12723;
@@ -6629,7 +6641,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                 if (Unit * beaconTarget = triggeredByAura->GetBase()->GetCaster())
                 {
                     // do not proc when target of beacon of light is healed
-                    if (beaconTarget == this)
+                    if (beaconTarget == this || !IsWithinLOSInMap(beaconTarget))
                         return false;
                     // check if it was heal by paladin which casted this beacon of light
                     if (beaconTarget->GetAura(53563, pVictim->GetGUID()))
@@ -6707,6 +6719,33 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
             }
             switch (dummySpell->Id)
             {
+                // Item - Paladin T10 Holy 2P Bonus
+                case 70755:
+                    // mask too big, only Divine Illumination
+                    if(procSpell->Id == 31842)
+                        triggered_spell_id = 71166;
+                    break;
+                // Item - Icecrown 25 Normal Dagger Proc
+                case 71880:
+                // Item - Icecrown 25 Heroic Dagger Proc
+                case 71892:
+                {    
+                    if(ToPlayer()->HasSpellCooldown(dummySpell->Id))
+                        return true;        
+
+                    int32 triggeredSpellId = 0;
+                    switch(getPowerType())
+                    {
+                        case POWER_MANA:        triggeredSpellId = 71888; break;
+                        case POWER_ENERGY:      triggeredSpellId = 71887; break;
+                        case POWER_RAGE:        triggeredSpellId = 71886; break;
+                        default: break;
+                    }
+                    if (triggeredSpellId)
+                        CastSpell(this, triggeredSpellId, true);
+                    ToPlayer()->AddSpellCooldown(dummySpell->Id, 0, time(NULL) + 40);
+                    return true;
+                }
                 // Heart of the Crusader
                 case 20335: // rank 1
                     triggered_spell_id = 21183;
@@ -6949,6 +6988,15 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                     target = pVictim;
                     break;
                 }
+                // Item - Paladin T10 Retribution 2P Bonus
+                case 70765:
+                {
+                    if (GetTypeId() != TYPEID_PLAYER)
+                        return false;
+                
+                    this->ToPlayer()->RemoveSpellCooldown(53385, true);
+                    return true;
+                }
             }
             break;
         }
@@ -6956,30 +7004,15 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
         {
             switch(dummySpell->Id)
             {
-                // Earthen Power (Rank 1, 2)
-                case 51523:
-                case 51524:
-                {
-                    // Totem itself must be a caster of this spell
-                    Unit* caster = NULL;
-                    for (ControlList::iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr) {
-                        if ((*itr)->GetEntry() != 2630)
-                            continue;
-
-                        caster = (*itr);
-                        break;
-                    }
-
-                    if (!caster)
-                        return false;
-
-					// Only from Earthbind Totem
-					if(procSpell->Id != 2484)
-                       return false;
-
-                    caster->CastSpell(caster, 59566, true, castItem, triggeredByAura, originalCaster);
+                // Item - Shaman T10 Enhancement 4P Bonus
+                case 70832:
+                    if(Aura * aur= GetAura(53817))
+                        if(aur->GetStackAmount()==4)
+                        {
+                            triggered_spell_id=70831;
+                            break;
+                        }
                     return true;
-                }
                 // Tidal Force
                 case 55198:
                 {
@@ -7824,6 +7857,22 @@ bool Unit::HandleModDamagePctTakenAuraProc(Unit *pVictim, uint32 /*damage*/, Aur
 
     switch(dummySpell->SpellFamilyName)
     {
+        case SPELLFAMILY_DEATHKNIGHT:
+        {
+            switch(dummySpell->Id)
+            {
+                // Bone Shield
+                case 49222:
+                {
+                    if(triggeredByAura->hidencooldown > time(NULL))
+                        return false;
+                    triggeredByAura->hidencooldown = time(NULL)+cooldown;
+                    return true;
+                }
+                default:break;
+            }
+            break;
+        }
         case SPELLFAMILY_PALADIN:
         {
             // Blessing of Sanctuary
@@ -8353,6 +8402,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
                             return false;
                         // stacking
                         CastSpell(this, 67713, true, NULL, triggeredByAura);
+                        this->ToPlayer()->AddSpellCooldown(67713, 0, time(NULL)+2);
 
                         Aura * dummy = GetAura(67713);
                         // release at 3 aura in stack (cont contain in basepoint of trigger aura)
@@ -8371,6 +8421,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
                             return false;
                         // stacking
                         CastSpell(this, 67759, true, NULL, triggeredByAura);
+                        this->ToPlayer()->AddSpellCooldown(67759, 0, time(NULL)+2);
 
                         Aura * dummy = GetAura(67759);
                         // release at 3 aura in stack (cont contain in basepoint of trigger aura)
@@ -12939,6 +12990,10 @@ int32 Unit::ModSpellDuration(SpellEntry const* spellProto, Unit const* target, i
                 break;
         }
     }
+    // and duration of auras affected by SPELL_AURA_PERIODIC_HASTE
+    if (HasAuraTypeWithAffectMask(SPELL_AURA_PERIODIC_HASTE, spellProto) || IsChanneledSpell(spellProto))
+        duration *= GetFloatValue(UNIT_MOD_CAST_SPEED);
+
     return std::max(duration, 0);
 }
 
@@ -13927,7 +13982,6 @@ bool InitTriggerAuraData()
     isTriggerAura[SPELL_AURA_REFLECT_SPELLS_SCHOOL] = true;
     isTriggerAura[SPELL_AURA_MECHANIC_IMMUNITY] = true;
     isTriggerAura[SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN] = true;
-    isTriggerAura[SPELL_AURA_SPELL_MAGNET] = true;
     isTriggerAura[SPELL_AURA_MOD_ATTACK_POWER] = true;
     isTriggerAura[SPELL_AURA_ADD_CASTER_HIT_TRIGGER] = true;
     isTriggerAura[SPELL_AURA_OVERRIDE_CLASS_SCRIPTS] = true;
@@ -14299,6 +14353,13 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit * pTarget, uint32 procFlag,
                             triggeredByAura->SetAmount(damageLeft - damage);
                     }
                     break;
+                }
+                case SPELL_AURA_MOD_RATING:
+                {
+                    // Deadly Precision
+                    if (Id == 71564)
+                        i->aura->ModStackAmount(-1);
+                    return;
                 }
                 //case SPELL_AURA_ADD_FLAT_MODIFIER:
                 //case SPELL_AURA_ADD_PCT_MODIFIER:
