@@ -1431,6 +1431,7 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
     if (m_spellInfo->speed)
         missinfo = m_caster->SpellHitResult(unit, m_spellInfo, true);
     if (missinfo == SPELL_MISS_IMMUNE)
+        return SPELL_MISS_IMMUNE;
 
     PrepareScriptHitHandlers();
     CallScriptBeforeHitHandlers();
