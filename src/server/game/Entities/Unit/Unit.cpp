@@ -14446,7 +14446,6 @@ bool InitTriggerAuraData()
     isTriggerAura[SPELL_AURA_REFLECT_SPELLS_SCHOOL] = true;
     isTriggerAura[SPELL_AURA_MECHANIC_IMMUNITY] = true;
     isTriggerAura[SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN] = true;
-    isTriggerAura[SPELL_AURA_SPELL_MAGNET] = true;
     isTriggerAura[SPELL_AURA_MOD_ATTACK_POWER] = true;
     isTriggerAura[SPELL_AURA_ADD_CASTER_HIT_TRIGGER] = true;
     isTriggerAura[SPELL_AURA_OVERRIDE_CLASS_SCRIPTS] = true;
