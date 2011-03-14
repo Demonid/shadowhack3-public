@@ -443,6 +443,12 @@ void Battleground::Update(uint32 diff)
 
                         plr->RemoveAurasDueToSpell(SPELL_ARENA_PREPARATION);
                         plr->ResetAllPowers();
+                        if(Pet * pet = plr->GetPet())
+                        {
+                            pet->RemoveAurasDueToSpell(SPELL_ARENA_PREPARATION);
+                            pet->SetHealth(pet->GetMaxHealth());
+                        }
+                        plr->SetHealth(plr->GetMaxHealth());
                         // remove auras with duration lower than 30s
                         Unit::AuraApplicationMap & auraMap = plr->GetAppliedAuras();
                         for (Unit::AuraApplicationMap::iterator iter = auraMap.begin(); iter != auraMap.end();)
@@ -699,6 +705,98 @@ void Battleground::RewardReputationToTeam(uint32 faction_id, uint32 Reputation, 
     }
 }
 
+void Battleground::RewardMark(Player *plr,uint32 count)
+{
+    BattlegroundMarks mark;
+    switch(GetTypeID(true))
+    {
+        case BATTLEGROUND_AV:
+            mark = ITEM_AV_MARK_OF_HONOR;
+            break;
+        case BATTLEGROUND_WS:
+            mark = ITEM_WS_MARK_OF_HONOR;
+            break;
+        case BATTLEGROUND_AB:
+            mark = ITEM_AB_MARK_OF_HONOR;
+            break;
+        case BATTLEGROUND_EY:
+            mark = ITEM_EY_MARK_OF_HONOR;
+            break;
+        case BATTLEGROUND_SA:
+            mark = ITEM_SA_MARK_OF_HONOR;
+            break;
+        default:
+            return;
+    }
+
+    //if (IsSpell)
+    //    RewardSpellCast(plr,mark);
+    //else
+        RewardItem(plr,mark,count);
+}
+
+void Battleground::SendRewardMarkByMail(Player *plr,uint32 mark, uint32 count)
+{
+    uint32 bmEntry = GetBattlemasterEntry();
+    if (!bmEntry)
+        return;
+
+    ItemPrototype const* markProto = sObjectMgr->GetItemPrototype(mark);
+    if (!markProto)
+        return;
+
+    if (Item* markItem = Item::CreateItem(mark,count,plr))
+    {
+        // save new item before send
+        SQLTransaction trans = CharacterDatabase.BeginTransaction();
+        markItem->SaveToDB(trans);                               // save for prevent lost at next mail load, if send fail then item will deleted
+        CharacterDatabase.CommitTransaction(trans);
+        // subject: item name
+        std::string subject = markProto->Name1;
+        int loc_idx = plr->GetSession()->GetSessionDbLocaleIndex();
+        if (loc_idx >= 0)
+            if (ItemLocale const *il = sObjectMgr->GetItemLocale(markProto->ItemId))
+                if (il->Name.size() > size_t(loc_idx) && !il->Name[loc_idx].empty())
+                    subject = il->Name[loc_idx];
+
+        // text
+        std::string textFormat = plr->GetSession()->GetTrinityString(LANG_BG_MARK_BY_MAIL);
+        char textBuf[300];
+        snprintf(textBuf, 300, textFormat.c_str(), GetName(), GetName());
+
+        trans = CharacterDatabase.BeginTransaction();
+        MailDraft(subject, textBuf).AddItem(markItem).SendMailTo(trans, plr, MailSender(MAIL_CREATURE, bmEntry), MAIL_CHECK_MASK_COPIED);
+        CharacterDatabase.CommitTransaction(trans);
+    }
+}
+
+void Battleground::RewardItem(Player *plr, uint32 item_id, uint32 count)
+{
+    // 'Inactive' this aura prevents the player from gaining honor points and Battleground tokens
+    if (plr->HasAura(SPELL_AURA_PLAYER_INACTIVE))
+        return;
+
+    ItemPosCountVec dest;
+    uint32 no_space_count = 0;
+    uint8 msg = plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, item_id, count, &no_space_count);
+
+    if (msg == EQUIP_ERR_ITEM_NOT_FOUND)
+    {
+        sLog->outErrorDb("Battleground reward item (Entry %u) not exist in `item_template`.",item_id);
+        return;
+    }
+
+    if (msg != EQUIP_ERR_OK)                               // convert to possible store amount
+        count -= no_space_count;
+
+    if (count != 0 && !dest.empty())                        // can add some
+        if (Item* item = plr->StoreNewItem(dest, item_id, true, 0))
+            plr->SendNewItem(item,count,true,false);
+
+    if (no_space_count > 0)
+        SendRewardMarkByMail(plr,item_id,no_space_count);
+}
+
 void Battleground::UpdateWorldState(uint32 Field, uint32 Value)
 {
     WorldPacket data;
@@ -773,6 +871,36 @@ void Battleground::EndBattleground(uint32 winner)
                 SetArenaTeamRatingChangeForTeam(winner, winner_change);
                 SetArenaTeamRatingChangeForTeam(GetOtherTeam(winner), loser_change);
                 sLog->outArena("Arena match Type: %u for Team1Id: %u - Team2Id: %u ended. WinnerTeamId: %u. Winner rating: +%d, Loser rating: %d", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE], winner_arena_team->GetId(), winner_change, loser_change);
+                for (BattlegroundPlayerMap::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
+                {
+                    Player *plr = sObjectMgr->GetPlayer(itr->first);
+                    
+                    if (!plr)
+                        continue;
+                        
+                    BattlegroundScoreMap::const_iterator _itr = m_PlayerScores.find(plr->GetGUID());
+
+                    if (_itr == m_PlayerScores.end())                         // player not found...
+                        continue;
+
+                    if (sWorld->getBoolConfig(CONFIG_ARENA_MARK_OF_WIN_ENABLE) ==1)
+                    {
+                        if (winner_arena_team->GetType()>2 && winner_arena_team->HaveMember(itr->first) && winner_arena_team->GetStats().games_season > 100 && 
+                            winner_arena_team->GetStats().wins_season*100/winner_arena_team->GetStats().games_season>50)
+                            {
+                                ItemPosCountVec dest;
+                                if (plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 75556, 1, false) == EQUIP_ERR_OK)
+                                    plr->StoreNewItem(dest, 75556, 1, true);
+                            }
+                        else if (winner_arena_team->GetType()== 2 && winner_arena_team->HaveMember(itr->first) && winner_arena_team->GetStats().games_season > 100 && 
+                            winner_arena_team->GetStats().wins_season*100/winner_arena_team->GetStats().games_season>50)
+                            {
+                                ItemPosCountVec dest;
+                                if (plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 75557, 1, false) == EQUIP_ERR_OK)
+                                    plr->StoreNewItem(dest, 75557, 1, true);
+                            }
+                    }
+                }
                 if (sWorld->getBoolConfig(CONFIG_ARENA_LOG_EXTENDED_INFO))
                     for (Battleground::BattlegroundScoreMap::const_iterator itr = GetPlayerScoresBegin(); itr != GetPlayerScoresEnd(); itr++)
                         if (Player* player = sObjectMgr->GetPlayer(itr->first))
@@ -856,7 +984,9 @@ void Battleground::EndBattleground(uint32 winner)
                 plr->GetAchievementMgr().ResetAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_ARENA, ACHIEVEMENT_CRITERIA_CONDITION_NO_LOSE);
             }
         }
-
+        else if (sWorld->getBoolConfig(CONFIG_BG_GIVEMARKS))
+            RewardMark(plr, team == winner? 3:1);
+            
         uint32 winner_kills = plr->GetRandomWinner() ? BG_REWARD_WINNER_HONOR_LAST : BG_REWARD_WINNER_HONOR_FIRST;
         uint32 loser_kills = plr->GetRandomWinner() ? BG_REWARD_LOSER_HONOR_LAST : BG_REWARD_LOSER_HONOR_FIRST;
         uint32 winner_arena = plr->GetRandomWinner() ? BG_REWARD_WINNER_ARENA_LAST : BG_REWARD_WINNER_ARENA_FIRST;
@@ -995,7 +1125,8 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
                 // unsummon current and summon old pet if there was one and there isn't a current pet
                 plr->RemovePet(NULL, PET_SAVE_NOT_IN_SLOT);
                 plr->ResummonPetTemporaryUnSummonedIfAny();
-
+                if(Pet * pet = plr->GetPet())
+                    pet->RemoveAurasDueToSpell(SPELL_ARENA_PREPARATION);
                 if (isRated() && GetStatus() == STATUS_IN_PROGRESS)
                 {
                     //left a rated match while the encounter was in progress, consider as loser
@@ -1178,8 +1309,17 @@ void Battleground::AddPlayer(Player *plr)
     }
     else
     {
+        plr->RemoveArenaSpellCooldowns();
+        plr->SetHealth(plr->GetMaxHealth());
+        plr->ResetAllPowers();
+        plr->RemoveArenaAuras();
         if (GetStatus() == STATUS_WAIT_JOIN)                 // not started yet
+        {
             plr->CastSpell(plr, SPELL_PREPARATION, true);   // reduces all mana cost of spells.
+            plr->CastSpell(plr, SPELL_BG_DAMPENING, true);
+        }
+        plr->RemoveAurasByType(SPELL_AURA_MOUNTED);
+        plr->ExitVehicle();
     }
 
     plr->GetAchievementMgr().ResetAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HEALING_DONE, ACHIEVEMENT_CRITERIA_CONDITION_MAP, GetMapId());

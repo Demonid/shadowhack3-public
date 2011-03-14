@@ -121,6 +121,12 @@ void Totem::InitSummon()
     // Some totems can have both instant effect and passive spell
     if (GetSpell(1))
         CastSpell(this, GetSpell(1), true);
+
+    // Stoneclaw Totem Effect for new summons totem        
+    if (!GetAuraOfRankedSpell(58585))
+    if (Totem * stoneclaw = (Totem*)m_owner->GetUnit(*m_owner, m_owner->m_SummonSlot[2]))
+        if(stoneclaw->GetAuraOfRankedSpell(58585))
+            CastSpell(this, 55277, true);
 }
 
 void Totem::UnSummon()

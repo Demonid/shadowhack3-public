@@ -44,7 +44,11 @@ Trinity::ObjectUpdater::Visit(CreatureMapType &m)
 {
     for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
         if (iter->getSource()->IsInWorld())
-            iter->getSource()->Update(i_timeDiff);
+        {
+            if(iter->getSource()->isGuardian())
+                ((TempSummon*)iter->getSource())->Update(i_timeDiff);
+            else iter->getSource()->Update(i_timeDiff);
+        }
 }
 
 // SEARCHERS & LIST SEARCHERS & WORKERS
