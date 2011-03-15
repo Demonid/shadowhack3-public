@@ -414,7 +414,8 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData *data)
     if (isTrigger())
         SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
 
-    InitializeReactState();
+    if (!GetOwner() || GetOwner()->GetTypeId() != TYPEID_PLAYER)
+        InitializeReactState();
 
     if (cInfo->flags_extra & CREATURE_FLAG_EXTRA_NO_TAUNT)
     {
