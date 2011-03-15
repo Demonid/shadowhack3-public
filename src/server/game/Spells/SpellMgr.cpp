@@ -4094,11 +4094,6 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->spellLevel = 0;
             count++;
             break;
-        // Chains of Ice
-        case 45524:
-            spellInfo->Effect[2] = 0;
-            count++;
-            break;
         case 30451:     // Arcane Blast
         case 42894:
         case 42896:

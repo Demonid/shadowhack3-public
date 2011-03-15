@@ -518,7 +518,7 @@ m_caster(Caster), m_spellValue(new SpellValue(m_spellInfo))
 
     // Mind Control
     if (m_spellInfo->Id == 605)
-		m_canReflect = true;
+        m_canReflect = true;
 
     // Death Grip
     if (m_spellInfo->Id == 49575 || m_spellInfo->Id == 49560 || m_spellInfo->Id == 49576)

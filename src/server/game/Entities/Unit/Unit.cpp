@@ -6681,9 +6681,20 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
             {
                 if (procFlag & PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_POS)
                 {
-                    if ((procSpell->SpellFamilyName == SPELLFAMILY_PALADIN) && (procSpell->SpellFamilyFlags[0] & 0x40000000))
+                    Player* caster = ToPlayer();
+                    if (!caster)
+                        return false;
+
+                    if ((procSpell->SpellFamilyName == SPELLFAMILY_PALADIN) && (procSpell->SpellFamilyFlags[0] & 0x40000000) 
+                    && (caster->HasAura(53569) || caster->HasAura(53576))) // Infusion of Light
                     {
-                        basepoints0 = damage / 12;
+                        if (caster->HasAura(53569)) // Rank 1
+                            basepoints0 = damage / 24;
+                        else // Rank 2
+                            basepoints0 = damage / 12;
+
+                        if (Aura * aur = caster->GetAura(67191)) // Item - Paladin T9 Holy 4P
+                            basepoints0 *= (100.0f + aur->GetSpellProto()->EffectBasePoints[0]) / 100.0f;
 
                         if (basepoints0)
                             CastCustomSpell(this, 66922, &basepoints0, NULL, NULL, true, 0, triggeredByAura, pVictim->GetGUID());
