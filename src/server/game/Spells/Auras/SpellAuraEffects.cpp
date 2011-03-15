@@ -806,11 +806,6 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
             if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_DRUID && GetSpellProto()->SpellFamilyFlags[2] & 0x00000008 || GetSpellProto()->Id == 17002 || GetSpellProto()->Id == 24866)
                 amount = GetBase()->GetUnitOwner()->GetShapeshiftForm() == FORM_CAT ? amount : 0;
             break;
-        case SPELL_AURA_MOD_IMMUNE_AURA_APPLY_SCHOOL:
-            // Anti-Magic Shell absorbs up to 50% of caster's health
-            if(GetSpellProto()->Id == 48707)
-                amount=uint32(caster->GetMaxHealth()*amount/100.0f);
-            break;
         default:
             break;
     }
@@ -828,7 +823,7 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
             break;
         default: amount *= GetBase()->GetStackAmount();
     }
-    if(caster)
+    if(caster && GetSpellProto()->Id != 48707)
         amount = caster->ApplyEffectModifiers(m_spellProto, m_effIndex, amount);
     return amount;
 }
@@ -2984,6 +2979,14 @@ void AuraEffect::HandleModStealth(AuraApplication const * aurApp, uint8 mode, bo
 
     if (apply)
     {
+        Unit::AttackerSet const& attackers = target->getAttackers();
+        for (Unit::AttackerSet::const_iterator itr = attackers.begin(); itr != attackers.end();)
+        {
+            if (!(*itr)->canSeeOrDetect(target))
+                (*(itr++))->AttackStop();
+            else
+                ++itr;
+        }
         if (mode & AURA_EFFECT_HANDLE_REAL)
         {
             // drop flag at stealth in bg
