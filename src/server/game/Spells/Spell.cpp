@@ -2281,8 +2281,7 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                 m_caster->GetFirstCollisionPosition(pos, dist, angle);
             else for (uint8 i=0; i<10; ++i)
             {
-                default:
-                    m_caster->GetNearPosition(pos, dist, angle);
+                m_caster->GetNearPosition(pos, dist, angle);
                 if(m_caster->IsWithinLOS(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ()))
                     break;
                 if(dist!=0)
