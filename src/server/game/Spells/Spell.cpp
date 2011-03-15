@@ -2277,30 +2277,23 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
             }
 
             Position pos;
-            switch (cur)
+            if (cur == TARGET_DEST_CASTER_FRONT_LEAP)
+                m_caster->GetFirstCollisionPosition(pos, dist, angle);
+            else for (uint8 i=0; i<10; ++i)
             {
-                case TARGET_DEST_CASTER_FRONT_LEAP:
-                case TARGET_DEST_CASTER_FRONT_LEFT:
-                case TARGET_DEST_CASTER_BACK_LEFT:
-                case TARGET_DEST_CASTER_BACK_RIGHT:
-                case TARGET_DEST_CASTER_FRONT_RIGHT:
-                    m_caster->GetFirstCollisionPosition(pos, dist, angle);
-                    break;
                 default:
-                {
-                    for (uint8 i=0; i<10; ++i)
-                    {
-                        if(m_caster->IsWithinLOS(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ()))
-                            break;
-                        if(dist!=0)
-                            angle = rand_norm()*2*M_PI;
-                        else dist = 1;
-                        if(i>=8)
-                            dist=0;
-                    }
+                    m_caster->GetNearPosition(pos, dist, angle);
+                if(m_caster->IsWithinLOS(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ()))
                     break;
-                }
+                if(dist!=0)
+                    angle = rand_norm()*2*M_PI;
+                else dist = 1;
+                if(i>=8)
+                    dist=0;
             }
+            m_targets.setDst(*m_caster);
+            m_targets.modDst(pos);
+            break;
         }
 
         case TARGET_TYPE_DEST_TARGET: //2+8+2
