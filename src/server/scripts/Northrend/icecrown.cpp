@@ -962,9 +962,15 @@ public:
 			    miRunOffTime = 10000;
 			    mxRunOffTime = 20000;
 		    }
-		    Reset();
+            enemyGUID = 0;
+            uiChargeTimer = mxChargeTime;
+            uiShieldBreakerTimer = mxShieldBreakerTime;
+            uiDefendTimer = mxDefendTime;
+            uiThrustTimer = mxThrustTime;
+            uiRunOffTimer = urand(miRunOffTime,mxRunOffTime);
+            zoneOK = noEnemy = true;
             myO = pCreature->GetOrientation();
-		    me->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
+            pCreature->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
 	    }
 
 	    float x0,y0,z0,myO;
