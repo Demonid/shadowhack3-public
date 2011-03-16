@@ -1092,7 +1092,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                     SetBonusDamage(int32(m_owner->GetTotalAttackPowerValue(BASE_ATTACK, NULL) * 0.5f));
                     SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)));
                     SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)));
-                    m_modAttackSpeedPct[RANGED_ATTACK]=m_owner->m_modAttackSpeedPct[RANGED_ATTACK];
+                    m_modAttackSpeedPct[RANGED_ATTACK]=m_owner->m_modAttackSpeedPct[BASE_ATTACK];
                     SetFloatValue(UNIT_MOD_CAST_SPEED, m_modAttackSpeedPct[RANGED_ATTACK]);
                     break;
                 }
