@@ -4828,12 +4828,6 @@ void SpellMgr::LoadSpellCustomAttr()
         case 7922:
         case 20253:
             spellInfo->DmgClass = SPELL_DAMAGE_CLASS_NONE;
-            spellInfo->rangeIndex = 3;
-            count++;
-            break;
-        case 53148:
-        case 61491: // Intercept triggered disable range check
-            spellInfo->rangeIndex = 3;
             count++;
             break;
         default:
