@@ -1431,7 +1431,7 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
 
         if (!m_caster->IsFriendlyTo(unit))
         {
-            // spell misses if target has Invisibility or Vanish of Shadowmeld and isn't visible for caster
+            // spell misses if target has Invisibility or Vanish or Shadowmeld and isn't visible for caster
             if (m_spellInfo->speed > 0.0f && unit == m_targets.getUnitTarget()
                 && ((unit->HasAura(58984) || unit->HasInvisibilityAura() || m_caster->HasInvisibilityAura())
                 || unit->HasAuraTypeWithFamilyFlags(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE, SPELLFAMILYFLAG_ROGUE_VANISH))
