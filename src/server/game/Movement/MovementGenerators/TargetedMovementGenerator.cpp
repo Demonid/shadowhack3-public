@@ -198,13 +198,32 @@ TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
             newPathCalculated = i_path->Update(x, y, z);
 
         // nothing we can do here ...
-        if(i_path->getPathType() & PATHFIND_NOPATH)
-            return true;
+        if (i_path->getPathType() & (PATHFIND_INCOMPLETE|PATHFIND_NOPATH))
+        {
+            if(owner.IsGuardianPetStuff())
+            {
+                if(Map * map = owner.GetMap())
+                {
+                    if(map->IsBattlegroundOrArena())
+                    {
+                        i_path->BuildShortcut();
+                        i_path->getEndPosition(x, y, z);
+                    }
+                    else
+                    {
+                        ((TempSummon*)&owner)->DespawnOrUnsummon(0); 
+                        return true;
+                    }
+                }
+                else return true;
+            }
+            else return true;
+        }
+        else i_path->getNextPosition(x, y, z);
 
         if (i_destinationHolder.HasArrived() && m_pathPointsSent)
             --m_pathPointsSent;
 
-        i_path->getNextPosition(x, y, z);
         i_destinationHolder.SetDestination(traveller, x, y, z, false);
 
         // send the path if:
