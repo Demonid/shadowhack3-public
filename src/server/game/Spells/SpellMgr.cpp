@@ -913,10 +913,10 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
             // Ignite
             if (spellproto->SpellIconID == 45)
                 return true;
-            break;
             // Arcane Missiles 
             if(spellproto->SpellIconID == 225 && spellproto->SpellFamilyFlags[0] == 0x200000)
                 return false;
+            break;
         case SPELLFAMILY_PRIEST:
             switch (spellId)
             {
