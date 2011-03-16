@@ -938,6 +938,8 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             {
                 case 510: // mage Water Elemental
                 {
+                    SetUInt32Value(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT|UNIT_FLAG_PVP|UNIT_FLAG_PVP_ATTACKABLE) ;
+                    SetByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
                     //40% damage bonus of mage's frost damage
                     float val = m_owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FROST) * 0.4f;
                     if (val < 0)
