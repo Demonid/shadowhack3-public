@@ -1,4 +1,4 @@
-DELETE FROM character_account_data WHERE guid IN (SELECT guid FROM characters WHERE level < 35 AND account IN (SELECT id FROM account WHERE DATEDIFF(NOW(), last_login) > 90) AND account IN (SELECT id FROM account WHERE DATEDIFF(NOW(), last_login) > 90));
+DELETE FROM character_account_data WHERE guid IN (SELECT guid FROM characters WHERE level < 35 AND account IN (SELECT id FROM account WHERE DATEDIFF(NOW(), last_login) > 90));
 DELETE FROM character_achievement WHERE guid IN (SELECT guid FROM characters WHERE level < 35 AND account IN (SELECT id FROM account WHERE DATEDIFF(NOW(), last_login) > 90));
 DELETE FROM character_achievement_progress WHERE guid IN (SELECT guid FROM characters WHERE level < 35 AND account IN (SELECT id FROM account WHERE DATEDIFF(NOW(), last_login) > 90));
 DELETE FROM character_action WHERE guid IN (SELECT guid FROM characters WHERE level < 35 AND account IN (SELECT id FROM account WHERE DATEDIFF(NOW(), last_login) > 90));
