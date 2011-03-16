@@ -838,6 +838,7 @@ public:
                     break;
                 case 1:
                     DoCastAOE(SPELL_MASSIVE_CRASH);
+                    me->GetMotionMaster()->MovementExpired();
                     m_uiStage = 2;
                     break;
                 case 2:
