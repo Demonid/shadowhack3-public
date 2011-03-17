@@ -5846,8 +5846,6 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
 
                     if(target == pVictim)
                         return false;
-                    if (procSpell && procSpell->Id == 50622)
-                        this->ToPlayer()->AddSpellCooldown(12328, 0, time(NULL) + 0.5);
 
                     basepoints0 = damage;
                     triggered_spell_id = 12723;
@@ -6755,7 +6753,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                     if (triggeredSpellId)
                         CastSpell(this, triggeredSpellId, true);
                     ToPlayer()->AddSpellCooldown(dummySpell->Id, 0, time(NULL) + 40);
-                    return true;
+                    break;
                 }
                 // Heart of the Crusader
                 case 20335: // rank 1
@@ -8411,9 +8409,12 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
                     {
                         if(!pVictim || !pVictim->isAlive())
                             return false;
+
                         // stacking
                         CastSpell(this, 67713, true, NULL, triggeredByAura);
-                        this->ToPlayer()->AddSpellCooldown(67713, 0, time(NULL)+2);
+
+                        if(GetTypeId() == TYPEID_PLAYER)
+                            ToPlayer()->AddSpellCooldown(67713, 0, time(NULL)+2);
 
                         Aura * dummy = GetAura(67713);
                         // release at 3 aura in stack (cont contain in basepoint of trigger aura)
@@ -8432,7 +8433,9 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
                             return false;
                         // stacking
                         CastSpell(this, 67759, true, NULL, triggeredByAura);
-                        this->ToPlayer()->AddSpellCooldown(67759, 0, time(NULL)+2);
+
+                        if(GetTypeId() == TYPEID_PLAYER)
+                            ToPlayer()->AddSpellCooldown(67759, 0, time(NULL)+2);
 
                         Aura * dummy = GetAura(67759);
                         // release at 3 aura in stack (cont contain in basepoint of trigger aura)
@@ -14312,7 +14315,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit * pTarget, uint32 procFlag,
                     // Skip melee hits and spells ws wrong school or zero cost
                     if (procSpell &&
                         (procSpell->manaCost != 0 || procSpell->ManaCostPercentage != 0) && // Cost check
-                        (triggeredByAura->GetMiscValue() & procSpell->SchoolMask) == 0)         // School check
+                        (triggeredByAura->GetMiscValue() & procSpell->SchoolMask))          // School check
                         takeCharges = true;
                     break;
                 case SPELL_AURA_MECHANIC_IMMUNITY:

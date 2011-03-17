@@ -5758,6 +5758,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                 // Prevent stacking of Invisibility auras
                 if (m_caster->HasAuraType(SPELL_AURA_MOD_INVISIBILITY))
                    return SPELL_FAILED_TARGET_AURASTATE;
+                break;
             }
             case SPELL_AURA_SCHOOL_IMMUNITY:
             {
