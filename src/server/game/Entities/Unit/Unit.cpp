@@ -14370,6 +14370,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit * pTarget, uint32 procFlag,
                     // Deadly Precision
                     if (Id == 71564)
                         i->aura->ModStackAmount(-1);
+                        takeCharges = false;
                     return;
                 }
                 //case SPELL_AURA_ADD_FLAT_MODIFIER:
