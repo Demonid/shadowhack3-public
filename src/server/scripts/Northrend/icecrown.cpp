@@ -1105,7 +1105,7 @@ public:
 		    if (enemyMount->AI()) enemyMount->AI()->DoAction(ACTION_LEAVE_COMBAT);
 	    }
 
-	    void SetGUID(const uint64 &guid, int32 /*id*/) { enemyGUID = guid; }
+	    void SetGUID(const uint64 &guid, int32 id) { enemyGUID = guid; }
 
 	    void Reset()
 	    {
@@ -1186,7 +1186,7 @@ public:
 	    return true;
     }
 
-    bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
+    bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
     {
 	    if (uiAction == GOSSIP_ACTION_INFO_DEF+1)
 	    {

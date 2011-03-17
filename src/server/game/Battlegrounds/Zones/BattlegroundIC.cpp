@@ -619,10 +619,14 @@ uint32 BattlegroundIC::GetNextBanner(ICNodePoint* nodePoint, uint32 team, bool r
 
 void BattlegroundIC::HandleContestedNodes(ICNodePoint* nodePoint)
 {
+    BattlegroundMap *pMap = GetBgMap();
+    if (!pMap)
+        return;
+
     if (nodePoint->nodeType == NODE_TYPE_HANGAR)
     {
         if (gunshipAlliance && gunshipHorde)
-            (nodePoint->faction == TEAM_ALLIANCE ? gunshipHorde : gunshipAlliance)->BuildStopMovePacket(GetBgMap());
+            (nodePoint->faction == TEAM_ALLIANCE ? gunshipHorde : gunshipAlliance)->BuildStopMovePacket(pMap);
 
         for (uint8 u = BG_IC_GO_HANGAR_TELEPORTER_1; u < BG_IC_GO_HANGAR_TELEPORTER_3; u++)
             DelObject(u);
@@ -631,6 +635,10 @@ void BattlegroundIC::HandleContestedNodes(ICNodePoint* nodePoint)
 
 void BattlegroundIC::HandleCapturedNodes(ICNodePoint* nodePoint, bool recapture)
 {
+    BattlegroundMap *pMap = GetBgMap();
+    if (!pMap)
+        return;
+
     if(nodePoint->nodeType != NODE_TYPE_REFINERY && nodePoint->nodeType != NODE_TYPE_QUARRY)
     {
         if (!AddSpiritGuide(BG_IC_NPC_SPIRIT_GUIDE_1+nodePoint->nodeType-2,
@@ -658,8 +666,8 @@ void BattlegroundIC::HandleCapturedNodes(ICNodePoint* nodePoint, bool recapture)
 
         //sLog->outError("BG_IC_GO_HANGAR_BANNER CAPTURED Faction: %u", nodePoint->faction);
 
-        (nodePoint->faction == TEAM_ALLIANCE ? gunshipAlliance : gunshipHorde)->BuildStartMovePacket(GetBgMap());
-        (nodePoint->faction == TEAM_ALLIANCE ? gunshipHorde : gunshipAlliance)->BuildStopMovePacket(GetBgMap());
+        (nodePoint->faction == TEAM_ALLIANCE ? gunshipAlliance : gunshipHorde)->BuildStartMovePacket(pMap);
+        (nodePoint->faction == TEAM_ALLIANCE ? gunshipHorde : gunshipAlliance)->BuildStopMovePacket(pMap);
         // we should spawn teleporters
         break;
     case BG_IC_GO_QUARRY_BANNER:
@@ -899,6 +907,10 @@ WorldSafeLocsEntry const* BattlegroundIC::GetClosestGraveYard(Player* player)
 
 Transport* BattlegroundIC::CreateTransport(uint32 goEntry,uint32 period)
 {
+    BattlegroundMap *pMap = GetBgMap();
+    if (!pMap)
+        return NULL;
+
     Transport* t = new Transport(period,0);
 
     const GameObjectInfo* goinfo = sObjectMgr->GetGameObjectInfo(goEntry);
@@ -935,7 +947,7 @@ Transport* BattlegroundIC::CreateTransport(uint32 goEntry,uint32 period)
     }
 
     //If we someday decide to use the grid to track transports, here:
-    t->SetMap(GetBgMap());
+    t->SetMap(pMap);
 
     for (uint8 i = 0; i < 5; i++)
         t->AddNPCPassenger(0,(goEntry == GO_HORDE_GUNSHIP ? NPC_HORDE_GUNSHIP_CANNON : NPC_ALLIANCE_GUNSHIP_CANNON), (goEntry == GO_HORDE_GUNSHIP ? hordeGunshipPassengers[i].GetPositionX() : allianceGunshipPassengers[i].GetPositionX()) , (goEntry == GO_HORDE_GUNSHIP ? hordeGunshipPassengers[i].GetPositionY() : allianceGunshipPassengers[i].GetPositionY()),(goEntry == GO_HORDE_GUNSHIP ? hordeGunshipPassengers[i].GetPositionZ() : allianceGunshipPassengers[i].GetPositionZ()), (goEntry == GO_HORDE_GUNSHIP ? hordeGunshipPassengers[i].GetOrientation() : allianceGunshipPassengers[i].GetOrientation()));

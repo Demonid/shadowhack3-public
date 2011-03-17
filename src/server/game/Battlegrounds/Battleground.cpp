@@ -1440,7 +1440,7 @@ bool Battleground::AddObject(uint32 type, uint32 entry, float x, float y, float 
     // and when loading it (in go::LoadFromDB()), a new guid would be assigned to the object, and a new object would be created
     // so we must create it specific for this instance
     GameObject * go = new GameObject;
-    if (!go->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT),entry, GetBgMap(),
+    if (!go->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT),entry, map,
         PHASEMASK_NORMAL, x,y,z,o,rotation0,rotation1,rotation2,rotation3,100,GO_STATE_READY))
     {
         sLog->outErrorDb("Gameobject template %u not found in database! Battleground not created!", entry);
@@ -1480,7 +1480,11 @@ bool Battleground::AddObject(uint32 type, uint32 entry, float x, float y, float 
 //it would be nice to correctly implement GO_ACTIVATED state and open/close doors in gameobject code
 void Battleground::DoorClose(uint32 type)
 {
-    GameObject *obj = GetBgMap()->GetGameObject(m_BgObjects[type]);
+    BattlegroundMap *pMap = GetBgMap();
+    if (!pMap)
+        return;
+
+    GameObject *obj = pMap->GetGameObject(m_BgObjects[type]);
     if (obj)
     {
         //if doors are open, close it
@@ -1499,7 +1503,11 @@ void Battleground::DoorClose(uint32 type)
 
 void Battleground::DoorOpen(uint32 type)
 {
-    GameObject *obj = GetBgMap()->GetGameObject(m_BgObjects[type]);
+    BattlegroundMap *pMap = GetBgMap();
+    if (!pMap)
+        return;
+
+    GameObject *obj = pMap->GetGameObject(m_BgObjects[type]);
     if (obj)
     {
         //change state to be sure they will be opened
@@ -1514,7 +1522,11 @@ void Battleground::DoorOpen(uint32 type)
 
 GameObject* Battleground::GetBGObject(uint32 type)
 {
-    GameObject *obj = GetBgMap()->GetGameObject(m_BgObjects[type]);
+    BattlegroundMap *pMap = GetBgMap();
+    if (!pMap)
+        return NULL;
+
+    GameObject *obj = pMap->GetGameObject(m_BgObjects[type]);
     if (!obj)
         sLog->outError("couldn't get gameobject %i",type);
     return obj;
@@ -1522,9 +1534,13 @@ GameObject* Battleground::GetBGObject(uint32 type)
 
 Creature* Battleground::GetBGCreature(uint32 type)
 {
-    Creature *creature = GetBgMap()->GetCreature(m_BgCreatures[type]);
+    BattlegroundMap *pMap = GetBgMap();
+    if (!pMap)
+        return NULL;
+
+    Creature *creature = pMap->GetCreature(m_BgCreatures[type]);
     if (!creature)
-        sLog->outError("Could not get BG creature %i (BG: %s Instance: %u)", type, GetBgMap()->GetBG()->GetName(), GetBgMap()->GetInstanceId());
+        sLog->outError("Could not get BG creature %i (BG: %s Instance: %u)", type, pMap->GetBG()->GetName(), pMap->GetInstanceId());
     return creature;
 }
 
@@ -1631,7 +1647,11 @@ bool Battleground::DelCreature(uint32 type)
     if (!m_BgCreatures[type])
         return true;
 
-    Creature *cr = GetBgMap()->GetCreature(m_BgCreatures[type]);
+    BattlegroundMap *pMap = GetBgMap();
+    if (!pMap)
+        return false;
+
+    Creature *cr = pMap->GetCreature(m_BgCreatures[type]);
     if (!cr)
     {
         sLog->outError("Can't find creature guid: %u",GUID_LOPART(m_BgCreatures[type]));
@@ -1647,7 +1667,11 @@ bool Battleground::DelObject(uint32 type)
     if (!m_BgObjects[type])
         return true;
 
-    GameObject *obj = GetBgMap()->GetGameObject(m_BgObjects[type]);
+    BattlegroundMap *pMap = GetBgMap();
+    if (!pMap)
+        return false;
+
+    GameObject *obj = pMap->GetGameObject(m_BgObjects[type]);
     if (!obj)
     {
         sLog->outError("Can't find gobject guid: %u",GUID_LOPART(m_BgObjects[type]));
@@ -1767,7 +1791,11 @@ buffs are in their positions when battleground starts
 */
 void Battleground::HandleTriggerBuff(uint64 const& go_guid)
 {
-    GameObject *obj = GetBgMap()->GetGameObject(go_guid);
+    BattlegroundMap *pMap = GetBgMap();
+    if (!pMap)
+        return;
+
+    GameObject *obj = pMap->GetGameObject(go_guid);
     if (!obj || obj->GetGoType() != GAMEOBJECT_TYPE_TRAP || !obj->isSpawned())
         return;
 
