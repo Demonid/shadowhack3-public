@@ -1531,8 +1531,10 @@ Creature* Battleground::GetBGCreature(uint32 type)
 void Battleground::SpawnBGObject(uint32 type, uint32 respawntime)
 {
     Map * map = GetBgMap();
+
     if (!map)
         return;
+
     if (respawntime == 0)
     {
         GameObject *obj = map->GetGameObject(m_BgObjects[type]);
