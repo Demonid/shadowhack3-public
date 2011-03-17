@@ -19549,7 +19549,7 @@ void Player::DropModCharge(SpellModifier * mod, Spell * spell)
 {
     if (spell && mod->ownerAura && mod->charges > 0)
     {
-        if (spell && spell->getState() == SPELL_STATE_FINISHED || IsChanneledSpell(spell->m_spellInfo))
+        if (spell && (spell->getState() == SPELL_STATE_FINISHED || IsChanneledSpell(spell->m_spellInfo)))
         {
             --mod->charges;
             if (mod->charges == 0)
