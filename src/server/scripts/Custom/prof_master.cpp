@@ -29,16 +29,16 @@ const prof profs[] =
 {
     // id                           name                   skill
     {0         ,        "EMPTY! IF REALEASED - BUGG",       0  },
-    {blacksmith,        "Blacksmith (Êóçíå÷íîå äåëî)",      164},
-    {jewelcrafting,     "Jewelcrafting (Þâåëèðíîå äåëî)",   755},
-    {engineering,       "Engineering (Èíæåíåðíîå äåëî)",    202},
-    {enchanting,        "Enchanting (Íàëîæåíèå ÷àð)",       333},
-    {leatherworking,    "Leatherworking (Êîæåâíè÷åñòâî)",   165},
-    {alchemy,           "Alchemy (Àëõèìèÿ)",                171},
-    {mining,            "Mining (Ãîðíîå äåëî)",             186},
-    {herbalism,         "Herbalism (Òðàâíè÷åñòâî)",         182},
-    {inscription,       "Inscription (Íà÷åðòàíèå)",         773},
-    {tailor,            "Tailoring (Øèòüå)",                197}
+    {blacksmith,        "Blacksmith (ÐšÑƒÐ·Ð½ÐµÑ‡Ð½Ð¾Ðµ Ð´ÐµÐ»Ð¾)",      164},
+    {jewelcrafting,     "Jewelcrafting (Ð®Ð²ÐµÐ»Ð¸Ñ€Ð½Ð¾Ðµ Ð´ÐµÐ»Ð¾)",   755},
+    {engineering,       "Engineering (Ð˜Ð½Ð¶ÐµÐ½ÐµÑ€Ð½Ð¾Ðµ Ð´ÐµÐ»Ð¾)",    202},
+    {enchanting,        "Enchanting (ÐÐ°Ð»Ð¾Ð¶ÐµÐ½Ð¸Ðµ Ñ‡Ð°Ñ€)",       333},
+    {leatherworking,    "Leatherworking (ÐšÐ¾Ð¶ÐµÐ²Ð½Ð¸Ñ‡ÐµÑÑ‚Ð²Ð¾)",   165},
+    {alchemy,           "Alchemy (ÐÐ»Ñ…Ð¸Ð¼Ð¸Ñ)",                171},
+    {mining,            "Mining (Ð“Ð¾Ñ€Ð½Ð¾Ðµ Ð´ÐµÐ»Ð¾)",             186},
+    {herbalism,         "Herbalism (Ð¢Ñ€Ð°Ð²Ð½Ð¸Ñ‡ÐµÑÑ‚Ð²Ð¾)",         182},
+    {inscription,       "Inscription (ÐÐ°Ñ‡ÐµÑ€Ñ‚Ð°Ð½Ð¸Ðµ)",         773},
+    {tailor,            "Tailoring (Ð¨Ð¸Ñ‚ÑŒÐµ)",                197}
 };
 
 #define MAXPROF 10+1
@@ -53,11 +53,11 @@ class prof_master : public CreatureScript
         uint32 freeProfs = pPlayer->GetFreePrimaryProfessionPoints()+1;
         if (freeProfs >= sWorld->getIntConfig(CONFIG_MAX_PRIMARY_TRADE_SKILL))
         {
-            pPlayer->ADD_GOSSIP_ITEM( GOSSIP_ICON_DOT, "Õî÷ó èçó÷èòü ïðîôåññèþ!", GOSSIP_SENDER_MAIN, 110);
-            pPlayer->ADD_GOSSIP_ITEM( GOSSIP_ICON_DOT, "Çàêðûòü ìåíþ!", GOSSIP_SENDER_MAIN, 130);
+            pPlayer->ADD_GOSSIP_ITEM( GOSSIP_ICON_DOT, "Ð¥Ð¾Ñ‡Ñƒ Ð¸Ð·ÑƒÑ‡Ð¸Ñ‚ÑŒ Ð¿Ñ€Ð¾Ñ„ÐµÑÑÐ¸ÑŽ!", GOSSIP_SENDER_MAIN, 110);
+            pPlayer->ADD_GOSSIP_ITEM( GOSSIP_ICON_DOT, "Ð—Ð°ÐºÑ€Ñ‹Ñ‚ÑŒ Ð¼ÐµÐ½ÑŽ!", GOSSIP_SENDER_MAIN, 130);
         }
         else
-            pCreature->MonsterWhisper("Àòà-òà ïî ðóêàì! Íåëüçÿ òàê ìíîãî ïðîô þçàòü!", pPlayer->GetGUID(), true);
+            pCreature->MonsterWhisper("ÐÑ‚Ð°-Ñ‚Ð° Ð¿Ð¾ Ñ€ÑƒÐºÐ°Ð¼! ÐÐµÐ»ÑŒÐ·Ñ Ñ‚Ð°Ðº Ð¼Ð½Ð¾Ð³Ð¾ Ð¿Ñ€Ð¾Ñ„ ÑŽÐ·Ð°Ñ‚ÑŒ!", pPlayer->GetGUID(), true);
     
         pPlayer->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, pCreature->GetGUID());
         return true;
@@ -78,12 +78,12 @@ class prof_master : public CreatureScript
                 uint32 freeProfs = player->GetFreePrimaryProfessionPoints()+1;
                 if (freeProfs >= sWorld->getIntConfig(CONFIG_MAX_PRIMARY_TRADE_SKILL))
                 {
-                    player->ADD_GOSSIP_ITEM( GOSSIP_ICON_DOT, "Õî÷ó èçó÷èòü ïðîôåññèþ!", GOSSIP_SENDER_MAIN, 110);
-                    player->ADD_GOSSIP_ITEM( GOSSIP_ICON_DOT, "Çàêðûòü ìåíþ!", GOSSIP_SENDER_MAIN, 130);
+                    player->ADD_GOSSIP_ITEM( GOSSIP_ICON_DOT, "Ð¥Ð¾Ñ‡Ñƒ Ð¸Ð·ÑƒÑ‡Ð¸Ñ‚ÑŒ Ð¿Ñ€Ð¾Ñ„ÐµÑÑÐ¸ÑŽ!", GOSSIP_SENDER_MAIN, 110);
+                    player->ADD_GOSSIP_ITEM( GOSSIP_ICON_DOT, "Ð—Ð°ÐºÑ€Ñ‹Ñ‚ÑŒ Ð¼ÐµÐ½ÑŽ!", GOSSIP_SENDER_MAIN, 130);
                 }
                 else
                 {
-                    creature->MonsterWhisper("Àòà-òà ïî ðóêàì! Íåëüçÿ òàê ìíîãî ïðîô þçàòü!", player->GetGUID(), true);
+                    creature->MonsterWhisper("ÐÑ‚Ð°-Ñ‚Ð° Ð¿Ð¾ Ñ€ÑƒÐºÐ°Ð¼! ÐÐµÐ»ÑŒÐ·Ñ Ñ‚Ð°Ðº Ð¼Ð½Ð¾Ð³Ð¾ Ð¿Ñ€Ð¾Ñ„ ÑŽÐ·Ð°Ñ‚ÑŒ!", player->GetGUID(), true);
                     player->CLOSE_GOSSIP_MENU();
                 }
         
@@ -95,7 +95,7 @@ class prof_master : public CreatureScript
                 for (uint8 i=1; i<MAXPROF; ++i)
                 {
                     char text[255];
-                    snprintf( text, 255,     "Õî÷ó èçó÷èòü %s!", profs[i].name );
+                    snprintf( text, 255,     "Ð¥Ð¾Ñ‡Ñƒ Ð¸Ð·ÑƒÑ‡Ð¸Ñ‚ÑŒ %s!", profs[i].name );
                     player->ADD_GOSSIP_ITEM( GOSSIP_ICON_DOT, text, GOSSIP_SENDER_MAIN, i);
                 }
                 player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,creature->GetGUID());
@@ -114,10 +114,10 @@ class prof_master : public CreatureScript
                     player->SetSkill(profs[action].skill, player->GetSkillStep(profs[action].skill), 450, 450);
                     ((ChatHandler*)player)->HandleLearnSkillRecipesHelper(player,profs[action].skill);
                     char text[255];
-                    snprintf( text, 255,     "Îïåðàöèÿ âûïîëíåíà óñïåøíî, %s èçó÷åí", profs[action].name);
+                    snprintf( text, 255,     "ÐžÐ¿ÐµÑ€Ð°Ñ†Ð¸Ñ Ð²Ñ‹Ð¿Ð¾Ð»Ð½ÐµÐ½Ð° ÑƒÑÐ¿ÐµÑˆÐ½Ð¾, %s Ð¸Ð·ÑƒÑ‡ÐµÐ½", profs[action].name);
                     creature->MonsterWhisper(text, player->GetGUID(), true);
-                    player->ADD_GOSSIP_ITEM( GOSSIP_ICON_DOT, "Âåðíóòüñÿ â ãëàâíîå ìåíþ!", GOSSIP_SENDER_MAIN, 19);
-                    player->ADD_GOSSIP_ITEM( GOSSIP_ICON_DOT, "Çàêðûòü ìåíþ!", GOSSIP_SENDER_MAIN, 130);
+                    player->ADD_GOSSIP_ITEM( GOSSIP_ICON_DOT, "Ð’ÐµÑ€Ð½ÑƒÑ‚ÑŒÑÑ Ð² Ð³Ð»Ð°Ð²Ð½Ð¾Ðµ Ð¼ÐµÐ½ÑŽ!", GOSSIP_SENDER_MAIN, 19);
+                    player->ADD_GOSSIP_ITEM( GOSSIP_ICON_DOT, "Ð—Ð°ÐºÑ€Ñ‹Ñ‚ÑŒ Ð¼ÐµÐ½ÑŽ!", GOSSIP_SENDER_MAIN, 130);
                     player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,creature->GetGUID());
                 }
                 break;
