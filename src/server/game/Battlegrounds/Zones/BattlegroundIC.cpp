@@ -312,6 +312,11 @@ void BattlegroundIC::AddPlayer(Player *plr)
 
 void BattlegroundIC::RemovePlayer(Player* plr, uint64 /*guid*/)
 {
+    if (!plr)
+    {
+        sLog->outError("bg_IC no player at remove");
+        return;
+    }
     plr->RemoveAura(SPELL_QUARRY);
     plr->RemoveAura(SPELL_OIL_REFINERY);
 }

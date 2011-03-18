@@ -974,8 +974,7 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
         plr->SpawnCorpseBones();
     }
 
-    if (plr)
-        RemovePlayer(plr, guid);                                // BG subclass specific code
+    RemovePlayer(plr, guid);                                // BG subclass specific code
 
     if (participant) // if the player was a match participant, remove auras, calc rating, update queue
     {
