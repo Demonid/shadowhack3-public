@@ -4144,6 +4144,7 @@ void Spell::SendSpellGo()
             case 49560:
             case 49576:
             case 55095:
+            case 62458:
                 break;
             default:
             {
