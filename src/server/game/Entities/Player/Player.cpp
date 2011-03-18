@@ -16217,7 +16217,7 @@ void Player::_LoadArenaStatsInfo(PreparedQueryResult result)
     {
         for (; slot <= 2; ++slot)
         {
-            CharacterDatabase.PExecute("INSERT INTO character_arena_stats (guid, slot, personal_rating, matchmaker_rating) VALUES (%u, %u, 0, 1500)", GetGUIDLow(), slot);
+            CharacterDatabase.PExecute("INSERT INTO character_arena_stats (guid, slot, personal_rating, matchmaker_rating) VALUES (%u, %u, %i, 1500)", GetGUIDLow(), slot, sWorld.getIntConfig(CONFIG_ARENA_START_PERSONAL_RATING));
             SetArenaTeamInfoField(slot, ARENA_TEAM_PERSONAL_RATING, 0);
         }
         return;
