@@ -211,6 +211,7 @@ m_vehicleKit(NULL), m_unitTypeMask(UNIT_MASK_NONE), m_HostileRefManager(this)
     m_duringRemoveFromWorld = false;
 
     m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE);
+    frozen = false;
 }
 
 Unit::~Unit()
@@ -10625,7 +10626,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
                 // Ice Lance
                 if (spellProto->SpellIconID == 186)
                 {
-                    if (pVictim->HasAuraState(AURA_STATE_FROZEN, spellProto, this))
+                    if (pVictim->isFrozen() || pVictim->HasAuraState(AURA_STATE_FROZEN, spellProto, this))
                     {
                         // Glyph of Ice Lance
                         if (owner->HasAura(56377) && pVictim->getLevel() > owner->getLevel())
@@ -11174,7 +11175,7 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
                         case  911: modChance+= 16;
                         case  910: modChance+= 17;
                         case  849: modChance+= 17;
-                            if (!pVictim->HasAuraState(AURA_STATE_FROZEN, spellProto, this))
+                            if (!pVictim->isFrozen() && !pVictim->HasAuraState(AURA_STATE_FROZEN, spellProto, this))
                                 break;
                             crit_chance+=modChance;
                             break;
@@ -14414,7 +14415,7 @@ void CharmInfo::SetSpellAutocast(uint32 spell_id, bool state)
 
 bool Unit::isFrozen() const
 {
-    return HasAuraState(AURA_STATE_FROZEN);
+    return HasAuraState(AURA_STATE_FROZEN) || frozen;
 }
 
 struct ProcTriggeredData
@@ -14715,7 +14716,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit * pTarget, uint32 procFlag,
                 case SPELL_AURA_MOD_DAMAGE_PERCENT_DONE:
                 {
                     // Cinderglacier
-                    if(triggeredByAura->GetId() == 53386) 
+                    if (triggeredByAura->GetId() == 53386) 
                         takeCharges=true;
                     break;
                 }
