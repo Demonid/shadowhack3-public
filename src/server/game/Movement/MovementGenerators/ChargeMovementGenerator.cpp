@@ -151,9 +151,6 @@ void ChargeMovementGenerator<T>:: Finalize(T &unit)
 {
     unit.ClearUnitState(UNIT_STAT_CHARGING | UNIT_STAT_JUMPING);
 
-    if (unit.GetTypeId() == TYPEID_PLAYER)
-        unit.ToPlayer()->resetAnticheatTemporaryImmunity();
-
     if (arrived) // without this crash!
     {
         MovementInform(unit);
