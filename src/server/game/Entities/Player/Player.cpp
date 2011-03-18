@@ -695,7 +695,7 @@ void Player::CleanupsBeforeDelete(bool finalCleanup)
     // clean up player-instance binds, may unload some instance saves
     for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
         for (BoundInstancesMap::iterator itr = m_boundInstances[i].begin(); itr != m_boundInstances[i].end(); ++itr)
-            if (itr->second && itr->second.save)
+            if (itr->second.save)
                 itr->second.save->RemovePlayer(this);
 }
 
