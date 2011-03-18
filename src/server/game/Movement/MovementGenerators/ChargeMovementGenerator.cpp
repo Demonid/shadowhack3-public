@@ -42,10 +42,13 @@ void ChargeMovementGenerator<T>::_setTargetPosition(T &unit)
     // send path to client
     float speed = traveller.Speed() * 0.001f; // in ms
     uint32 transitTime = uint32(i_path.GetTotalLength() / speed);
-    unit.MonsterMoveByPath(i_path, 1, i_path.size(), transitTime);
 
     if (unit.GetTypeId() == TYPEID_PLAYER)
-        unit.ToPlayer()->addAnticheatTemporaryImmunity(transitTime);
+        unit.ToPlayer()->addAnticheatTemporaryImmunity(transitTime+250);
+
+    unit.MonsterMoveByPath(i_path, 1, i_path.size(), transitTime);
+
+    
 }
 
 template<class T>
