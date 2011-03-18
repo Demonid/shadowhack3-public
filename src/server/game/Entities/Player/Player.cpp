@@ -695,7 +695,7 @@ void Player::CleanupsBeforeDelete(bool finalCleanup)
     // clean up player-instance binds, may unload some instance saves
     for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
         for (BoundInstancesMap::iterator itr = m_boundInstances[i].begin(); itr != m_boundInstances[i].end(); ++itr)
-            if (itr->second && itr->second.save)
+            if (itr->second.save)
                 itr->second.save->RemovePlayer(this);
 }
 
@@ -7203,14 +7203,14 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
     switch (zone->team)
     {
         case AREATEAM_ALLY:
-            pvpInfo.inHostileArea = GetTeam() != ALLIANCE && (sWorld->IsPvPRealm() || zone->flags & AREA_FLAG_CAPITAL);
+            pvpInfo.inHostileArea = GetTeam() != ALLIANCE && (sWorld->IsPvPRealm() || (zone->flags & AREA_FLAG_CAPITAL));
             break;
         case AREATEAM_HORDE:
-            pvpInfo.inHostileArea = GetTeam() != HORDE && (sWorld->IsPvPRealm() || zone->flags & AREA_FLAG_CAPITAL);
+            pvpInfo.inHostileArea = GetTeam() != HORDE && (sWorld->IsPvPRealm() || (zone->flags & AREA_FLAG_CAPITAL));
             break;
         case AREATEAM_NONE:
             // overwrite for battlegrounds, maybe batter some zone flags but current known not 100% fit to this
-            pvpInfo.inHostileArea = sWorld->IsPvPRealm() || InBattleground() || zone->flags & AREA_FLAG_OUTDOOR_PVP;
+            pvpInfo.inHostileArea = sWorld->IsPvPRealm() || InBattleground() || (zone->flags & AREA_FLAG_OUTDOOR_PVP);
             break;
         default:                                            // 6 in fact
             pvpInfo.inHostileArea = false;
@@ -21968,7 +21968,7 @@ void Player::RemoveItemDependentAurasAndCasts(Item * pItem)
 
         // skip passive (passive item dependent spells work in another way) and not self applied auras
         SpellEntry const* spellInfo = aura->GetSpellProto();
-        if (aura->IsPassive() ||  aura->GetCasterGUID() != GetGUID())
+        if (aura->IsPassive() || aura->GetCasterGUID() != GetGUID() || aura->GetId() == 46924 ) // Bladestorm reswap
         {
             ++itr;
             continue;
