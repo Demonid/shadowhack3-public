@@ -991,6 +991,7 @@ void Spell::AddUnitTarget(Unit* pVictim, uint32 effIndex)
     target.damage     = 0;
     target.crit       = false;
     target.scaleAura  = false;
+    target.isfrozen   = false;
     if (m_auraScaleMask && target.effectMask == m_auraScaleMask && m_caster != pVictim)
     {
         SpellEntry const * auraSpell = sSpellStore.LookupEntry(sSpellMgr->GetFirstSpellInChain(m_spellInfo->Id));
@@ -1184,6 +1185,18 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     unitTarget = unit;
 
     // Reset damage/healing counter
+    float multiplier[MAX_SPELL_EFFECTS];
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        if (m_applyMultiplierMask & (1 << i))
+            multiplier[i] = SpellMgr::CalculateSpellEffectDamageMultiplier(m_spellInfo, i, m_originalCaster, this);
+
+    if (target->isfrozen |= unit->isFrozen())
+        unit->frozen = true;
+
+    target->damage = CalculateDamageDone(unit, mask, multiplier/*, target->isfrozen*/);
+    target->crit = m_caster->isSpellCrit(unit, m_spellInfo, m_spellSchoolMask, m_attackType/*, target->isfrozen*/);
+
+    unit->frozen = false;
     m_damage = target->damage;
     m_healing = -target->damage;
 
@@ -7353,11 +7366,6 @@ bool Spell::IsValidDeadOrAliveTarget(Unit const* target) const
 
 void Spell::CalculateDamageDoneForAllTargets()
 {
-    float multiplier[MAX_SPELL_EFFECTS];
-    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-        if (m_applyMultiplierMask & (1 << i))
-            multiplier[i] = SpellMgr::CalculateSpellEffectDamageMultiplier(m_spellInfo, i, m_originalCaster, this);
-
     bool usesAmmo = true;
     Unit::AuraEffectList const& Auras = m_caster->GetAuraEffectsByType(SPELL_AURA_ABILITY_CONSUME_NO_AMMO);
     for (Unit::AuraEffectList::const_iterator j = Auras.begin(); j != Auras.end(); ++j)
@@ -7402,13 +7410,18 @@ void Spell::CalculateDamageDoneForAllTargets()
 
         if (target.missCondition == SPELL_MISS_NONE)                          // In case spell hit target, do all effect on that target
         {
-            target.damage += CalculateDamageDone(unit, mask, multiplier);
-            target.crit = m_caster->isSpellCrit(unit, m_spellInfo, m_spellSchoolMask, m_attackType);
+            //target.damage +=  CalculateDamageDone(unit, mask, multiplier);
+            target.isfrozen = unit->isFrozen();
+            target.crit = false;
         }
         else if (target.missCondition == SPELL_MISS_REFLECT)                // In case spell reflect from target, do all effect on caster (if hit)
         {
             if (target.reflectResult == SPELL_MISS_NONE)       // If reflected spell hit caster -> do all effect on him
             {
+                float multiplier[MAX_SPELL_EFFECTS];
+                for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                    if (m_applyMultiplierMask & (1 << i))
+                        multiplier[i] = SpellMgr::CalculateSpellEffectDamageMultiplier(m_spellInfo, i, m_originalCaster, this);
                 target.damage += CalculateDamageDone(m_caster, mask, multiplier);
                 target.crit = m_caster->isSpellCrit(m_caster, m_spellInfo, m_spellSchoolMask, m_attackType);
             }

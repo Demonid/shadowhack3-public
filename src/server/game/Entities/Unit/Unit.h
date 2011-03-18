@@ -1492,6 +1492,7 @@ class Unit : public WorldObject
         bool IsPolymorphed() const;
 
         bool isFrozen() const;
+        bool frozen;
 
         bool isTargetableForAttack() const;
         bool isAttackableByAOE(bool requireDeadTarget = false) const;
