@@ -564,6 +564,7 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
                     // Sacred Shield
                     if (m_spellProto->SpellFamilyFlags[1] & 0x80000)
                     {
+                        amount = SpellMgr::CalculateSpellEffectAmount(m_spellProto, m_effIndex, caster, &m_baseAmount, NULL, true);
                         //+75.00% from sp bonus
                         float bonus = 0.75f;
 
