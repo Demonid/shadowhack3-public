@@ -198,7 +198,7 @@ TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
             newPathCalculated = i_path->Update(x, y, z);
 
         // nothing we can do here ...
-        if (i_path->getPathType() & (PATHFIND_INCOMPLETE|PATHFIND_NOPATH))
+        if (i_path->getPathType() & (PATHFIND_NOPATH))
         {
             if(owner.IsGuardianPetStuff())
             {
