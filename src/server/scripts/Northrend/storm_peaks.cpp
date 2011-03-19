@@ -658,7 +658,7 @@ public:
             {
                 enter_timer = 0;
 
-                if (!drake)
+                if (!drake || !drake->IsInWorld() || !drake->isAlive())
                     return;
 
                 if (hasEmptySeats)
