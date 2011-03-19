@@ -649,6 +649,10 @@ public:
             if (enter_timer < diff)
             {
                 enter_timer = 0;
+
+                if (!drake)
+                    return;
+
                 if (hasEmptySeats)
                     me->JumpTo(drake, 25.0f);
                 else
