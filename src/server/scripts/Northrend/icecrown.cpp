@@ -504,6 +504,9 @@ public:
 
 	    void EnterCombat(Unit *enemy)   //Q: this disables PvP; reconceed when duels enabled
 	    {
+            if (!enemy)
+                return;
+
 		    if (noPlayer) return;
 		    if (!enemy->IsVehicle()) return;
             if (! enemy->GetCharmerOrOwnerPlayerOrPlayerItself()) return;
@@ -550,15 +553,21 @@ public:
 
 	    void SpellHit(Unit *who, const SpellEntry *spell)
 	    {
+            if (!who)
+                return;
+
 		    if (spell->Id == SPELL_TOURNAMENT_THRUST)
 		    {
-			    who->CastSpell(me,SPELL_TOURNAMENT_COUNTERATTACK,true);     //Q: the next gives QC independently of not/having quest; is this a problem?
-                if (who->GetCharmerOrOwnerPlayerOrPlayerItself()) who->GetCharmerOrOwnerPlayerOrPlayerItself()->KilledMonsterCredit(me->GetEntry(),me->GetGUID());
+			    who->CastSpell(me, SPELL_TOURNAMENT_COUNTERATTACK, true);
+                if (who->GetCharmerOrOwnerPlayerOrPlayerItself()) who->GetCharmerOrOwnerPlayerOrPlayerItself()->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
 		    }
 	    }
 
         void EnterCombat(Unit* enemy)
         {
+            if (!enemy)
+                return;
+
             DoStopAttack();
             me->SetFullHealth();
 		    enemy->CombatStop(true);
@@ -613,10 +622,10 @@ public:
                 switch(me->GetEntry())
                 {
                 case NPC_RANGED_TARGET:
-                    if (spell->Id == SPELL_TOURNAMENT_SHIELD_BREAKER) quester->KilledMonsterCredit(NPC_RANGED_TARGET,me->GetGUID());
+                    if (spell->Id == SPELL_TOURNAMENT_SHIELD_BREAKER) quester->KilledMonsterCredit(NPC_RANGED_TARGET, me->GetGUID());
                     break;
                 case NPC_CHARGE_TARGET:
-                    if (spell->Id == SPELL_TOURNAMENT_CHARGE) quester->KilledMonsterCredit(NPC_CHARGE_TARGET,me->GetGUID());
+                    if (spell->Id == SPELL_TOURNAMENT_CHARGE) quester->KilledMonsterCredit(NPC_CHARGE_TARGET, me->GetGUID());
                     break;
                 }
 			    Reset();
@@ -783,7 +792,7 @@ public:
         if (uiAction == GOSSIP_ACTION_INFO_DEF+1)
         {
             pPlayer->CLOSE_GOSSIP_MENU();
-            Creature* av = (pCreature->SummonCreature(NPC_ARGENT_VALIANT,8575.451f,952.472f,547.554f,0.38f,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,300000))->ToCreature();
+            Creature* av = pCreature->SummonCreature(NPC_ARGENT_VALIANT, 8575.451f, 952.472f, 547.554f, 0.38f,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,300000);
             if (av && av->AI())
             {
 	            av->AI()->SetGUID(pPlayer->GetGUID());
@@ -844,7 +853,7 @@ public:
         if (uiAction == GOSSIP_ACTION_INFO_DEF+1)
         {
             pPlayer->CLOSE_GOSSIP_MENU();
-		    Creature *ac = (pCreature->SummonCreature(NPC_ARGENT_CHAMPION,8558.37f,1113.10f,556.787f,1.932f,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,300000))->ToCreature();
+		    Creature *ac = pCreature->SummonCreature(NPC_ARGENT_CHAMPION, 8558.37f, 1113.10f, 556.787f, 1.932f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 300000);
             if (ac && ac->AI())
             {
 		        ac->AI()->SetGUID(pPlayer->GetGUID());
