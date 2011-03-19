@@ -210,6 +210,7 @@ class ArenaTeam
 
         void FinishWeek();
         void FinishGame(int32 mod);
+        void SetName(std::string name) { m_Name=name;}
 
     protected:
 

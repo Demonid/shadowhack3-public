@@ -1046,6 +1046,7 @@ void Spell::AddUnitTarget(Unit* pVictim, uint32 effIndex)
     }
     else
         target.reflectResult = SPELL_MISS_NONE;
+    m_caster->UpdateMagnet(pVictim, m_spellInfo, int32(target.timeDelay));
 
     // Add target to list
     m_UniqueTargetInfo.push_back(target);
@@ -2151,14 +2152,14 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
             switch(cur)
             {
                 case TARGET_UNIT_TARGET_ENEMY:
-                    if (Unit *magnet = m_caster->SelectMagnetTarget(target, m_spellInfo))
+                    if (Unit *magnet = m_caster->SelectMagnetTarget(target, m_spellInfo, m_triggeredByAuraSpell!= 0))
                         if (magnet != target)
                             m_targets.setUnitTarget(magnet);
                     pushType = PUSH_CHAIN;
                     break;
                 case TARGET_UNIT_TARGET_ANY:
                     if (!IsPositiveSpell(m_spellInfo->Id))
-                        if (Unit *magnet = m_caster->SelectMagnetTarget(target, m_spellInfo))
+                        if (Unit *magnet = m_caster->SelectMagnetTarget(target, m_spellInfo, m_triggeredByAuraSpell!= 0))
                             if (magnet != target)
                                 m_targets.setUnitTarget(magnet);
                     pushType = PUSH_CHAIN;

@@ -9418,6 +9418,8 @@ bool Unit::IsHostileTo(Unit const* unit) const
         }
     }
 
+    if (this->GetTypeId() == TYPEID_UNIT && this->GetEntry() == 12999)
+        return true;
     // common faction based case (CvC,PvC,CvP)
     return tester_faction->IsHostileTo(*target_faction);
 }
@@ -10194,29 +10196,47 @@ int32 Unit::DealHeal(Unit *pVictim, uint32 addhealth)
     return gain;
 }
 
-Unit* Unit::SelectMagnetTarget(Unit *victim, SpellEntry const *spellInfo)
+Unit* Unit::SelectMagnetTarget(Unit *victim, SpellEntry const *spellInfo, bool triggered)
 {
     if (!victim)
         return NULL;
 
     bool isdeathgrip = spellInfo && (spellInfo->Id == 49560 || spellInfo->Id == 49576 || spellInfo->Id == 49575); 
     // Magic case
-    if (spellInfo && ( isdeathgrip || (spellInfo->SchoolMask != SPELL_SCHOOL_MASK_NORMAL && spellInfo->Dispel !=DISPEL_POISON && 
+    if (spellInfo && ( isdeathgrip || // deathgrip as exeption http://www.wow-europe.com/ru/patchnotes/patch-322.html
+        (spellInfo->SchoolMask != SPELL_SCHOOL_MASK_NORMAL && spellInfo->Dispel !=DISPEL_POISON && 
         GetSpellSpecific(spellInfo) != SPELL_SPECIFIC_JUDGEMENT && 
         !sSpellMgr->_isPositiveSpell(spellInfo->Id, true) && !IsAreaOfEffectSpell(spellInfo) && IsHostileTo(victim))))
     {
-        //I am not sure if this should be redirected.
-        if (spellInfo->DmgClass == SPELL_DAMAGE_CLASS_NONE)
+        if (triggered && spellInfo->SpellIconID != 180)
             return victim;
-
-        Unit::AuraEffectList const& magnetAuras = victim->GetAuraEffectsByType(SPELL_AURA_SPELL_MAGNET);
-        for (Unit::AuraEffectList::const_iterator itr = magnetAuras.begin(); itr != magnetAuras.end(); ++itr)
-            if (Unit* magnet = (*itr)->GetBase()->GetUnitOwner())
-                if (magnet->isAlive())
-                {
-                    (*itr)->GetBase()->DropCharge();
+        bool cont=IsHostileTo(victim);
+        switch(spellInfo->SpellIconID)
+        {
+            case 180:   // freezing trap
+                cont=true;
+                break;
+            case 2237:  // envenom
+            case 538:   // Hunter's Mark
+            case 3412:  // Chimera Shot
+            case 218:   // Arcane Shot
+            case 3407:  // Explosive Shot
+            case 49576: // Death Grip
+            case 49560:
+                cont=false;
+                break;
+            default:break;
+        }
+        if(cont)
+        {
+            AuraEffectList const& magnetAuras = victim->GetAuraEffectsByType(SPELL_AURA_SPELL_MAGNET);
+            for (Unit::AuraEffectList::const_iterator itr = magnetAuras.begin(); itr != magnetAuras.end(); ++itr)
+                if (Unit* magnet = (*itr)->GetBase()->GetUnitOwner())
+                /*{
+                    (*itr)->GetBase()->DropCharge();*/
                     return magnet;
-                }
+                //}
+        }
     }
     // Melee && ranged case
     else
@@ -10225,15 +10245,58 @@ Unit* Unit::SelectMagnetTarget(Unit *victim, SpellEntry const *spellInfo)
         for (AuraEffectList::const_iterator i = hitTriggerAuras.begin(); i != hitTriggerAuras.end(); ++i)
             if (Unit* magnet = (*i)->GetBase()->GetCaster())
                 if (magnet->isAlive() && magnet->IsWithinLOSInMap(this))
-                    if (roll_chance_i((*i)->GetAmount()))
-                    {
-                        (*i)->GetBase()->DropCharge();
-                        return magnet;
-                    }
+                {
+                    (*i)->GetBase()->DropCharge();
+                    return magnet;
+                }
     }
 
     return victim;
 }
+
+void Unit::UpdateMagnet(Unit *victim, SpellEntry const *spellInfo, int32 time)
+{
+    // Magic case
+    if (spellInfo && ( spellInfo->Id == 49560 || // deathgrip as exeption http://www.wow-europe.com/ru/patchnotes/patch-322.html
+        (spellInfo->SchoolMask != SPELL_SCHOOL_MASK_NORMAL && spellInfo->Dispel !=DISPEL_POISON && 
+        GetSpellSpecific(spellInfo) != SPELL_SPECIFIC_JUDGEMENT &&
+        !sSpellMgr->_isPositiveSpell(spellInfo->Id, true) && !IsAreaOfEffectSpell(spellInfo))))
+    {
+        if(!victim->isTotem())
+            return;
+        bool cont=IsHostileTo(victim);
+        switch(spellInfo->SpellIconID)
+        {
+            case 180:   // freezing trap
+                cont=true;
+                break;
+            case 2237:  // envenom
+            case 538:   // Hunter's Mark
+            case 3412:  // Chimera Shot
+            case 218:   // Arcane Shot
+            case 3407:  // Explosive Shot
+            case 49576: // Death Grip
+            case 49560:
+                cont=false;
+                break;
+            default:break;
+        }
+        if(cont)
+        {
+            AuraEffectList const& magnetAuras = victim->GetAuraEffectsByType(SPELL_AURA_SPELL_MAGNET);
+            for (Unit::AuraEffectList::const_iterator itr = magnetAuras.begin(); itr != magnetAuras.end(); ++itr)
+            {
+                Aura * aur = (*itr)->GetBase();
+                if(!time)
+                    aur->DropCharge();
+                else if(aur->GetDuration() > time)
+                    aur->SetAuraTimer(time, victim->GetGUID());
+                break;
+            }
+        }
+    }
+}
+
 
 Unit* Unit::GetFirstControlled() const
 {
