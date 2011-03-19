@@ -840,6 +840,7 @@ public:
 
     bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
     {
+        pPlayer->PlayerTalkClass->ClearMenus();
         if (uiAction == GOSSIP_ACTION_INFO_DEF+1)
         {
             pPlayer->CLOSE_GOSSIP_MENU();
@@ -860,7 +861,7 @@ public:
 ## npc_tournament_duellist
 ######*/
 
-/*enum eTournamentDuellist
+enum eTournamentDuellist
 {
     SPELL_CHARGE                = 63010,
     SPELL_SHIELD_BREAKER        = 65147,
@@ -1188,6 +1189,7 @@ public:
 
     bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
     {
+        pPlayer->PlayerTalkClass->ClearMenus();
 	    if (uiAction == GOSSIP_ACTION_INFO_DEF+1)
 	    {
 		    pPlayer->CLOSE_GOSSIP_MENU();
@@ -1196,7 +1198,7 @@ public:
 	    }
 	    return false;
     }
-};*/
+};
 
 /*struct questgiver_argent_tournamentAI : public ScriptedAI
 {
@@ -1283,5 +1285,5 @@ void AddSC_icecrown()
     new npc_tournament_adviser();
     new npc_squire_david();
     new npc_squire_danny();
-    //new npc_tournament_duellist();
+    new npc_tournament_duellist();
 }
