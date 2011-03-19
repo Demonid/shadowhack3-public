@@ -1075,13 +1075,13 @@ public:
 			        {			
 				        if (WithRedDragonBlood)
 				        {
-					        EnterEvadeMode();
+                            me->DeleteThreatList();
+                            me->CombatStop(true);
 					        StartFollow(pHarpooner, 35, NULL);
 
 					        DoCast(me, SPELL_SUBDUED, true);
 					        pHarpooner->CastSpell(pHarpooner, SPELL_DRAKE_HATCHLING_SUBDUED, true);
 
-					        me->AttackStop();
 					        WithRedDragonBlood = false;
 					        me->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
 				        }
@@ -1094,11 +1094,13 @@ public:
 			        }
                 }
             }
+            else
+            {
+                if (!UpdateVictim())
+                    return;
 
-            if (!UpdateVictim())
-                return;
-
-            DoMeleeAttackIfReady();
+                DoMeleeAttackIfReady();
+            }
         }
     };
 
