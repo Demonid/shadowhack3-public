@@ -1185,17 +1185,19 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     unitTarget = unit;
 
     // Reset damage/healing counter
-    float multiplier[MAX_SPELL_EFFECTS];
-    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-        if (m_applyMultiplierMask & (1 << i))
-            multiplier[i] = SpellMgr::CalculateSpellEffectDamageMultiplier(m_spellInfo, i, m_originalCaster, this);
+    if (missInfo == SPELL_MISS_NONE)
+    {
+        float multiplier[MAX_SPELL_EFFECTS];
+        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+            if (m_applyMultiplierMask & (1 << i))
+                multiplier[i] = SpellMgr::CalculateSpellEffectDamageMultiplier(m_spellInfo, i, m_originalCaster, this);
 
-    if (target->isfrozen |= unit->isFrozen())
-        unit->frozen = true;
+        if (target->isfrozen |= unit->isFrozen())
+            unit->frozen = true;
 
-    target->damage = CalculateDamageDone(unit, mask, multiplier/*, target->isfrozen*/);
-    target->crit = m_caster->isSpellCrit(unit, m_spellInfo, m_spellSchoolMask, m_attackType/*, target->isfrozen*/);
-
+        target->damage = CalculateDamageDone(unit, mask, multiplier/*, target->isfrozen*/);
+        target->crit = m_caster->isSpellCrit(unit, m_spellInfo, m_spellSchoolMask, m_attackType/*, target->isfrozen*/);
+    }
     unit->frozen = false;
     m_damage = target->damage;
     m_healing = -target->damage;
