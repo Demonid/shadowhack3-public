@@ -47,25 +47,27 @@ public:
 	    {
 		    if (me->GetHealth() > dmg) return;
             me->HandleEmoteCommand(EMOTE_ONESHOT_KNEEL);
-		    EnterEvadeMode();
-		    Creature *goblin = me->FindNearestCreature(NPC_ZEEV_FIZZLESPARK,20.0f);
-		    if (goblin)
+		    if (Creature *goblin = me->FindNearestCreature(NPC_ZEEV_FIZZLESPARK, 20.0f))
 		    {
-			    goblin->Say(TEXTID_FIZZLESPARK_THANKS,LANG_UNIVERSAL,dealer->GetGUID());
-			    goblin->HandleEmoteCommand(EMOTE_ONESHOT_JUMPLANDRUN);
-			    if(dealer->ToPlayer()) goblin->DestroyForPlayer(dealer->ToPlayer());
+                if (dealer)
+                {
+			        goblin->Say(TEXTID_FIZZLESPARK_THANKS, LANG_UNIVERSAL, dealer->GetGUID());
+			        goblin->HandleEmoteCommand(EMOTE_ONESHOT_JUMPLANDRUN);
+			        if(dealer->ToPlayer()) goblin->DestroyForPlayer(dealer->ToPlayer());
+                }
 		    }
+            EnterEvadeMode();
 	    }
 
 	    void JustReachedHome() { Reset(); }
 
-	    void KilledUnit(Unit *whom) { Reset(); }
+	    void KilledUnit(Unit * /*whom*/) { Reset(); }
 
 	    void Reset()
 	    {
 		    me->RestoreFaction();
             DoStopAttack();
-            me->SetFlag(UNIT_NPC_FLAGS,UNIT_NPC_FLAG_GOSSIP);
+            me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
 	    }
     };
 
@@ -310,6 +312,9 @@ public:
 
         void KilledUnit(Unit* victim)
         {
+            if (!victim)
+                return;
+
             if (victim->GetTypeId() == TYPEID_PLAYER) EnterEvadeMode();
         }
 
@@ -531,25 +536,28 @@ public:
 
         void JustDied(Unit* unit)
         {
+            if (!unit)
+                return;
+
 		    if(unit->GetTypeId() == TYPEID_PLAYER)
 		    {
-		    Player* killer = ((Player*)unit);
-		    if (killer->GetQuestStatus(12931) == QUEST_STATUS_INCOMPLETE)
-		    {
-			    Quest const* qInfo = sObjectMgr->GetQuestTemplate(12931);   //Q: optimize this?
-			    if ( killer->getQuestStatusMap()[12931].m_creatureOrGOcount[0] < qInfo->ReqCreatureOrGOCount[0] )
-			    {
-				    uint32 reqkillcount = qInfo->ReqCreatureOrGOCount[0];
-				    uint32 curkillcount = killer->getQuestStatusMap()[12931].m_creatureOrGOcount[0];
-				    if (curkillcount < reqkillcount)
-				    {
-					    killer->getQuestStatusMap()[12931].m_creatureOrGOcount[0] = curkillcount + 1;
-					    killer->SendQuestUpdateAddCreatureOrGo( qInfo, killer->GetGUID(), 0, curkillcount, 1);
-				     }                        
-				    if (killer->CanCompleteQuest(12931))
-					     killer->CompleteQuest(12931);
-			    }
-		    }
+		        Player* killer = unit->ToPlayer();
+		        if (killer->GetQuestStatus(12931) == QUEST_STATUS_INCOMPLETE)
+		        {
+			        /*Quest const* qInfo = sObjectMgr->GetQuestTemplate(12931);   //Q: optimize this?
+			        if ( killer->getQuestStatusMap()[12931].m_creatureOrGOcount[0] < qInfo->ReqCreatureOrGOCount[0] )
+			        {
+				        uint32 reqkillcount = qInfo->ReqCreatureOrGOCount[0];
+				        uint32 curkillcount = killer->getQuestStatusMap()[12931].m_creatureOrGOcount[0];
+				        if (curkillcount < reqkillcount)
+				        {
+					        killer->getQuestStatusMap()[12931].m_creatureOrGOcount[0] = curkillcount + 1;
+					        killer->SendQuestUpdateAddCreatureOrGo( qInfo, killer->GetGUID(), 0, curkillcount, 1);
+				         }                        
+				        if (killer->CanCompleteQuest(12931))
+					         killer->CompleteQuest(12931);
+			        }*/ //WTF IS THIS???????
+		        }
 		    }
         }
     };
@@ -752,6 +760,9 @@ public:
 
         void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply)
         {
+            if (!who)
+                return;
+
             if (who->GetTypeId() == TYPEID_PLAYER)
             {
                 if (apply)
