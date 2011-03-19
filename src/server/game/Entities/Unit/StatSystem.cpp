@@ -988,7 +988,8 @@ bool Guardian::UpdateStats(Stats stat)
         }
         else
         {
-            mod = 0.45f;
+            // Snake Trap serpents bug
+            mod = (GetEntry() == 19921 || GetEntry() == 19833) ? 0.0f : 0.45f;
             if (isPet())
             {
                 PetSpellMap::const_iterator itr = (ToPet()->m_spells.find(62758)); // Wild Hunt rank 1
