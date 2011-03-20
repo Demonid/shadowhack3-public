@@ -331,6 +331,17 @@ public:
     private:
         uint32 globalCooldown;
         uint32 buffTimer;
+        uint32 AOE_Timer;
+        uint32 MS_Timer;
+        uint32 BUBLE_Timer;
+        uint32 HAMSTRING_Timer;
+        uint32 HEAL_Timer;
+        uint32 BLADESTORM_Timer;
+        uint32 GRIP_Timer;
+        uint32 REND_Timer;
+        uint32 Freedom_Timer;
+        uint32 Trinket_Timer;
+        uint32 Charge_Timer;
     };
 
     CreatureAI *GetAI(Creature* creature) const
