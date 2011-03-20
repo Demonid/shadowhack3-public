@@ -129,6 +129,9 @@ public:
                     // Summon clone
                     if (Unit *summon = me->SummonCreature(MOB_TWISTED_VISAGE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(),TEMPSUMMON_CORPSE_DESPAWN,0))
                     {
+                        // required for correct visual
+                        // Fixme: allow mirror image query to send other guid to get rid of minion status
+                        summon->SetUInt64Value(UNIT_FIELD_CREATEDBY, plr->GetGUID());
                         // clone
                         plr->CastSpell(summon, SPELL_CLONE_PLAYER, true);
                         // set phase
@@ -288,7 +291,7 @@ public:
 
             if (uiShiverTimer <= diff)
             {
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(pTarget, SPELL_SHIVER);
                 uiShiverTimer = 15*IN_MILLISECONDS;
             } else uiShiverTimer -= diff;

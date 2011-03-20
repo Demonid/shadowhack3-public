@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
@@ -79,6 +80,7 @@ enum WorldTimers
     WUPDATE_CLEANDB,
     WUPDATE_AUTOBROADCAST,
     WUPDATE_MAILBOXQUEUE,
+    WUPDATE_EXTMAIL,
     WUPDATE_DELETECHARS,
     WUPDATE_PINGDB,
     WUPDATE_COUNT
@@ -113,6 +115,7 @@ enum WorldBoolConfigs
     CONFIG_ALLOW_GM_FRIEND,
     CONFIG_GM_LOWER_SECURITY,
     CONFIG_GM_ALLOW_ACHIEVEMENT_GAINS,
+    CONFIG_EXTERNAL_MAIL,
     CONFIG_SKILL_PROSPECTING,
     CONFIG_SKILL_MILLING,
     CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY,
@@ -163,6 +166,10 @@ enum WorldBoolConfigs
     CONFIG_ALLOW_TICKETS,
     CONFIG_DBC_ENFORCE_ITEM_ATTRIBUTES,
     CONFIG_PRESERVE_CUSTOM_CHANNELS,
+    CONFIG_MOVEMAP_ENABLE,
+	CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED,
+	CONFIG_OUTDOORPVP_WINTERGRASP_ANTIFARM_ENABLE,
+	CONFIG_OUTDOORPVP_WINTERGRASP_CUSTOM_HONOR,
     BOOL_CONFIG_VALUE_COUNT
 };
 
@@ -242,8 +249,10 @@ enum WorldIntConfigs
     CONFIG_SKILL_CHANCE_MINING_STEPS,
     CONFIG_SKILL_CHANCE_SKINNING_STEPS,
     CONFIG_SKILL_GAIN_CRAFTING,
+	CONFIG_PREMIUM_SKILL_GAIN_CRAFTING,
     CONFIG_SKILL_GAIN_DEFENSE,
     CONFIG_SKILL_GAIN_GATHERING,
+	CONFIG_PREMIUM_SKILL_GAIN_GATHERING,
     CONFIG_SKILL_GAIN_WEAPON,
     CONFIG_MAX_OVERSPEED_PINGS,
     CONFIG_EXPANSION,
@@ -310,6 +319,20 @@ enum WorldIntConfigs
     CONFIG_PRESERVE_CUSTOM_CHANNEL_DURATION,
     CONFIG_PERSISTENT_CHARACTER_CLEAN_FLAGS,
     CONFIG_MAX_INSTANCES_PER_HOUR,
+	CONFIG_EXTERNAL_MAIL_INTERVAL,
+	CONFIG_PREMIUM_XP_LEVELLIMIT,
+	CONFIG_PREMIUM_SKILL_GAIN_LIMIT,
+	CONFIG_OUTDOORPVP_WINTERGRASP_START_TIME,
+	CONFIG_OUTDOORPVP_WINTERGRASP_BATTLE_TIME,
+	CONFIG_OUTDOORPVP_WINTERGRASP_ANTIFARM_ATK,
+	CONFIG_OUTDOORPVP_WINTERGRASP_ANTIFARM_DEF,
+	CONFIG_OUTDOORPVP_WINTERGRASP_WIN_BATTLE,
+	CONFIG_OUTDOORPVP_WINTERGRASP_LOSE_BATTLE,
+	CONFIG_OUTDOORPVP_WINTERGRASP_DAMAGED_TOWER,
+	CONFIG_OUTDOORPVP_WINTERGRASP_DESTROYED_TOWER,
+	CONFIG_OUTDOORPVP_WINTERGRASP_INTACT_BUILDING,
+	CONFIG_OUTDOORPVP_WINTERGRASP_DAMAGED_BUILDING,
+	CONFIG_OUTDOORPVP_WINTERGRASP_INTERVAL,
     INT_CONFIG_VALUE_COUNT
 };
 
@@ -338,6 +361,9 @@ enum Rates
     RATE_XP_KILL,
     RATE_XP_QUEST,
     RATE_XP_EXPLORE,
+	RATE_PREMIUM_XP_KILL,
+	RATE_PREMIUM_XP_QUEST,
+	RATE_PREMIUM_XP_EXPLORE,
     RATE_REPAIRCOST,
     RATE_REPUTATION_GAIN,
     RATE_REPUTATION_LOWLEVEL_KILL,
@@ -373,6 +399,7 @@ enum Rates
     RATE_CORPSE_DECAY_LOOTED,
     RATE_INSTANCE_RESET_TIME,
     RATE_TARGET_POS_RECALCULATION_RANGE,
+    RATE_MAX_CHARGE_PROC_RANGE,
     RATE_DURABILITY_LOSS_ON_DEATH,
     RATE_DURABILITY_LOSS_DAMAGE,
     RATE_DURABILITY_LOSS_PARRY,
@@ -453,7 +480,19 @@ enum RealmZone
 enum WorldStates
 {
     WS_WEEKLY_QUEST_RESET_TIME = 20002,                      // Next weekly reset time
-    WS_BG_DAILY_RESET_TIME     = 20003                       // Next daily BG reset time
+    WS_BG_DAILY_RESET_TIME     = 20003,                       // Next daily BG reset time
+    WS_WINTERGRASP_CONTROLLING_TEAMID   = 90001,            // Wintergrasp: Current team id
+    WS_WINTERGRASP_DEFENDER_TEAMID      = 90012,            // Wintergrasp: Defender team id
+    WS_WINTERGRASP_ISWAR                = 90002,            // Wintergrasp: Is currently wartime?
+    WS_WINTERGRASP_TIMER                = 90003,            // Wintergrasp: Timer
+    WS_WINTERGRASP_CLOCK_ALLY           = 90004,            // Wintergrasp: Clock Ally
+    WS_WINTERGRASP_CLOCK_HORDE          = 90005,            // Wintergrasp: Clock Horde
+    WS_WINTERGRASP_SHOP_CNT_ALLY        = 90006,            // Wintergrasp: Workshop count Ally
+    WS_WINTERGRASP_SHOP_CNT_HORDE       = 90007,            // Wintergrasp: Workshop count Horde
+    WS_WINTERGRASP_TOWER_DEST_ALLY      = 90008,            // Wintergrasp: Tower destroyed Ally
+    WS_WINTERGRASP_TOWER_DEST_HORDE     = 90009,            // Wintergrasp: Tower destroyed Horde
+    WS_WINTERGRASP_VEHICLE_CNT_ALLY     = 90010,            // Wintergrasp: Vehicle count Ally
+    WS_WINTERGRASP_VEHICLE_CNT_HORDE    = 90011,            // Wintergrasp: Vehicle count Horde
 };
 
 // DB scripting commands
@@ -713,6 +752,13 @@ class World
         static int32 GetVisibilityNotifyPeriodInInstances() { return m_visibility_notify_periodInInstances;  }
         static int32 GetVisibilityNotifyPeriodInBGArenas()  { return m_visibility_notify_periodInBGArenas;   }
 
+	    //movement anticheat
+        static bool GetEnableMvAnticheat()     {return m_EnableMvAnticheat;}
+        static uint32 GetTeleportToPlaneAlarms()  {return m_TeleportToPlaneAlarms;}
+        static uint32 GetMistimingDelta()  {return m_MistimingDelta;}
+        static uint32 GetMistimingAlarms() {return m_MistimingAlarms;}
+        //<<< end movement anticheat
+
         void ProcessCliCommands();
         void QueueCliCommand(CliCommandHolder* commandHolder) { cliCmdQueue.add(commandHolder); }
 
@@ -732,6 +778,20 @@ class World
         void LoadAutobroadcasts();
 
         void UpdateAreaDependentAuras();
+
+		void SendWintergraspState();
+
+		void SetWintergraspTimer(uint32 timer, uint32 state)
+		{
+			m_WintergraspTimer = timer;
+			m_WintergraspState = state;
+		}
+
+		uint32 GetWintergraspTimer() const { return m_WintergraspTimer; }
+		uint32 GetWintergraspState() const { return m_WintergraspState; }
+
+		uint32 m_WintergraspTimer;
+		uint32 m_WintergraspState;
 
         void ProcessStartEvent();
         void ProcessStopEvent();
@@ -809,6 +869,11 @@ class World
         static int32 m_visibility_notify_periodInInstances;
         static int32 m_visibility_notify_periodInBGArenas;
 
+        //movement anticheat enable flag
+        static bool m_EnableMvAnticheat;
+        static uint32 m_TeleportToPlaneAlarms;
+        static uint32 m_MistimingDelta;
+        static uint32 m_MistimingAlarms;
         // CLI command holder to be thread safe
         ACE_Based::LockedQueue<CliCommandHolder*,ACE_Thread_Mutex> cliCmdQueue;
 

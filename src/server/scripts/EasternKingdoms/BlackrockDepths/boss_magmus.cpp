@@ -88,7 +88,7 @@ public:
 
             DoMeleeAttackIfReady();
         }
-        // When he die open door to last chamber
+        // When he dies open door to last chamber
         void JustDied(Unit *who)
         {
             if (InstanceScript* pInstance = who->GetInstanceScript())

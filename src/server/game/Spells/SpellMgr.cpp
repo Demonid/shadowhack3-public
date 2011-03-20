@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
@@ -28,6 +29,8 @@
 #include "CreatureAI.h"
 #include "MapManager.h"
 #include "BattlegroundIC.h"
+#include "OutdoorPvPMgr.h"
+#include "OutdoorPvPWG.h"
 
 bool IsAreaEffectTarget[TOTAL_SPELL_TARGETS];
 SpellEffectTargetTypes EffectTargetType[TOTAL_SPELL_EFFECTS];
@@ -322,8 +325,14 @@ uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell * spell)
 
     int32 castTime = spellCastTimeEntry->CastTime;
 
-    if (spell && spell->GetCaster())
-        spell->GetCaster()->ModSpellCastTime(spellInfo, castTime, spell);
+    if (spell)
+        if (Unit * caster = spell->GetCaster())
+        {
+            caster->ModSpellCastTime(spellInfo, castTime, spell);
+            if (IsChanneledSpell(spellInfo))
+                if (Player* modOwner = caster->GetSpellModOwner())
+                    modOwner->ApplySpellMod(spellInfo->Id, SPELLMOD_CASTING_TIME, castTime, spell);
+        }
 
     if (spellInfo->Attributes & SPELL_ATTR0_REQ_AMMO && (!spell || !(spell->IsAutoRepeat())))
         castTime += 500;
@@ -412,7 +421,7 @@ uint32 CalculatePowerCost(SpellEntry const * spellInfo, Unit const * caster, Spe
     powerCost += caster->GetInt32Value(UNIT_FIELD_POWER_COST_MODIFIER + school);
     // Shiv - costs 20 + weaponSpeed*10 energy (apply only to non-triggered spell with energy cost)
     if (spellInfo->AttributesEx4 & SPELL_ATTR4_SPELL_VS_EXTEND_COST)
-        powerCost += caster->GetAttackTime(OFF_ATTACK)/100;
+        powerCost += caster->GetAttackTime(OFF_ATTACK)*0.01f;
     // Apply cost mod by spell
     if (Player* modOwner = caster->GetSpellModOwner())
         modOwner->ApplySpellMod(spellInfo->Id, SPELLMOD_COST, powerCost);
@@ -464,6 +473,10 @@ AuraState GetSpellAuraState(SpellEntry const * spellInfo)
     if (spellInfo->Category == 1133)
         return AURA_STATE_FAERIE_FIRE;
 
+	// Touch of Zanzil
+	if (spellInfo->Id == 9991)
+		return AURA_STATE_FAERIE_FIRE;
+
     // Victorious
     if (spellInfo->SpellFamilyName == SPELLFAMILY_WARRIOR &&  spellInfo->SpellFamilyFlags[1] & 0x00040000)
         return AURA_STATE_WARRIOR_VICTORY_RUSH;
@@ -494,6 +507,43 @@ AuraState GetSpellAuraState(SpellEntry const * spellInfo)
         }
     }
     return AURA_STATE_NONE;
+}
+
+bool IsNondamageAuraSpell(SpellEntry const * spellInfo)
+{
+    bool isaura=false;
+    for (uint8 i=0; i<3; ++i)
+    {
+        if(spellInfo->Effect[i] == SPELL_EFFECT_APPLY_AURA)
+        switch(spellInfo->Effect[i])
+        {
+            case SPELL_EFFECT_APPLY_AURA: 
+            {
+                switch(spellInfo->EffectApplyAuraName[i])
+                {
+                    case SPELL_AURA_PERIODIC_HEALTH_FUNNEL: 
+                        return false;
+                    default:break;
+                }
+                isaura=true;
+                break;
+            }
+            case SPELL_EFFECT_SCHOOL_DAMAGE:
+            case SPELL_EFFECT_HEALTH_LEECH:
+            case SPELL_EFFECT_ENVIRONMENTAL_DAMAGE:
+            case SPELL_EFFECT_WEAPON_DAMAGE_NOSCHOOL:
+            case SPELL_EFFECT_WEAPON_PERCENT_DAMAGE:
+            case SPELL_EFFECT_TRIGGER_MISSILE:
+            case SPELL_EFFECT_WEAPON_DAMAGE:
+            case SPELL_EFFECT_POWER_BURN:
+            case SPELL_EFFECT_NORMALIZED_WEAPON_DMG:
+                return false;
+           default:break;
+        }
+    }
+    if(!isaura)
+        return false;
+    return true;
 }
 
 SpellSpecific GetSpellSpecific(SpellEntry const * spellInfo)
@@ -619,7 +669,8 @@ SpellSpecific GetSpellSpecific(SpellEntry const * spellInfo)
                 return SPELL_SPECIFIC_HAND;
 
             // Judgement of Wisdom, Judgement of Light, Judgement of Justice
-            if (spellInfo->Id == 20184 || spellInfo->Id == 20185 || spellInfo->Id == 20186)
+            if (spellInfo->Id == 20184 || spellInfo->Id == 20185 || spellInfo->Id == 20186 || spellInfo->SpellFamilyFlags[0] & 0x00800000
+                || spellInfo->SpellFamilyFlags[2] & 0x8)
                 return SPELL_SPECIFIC_JUDGEMENT;
 
             // only paladin auras have this (for palaldin class family)
@@ -756,11 +807,31 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
                 case 34700: // Allergic Reaction
                 case 61987: // Avenging Wrath Marker
                 case 61988: // Divine Shield exclude aura
+                case 34709: // Shadow Sigh
+				case 40477: // Forceful Strike
                     return false;
                 case 30877: // Tag Murloc
                     return true;
                 default:
                     break;
+            }
+            break;
+        case SPELLFAMILY_WARRIOR:
+            switch(spellId)
+            {
+                // Shockwave
+                case 46968:
+                    return false;
+                default:break;
+            }
+            break;
+        case SPELLFAMILY_ROGUE:
+            switch (spellId)
+            {
+                case 31224:
+                case 39666:
+                    return true;
+                default:break;
             }
             break;
         case SPELLFAMILY_MAGE:
@@ -770,10 +841,19 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
             // Ignite
             if (spellproto->SpellIconID == 45)
                 return true;
+            // Arcane Missiles 
+            if(spellproto->SpellIconID == 225 && spellproto->SpellFamilyFlags[0] == 0x200000)
+                return false;
             break;
         case SPELLFAMILY_PRIEST:
             switch (spellId)
             {
+                // Penance reflect
+                case 53000:
+                case 52999:
+                case 52998:
+                case 47666:
+                    return false;
                 case 64844: // Divine Hymn
                 case 64904: // Hymn of Hope
                 case 47585: // Dispersion
@@ -781,6 +861,10 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
                 default:
                     break;
             }
+            // Penance exclude damage
+            if((spellproto->SpellIconID == 2818 || spellproto->SpellIconID  == 225) && (spellproto->Effect[0] == SPELL_EFFECT_DUMMY || spellproto->SpellFamilyFlags[1] == 0x00010000))
+                return true;
+
             break;
         case SPELLFAMILY_HUNTER:
             // Aspect of the Viper
@@ -788,6 +872,9 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
                 return true;
             break;
         case SPELLFAMILY_SHAMAN:
+            // Totem of Wrath
+            if (spellId == 30708)
+                return false;
             if (spellId == 30708)
                 return false;
             break;
@@ -842,6 +929,8 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
                 case SPELL_AURA_MOD_HEALING_PCT:
                 case SPELL_AURA_MOD_HEALING_DONE:
                 case SPELL_AURA_MOD_DAMAGE_PERCENT_DONE:
+                    if(spellproto->SpellFamilyName == SPELLFAMILY_MAGE && spellproto->SpellFamilyFlags[0] & 0x2000)
+                        return true;
                     if (SpellMgr::CalculateSpellEffectAmount(spellproto, effIndex) < 0)
                         return false;
                     break;
@@ -851,6 +940,7 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
                     break;
                 case SPELL_AURA_MOD_CRIT_PCT:
                 case SPELL_AURA_MOD_SPELL_CRIT_CHANCE:
+				case SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT:
                     if (SpellMgr::CalculateSpellEffectAmount(spellproto, effIndex) > 0)
                         return true;                        // some expected positive spells have SPELL_ATTR1_NEGATIVE
                     break;
@@ -898,14 +988,15 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
                     return false;
                 case SPELL_AURA_PERIODIC_DAMAGE:            // used in positive spells also.
                     // part of negative spell if casted at self (prevent cancel)
-                    if (spellproto->EffectImplicitTargetA[effIndex] == TARGET_UNIT_CASTER)
+					if (spellproto->EffectImplicitTargetA[effIndex] == TARGET_UNIT_CASTER ||
+						spellproto->EffectImplicitTargetA[effIndex] == TARGET_DEST_DEST)
                         return false;
                     break;
                 case SPELL_AURA_MOD_DECREASE_SPEED:         // used in positive spells also
                     // part of positive spell if casted at self
-                    if (spellproto->EffectImplicitTargetA[effIndex] != TARGET_UNIT_CASTER)
+					if (spellproto->EffectImplicitTargetA[effIndex] != TARGET_UNIT_CASTER ||
+						spellproto->EffectImplicitTargetA[effIndex] != TARGET_DEST_DEST)
                         return false;
-                    // but not this if this first effect (didn't find better check)
                     if (spellproto->Attributes & SPELL_ATTR0_NEGATIVE_1 && effIndex == 0)
                         return false;
                     break;
@@ -1011,6 +1102,38 @@ bool SpellMgr::_isPositiveSpell(uint32 spellId, bool deep) const
         if (!_isPositiveEffect(spellId, i, deep))
             return false;
     return true;
+}
+
+bool IsExplicitPositiveTarget(uint32 targetA)
+{
+	// positive targets
+	switch(targetA)
+	{
+		case TARGET_UNIT_TARGET_ALLY:
+		case TARGET_UNIT_TARGET_PARTY:
+		case TARGET_UNIT_CHAINHEAL:
+		case TARGET_UNIT_TARGET_RAID:
+		case TARGET_UNIT_CLASS_TARGET:
+			return true;
+		default:
+			break;
+	}
+	return false;
+}
+
+bool IsExplicitNegativeTarget(uint32 targetA)
+{
+	// non-positive targets
+	switch(targetA)
+	{
+		case TARGET_UNIT_TARGET_ENEMY:
+		case TARGET_DST_TARGET_ENEMY:
+		case TARGET_UNIT_CHANNEL_TARGET:
+			return true;
+		default:
+			break;
+	}
+	return false;
 }
 
 bool IsSingleTargetSpell(SpellEntry const *spellInfo)
@@ -1459,7 +1582,7 @@ bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const* spellPr
     if (procEvent_procEx == PROC_EX_NONE)
     {
         // No extra req, so can trigger only for hit/crit - spell has to be active
-        if ((procExtra & (PROC_EX_NORMAL_HIT|PROC_EX_CRITICAL_HIT)) && active)
+        if(((procExtra & (PROC_EX_NORMAL_HIT|PROC_EX_CRITICAL_HIT)) && active) || procExtra & PROC_EX_ABSORB)
             return true;
     }
     else // Passive spells hits here only if resist/reflect/immune/evade
@@ -2713,6 +2836,7 @@ SpellCastResult SpellMgr::GetSpellAllowedInLocationError(SpellEntry const *spell
             return zone_id == 4197 || (mapEntry->IsBattleground() && player && player->InBattleground()) ? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA;
         }
         case 44521:                                         // Preparation
+        case 74411:                                         // Dampening Battleground
         {
             if (!player)
                 return SPELL_FAILED_REQUIRES_AREA;
@@ -2725,7 +2849,7 @@ SpellCastResult SpellMgr::GetSpellAllowedInLocationError(SpellEntry const *spell
                 return SPELL_FAILED_REQUIRES_AREA;
 
             Battleground* bg = player->GetBattleground();
-            return bg && bg->GetStatus() == STATUS_WAIT_JOIN ? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA;
+            return (bg && (bg->GetStatus() == STATUS_WAIT_JOIN || spellInfo->Id == 74410))? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA;
         }
         case 32724:                                         // Gold Team (Alliance)
         case 32725:                                         // Green Team (Alliance)
@@ -2739,6 +2863,7 @@ SpellCastResult SpellMgr::GetSpellAllowedInLocationError(SpellEntry const *spell
             return mapEntry->IsBattleArena() && player && player->InBattleground() ? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA;
         }
         case 32727:                                         // Arena Preparation
+        case 74410:                                         // Dampening Arena
         {
             if (!player)
                 return SPELL_FAILED_REQUIRES_AREA;
@@ -2854,6 +2979,15 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
             // Seduction
             else if (spellproto->SpellFamilyFlags[1] & 0x10000000)
                 return DIMINISHING_FEAR_BLIND;
+            // Curse of Elements
+            else if ((spellproto->SpellFamilyFlags[1] & 0x200) && (spellproto->SpellIconID == 55))
+                return DIMINISHING_LIMITONLY;
+            // Unstable Affliction
+            else if (spellproto->Id == 31117)
+                return DIMINISHING_LIMITONLY;
+            // Inferno Summon stun
+            else if (spellproto->Id == 22703)
+                return DIMINISHING_NONE;
             break;
         }
         case SPELLFAMILY_DRUID:
@@ -2890,6 +3024,9 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
             // Repentance
             if (spellproto->SpellFamilyFlags[0] & 0x4)
                 return DIMINISHING_POLYMORPH;
+            // Judgement of Justice - limit duration to 10s in PvP
+            else if (spellproto->SpellIconID == 3013)
+                return DIMINISHING_LIMITONLY;
             break;
         }
         case SPELLFAMILY_DEATHKNIGHT:
@@ -2954,6 +3091,16 @@ int32 GetDiminishingReturnsLimitDuration(DiminishingGroup group, SpellEntry cons
     // Explicit diminishing duration
     switch(spellproto->SpellFamilyName)
     {
+        case SPELLFAMILY_WARLOCK:
+        {
+            // Curse of Elements
+            if ((spellproto->SpellFamilyFlags[1] & 0x200) && (spellproto->SpellIconID == 55))
+                return 120 * IN_MILLISECONDS;
+            // Banish - limit to 6 seconds in PvP
+            else if (spellproto->SpellFamilyFlags[1] & 0x08000000)
+                return 6 * IN_MILLISECONDS;
+            break;
+        }
         case SPELLFAMILY_HUNTER:
         {
             // Wyvern Sting
@@ -3099,6 +3246,20 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
                     return false;
                 break;
             }
+         case 58730: // No fly Zone - Wintergrasp
+            {
+				if (sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+				{
+					OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197);
+					if ((pvpWG && !pvpWG->isWarTime()) || !player || (!player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !player->HasAuraType(SPELL_AURA_FLY)) || player->HasAura(45472) || player->HasAura(44795))
+						return false;
+				}
+			}
+            break;
+         case 58045: // Essence of Wintergrasp - Wintergrasp
+         case 57940: // Essence of Wintergrasp - Northrend
+              if (!player || player->GetTeamId() != sWorld->getWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID))
+              return false;
         case SPELL_OIL_REFINERY: // Oil Refinery - Isle of Conquest.
         case SPELL_QUARRY: // Quarry - Isle of Conquest.
             {
@@ -3150,6 +3311,10 @@ bool SpellMgr::CanAurasStack(Aura const *aura1, Aura const *aura2, bool sameCast
             || spellInfo_1->AttributesEx3 & SPELL_ATTR3_STACK_FOR_DIFF_CASTERS)
             return true;
 
+        // Deadly Poison (Venomous Snake) should not stack
+        if (spellInfo_1->Id == spellInfo_2->Id && spellInfo_1->Id == 34655)
+            return false;
+
         // check same periodic auras
         for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
@@ -3175,6 +3340,34 @@ bool SpellMgr::CanAurasStack(Aura const *aura1, Aura const *aura2, bool sameCast
                     break;
             }
         }
+    }
+
+    bool isVehicleAura1 = false;
+    bool isVehicleAura2 = false;
+    uint8 i = 0;
+    while (i < MAX_SPELL_EFFECTS && !(isVehicleAura1 && isVehicleAura2))
+    {
+        if (spellInfo_1->EffectApplyAuraName[i] == SPELL_AURA_CONTROL_VEHICLE)
+            isVehicleAura1 = true;
+        if (spellInfo_2->EffectApplyAuraName[i] == SPELL_AURA_CONTROL_VEHICLE)
+            isVehicleAura2 = true;
+
+        ++i;
+    }
+
+    if (isVehicleAura1 && isVehicleAura2)
+    {
+        Vehicle* veh = NULL;
+        if (aura1->GetOwner()->ToUnit())
+            veh = aura1->GetOwner()->ToUnit()->GetVehicleKit();
+
+        if (!veh)           // We should probably just let it stack. Vehicle system will prevent undefined behaviour later
+            return true;
+
+        if (!veh->GetAvailableSeatCount())
+            return false;   // No empty seat available
+
+        return true;        // Empty seat available (skip rest)
     }
 
     uint32 spellId_1 = GetLastSpellInChain(spellInfo_1->Id);
@@ -3585,11 +3778,32 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->Attributes |= SPELL_ATTR0_PASSIVE;
             count++;
         }
+        // Arcane Missiles 
+        if (spellInfo->SpellIconID == 225 && spellInfo->SpellFamilyFlags[0] == 0x200000)
+        {
+            spellInfo->AttributesEx2 = 0;
+            spellInfo->AttributesEx |= SPELL_ATTR1_NEGATIVE;
+        }
+        // Mind Flay
+        if (spellInfo->SpellIconID == 548 && spellInfo->SpellFamilyFlags[2] == 0x00000440)
+            spellInfo->AttributesEx |= SPELL_ATTR1_NEGATIVE; 
 
         switch (i)
         {
+        case 36350: //They Must Burn Bomb Aura (self)
+            spellInfo->EffectTriggerSpell[0] = 36325; // They Must Burn Bomb Drop (DND)
+            count++;
+            break;
         case 49838: // Stop Time
             spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
+            count++;
+            break;
+        // Penance Reflect
+        case 53000:
+        case 52999:
+        case 52998:
+        case 47666:
+            spellInfo->AttributesEx2 = 0;
             count++;
             break;
         case 61407: // Energize Cores
@@ -3784,11 +3998,185 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 74396:    // Fingers of Frost visual buff
             spellInfo->procCharges = 2;
-            spellInfo->StackAmount = 0;
             count++;
             break;
         case 28200:    // Ascendance (Talisman of Ascendance trinket)
             spellInfo->procCharges = 6;
+            count++;
+            break;
+        case 67684:    // Hospitality (Talisman of Resurgence)
+            spellInfo->EffectMiscValue[1] = 126;
+            count++;
+            break;
+        case 26157:    // PX-238 Winter Wondervolt
+        case 26272:
+        case 26273:
+        case 26274:
+            spellInfo->Mechanic = 0;
+            count++;
+            break;
+        case 62522:     // Electroshock
+            spellInfo->Attributes |= SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY;
+            spellInfo->AttributesEx2 |= SPELL_ATTR2_UNK26;
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CONE_ENEMY;
+            count++;
+            break;
+        case 61425:     // Vehicle-Mounts can't be used in Arena
+        case 61447:
+        case 55531:
+        case 60424:
+        case 61470:
+        case 61469:
+        case 61465:
+        case 61467:
+		case 126: // Eye of Kilrogg
+            spellInfo->AttributesEx4 |= SPELL_ATTR4_NOT_USABLE_IN_ARENA;
+            count++;
+            break;
+        case 71406:     // Anger Capacitor
+        case 71545:
+            spellInfo->EffectSpellClassMask[0]=0;
+            count++;
+            break;
+        case 20224:     // Seals of the Pure
+        case 20225:
+        case 20330:
+        case 20331:
+        case 20332:
+            spellInfo->EffectSpellClassMask[0][1]=0x20400800;
+            count++;
+            break; 
+        case 47496:     // Ghoul's Explosion 
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_AREA_ENEMY_DST;
+            spellInfo->EffectImplicitTargetB[0] = 0;
+            spellInfo->Effect[1] = SPELL_EFFECT_INSTAKILL;
+            spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_CASTER;
+            count++;
+            break;
+        case 30557:     // Wrath of the Titans (only usable in Karazhan)
+        case 30550:     // Redemption of the Fallen (only usable in Karazhan)
+        case 30567:     // Torment of the Worgen (only usable in Karazhan)
+        case 30562:     // Legacy of the Mountain King (only usable in Karazhan)
+            spellInfo->AreaGroupId = 46;
+            break;
+        case 57723:     // Exhaustion
+        case 57724:     // Sated
+        case 26013:     // Deserter
+        case 15007:     // Resurrection Sickness
+        case 46705:     // Honorless Target
+        case 2479:
+            spellInfo->SchoolMask = SPELL_SCHOOL_MASK_NONE;
+            break;
+        case 12323:    // Piercing Howl isn't magic.
+        case 45334:    // Feral Charge Root isn't magic.
+        case 6770:     // Sap shoudn't proc Damage Shield
+        case 2070:
+        case 11297:
+        case 51724:
+            spellInfo->DmgClass = SPELL_DAMAGE_CLASS_NONE;
+            count++;
+            break;
+        case 50980:     // Cataclysm (Etymidian spell)
+            spellInfo->TargetCreatureType |= 0x00000020;
+            count++;
+            break;
+        case 62363:     // Anti-Air Rocket
+        case 65045:     // Flames
+            spellInfo->EffectImplicitTargetA[1] = 87;
+            spellInfo->EffectImplicitTargetB[1] = 16;
+            count++;
+            break;
+        case 66:        // Invisibility
+            spellInfo->EffectAmplitude[1] = 333;
+            break;
+        case 29444:     // Magic Absorption
+        case 29441:
+            spellInfo->spellLevel = 0;
+            count++;
+            break;
+        case 30451:     // Arcane Blast
+        case 42894:
+        case 42896:
+        case 42897:
+            spellInfo->AttributesEx |= SPELL_ATTR1_NEGATIVE;
+            break;
+        case 12051:     // Evocation
+            spellInfo->InterruptFlags = 0x0000000F;
+            count++;
+            break;
+        case 18174:    // Suppression
+        case 18175:
+        case 18176:
+        case 33592:    // Balance of Power
+        case 33596:
+            spellInfo->EffectApplyAuraName[0] = SPELL_AURA_MOD_SPELL_HIT_CHANCE;
+            spellInfo->EffectMiscValue[0] = 0;
+            count++;
+            break;
+        case 63944:    // Renewed Hope
+        case 20911:    // Blessing of Sanctuary
+        case 25899:    // Greater Blessing of Sanctuary
+        case 50720:    // Vigilance
+            spellInfo->EffectBasePoints[0] = 0;
+            spellInfo->Effect[1] = SPELL_EFFECT_APPLY_AURA;
+            spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_TARGET_RAID;
+            spellInfo->EffectApplyAuraName[1] = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
+            spellInfo->EffectBasePoints[1] = -3;
+            spellInfo->EffectMiscValue[1] = 127;
+            count++;
+            break;
+        case 16836:     // Brambles
+        case 16839:
+        case 16840:
+            spellInfo->EffectApplyAuraName[0] =  SPELL_AURA_ADD_PCT_MODIFIER;
+            spellInfo->EffectMiscValue[0] = SPELLMOD_EFFECT1;
+            count++;
+            break;
+        case 49224:     // Magic Suppression
+        case 49611:
+        case 36032:     // Arcane Blast buff
+            spellInfo->procCharges = 0;
+            count++;
+            break;
+        // Flame Shock passive
+        case 75461:
+            spellInfo->Effect[1] = SPELL_EFFECT_APPLY_AURA;
+            spellInfo->EffectApplyAuraName[1] = SPELL_AURA_PERIODIC_HASTE;
+            spellInfo->EffectSpellClassMask[1]= spellInfo->EffectSpellClassMask[0];
+            count++;
+            break;
+        case 19746:     // Improved Concentration Aura
+            spellInfo->Effect[1] = 6;
+            spellInfo->EffectDieSides[1] = 1;
+            spellInfo->EffectApplyAuraName[1] = 234;
+            spellInfo->EffectMiscValue[1] = 26;
+            spellInfo->Effect[2] = 6;
+            spellInfo->EffectDieSides[2] = 1;
+            spellInfo->EffectApplyAuraName[2] = 234;
+            spellInfo->EffectMiscValue[2] = 9;
+            count++;
+            break;
+        case 47573:     // Twisted Faith
+        case 47577:
+        case 47578:
+        case 51166:
+        case 51167:
+            spellInfo->EffectSpellClassMask[1][0] |= 0x800000;
+            break;
+        case 18754:     // Improved Succubus
+        case 18755:
+        case 18756:
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
+            count++;
+            break;
+        case 47585:    // Dispersion
+            spellInfo->AuraInterruptFlags = AURA_INTERRUPT_FLAG_MOUNT;
+            count++;
+            break;
+        case 5215:     // Prowl
+        case 1784:     // Stealth
+        case 58984:    // Shadowmeld
+            spellInfo->AuraInterruptFlags&= ~ AURA_INTERRUPT_FLAG_TAKE_DAMAGE;
             count++;
             break;
         case 47201:    // Everlasting Affliction
@@ -3806,6 +4194,23 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 51852:    // The Eye of Acherus (no spawn in phase 2 in db)
             spellInfo->EffectMiscValue[0] |= 1;
+            count++;
+            break;
+        case 6474:     // Earthbind Totem
+            spellInfo->AttributesEx5 |= SPELL_ATTR5_START_PERIODIC_AT_APPLY;
+            count++;
+            break;
+        // Shaman totem attributes for procs with "Call of the ..." spells
+        case 2484:  //Earthbind Totem
+        case 30706: //Totem of Wrath
+        case 57720: case 57721:
+        case 57722:
+        case 5730:  // Stoneclaw Totem
+        case 6390: case 6391: case 6392: case 10427:
+        case 10428: case 25525: case 58580: case 58581:
+        case 58582:
+            spellInfo->AttributesEx2 |= SPELL_ATTR2_TRIGGERED_CAN_TRIGGER;
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_TRIGGERED_CAN_TRIGGER_2;
             count++;
             break;
         case 52025:    // Cleansing Totem Effect
@@ -3840,7 +4245,12 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         // some dummy spell only has dest, should push caster in this case
         case 62324: // Throw Passenger
-            spellInfo->Targets |= TARGET_FLAG_UNIT_CASTER;
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
+            count++;
+            break;
+        case 62907: // Freya's Ward
+        case 62947:
+            spellInfo->DurationIndex = 0;
             count++;
             break;
         case 16834: // Natural shapeshifter
@@ -3946,7 +4356,16 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_MASTER;
             count++;
             break;
+        // ULDUAR SPELLS
+        //
+        case 63342: // Focused Eyebeam Summon Trigger
+            spellInfo->MaxAffectedTargets = 1;
+            count++;
+            break;
+        // ENDOF ULDUAR SPELLS
+        //
         // ICECROWN CITADEL SPELLS
+        //
         // THESE SPELLS ARE WORKING CORRECTLY EVEN WITHOUT THIS HACK
         // THE ONLY REASON ITS HERE IS THAT CURRENT GRID SYSTEM
         // DOES NOT ALLOW FAR OBJECT SELECTION (dist > 333)
@@ -4061,8 +4480,25 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->Effect[1] = 0;
             count++;
             break;
+        case 7922:
+        case 20253:
+            spellInfo->DmgClass = SPELL_DAMAGE_CLASS_NONE;
+            spellInfo->rangeIndex = 3;
+            count++;
+            break;
+        case 53148:
+        case 61491: // Intercept triggered disable range check
+            spellInfo->rangeIndex = 3;
+            count++;
+            break;
         default:
             break;
+        }
+
+        if (IsChargeTriggerSpell(i))
+        {
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
+            count++;
         }
 
         switch (spellInfo->SpellFamilyName)
@@ -4071,6 +4507,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 // Shout
                 if (spellInfo->SpellFamilyFlags[0] & 0x20000 || spellInfo->SpellFamilyFlags[1] & 0x20)
                     mSpellCustomAttr[i] |= SPELL_ATTR0_CU_AURA_CC;
+                // Slam
+                else if (spellInfo->SpellFamilyFlags[0] & 0x200000)
+                    spellInfo->InterruptFlags -= SPELL_INTERRUPT_FLAG_AUTOATTACK;
                 else
                     break;
                 count++;
@@ -4222,4 +4661,68 @@ void SpellMgr::LoadSpellLinked()
 
     sLog->outString(">> Loaded %u linked spells in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
     sLog->outString();
+}
+
+bool IsCCSpell(SpellEntry const *spellProto, uint8 EffMask) 
+{
+    for (uint8 effIndex = 0; effIndex<MAX_SPELL_EFFECTS; ++effIndex)
+    {
+        if (EffMask && !(EffMask & (1<<effIndex)))
+            continue;
+        switch(spellProto->EffectApplyAuraName[effIndex])
+        {
+            case SPELL_AURA_MOD_CONFUSE:
+            case SPELL_AURA_MOD_FEAR:
+            case SPELL_AURA_MOD_STUN:
+            case SPELL_AURA_MOD_ROOT:
+            case SPELL_AURA_TRANSFORM:
+                if(!IsPositiveEffect(spellProto->Id, effIndex))
+                    return true;
+                break;
+            default: break;
+        }
+    }
+    return false;
+}
+
+bool IsNoCombatSpells (uint32 spellId)
+{
+   switch (spellId)
+   {
+       // Slice and Dice
+       case 5171:
+       case 6434:
+       case 6774:
+       // Honor Among Thieves
+       case 51698:
+       case 51699:
+       case 51700:
+       case 51701:
+       case 52916:
+       // Divine Hymn
+       case 64843:
+       case 64844:
+       case 70619:
+       // Shadowmeld
+       case 58984:
+           return true;
+       default: return false;
+   }
+   return false;
+}
+
+bool IsNeedAdditionalLosChecks(SpellEntry const *spellProto)
+{
+    switch(spellProto->Id)
+    {
+        case 3600:  // Earthbind Totem
+        case 50622: 
+        case 44949: // Whirlwind from bladestorm
+            return true;
+        default:break;
+    }
+    // Typhoon
+    if(spellProto->SpellFamilyFlags[1] == 0x01000000 && spellProto->SpellFamilyName == SPELLFAMILY_DRUID)
+        return true;
+    return false;
 }

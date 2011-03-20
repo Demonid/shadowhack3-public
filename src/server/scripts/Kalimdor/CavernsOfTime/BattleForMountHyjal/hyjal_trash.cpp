@@ -1208,7 +1208,7 @@ public:
             me->GetPosition(x,y,z);
             z = me->GetMap()->GetHeight(x, y, z);
             me->GetMotionMaster()->MovePoint(0,x,y,z);
-            me->GetMap()->CreatureRelocation(me, x,y,z,0);
+            me->GetMap()->CreatureRelocation(me, x,y,z,0.0f);
         }
 
         void EnterCombat(Unit* /*who*/) {}
@@ -1328,7 +1328,7 @@ public:
             me->GetPosition(x,y,z);
             z = me->GetMap()->GetHeight(x, y, z);
             me->GetMotionMaster()->MovePoint(0,x,y,z);
-            me->GetMap()->CreatureRelocation(me, x,y,z,0);
+            me->GetMap()->CreatureRelocation(me, x,y,z,0.0f);
             hyjal_trashAI::JustDied(victim);
         }
 
@@ -1380,7 +1380,7 @@ public:
                 forcemove = false;
                 if (forcemove)
                 {
-                    Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                    Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
                     if (pTarget)
                         me->Attack(pTarget,false);
                 }
@@ -1396,7 +1396,7 @@ public:
             }
             if (StrikeTimer <= diff)
             {
-                if (me->IsWithinDist(me->getVictim(), 20))
+                if (me->IsWithinDist(me->getVictim(), 20.0f))
                 {
                     DoCast(me->getVictim(), SPELL_GARGOYLE_STRIKE);
                     me->StopMoving();
@@ -1448,7 +1448,7 @@ public:
             if (who->isTargetableForAttack() && me->IsHostileTo(who))
             {
                 //float attackRadius = me->GetAttackDistance(who);
-                if (me->IsWithinDistInMap(who, 30))
+                if (me->IsWithinDistInMap(who, 30.0f))
                     AttackStart(who);
             }
         }
@@ -1464,7 +1464,7 @@ public:
                 return;
             if (ExplodeTimer <= diff)
             {
-                if (!me->IsWithinDistInMap(me->getVictim(), 30))
+                if (!me->IsWithinDistInMap(me->getVictim(), 30.0f))
                 {
                     EnterEvadeMode();
                     return;

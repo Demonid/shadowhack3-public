@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
@@ -49,7 +50,8 @@ enum MovementGeneratorType
     ASSISTANCE_DISTRACT_MOTION_TYPE = 12,                   // IdleMovementGenerator.h (second part of flee for assistance)
     TIMED_FLEEING_MOTION_TYPE = 13,                         // FleeingMovementGenerator.h (alt.second part of flee for assistance)
     ROTATE_MOTION_TYPE    = 14,
-    NULL_MOTION_TYPE      = 15,
+    CHARGE_MOTION_TYPE    = 15,                             // ChargeMovementGenerator.h (handles SpellEffect charge)
+    NULL_MOTION_TYPE      = 16,
 };
 
 enum MovementSlot
@@ -145,14 +147,21 @@ class MotionMaster //: private std::stack<MovementGenerator *>
         void MoveIdle(MovementSlot slot = MOTION_SLOT_ACTIVE);
         void MoveTargetedHome();
         void MoveRandom(float spawndist = 0.0f);
-        void MoveFollow(Unit* target, float dist, float angle, MovementSlot slot = MOTION_SLOT_ACTIVE);
+        void MoveFollow(Unit* target, float dist, float angle, MovementSlot slot = MOTION_SLOT_ACTIVE, bool usePathfinding = true);
         void MoveChase(Unit* target, float dist = 0.0f, float angle = 0.0f);
         void MoveConfused();
         void MoveFleeing(Unit* enemy, uint32 time = 0);
+
         void MovePoint(uint32 id, const Position &pos)
             { MovePoint(id, pos.m_positionX, pos.m_positionY, pos.m_positionZ); }
-        void MovePoint(uint32 id, float x,float y,float z);
-        void MoveCharge(float x, float y, float z, float speed = SPEED_CHARGE, uint32 id = EVENT_CHARGE);
+        void MovePoint(uint32 id, float x,float y,float z, bool usePathfinding = true);
+
+        void MoveChargeWithPathfinding(float x, float y, float z, bool straightPath)
+            { MoveCharge(x, y, z, SPEED_CHARGE, EVENT_CHARGE, straightPath); }
+        void MoveChargeBySpell(float x, float y, float z, Unit* target, uint32 chargeSpell, bool straightPath)
+            { MoveCharge(x, y, z, SPEED_CHARGE, EVENT_CHARGE, straightPath, target, chargeSpell); }
+        void MoveCharge(float x, float y, float z, float speed = SPEED_CHARGE, uint32 id = EVENT_CHARGE, bool straightPath = true, Unit* target = NULL, uint32 chargeSpell = NULL);
+
         void MoveFall(float z, uint32 id = 0);
         void MoveKnockbackFrom(float srcX, float srcY, float speedXY, float speedZ);
         void MoveJumpTo(float angle, float speedXY, float speedZ);

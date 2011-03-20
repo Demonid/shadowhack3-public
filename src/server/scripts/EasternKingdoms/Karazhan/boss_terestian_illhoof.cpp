@@ -286,7 +286,7 @@ public:
                 {
                     if (Creature* pPortal = Unit::GetCreature(*me, PortalGUID[i]))
                     {
-                        CAST_AI(mob_fiendish_portal::mob_fiendish_portalAI, pPortal->AI())->DespawnAllImp();
+                        if (pPortal->AI()) CAST_AI(mob_fiendish_portal::mob_fiendish_portalAI, pPortal->AI())->DespawnAllImp();
                         pPortal->DespawnOrUnsummon();
                     }
 
@@ -378,7 +378,7 @@ public:
 
                     if (Creature* Chains = me->FindNearestCreature(CREATURE_DEMONCHAINS, 5000))
                     {
-                        CAST_AI(mob_demon_chain::mob_demon_chainAI, Chains->AI())->SacrificeGUID = pTarget->GetGUID();
+                        if (Chains->AI()) CAST_AI(mob_demon_chain::mob_demon_chainAI, Chains->AI())->SacrificeGUID = pTarget->GetGUID();
                         Chains->CastSpell(Chains, SPELL_DEMON_CHAINS, true);
                         DoScriptText(RAND(SAY_SACRIFICE1,SAY_SACRIFICE2), me);
                         SacrificeTimer = 30000;
@@ -388,7 +388,7 @@ public:
 
             if (ShadowboltTimer <= diff)
             {
-                DoCast(SelectUnit(SELECT_TARGET_TOPAGGRO, 0), SPELL_SHADOW_BOLT);
+                DoCast(SelectTarget(SELECT_TARGET_TOPAGGRO, 0), SPELL_SHADOW_BOLT);
                 ShadowboltTimer = 10000;
             } else ShadowboltTimer -= diff;
 

@@ -75,7 +75,7 @@ class boss_akilzon : public CreatureScript
         {
             boss_akilzonAI(Creature *c) : ScriptedAI(c)
             {
-                SpellEntry *TempSpell = GET_SPELL(SPELL_ELECTRICAL_DAMAGE);
+                SpellEntry *TempSpell = GET_SPELL(SPELL_ELECTRICAL_DAMAGE);     //Q: check WTF
                 if (TempSpell)
                     TempSpell->EffectBasePoints[1] = 49;//disable bugged lightning until fixed in core
                 pInstance = c->GetInstanceScript();
@@ -210,7 +210,7 @@ class boss_akilzon : public CreatureScript
                         cell.Visit(p, world_unit_searcher, *(me->GetMap()));
                         cell.Visit(p, grid_unit_searcher, *(me->GetMap()));
                     }
-                    //dealdamege
+                    //dealdamage
                     for (std::list<Unit*>::const_iterator i = tempUnitMap.begin(); i != tempUnitMap.end(); ++i)
                     {
                         if (!Cloud->IsWithinDist(*i, 6, false))
@@ -285,7 +285,7 @@ class boss_akilzon : public CreatureScript
 
                 if (StaticDisruption_Timer <= diff)
                 {
-                    Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 1);
+                    Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1);
                     if (!pTarget) pTarget = me->getVictim();
                     TargetGUID = pTarget->GetGUID();
                     DoCast(pTarget, SPELL_STATIC_DISRUPTION, false);
@@ -298,7 +298,7 @@ class boss_akilzon : public CreatureScript
 
                 if (GustOfWind_Timer <= diff)
                 {
-                    Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 1);
+                    Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1);
                     if (!pTarget) pTarget = me->getVictim();
                     DoCast(pTarget, SPELL_GUST_OF_WIND);
                     GustOfWind_Timer = (20+rand()%10)*1000; //20 to 30 seconds(bosskillers)
@@ -332,7 +332,7 @@ class boss_akilzon : public CreatureScript
                         pTarget->SetUnitMovementFlags(MOVEMENTFLAG_LEVITATING);
                         pTarget->SendMonsterMove(x,y,me->GetPositionZ()+15,0);
                     }
-                    Unit *Cloud = me->SummonTrigger(x, y, me->GetPositionZ()+16, 0, 15000);
+                    Unit *Cloud = me->SummonTrigger(x, y, me->GetPositionZ()+16, 0.0f, 15000);
                     if (Cloud)
                     {
                         CloudGUID = Cloud->GetGUID();
@@ -362,7 +362,7 @@ class boss_akilzon : public CreatureScript
                         Unit* bird = Unit::GetUnit(*me,BirdGUIDs[i]);
                         if (!bird) //they despawned on die
                         {
-                            if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                            if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             {
                                 x = pTarget->GetPositionX() + irand(-10,10);
                                 y = pTarget->GetPositionY() + irand(-10,10);
@@ -370,7 +370,7 @@ class boss_akilzon : public CreatureScript
                                 if (z > 95)
                                     z = 95.0f - urand(0,5);
                             }
-                            Creature *pCreature = me->SummonCreature(MOB_SOARING_EAGLE, x, y, z, 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
+                            Creature *pCreature = me->SummonCreature(MOB_SOARING_EAGLE, x, y, z, 0.0f, TEMPSUMMON_CORPSE_DESPAWN, 0);
                             if (pCreature)
                             {
                                 pCreature->AddThreat(me->getVictim(), 1.0f);
@@ -443,7 +443,7 @@ class mob_akilzon_eagle : public CreatureScript
 
                 if (arrived)
                 {
-                    if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     {
                         float x, y, z;
                         if (EagleSwoop_Timer)
