@@ -191,7 +191,7 @@ public:
                             Creature* creature = instance->GetCreature(Azgalor);
                             if (creature)
                             {
-                                Creature* pUnit = creature->SummonCreature(21987,creature->GetPositionX(),creature->GetPositionY(),creature->GetPositionZ(),0,TEMPSUMMON_TIMED_DESPAWN,10000);
+                                Creature* pUnit = creature->SummonCreature(21987,creature->GetPositionX(),creature->GetPositionY(),creature->GetPositionZ(),0.0f,TEMPSUMMON_TIMED_DESPAWN,10000);
 
                                 Map* pMap = creature->GetMap();
                                 if (pMap->IsDungeon() && pUnit)
@@ -260,7 +260,7 @@ public:
                     break;
             }
 
-             sLog->outDebug("TSCR: Instance Hyjal: Instance data updated for event %u (Data=%u)",type,data);
+             sLog->outDebug(LOG_FILTER_TSCR, "TSCR: Instance Hyjal: Instance data updated for event %u (Data=%u)",type,data);
 
             if (data == DONE)
             {

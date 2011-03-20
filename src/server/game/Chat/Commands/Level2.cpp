@@ -39,8 +39,11 @@
 #include <fstream>
 #include <map>
 #include "OutdoorPvPMgr.h"
+#include "OutdoorPvPWG.h"
 #include "Transport.h"
 #include "TargetedMovementGenerator.h"                      // for HandleNpcUnFollowCommand
+#include "PathFinder.h"
+#include "MoveMap.h"
 #include "CreatureGroups.h"
 
 //mute player for some times
@@ -1038,4 +1041,336 @@ bool ChatHandler::HandleCharacterTitlesCommand(const char* args)
         }
     }
     return true;
+}
+
+bool ChatHandler::HandleMmapPathCommand(const char* args)
+{
+    if (!MMAP::MMapFactory::createOrGetMMapManager()->GetNavMesh(m_session->GetPlayer()->GetMapId()))
+    {
+        PSendSysMessage("NavMesh not loaded for current map.");
+        return true;
+    }
+
+    PSendSysMessage("mmap path:");
+
+    // units
+    Player* player = m_session->GetPlayer();
+    Unit* target = getSelectedUnit();
+    if (!player || !target)
+    {
+        PSendSysMessage("Invalid target/source selection.");
+        return true;
+    }
+
+    char* para = strtok((char*)args, " ");
+
+    bool useStraightPath = false;
+    if (para && strcmp(para, "true") == 0)
+        useStraightPath = true;
+
+    // unit locations
+    float x, y, z;
+    player->GetPosition(x, y, z);
+
+    // path
+    PathInfo path(target, x, y, z, useStraightPath);
+    PointPath pointPath = path.getFullPath();
+    PSendSysMessage("%s's path to %s:", target->GetName(), player->GetName());
+    PSendSysMessage("Building %s", useStraightPath ? "StraightPath" : "SmoothPath");
+    PSendSysMessage("length %i type %u", pointPath.size(), path.getPathType());
+
+    PathNode start = path.getStartPosition();
+    PathNode next = path.getNextPosition();
+    PathNode end = path.getEndPosition();
+    PathNode actualEnd = path.getActualEndPosition();
+
+    PSendSysMessage("start      (%.3f, %.3f, %.3f)", start.x, start.y, start.z);
+    PSendSysMessage("next       (%.3f, %.3f, %.3f)", next.x, next.y, next.z);
+    PSendSysMessage("end        (%.3f, %.3f, %.3f)", end.x, end.y, end.z);
+    PSendSysMessage("actual end (%.3f, %.3f, %.3f)", actualEnd.x, actualEnd.y, actualEnd.z);
+
+    if (!player->isGameMaster())
+        PSendSysMessage("Enable GM mode to see the path points.");
+
+    // this entry visible only to GM's with "gm on"
+    static const uint32 WAYPOINT_NPC_ENTRY = 1;
+    Creature* wp = NULL;
+    for (uint32 i = 0; i < pointPath.size(); ++i)
+    {
+        wp = player->SummonCreature(WAYPOINT_NPC_ENTRY, pointPath[i].x, pointPath[i].y, pointPath[i].z, 0, TEMPSUMMON_TIMED_DESPAWN, 9000);
+        // TODO: make creature not sink/fall
+    }
+
+    return true;
+}
+
+bool ChatHandler::HandleMmapLocCommand(const char* /*args*/)
+{
+    PSendSysMessage("mmap tileloc:");
+
+    // grid tile location
+    Player* player = m_session->GetPlayer();
+
+    int32 gx = 32 - player->GetPositionX() / SIZE_OF_GRIDS;
+    int32 gy = 32 - player->GetPositionY() / SIZE_OF_GRIDS;
+
+    PSendSysMessage("%03u%02i%02i.mmtile", player->GetMapId(), gy, gx);
+    PSendSysMessage("gridloc [%i,%i]", gx, gy);
+
+	// calculate navmesh tile location
+	const dtNavMesh* navmesh = MMAP::MMapFactory::createOrGetMMapManager()->GetNavMesh(player->GetMapId());
+	const dtNavMeshQuery* navmeshquery = MMAP::MMapFactory::createOrGetMMapManager()->GetNavMeshQuery(player->GetMapId(), player->GetInstanceId());
+	if (!navmesh || !navmeshquery)
+	{
+		PSendSysMessage("NavMesh not loaded for current map.");
+		return true;
+	}
+
+    const float* min = navmesh->getParams()->orig;
+
+    float x, y, z;
+    player->GetPosition(x, y, z);
+    float location[VERTEX_SIZE] = {y, z, x};
+    float extents[VERTEX_SIZE] = {2.f,4.f,2.f};
+
+    int32 tilex = int32((y - min[0]) / SIZE_OF_GRIDS);
+    int32 tiley = int32((x - min[2]) / SIZE_OF_GRIDS);
+
+    PSendSysMessage("Calc   [%02i,%02i]", tilex, tiley);
+
+    // navmesh poly -> navmesh tile location
+    dtQueryFilter filter = dtQueryFilter();
+    dtPolyRef polyRef = INVALID_POLYREF;
+    navmeshquery->findNearestPoly(location, extents, &filter, &polyRef, NULL);
+
+    if (polyRef == INVALID_POLYREF)
+        PSendSysMessage("Dt     [??,??] (invalid poly, probably no tile loaded)");
+    else
+    {
+        const dtMeshTile* tile;
+        const dtPoly* poly;
+        navmesh->getTileAndPolyByRef(polyRef, &tile, &poly);
+        if (tile)
+            PSendSysMessage("Dt     [%02i,%02i]", tile->header->x, tile->header->y);
+        else
+            PSendSysMessage("Dt     [??,??] (no tile loaded)");
+    }
+
+    return true;
+}
+
+bool ChatHandler::HandleMmapLoadedTilesCommand(const char* /*args*/)
+{
+    uint32 mapid = m_session->GetPlayer()->GetMapId();
+
+    const dtNavMesh* navmesh = MMAP::MMapFactory::createOrGetMMapManager()->GetNavMesh(mapid);
+    const dtNavMeshQuery* navmeshquery = MMAP::MMapFactory::createOrGetMMapManager()->GetNavMeshQuery(mapid, m_session->GetPlayer()->GetInstanceId());
+    if (!navmesh || !navmeshquery)
+    {
+        PSendSysMessage("NavMesh not loaded for current map.");
+        return true;
+    }
+
+    PSendSysMessage("mmap loadedtiles:");
+
+    for (int32 i = 0; i < navmesh->getMaxTiles(); ++i)
+    {
+        const dtMeshTile* tile = navmesh->getTile(i);
+        if (!tile || !tile->header)
+            continue;
+
+        PSendSysMessage("[%02i,%02i]", tile->header->x, tile->header->y);
+    }
+
+    return true;
+}
+
+bool ChatHandler::HandleMmapStatsCommand(const char* /*args*/)
+{
+    PSendSysMessage("mmap stats:");
+    PSendSysMessage("  global mmap pathfinding is %sabled", sWorld->getBoolConfig(CONFIG_MOVEMAP_ENABLE) ? "en" : "dis");
+
+    const dtNavMesh* navmesh = MMAP::MMapFactory::createOrGetMMapManager()->GetNavMesh(m_session->GetPlayer()->GetMapId());
+    if (!navmesh)
+    {
+        PSendSysMessage("NavMesh not loaded for current map.");
+        return true;
+    }
+
+    uint32 tileCount = 0;
+    uint32 nodeCount = 0;
+    uint32 polyCount = 0;
+    uint32 vertCount = 0;
+    uint32 triCount = 0;
+    uint32 triVertCount = 0;
+    uint32 dataSize = 0;
+    for (int32 i = 0; i < navmesh->getMaxTiles(); ++i)
+    {
+        const dtMeshTile* tile = navmesh->getTile(i);
+        if (!tile || !tile->header)
+            continue;
+
+        tileCount ++;
+        nodeCount += tile->header->bvNodeCount;
+        polyCount += tile->header->polyCount;
+        vertCount += tile->header->vertCount;
+        triCount += tile->header->detailTriCount;
+        triVertCount += tile->header->detailVertCount;
+        dataSize += tile->dataSize;
+    }
+
+    PSendSysMessage("Navmesh stats:");
+    PSendSysMessage(" %u tiles loaded", tileCount);
+    PSendSysMessage(" %u BVTree nodes", nodeCount);
+    PSendSysMessage(" %u polygons (%u vertices)", polyCount, vertCount);
+    PSendSysMessage(" %u triangles (%u vertices)", triCount, triVertCount);
+    PSendSysMessage(" %.2f MB of data (not including pointers)", ((float)dataSize / sizeof(unsigned char)) / 1048576);
+
+    return true;
+}
+
+bool ChatHandler::HandleWintergraspStatusCommand(const char* args)
+{
+	OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197);
+
+	if (!pvpWG || !sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+	{
+		SendSysMessage(LANG_BG_WG_DISABLE);
+		SetSentErrorMessage(true);
+		return false;
+	}
+
+	PSendSysMessage(LANG_BG_WG_STATUS, sObjectMgr->GetTrinityStringForDBCLocale(
+		pvpWG->getDefenderTeam() == TEAM_ALLIANCE ? LANG_BG_AB_ALLY : LANG_BG_AB_HORDE),
+		secsToTimeString(pvpWG->GetTimer(), true).c_str(),
+		pvpWG->isWarTime() ? "Yes" : "No",
+		pvpWG->GetNumPlayersH(),
+		pvpWG->GetNumPlayersA());
+	return true;
+}
+
+bool ChatHandler::HandleWintergraspStartCommand(const char* args)
+{
+	OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197);
+
+	if (!pvpWG || !sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+	{
+		SendSysMessage(LANG_BG_WG_DISABLE);
+		SetSentErrorMessage(true);
+		return false;
+	}
+	pvpWG->forceStartBattle();
+	PSendSysMessage(LANG_BG_WG_BATTLE_FORCE_START);
+	return true;
+}
+
+bool ChatHandler::HandleWintergraspStopCommand(const char* args)
+{
+	OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197);
+
+	if (!pvpWG || !sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+	{
+		SendSysMessage(LANG_BG_WG_DISABLE);
+		SetSentErrorMessage(true);
+		return false;
+	}
+	pvpWG->forceStopBattle();
+	PSendSysMessage(LANG_BG_WG_BATTLE_FORCE_STOP);
+	return true;
+}
+
+bool ChatHandler::HandleWintergraspEnableCommand(const char* args)
+{
+	if(!*args)
+		return false;
+
+	OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197);
+
+	if (!pvpWG || !sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+	{
+		SendSysMessage(LANG_BG_WG_DISABLE);
+		SetSentErrorMessage(true);
+		return false;
+	}
+
+	if (!strncmp(args, "on", 3))
+	{
+		if (!sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+		{
+			pvpWG->forceStopBattle();
+			sWorld->setBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED, true);
+		}
+		PSendSysMessage(LANG_BG_WG_ENABLE);
+		return true;
+	}
+	else if (!strncmp(args, "off", 4))
+	{
+		if (sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+		{
+			pvpWG->forceStopBattle();
+			sWorld->setBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED, false);
+		}
+		PSendSysMessage(LANG_BG_WG_DISABLE);
+		return true;
+	}
+	else
+	{
+		SendSysMessage(LANG_USE_BOL);
+		SetSentErrorMessage(true);
+		return false;
+	}
+}
+
+bool ChatHandler::HandleWintergraspTimerCommand(const char* args)
+{
+	if(!*args)
+		return false;
+
+	OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197);
+
+	if (!pvpWG)
+	{
+		SendSysMessage(LANG_BG_WG_DISABLE);
+		SetSentErrorMessage(true);
+		return false;
+	}
+
+	int32 time = atoi (args);
+
+	// Min value 1 min
+	if (1 > time)
+		time = 1;
+	// Max value during wartime = 60. No wartime = 1440 (day)
+	if (pvpWG->isWarTime())
+	{
+		if (60 < time)
+			return false;
+	}
+	else
+		if (1440 < time)
+			return false;
+	time *= MINUTE * IN_MILLISECONDS;
+
+	pvpWG->setTimer((uint32)time);
+
+	PSendSysMessage(LANG_BG_WG_CHANGE_TIMER, secsToTimeString(pvpWG->GetTimer(), true).c_str());
+	return true;
+}
+
+bool ChatHandler::HandleWintergraspSwitchTeamCommand(const char* args)
+{
+	OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197);
+
+	if (!pvpWG)
+	{
+		SendSysMessage(LANG_BG_WG_DISABLE);
+		SetSentErrorMessage(true);
+		return false;
+	}
+
+	uint32 timer = pvpWG->GetTimer();
+	pvpWG->forceChangeTeam();
+	pvpWG->setTimer(timer);
+	PSendSysMessage(LANG_BG_WG_SWITCH_FACTION, GetTrinityString(pvpWG->getDefenderTeam() == TEAM_ALLIANCE ? LANG_BG_AB_ALLY : LANG_BG_AB_HORDE));
+	return true;
 }

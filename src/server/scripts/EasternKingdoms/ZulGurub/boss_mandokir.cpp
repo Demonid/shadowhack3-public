@@ -152,7 +152,7 @@ class boss_mandokir : public CreatureScript
                         me->Unmount();
 
                         //And summon his raptor
-                        me->SummonCreature(14988, me->getVictim()->GetPositionX(), me->getVictim()->GetPositionY(), me->getVictim()->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 35000);
+                        me->SummonCreature(14988, me->getVictim()->GetPositionX(), me->getVictim()->GetPositionY(), me->getVictim()->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 35000);
                         CombatStart = true;
                     }
 
@@ -186,7 +186,7 @@ class boss_mandokir : public CreatureScript
 
                     if ((Watch_Timer < 8000) && !someWatched)       //8 sec(cast time + expire time) before the check for the watch effect mandokir will cast watch debuff on a random target
                     {
-                        if (Unit* p = SelectUnit(SELECT_TARGET_RANDOM,0))
+                        if (Unit* p = SelectTarget(SELECT_TARGET_RANDOM,0))
                         {
                             DoScriptText(SAY_WATCH, me, p);
                             DoCast(p, SPELL_WATCH);

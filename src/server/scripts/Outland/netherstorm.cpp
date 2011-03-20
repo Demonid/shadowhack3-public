@@ -497,7 +497,7 @@ public:
                 return true;
             }
 
-            sLog->outDebug("TSCR: npc_commander_dawnforge event already in progress, need to wait.");
+            sLog->outDebug(LOG_FILTER_TSCR, "TSCR: npc_commander_dawnforge event already in progress, need to wait.");
             return false;
         }
 
@@ -669,7 +669,7 @@ enum eProfessorDabiriData
 {
     SPELL_PHASE_DISTRUPTOR  = 35780,
 
-    WHISPER_DABIRI          = -1000522,
+    WHISPER_DABIRI          = -1000522, //DB: old at -1000302
 
     QUEST_DIMENSIUS         = 10439,
     QUEST_ON_NETHERY_WINGS  = 10438,
@@ -866,7 +866,7 @@ enum eBessyData
     N_THADELL       = 20464,
     SPAWN_FIRST     = 20512,
     SPAWN_SECOND    = 19881,
-    SAY_THADELL_1   = -1000524,
+    SAY_THADELL_1   = -1000524, //DB: old at -1000304
     SAY_THADELL_2   = -1000525,
 };
 
@@ -935,7 +935,7 @@ public:
 
         void JustSummoned(Creature* summoned)
         {
-            summoned->AI()->AttackStart(me);
+            if (summoned->AI()) summoned->AI()->AttackStart(me);
         }
 
         void Reset()

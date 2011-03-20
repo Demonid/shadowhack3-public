@@ -217,12 +217,12 @@ void BattlegroundWS::RespawnFlag(uint32 Team, bool captured)
 {
     if (Team == ALLIANCE)
     {
-        sLog->outDebug("Respawn Alliance flag");
+        sLog->outDebug(LOG_FILTER_BATTLEGROUND, "Respawn Alliance flag");
         m_FlagState[BG_TEAM_ALLIANCE] = BG_WS_FLAG_STATE_ON_BASE;
     }
     else
     {
-        sLog->outDebug("Respawn Horde flag");
+        sLog->outDebug(LOG_FILTER_BATTLEGROUND, "Respawn Horde flag");
         m_FlagState[BG_TEAM_HORDE] = BG_WS_FLAG_STATE_ON_BASE;
     }
 
@@ -242,6 +242,10 @@ void BattlegroundWS::RespawnFlagAfterDrop(uint32 team)
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
 
+    BattlegroundMap *pMap = GetBgMap();
+    if (!pMap)
+        return;
+
     RespawnFlag(team,false);
     if (team == ALLIANCE)
     {
@@ -256,7 +260,7 @@ void BattlegroundWS::RespawnFlagAfterDrop(uint32 team)
 
     PlaySoundToAll(BG_WS_SOUND_FLAGS_RESPAWNED);
 
-    GameObject *obj = GetBgMap()->GetGameObject(GetDroppedFlagGUID(team));
+    GameObject *obj = pMap->GetGameObject(GetDroppedFlagGUID(team));
     if (obj)
         obj->Delete();
     else
@@ -699,7 +703,7 @@ bool BattlegroundWS::SetupBattleground()
         return false;
     }
 
-    sLog->outDebug("BatteGroundWS: BG objects and spirit guides spawned");
+    sLog->outDebug(LOG_FILTER_BATTLEGROUND, "BatteGroundWS: BG objects and spirit guides spawned");
 
     return true;
 }

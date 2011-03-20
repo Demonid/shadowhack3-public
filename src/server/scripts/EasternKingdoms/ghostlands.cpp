@@ -19,7 +19,7 @@
 /* ScriptData
 SDName: Ghostlands
 SD%Complete: 100
-SDComment: Quest support: 9692, 9212. Obtain Budd's Guise of Zul'aman. Vendor Rathis Tomber
+SDComment: Quest support: 9692, 9212, 9678. Obtain Budd's Guise of Zul'aman. Vendor Rathis Tomber
 SDCategory: Ghostlands
 EndScriptData */
 
@@ -162,7 +162,7 @@ enum eEnums
     QUEST_ESCAPE_FROM_THE_CATACOMBS     = 9212,
     GO_CAGE             = 181152,
     NPC_CAPTAIN_HELIOS  = 16220,
-    FACTION_SMOON_E     = 1603,
+    FACTION_ESCORTEE    = 113,
 };
 
 class npc_ranger_lilatha : public CreatureScript
@@ -213,8 +213,7 @@ public:
             case 19: me->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING); break;
             case 25: me->AddUnitMovementFlag(MOVEMENTFLAG_WALKING); break;
             case 30:
-                if (pPlayer && pPlayer->GetTypeId() == TYPEID_PLAYER)
-                    CAST_PLR(pPlayer)->GroupEventHappens(QUEST_ESCAPE_FROM_THE_CATACOMBS,me);
+                pPlayer->GroupEventHappens(QUEST_ESCAPE_FROM_THE_CATACOMBS, me);
                 break;
             case 32:
                 me->SetOrientation(2.978281f);
@@ -225,7 +224,7 @@ public:
                 DoScriptText(SAY_END2, me, pPlayer);
                 Unit* CaptainHelios = me->FindNearestCreature(NPC_CAPTAIN_HELIOS, 50);
                 if (CaptainHelios)
-                DoScriptText(SAY_CAPTAIN_ANSWER, CaptainHelios, pPlayer);
+                    DoScriptText(SAY_CAPTAIN_ANSWER, CaptainHelios, pPlayer);
                 break;
             }
         }
@@ -241,7 +240,7 @@ public:
     {
         if (quest->GetQuestId() == QUEST_ESCAPE_FROM_THE_CATACOMBS)
         {
-            pCreature->setFaction(113);
+            pCreature->setFaction(FACTION_ESCORTEE);
 
             if (npc_escortAI* pEscortAI = CAST_AI(npc_ranger_lilatha::npc_ranger_lilathaAI, pCreature->AI()))
                 pEscortAI->Start(true, false, pPlayer->GetGUID());

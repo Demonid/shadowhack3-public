@@ -117,14 +117,14 @@ public:
             //Arcane Blast
             if (ArcaneBlast_Timer <= diff)
             {
-                DoCast(me->getVictim(), SPELL_ARCANE_BLAST);
+                DoCastVictim(SPELL_ARCANE_BLAST);
                 ArcaneBlast_Timer = 15000+rand()%10000;
             } else ArcaneBlast_Timer -= diff;
 
             //Arcane Discharge
             if (ArcaneDischarge_Timer <= diff)
             {
-                Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
                 DoCast(pTarget, SPELL_ARCANE_DISCHARGE);
                 ArcaneDischarge_Timer = 20000+rand()%10000;
             } else ArcaneDischarge_Timer -= diff;

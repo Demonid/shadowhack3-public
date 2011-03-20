@@ -20,6 +20,7 @@
 #include "InstanceScript.h"
 #include "ScriptedCreature.h"
 #include "Map.h"
+#include "PoolMgr.h"
 #include "icecrown_citadel.h"
 
 static const DoorData doorData[] =
@@ -47,6 +48,19 @@ static const DoorData doorData[] =
     {0,                                      0,                          DOOR_TYPE_ROOM,    BOUNDARY_NONE} // END
 };
 
+struct WeeklyQuest
+{
+    uint32 npcStart;
+    uint32 questId[2];  // 10 and 25 man versions
+} WeeklyQuestData[5] =
+{
+    {NPC_INFILTRATOR_MINCHAR,         {24869, 24875}},  // Deprogramming
+    {NPC_KOR_KRON_LIEUTENANT,         {24870, 24877}},  // Securing the Ramparts
+    {NPC_ALCHEMIST_ADRIANNA,          {24873, 24878}},  // Residue Rendezvous
+    {NPC_ALRIN_THE_AGILE,             {24874, 24879}},  // Blood Quickening
+    {NPC_VALITHRIA_DREAMWALKER_QUEST, {24872, 24880}},  // Respite for a Tormented Soul
+};
+
 class instance_icecrown_citadel : public InstanceMapScript
 {
     public:
@@ -65,6 +79,9 @@ class instance_icecrown_citadel : public InstanceMapScript
                 saurfangEventNPC = 0;
                 deathbringersCache = 0;
                 saurfangTeleport = 0;
+                plagueSigil = 0;
+                bloodwingSigil = 0;
+                frostwingSigil = 0;
                 memset(putricidePipes, 0, 2*sizeof(uint64));
                 memset(putricideGates, 0, 2*sizeof(uint64));
                 putricideCollision = 0;
@@ -147,7 +164,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                         break;
                     case NPC_SE_HIGH_OVERLORD_SAURFANG:
                         if (teamInInstance == ALLIANCE)
-                            creature->UpdateEntry(NPC_SE_MURADIN_BRONZEBEARD, ALLIANCE);
+                            creature->UpdateEntry(NPC_SE_MURADIN_BRONZEBEARD, ALLIANCE, creature->GetCreatureData());
                     case NPC_SE_MURADIN_BRONZEBEARD:
                         saurfangEventNPC = creature->GetGUID();
                         creature->LastUsedScriptID = creature->GetScriptId();
@@ -201,6 +218,37 @@ class instance_icecrown_citadel : public InstanceMapScript
                 }
             }
 
+            // Weekly quest spawn prevention
+            uint32 GetCreatureEntry(uint32 /*guidLow*/, CreatureData const* data)
+            {
+                uint32 entry = data->id;
+                switch (entry)
+                {
+                    case NPC_INFILTRATOR_MINCHAR:
+                    case NPC_KOR_KRON_LIEUTENANT:
+                    case NPC_ALCHEMIST_ADRIANNA:
+                    case NPC_ALRIN_THE_AGILE:
+                    case NPC_VALITHRIA_DREAMWALKER_QUEST:
+                    {
+                        for (uint8 questIndex = 0; questIndex < 5; ++questIndex)
+                        {
+                            if (WeeklyQuestData[questIndex].npcStart == entry)
+                            {
+                                uint8 diffIndex = instance->GetSpawnMode() & 1;
+                                if (!sPoolMgr->IsSpawnedObject<Quest>(WeeklyQuestData[questIndex].questId[diffIndex]))
+                                    entry = 0;
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
+
+                return entry;
+            }
+
             void OnCreatureRemove(Creature* creature)
             {
                 if (creature->GetEntry() == NPC_FROST_FREEZE_TRAP)
@@ -251,6 +299,21 @@ class instance_icecrown_citadel : public InstanceMapScript
                         break;
                     case GO_SCOURGE_TRANSPORTER_SAURFANG:
                         saurfangTeleport = go->GetGUID();
+                        break;
+                    case GO_PLAGUE_SIGIL:
+                        plagueSigil = go->GetGUID();
+                        if (GetBossState(DATA_PROFESSOR_PUTRICIDE))
+                            HandleGameObject(plagueSigil, true, go);
+                        break;
+                    case GO_BLOODWING_SIGIL:
+                        bloodwingSigil = go->GetGUID();
+                        if (GetBossState(DATA_PROFESSOR_PUTRICIDE))
+                            HandleGameObject(bloodwingSigil, true, go);
+                        break;
+                    case GO_SIGIL_OF_THE_FROSTWING:
+                        frostwingSigil = go->GetGUID();
+                        if (GetBossState(DATA_PROFESSOR_PUTRICIDE))
+                            HandleGameObject(frostwingSigil, true, go);
                         break;
                     case GO_SCIENTIST_AIRLOCK_DOOR_COLLISION:
                         putricideCollision = go->GetGUID();
@@ -331,6 +394,8 @@ class instance_icecrown_citadel : public InstanceMapScript
                         return rimefangTrash;
                     case DATA_COLDFLAME_JETS:
                         return coldflameJetsState;
+                    case DATA_TEAM_IN_INSTANCE:
+                        return teamInInstance;
                     default:
                         break;
                 }
@@ -445,8 +510,17 @@ class instance_icecrown_citadel : public InstanceMapScript
                             HandleGameObject(putricidePipes[1], true);
                         }
                         break;
+                    case DATA_PROFESSOR_PUTRICIDE:
+                        HandleGameObject(plagueSigil, state != DONE);
+                        break;
+                    case DATA_BLOOD_QUEEN_LANA_THEL:
+                        HandleGameObject(bloodwingSigil, state != DONE);
+                        break;
                     case DATA_VALITHRIA_DREAMWALKER:
+                        break;
                     case DATA_SINDRAGOSA:
+                        HandleGameObject(frostwingSigil, state != DONE);
+                        break;
                     case DATA_THE_LICH_KING:
                         break;
                     default:
@@ -704,19 +778,19 @@ class instance_icecrown_citadel : public InstanceMapScript
                 return saveStream.str();
             }
 
-            void Load(const char* in)
+            void Load(const char* str)
             {
-                if (!in)
+                if (!str)
                 {
                     OUT_LOAD_INST_DATA_FAIL;
                     return;
                 }
 
-                OUT_LOAD_INST_DATA(in);
+                OUT_LOAD_INST_DATA(str);
 
                 char dataHead1, dataHead2;
 
-                std::istringstream loadStream(in);
+                std::istringstream loadStream(str);
                 loadStream >> dataHead1 >> dataHead2;
 
                 if (dataHead1 == 'I' && dataHead2 == 'C')
@@ -729,11 +803,10 @@ class instance_icecrown_citadel : public InstanceMapScript
                             tmpState = NOT_STARTED;
                         SetBossState(i, EncounterState(tmpState));
                     }
+
                     uint32 jets = 0;
                     loadStream >> jets;
-                    if (jets)
-                        jets = DONE;
-                    coldflameJetsState = jets;
+                    coldflameJetsState = jets ? DONE : NOT_STARTED;
                 } else OUT_LOAD_INST_DATA_FAIL;
 
                 OUT_LOAD_INST_DATA_COMPLETE;
@@ -746,6 +819,9 @@ class instance_icecrown_citadel : public InstanceMapScript
             uint64 saurfangEventNPC;  // Muradin Bronzebeard or High Overlord Saurfang
             uint64 deathbringersCache;
             uint64 saurfangTeleport;
+            uint64 plagueSigil;
+            uint64 bloodwingSigil;
+            uint64 frostwingSigil;
             uint64 putricidePipes[2];
             uint64 putricideGates[2];
             uint64 putricideCollision;
@@ -761,10 +837,10 @@ class instance_icecrown_citadel : public InstanceMapScript
             uint64 rimefang;
             std::set<uint64> coldflameJets;
             uint32 teamInInstance;
-            uint8 coldflameJetsState;
-            uint8 frostwyrms;
-            uint8 spinestalkerTrash;
-            uint8 rimefangTrash;
+            uint16 coldflameJetsState;
+            uint16 frostwyrms;
+            uint16 spinestalkerTrash;
+            uint16 rimefangTrash;
             bool isBonedEligible;
             bool isOozeDanceEligible;
             bool isNauseaEligible;

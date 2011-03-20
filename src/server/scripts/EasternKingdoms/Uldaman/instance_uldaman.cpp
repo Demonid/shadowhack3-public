@@ -90,7 +90,7 @@ class instance_uldaman : public InstanceMapScript
 
             uint32 uiIronayaSealDoorTimer;
             bool bKeystoneCheck;
-
+//Q: is destructor needed to clear all the next?
             std::vector<uint64> vStoneKeeper;
             std::vector<uint64> vAltarOfTheKeeperCount;
             std::vector<uint64> vVaultWalker;
@@ -185,7 +185,7 @@ class instance_uldaman : public InstanceMapScript
                     pTarget->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     return;        // only want the first one we find
                 }
-                // if we get this far than all four are dead so open the door
+                // if we get this far then all four are dead so open the door
                 SetData (DATA_ALTAR_DOORS, DONE);
                 SetDoor (uiArchaedasTempleDoor, true); //open next the door too
             }

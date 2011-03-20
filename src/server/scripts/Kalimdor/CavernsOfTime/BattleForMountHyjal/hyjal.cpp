@@ -69,7 +69,7 @@ public:
                 break;
              case GOSSIP_ACTION_INFO_DEF:
                 ai->Debug = !ai->Debug;
-                sLog->outDebug("TSCR: HyjalAI - Debug mode has been toggled");
+                sLog->outDebug(LOG_FILTER_TSCR, "TSCR: HyjalAI - Debug mode has been toggled");
                 break;
         }
         return true;
@@ -148,7 +148,7 @@ public:
                 break;
             case GOSSIP_ACTION_INFO_DEF:
                 ai->Debug = !ai->Debug;
-                sLog->outDebug("TSCR: HyjalAI - Debug mode has been toggled");
+                sLog->outDebug(LOG_FILTER_TSCR, "TSCR: HyjalAI - Debug mode has been toggled");
                 break;
         }
         return true;
@@ -230,7 +230,7 @@ public:
                          pPlayer->SendNewItem(item,1,true,false,true);
                 }
                 pPlayer->SEND_GOSSIP_MENU(907, pCreature->GetGUID());
-                CAST_AI(hyjalAI, pCreature->AI());
+                CAST_AI(hyjalAI, pCreature->AI());  //Q: didn't undesrstand
         }
         return true;
     }
