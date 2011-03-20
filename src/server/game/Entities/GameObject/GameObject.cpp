@@ -306,7 +306,7 @@ void GameObject::Update(uint32 diff)
                             udata.BuildPacket(&packet);
                             caster->ToPlayer()->GetSession()->SendPacket(&packet);
 
-                            SendCustomAnim();
+                            SendCustomAnim(GetGoAnimProgress());
                         }
 
                         m_lootState = GO_READY;                 // can be successfully open with some chance
@@ -407,7 +407,7 @@ void GameObject::Update(uint32 diff)
                     bool IsBattlegroundTrap = false;
                     //FIXME: this is activation radius (in different casting radius that must be selected from spell data)
                     //TODO: move activated state code (cast itself) to GO_ACTIVATED, in this place only check activating and set state
-                    float radius = (float)(goInfo->trap.radius)/2; // TODO rename radius to diameter (goInfo->trap.radius) should be (goInfo->trap.diameter)
+                    float radius = (float)(goInfo->trap.radius) * 0.5f; // TODO rename radius to diameter (goInfo->trap.radius) should be (goInfo->trap.diameter)
                     if (!radius)
                     {
                         if (goInfo->trap.cooldown != 3)            // cast in other case (at some triggering/linked go/etc explicit call)
@@ -465,6 +465,40 @@ void GameObject::Update(uint32 diff)
                         }
                     }
                 }
+				else if (goInfo->type == GAMEOBJECT_TYPE_SPELL_FOCUS)
+				{
+					if(m_cooldownTime >= time(NULL))
+						return;
+
+					if(uint32 trapEntry = goInfo->spellFocus.linkedTrapId)
+					{
+						Unit* ok = NULL; 
+
+						GameObjectInfo const* trapInfo = sGOStorage.LookupEntry<GameObjectInfo>(trapEntry);
+						if (!trapInfo || trapInfo->type != GAMEOBJECT_TYPE_TRAP)
+							return;
+
+						float radius = (float)(goInfo->trap.radius) * 0.5f;
+
+						Player* player = NULL;
+						Trinity::AnyPlayerInObjectRangeCheck checker(this, radius);
+						Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, player, checker);
+						VisitNearbyWorldObject(radius, searcher);
+						ok = player;
+
+						if (ok)
+						{
+							// some traps do not have spell but should be triggered
+							if(trapInfo->trap.spellId)
+								CastSpell(ok, trapInfo->trap.spellId);
+
+							m_cooldownTime = time(NULL) + 4;		// 4 seconds
+
+							if (trapInfo->trap.charges == 1)
+								SetLootState(GO_JUST_DEACTIVATED);							
+						}
+					}
+				}
                 else if (uint32 max_charges = goInfo->GetCharges())
                 {
                     if (m_usetimes >= max_charges)
@@ -1064,7 +1098,7 @@ void GameObject::Use(Unit* user)
             if (user->GetTypeId() != TYPEID_PLAYER)
                 return;
 
-            Player* player = (Player*)user;
+            Player* player = user->ToPlayer();
 
             player->PrepareGossipMenu(this, GetGOInfo()->questgiver.gossipID);
             player->SendPreparedGossip(this);
@@ -1089,7 +1123,7 @@ void GameObject::Use(Unit* user)
                     ChairListSlots[0] = 0;     // error in DB, make one default slot
             }
 
-            Player* player = (Player*)user;
+            Player* player = user->ToPlayer();
 
             // a chair may have n slots. we have to calculate their positions and teleport the player to the nearest one
 
@@ -1107,7 +1141,7 @@ void GameObject::Use(Unit* user)
             for (ChairSlotAndUser::iterator itr = ChairListSlots.begin(); itr != ChairListSlots.end(); ++itr)
             {
                 // the distance between this slot and the center of the go - imagine a 1D space
-                float relativeDistance = (info->size*itr->first)-(info->size*(info->chair.slots-1)/2.0f);
+                float relativeDistance = (info->size*itr->first)-(info->size*(info->chair.slots-1) * 0.5f);
 
                 float x_i = GetPositionX() + relativeDistance * cos(orthogonalOrientation);
                 float y_i = GetPositionY() + relativeDistance * sin(orthogonalOrientation);
@@ -1167,7 +1201,7 @@ void GameObject::Use(Unit* user)
 
             if (user->GetTypeId() == TYPEID_PLAYER)
             {
-                Player* player = (Player*)user;
+                Player* player = user->ToPlayer();
 
                 if (info->goober.pageId)                    // show page...
                 {
@@ -1183,7 +1217,7 @@ void GameObject::Use(Unit* user)
 
                 if (info->goober.eventId)
                 {
-                    sLog->outDebug("Goober ScriptStart id %u for GO entry %u (GUID %u).", info->goober.eventId, GetEntry(), GetDBTableGUIDLow());
+                    sLog->outDebug(LOG_FILTER_MAPSCRIPTS, "Goober ScriptStart id %u for GO entry %u (GUID %u).", info->goober.eventId, GetEntry(), GetDBTableGUIDLow());
                     GetMap()->ScriptsStart(sEventScripts, info->goober.eventId, player, this);
                     EventInform(info->goober.eventId);
                 }
@@ -1212,7 +1246,7 @@ void GameObject::Use(Unit* user)
 
             // this appear to be ok, however others exist in addition to this that should have custom (ex: 190510, 188692, 187389)
             if (time_to_restore && info->goober.customAnim)
-                SendCustomAnim();
+                SendCustomAnim(GetGoAnimProgress());
             else
                 SetGoState(GO_STATE_ACTIVE);
 
@@ -1233,7 +1267,7 @@ void GameObject::Use(Unit* user)
             if (user->GetTypeId() != TYPEID_PLAYER)
                 return;
 
-            Player* player = (Player*)user;
+            Player* player = user->ToPlayer();
 
             if (info->camera.cinematicId)
                 player->SendCinematicStart(info->camera.cinematicId);
@@ -1437,7 +1471,7 @@ void GameObject::Use(Unit* user)
             if (user->GetTypeId() != TYPEID_PLAYER)
                 return;
 
-            Player* player = (Player*)user;
+            Player* player = user->ToPlayer();
 
             Player* targetPlayer = ObjectAccessor::FindPlayer(player->GetSelection());
 
@@ -1466,7 +1500,7 @@ void GameObject::Use(Unit* user)
             if (user->GetTypeId() != TYPEID_PLAYER)
                 return;
 
-            Player* player = (Player*)user;
+            Player* player = user->ToPlayer();
 
             if (player->CanUseBattlegroundObject())
             {
@@ -1494,7 +1528,7 @@ void GameObject::Use(Unit* user)
             if (user->GetTypeId() != TYPEID_PLAYER)
                 return;
 
-            Player* player = (Player*)user;
+            Player* player = user->ToPlayer();
 
             player->SendLoot(GetGUID(), LOOT_FISHINGHOLE);
             player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_FISH_IN_GAMEOBJECT, GetGOInfo()->id);
@@ -1506,7 +1540,7 @@ void GameObject::Use(Unit* user)
             if (user->GetTypeId() != TYPEID_PLAYER)
                 return;
 
-            Player* player = (Player*)user;
+            Player* player = user->ToPlayer();
 
             if (player->CanUseBattlegroundObject())
             {
@@ -1557,7 +1591,7 @@ void GameObject::Use(Unit* user)
             if (user->GetTypeId() != TYPEID_PLAYER)
                 return;
 
-            Player* player = (Player*)user;
+            Player* player = user->ToPlayer();
 
             // fallback, will always work
             player->TeleportTo(GetMapId(), GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation(),TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET);
@@ -1569,7 +1603,8 @@ void GameObject::Use(Unit* user)
             return;
         }
         default:
-            sLog->outDebug("Unknown Object Type %u", GetGoType());
+            sLog->outError("GameObject::Use(): unit (type: %u, guid: %u) tries to use object (guid: %u) of unknown type (%u)",
+                user->GetTypeId(), user->GetGUIDLow(), GetGUIDLow(), GetGoType());
             break;
     }
 
@@ -1579,10 +1614,10 @@ void GameObject::Use(Unit* user)
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
     if (!spellInfo)
     {
-        if (user->GetTypeId() != TYPEID_PLAYER || !sOutdoorPvPMgr->HandleCustomSpell((Player*)user,spellId,this))
+        if (user->GetTypeId() != TYPEID_PLAYER || !sOutdoorPvPMgr->HandleCustomSpell(user->ToPlayer(), spellId, this))
             sLog->outError("WORLD: unknown spell id %u at use action for gameobject (Entry: %u GoType: %u)", spellId,GetEntry(),GetGoType());
         else
-            sLog->outDebug("WORLD: %u non-dbc spell was handled by OutdoorPvP", spellId);
+            sLog->outDebug(LOG_FILTER_OUTDOORPVP, "WORLD: %u non-dbc spell was handled by OutdoorPvP", spellId);
         return;
     }
 
@@ -1636,11 +1671,11 @@ void GameObject::CastSpell(Unit* target, uint32 spellId)
     //trigger->RemoveCorpse();
 }
 
-void GameObject::SendCustomAnim()
+void GameObject::SendCustomAnim(uint32 anim)
 {
     WorldPacket data(SMSG_GAMEOBJECT_CUSTOM_ANIM,8+4);
     data << GetGUID();
-    data << uint32(GetGoAnimProgress());
+    data << uint32(anim);
     SendMessageToSet(&data, true);
 }
 
@@ -1761,19 +1796,11 @@ void GameObject::UpdateRotationFields(float rotation2 /*=0.0f*/, float rotation3
 {
     static double const atan_pow = atan(pow(2.0f, -20.0f));
 
-    double f_rot1 = sin(GetOrientation() / 2.0f);
-    double f_rot2 = cos(GetOrientation() / 2.0f);
+    double f_rot1 = sin(GetOrientation() * 0.5f);
+    double f_rot2 = cos(GetOrientation() * 0.5f);
 
     int64 i_rot1 = int64(f_rot1 / atan_pow *(f_rot2 >= 0 ? 1.0f : -1.0f));
     int64 rotation = (i_rot1 << 43 >> 43) & 0x00000000001FFFFF;
-
-    //float f_rot2 = sin(0.0f / 2.0f);
-    //int64 i_rot2 = f_rot2 / atan(pow(2.0f, -20.0f));
-    //rotation |= (((i_rot2 << 22) >> 32) >> 11) & 0x000003FFFFE00000;
-
-    //float f_rot3 = sin(0.0f / 2.0f);
-    //int64 i_rot3 = f_rot3 / atan(pow(2.0f, -21.0f));
-    //rotation |= (i_rot3 >> 42) & 0x7FFFFC0000000000;
 
     m_rotation = rotation;
 

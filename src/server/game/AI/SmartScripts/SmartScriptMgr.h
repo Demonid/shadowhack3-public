@@ -149,7 +149,7 @@ enum SMART_EVENT
     SMART_EVENT_GOSSIP_SELECT            = 62,      //1             // menuID, actionID
     SMART_EVENT_JUST_CREATED             = 63,      //1             // none
     SMART_EVENT_GOSSIP_HELLO             = 64,      //1             // none
-    SMART_EVENT_FOLLOW_COMPLETED          = 65,      //1             // none
+    SMART_EVENT_FOLLOW_COMPLETED         = 65,      //1             // none
     SMART_EVENT_DUMMY_EFFECT             = 66,      //1             // spellId, effectIndex
 
     SMART_EVENT_END                      = 67,
@@ -445,12 +445,13 @@ enum SMART_ACTION
     SMART_ACTION_RANDOM_MOVE                        = 89,     // maxDist
 
     SMART_ACTION_SET_UNIT_FIELD_BYTES_1             = 90,     // bytes, target
-
     SMART_ACTION_REMOVE_UNIT_FIELD_BYTES_1          = 91,     // bytes, target
 
     SMART_ACTION_INTERRUPT_SPELL                    = 92,
 
-    SMART_ACTION_END                                = 93,
+    SMART_ACTION_SEND_GO_CUSTOM_ANIM                = 93,     // anim id
+
+    SMART_ACTION_END                                = 94,
 };
 
 struct SmartAction
@@ -829,6 +830,11 @@ struct SmartAction
             uint32 spell_id;
             bool withInstant;
         } interruptSpellCasting;
+
+        struct
+        {
+            uint32 anim;
+        } sendGoCustomAnim;
         struct
         {
             uint32 param1;
@@ -1203,7 +1209,7 @@ class SmartAIMgr
             else
             {
                 if(entry > 0)//first search is for guid (negative), do not drop error if not found
-                    sLog->outDebug("SmartAIMgr::GetScript: Could not load Script for Entry %d ScriptType %u.", entry, uint32(type));
+                    sLog->outDebug(LOG_FILTER_DATABASE_AI, "SmartAIMgr::GetScript: Could not load Script for Entry %d ScriptType %u.", entry, uint32(type));
                 return temp;
             }
         }

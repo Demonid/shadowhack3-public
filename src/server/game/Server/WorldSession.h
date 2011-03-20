@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
@@ -138,6 +139,14 @@ enum CharterTypes
     ARENA_TEAM_CHARTER_5v5_TYPE                   = 5
 };
 
+enum PremiumTypes
+{
+	PREMIUM_TYPE_XP_KILL							= 0x1,
+	PREMIUM_TYPE_XP_QUEST							= 0x2,
+	PREMIUM_TYPE_XP_EXPLORE							= 0x4,
+	PREMIUM_TYPE_SKILLGAIN_CRAFTING_AND_GATHERING	= 0x8,
+};
+
 //class to deal with packet processing
 //allows to determine if next packet is safe to be processed
 class PacketFilter
@@ -180,7 +189,7 @@ class WorldSession
 {
     friend class CharacterHandler;
     public:
-        WorldSession(uint32 id, WorldSocket *sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter);
+        WorldSession(uint32 id, WorldSocket *sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint8 premiumType, uint32 recruiter);
         ~WorldSession();
 
         bool PlayerLoading() const { return m_playerLoading; }
@@ -278,28 +287,26 @@ class WorldSession
 
         // Account Data
         AccountData *GetAccountData(AccountDataType type) { return &m_accountData[type]; }
-        void SetAccountData(AccountDataType type, time_t time_, std::string data);
+        void SetAccountData(AccountDataType type, time_t tm, std::string data);
         void SendAccountDataTimes(uint32 mask);
         void LoadGlobalAccountData();
         void LoadAccountData(PreparedQueryResult result, uint32 mask);
+
         void LoadTutorialsData();
         void SendTutorialsData();
         void SaveTutorialsData(SQLTransaction& trans);
-        uint32 GetTutorialInt(uint32 intId)
+        uint32 GetTutorialInt(uint8 index) { return m_Tutorials[index]; }
+        void SetTutorialInt(uint8 index, uint32 value)
         {
-            return m_Tutorials[intId];
-        }
-
-        void SetTutorialInt(uint32 intId, uint32 value)
-        {
-            if (m_Tutorials[intId] != value)
+            if (m_Tutorials[index] != value)
             {
-                m_Tutorials[intId] = value;
+                m_Tutorials[index] = value;
                 m_TutorialsChanged = true;
             }
         }
         //used with item_page table
         bool SendItemInfo(uint32 itemid, WorldPacket data);
+        
         //auction
         void SendAuctionHello(uint64 guid, Creature * unit);
         void SendAuctionCommandResult(uint32 auctionId, uint32 Action, uint32 ErrorCode, uint32 bidError = 0);
@@ -359,6 +366,8 @@ class WorldSession
 
         // Recruit-A-Friend Handling
         uint32 GetRecruiterId() { return recruiterId; }
+
+		bool HasPremiumByType(uint8 premiumtype) const {return m_premiumtype & premiumtype;}
 
     public:                                                 // opcodes handlers
 
@@ -893,6 +902,7 @@ class WorldSession
         AccountTypes _security;
         uint32 _accountId;
         uint8 m_expansion;
+		uint8 m_premiumtype;
 
         time_t _logoutTime;
         bool m_inQueue;                                     // session wait in auth.queue
@@ -904,7 +914,7 @@ class WorldSession
         LocaleConstant m_sessionDbLocaleIndex;
         uint32 m_latency;
         AccountData m_accountData[NUM_ACCOUNT_DATA_TYPES];
-        uint32 m_Tutorials[MAX_CHARACTER_TUTORIAL_VALUES];
+        uint32 m_Tutorials[MAX_ACCOUNT_TUTORIAL_VALUES];
         bool   m_TutorialsChanged;
         AddonsList m_addonsList;
         uint32 recruiterId;

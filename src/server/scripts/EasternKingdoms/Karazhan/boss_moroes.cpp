@@ -200,7 +200,7 @@ public:
             return false;
         }
 
-        void DeSpawnAdds()
+        void DeSpawnAdds()  //Q: do clear AddList ?
         {
             for (uint8 i = 0; i < 4 ; ++i)
             {
@@ -222,7 +222,7 @@ public:
                 if (AddGUID[i])
                 {
                     Temp = Creature::GetCreature((*me),AddGUID[i]);
-                    if (Temp && Temp->isAlive())
+                    if (Temp && Temp->isAlive() && Temp->AI())
                     {
                         Temp->AI()->AttackStart(me->getVictim());
                         DoZoneInCombat(Temp);
@@ -257,7 +257,7 @@ public:
                     if (AddGUID[i])
                     {
                         Temp = Unit::GetCreature((*me),AddGUID[i]);
-                        if (Temp && Temp->isAlive())
+                        if (Temp && Temp->isAlive() && Temp->AI())
                             if (!Temp->getVictim())
                                 Temp->AI()->AttackStart(me->getVictim());
                     }
@@ -292,6 +292,7 @@ public:
                             DoCast(*i, SPELL_BLIND);
                             break;
                         }
+                    //Q: pTargets.clear() ?
                     Blind_Timer = 40000;
                 } else Blind_Timer -= diff;
             }
@@ -302,7 +303,7 @@ public:
                 {
                     DoScriptText(RAND(SAY_SPECIAL_1,SAY_SPECIAL_2), me);
 
-                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.f, true))
                         pTarget->CastSpell(pTarget, SPELL_GARROTE,true);
 
                     InVanish = false;
@@ -449,7 +450,7 @@ public:
 
             if (ManaBurn_Timer <= diff)
             {
-                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.f, true))
                     if (pTarget->getPowerType() == POWER_MANA)
                         DoCast(pTarget, SPELL_MANABURN);
                 ManaBurn_Timer = 5000;                          // 3 sec cast
@@ -457,7 +458,7 @@ public:
 
             if (ShadowWordPain_Timer <= diff)
             {
-                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.f, true))
                 {
                     DoCast(pTarget, SPELL_SWPAIN);
                     ShadowWordPain_Timer = 7000;
@@ -587,7 +588,7 @@ public:
 
             if (DispelMagic_Timer <= diff)
             {
-                if (Unit *pTarget = RAND(SelectGuestTarget(), SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true)))
+                if (Unit *pTarget = RAND(SelectGuestTarget(), SelectTarget(SELECT_TARGET_RANDOM, 0, 100.f, true)))
                     DoCast(pTarget, SPELL_DISPELMAGIC);
 
                 DispelMagic_Timer = 25000;

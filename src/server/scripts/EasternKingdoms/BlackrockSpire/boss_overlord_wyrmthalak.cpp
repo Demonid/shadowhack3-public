@@ -110,12 +110,12 @@ public:
             //Summon two Beserks
             if (!Summoned && HealthBelowPct(51))
             {
-                Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0, 100, true);
+                Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0, 100.f, true);
 
                 if (Creature *SummonedCreature = me->SummonCreature(9216,ADD_1X,ADD_1Y,ADD_1Z,ADD_1O,TEMPSUMMON_TIMED_DESPAWN,300000))
-                    SummonedCreature->AI()->AttackStart(pTarget);
+                    if (SummonedCreature->AI()) SummonedCreature->AI()->AttackStart(pTarget);
                 if (Creature *SummonedCreature = me->SummonCreature(9268,ADD_2X,ADD_2Y,ADD_2Z,ADD_2O,TEMPSUMMON_TIMED_DESPAWN,300000))
-                    SummonedCreature->AI()->AttackStart(pTarget);
+                    if (SummonedCreature->AI()) SummonedCreature->AI()->AttackStart(pTarget);
                 Summoned = true;
             }
 

@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
@@ -45,14 +46,6 @@ void WorldSession::HandleClientCastFlags(WorldPacket& recvPacket, uint8 castFlag
         if (hasMovementData)
         {
             recvPacket.rfinish();
-            // movement packet for caster of the spell
-            /*recvPacket.read_skip<uint32>(); // MSG_MOVE_STOP - hardcoded in client
-            uint64 guid;
-            recvPacket.readPackGUID(guid);
-
-            MovementInfo movementInfo;
-            movementInfo.guid = guid;
-            ReadMovementInfo(recvPacket, &movementInfo);*/
         }
     }
 }
@@ -283,7 +276,7 @@ void WorldSession::HandleGameObjectUseOpcode(WorldPacket & recv_data)
 
     recv_data >> guid;
 
-    sLog->outDebug("WORLD: Recvd CMSG_GAMEOBJ_USE Message [guid=%u]", GUID_LOPART(guid));
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recvd CMSG_GAMEOBJ_USE Message [guid=%u]", GUID_LOPART(guid));
 
     // ignore for remote control state
     if (_player->m_mover != _player)
@@ -302,7 +295,7 @@ void WorldSession::HandleGameobjectReportUse(WorldPacket& recvPacket)
     uint64 guid;
     recvPacket >> guid;
 
-    sLog->outDebug("WORLD: Recvd CMSG_GAMEOBJ_REPORT_USE Message [in game guid: %u]", GUID_LOPART(guid));
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recvd CMSG_GAMEOBJ_REPORT_USE Message [in game guid: %u]", GUID_LOPART(guid));
 
     // ignore for remote control state
     if (_player->m_mover != _player)
@@ -326,7 +319,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     uint8  castCount, castFlags;
     recvPacket >> castCount >> spellId >> castFlags;
 
-    sLog->outDebug("WORLD: got cast spell packet, castCount: %u, spellId: %u, castFlags: %u, data length = %u", castCount, spellId, castFlags, (uint32)recvPacket.size());
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: got cast spell packet, castCount: %u, spellId: %u, castFlags: %u, data length = %u", castCount, spellId, castFlags, (uint32)recvPacket.size());
 
     // ignore for remote control state (for player case)
     Unit* mover = _player->m_mover;
@@ -423,11 +416,14 @@ void WorldSession::HandleCancelAuraOpcode(WorldPacket& recvPacket)
         return;
 
     // not allow remove non positive spells and spells with attr SPELL_ATTR0_CANT_CANCEL
-    if (!IsPositiveSpell(spellId) || (spellInfo->Attributes & SPELL_ATTR0_CANT_CANCEL))
+    if ((!IsPositiveSpell(spellId) && spellId !=605) || (spellInfo->Attributes & SPELL_ATTR0_CANT_CANCEL))
         return;
 
     // don't allow cancelling passive auras (some of them are visible)
     if (IsPassiveSpell(spellInfo))
+        return;
+
+    if (_player->isDead() && IsPositiveSpell(spellId))
         return;
 
     // channeled spell case (it currently casted then)
@@ -439,9 +435,20 @@ void WorldSession::HandleCancelAuraOpcode(WorldPacket& recvPacket)
         return;
     }
 
+	for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+	{
+		if (spellInfo->EffectApplyAuraName[i] == SPELL_AURA_FLY || spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED ||
+			spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED || spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED ||
+			spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS || spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_SPEED ||
+            spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_MOUNTED_SPEED)
+				_player->addAnticheatTemporaryImmunity(250);
+	}
+
     // non channeled case
     // maybe should only remove one buff when there are multiple?
     _player->RemoveOwnedAura(spellId, 0, 0, AURA_REMOVE_BY_CANCEL);
+
+	
 }
 
 void WorldSession::HandlePetCancelAuraOpcode(WorldPacket& recvPacket)
@@ -532,7 +539,7 @@ void WorldSession::HandleTotemDestroyed(WorldPacket& recvPacket)
 
 void WorldSession::HandleSelfResOpcode(WorldPacket & /*recv_data*/)
 {
-    sLog->outDebug("WORLD: CMSG_SELF_RES");                  // empty opcode
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_SELF_RES");                  // empty opcode
 
     if (_player->GetUInt32Value(PLAYER_SELF_RES_SPELL))
     {
@@ -544,7 +551,7 @@ void WorldSession::HandleSelfResOpcode(WorldPacket & /*recv_data*/)
     }
 }
 
-void WorldSession::HandleSpellClick(WorldPacket & recv_data)
+void WorldSession::HandleSpellClick(WorldPacket& recv_data)
 {
     uint64 guid;
     recv_data >> guid;
@@ -559,30 +566,12 @@ void WorldSession::HandleSpellClick(WorldPacket & recv_data)
     if (!unit->IsInWorld())
         return;
 
-    SpellClickInfoMapBounds clickPair = sObjectMgr->GetSpellClickInfoMapBounds(unit->GetEntry());
-    for (SpellClickInfoMap::const_iterator itr = clickPair.first; itr != clickPair.second; ++itr)
-    {
-        if (itr->second.IsFitToRequirements(_player, unit))
-        {
-            Unit *caster = (itr->second.castFlags & NPC_CLICK_CAST_CASTER_PLAYER) ? (Unit*)_player : (Unit*)unit;
-            Unit *target = (itr->second.castFlags & NPC_CLICK_CAST_TARGET_PLAYER) ? (Unit*)_player : (Unit*)unit;
-            uint64 origCasterGUID = (itr->second.castFlags & NPC_CLICK_CAST_ORIG_CASTER_OWNER) ? unit->GetOwnerGUID() : 0;
-            caster->CastSpell(target, itr->second.spellId, true, NULL, NULL, origCasterGUID);
-        }
-    }
-
-    if (unit->IsVehicle())
-    {
-        if (unit->CheckPlayerCondition(_player))
-            _player->EnterVehicle(unit);
-    }
-
-    unit->AI()->DoAction(EVENT_SPELLCLICK);
+    unit->HandleSpellClick(_player);
 }
 
 void WorldSession::HandleMirrrorImageDataRequest(WorldPacket & recv_data)
 {
-    sLog->outDebug("WORLD: CMSG_GET_MIRRORIMAGE_DATA");
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_GET_MIRRORIMAGE_DATA");
     uint64 guid;
     recv_data >> guid;
 

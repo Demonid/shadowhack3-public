@@ -114,7 +114,7 @@ class npc_torek : public CreatureScript
 
             void JustSummoned(Creature* summoned)
             {
-                summoned->AI()->AttackStart(me);
+                if (summoned->AI()) summoned->AI()->AttackStart(me);
             }
 
             void UpdateAI(const uint32 diff)
@@ -224,13 +224,13 @@ class npc_ruul_snowhoof : public CreatureScript
 
             void JustSummoned(Creature* summoned)
             {
-                summoned->AI()->AttackStart(me);
+                if (summoned->AI()) summoned->AI()->AttackStart(me);
             }
 
-            void UpdateAI(const uint32 diff)
-            {
-                npc_escortAI::UpdateAI(diff);
-            }
+            //void UpdateAI(const uint32 diff)
+            //{
+            //    npc_escortAI::UpdateAI(diff);
+            //}
         };
 
         CreatureAI* GetAI(Creature* creature) const
@@ -312,12 +312,13 @@ class npc_muglash : public CreatureScript
 
             void JustSummoned(Creature* pSummoned)
             {
-                pSummoned->AI()->AttackStart(me);
+                if (pSummoned->AI()) pSummoned->AI()->AttackStart(me);
             }
 
             void WaypointReached(uint32 i)
             {
                 Player* pPlayer = GetPlayerForEscort();
+                if (!pPlayer) return;
 
                 switch(i)
                 {

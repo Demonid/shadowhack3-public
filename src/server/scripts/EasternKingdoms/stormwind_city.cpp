@@ -38,7 +38,7 @@ EndContentData */
 #include "ScriptedEscortAI.h"
 
 /*######
-## npc_archmage_malin
+## npc_archmage_malin   //Q: move to DB entirely?
 ######*/
 
 #define GOSSIP_ITEM_MALIN "Can you send me to Theramore? I have an urgent message for Lady Jaina from Highlord Bolvar."
@@ -110,7 +110,7 @@ public:
     {
         npc_bartlebyAI(Creature *c) : ScriptedAI(c)
         {
-            m_uiNormalFaction = c->getFaction();
+            m_uiNormalFaction = c->getFaction();    //Q: use RestoreFaction() and remove this variable?
         }
 
         uint32 m_uiNormalFaction;
@@ -139,7 +139,7 @@ public:
                 //Take 0 damage
                 uiDamage = 0;
 
-                if (pDoneBy->GetTypeId() == TYPEID_PLAYER)
+                if (pDoneBy->GetTypeId() == TYPEID_PLAYER)  //Q: pet?
                     CAST_PLR(pDoneBy)->AreaExploredOrEventHappens(QUEST_BEAT);
                 EnterEvadeMode();
             }
@@ -151,7 +151,7 @@ public:
 
 
 /*######
-## npc_dashel_stonefist
+## npc_dashel_stonefist     //Q: the same as npc_bartleby above, unite?
 ######*/
 
 enum eDashel
@@ -212,7 +212,7 @@ public:
             {
                 uiDamage = 0;
 
-                if (pDoneBy->GetTypeId() == TYPEID_PLAYER)
+                if (pDoneBy->GetTypeId() == TYPEID_PLAYER)  //Q: pet?
                     CAST_PLR(pDoneBy)->AreaExploredOrEventHappens(QUEST_MISSING_DIPLO_PT8);
 
                 EnterEvadeMode();
@@ -225,7 +225,7 @@ public:
 
 
 /*######
-## npc_lady_katrana_prestor
+## npc_lady_katrana_prestor     //Q: move to DB entirely?
 ######*/
 
 #define GOSSIP_ITEM_KAT_1 "Pardon the intrusion, Lady Prestor, but Highlord Bolvar suggested that I seek your advice."
@@ -314,7 +314,7 @@ public:
     {
         npc_lord_gregor_lescovarAI(Creature* pCreature) : npc_escortAI(pCreature)
         {
-            pCreature->RestoreFaction();
+            pCreature->RestoreFaction();    //Q: WTF? remove it?
         }
 
         uint32 uiTimer;
@@ -345,7 +345,7 @@ public:
         {
             if (Creature *pMarzon = Unit::GetCreature(*me, MarzonGUID))
             {
-                if (pMarzon->isAlive() && !pMarzon->isInCombat())
+                if (pMarzon->isAlive() && !pMarzon->isInCombat() && pMarzon->AI())
                     pMarzon->AI()->AttackStart(pWho);
             }
         }
@@ -384,6 +384,7 @@ public:
                     if (Creature* pGuard = *itr)
                         pGuard->DisappearAndDie();
                 }
+                GuardList.clear();  //Q: ~QuardList() ?
             }
         }
 
@@ -487,7 +488,7 @@ public:
             {
                 if (Unit* pSummoner = CAST_SUM(me)->GetSummoner())
                 {
-                    if (pSummoner && pSummoner->isAlive() && !pSummoner->isInCombat())
+                    if (pSummoner && pSummoner->isAlive() && !pSummoner->isInCombat() && CAST_CRE(pSummoner)->AI())
                         CAST_CRE(pSummoner)->AI()->AttackStart(pWho);
                 }
             }
@@ -660,10 +661,13 @@ public:
                         case 10:
                             if (Creature* pLescovar = me->FindNearestCreature(NPC_LORD_GREGOR_LESCOVAR,10.0f))
                             {
-                                if (Player* pPlayer = GetPlayerForEscort())
+                                if (pLescovar->isAlive())
                                 {
-                                    CAST_AI(npc_lord_gregor_lescovar::npc_lord_gregor_lescovarAI,pLescovar->AI())->Start(false, false, pPlayer->GetGUID());
-                                    CAST_AI(npc_lord_gregor_lescovar::npc_lord_gregor_lescovarAI, pLescovar->AI())->SetMaxPlayerDistance(200.0f);
+                                    if (Player* pPlayer = GetPlayerForEscort())
+                                    {
+                                        CAST_AI(npc_lord_gregor_lescovar::npc_lord_gregor_lescovarAI,pLescovar->AI())->Start(false, false, pPlayer->GetGUID());
+                                        CAST_AI(npc_lord_gregor_lescovar::npc_lord_gregor_lescovarAI, pLescovar->AI())->SetMaxPlayerDistance(200.0f);
+                                    }
                                 }
                             }
                             me->DisappearAndDie();

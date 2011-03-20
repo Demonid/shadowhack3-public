@@ -75,7 +75,7 @@ public:
                 for (uint8 i = 0; i < size; ++i)
                 {
                     uint64 guid = pInstance->GetData64(DATA_FEL_CRYSTAL);
-                    sLog->outDebug("TSCR: Selin: Adding Fel Crystal " UI64FMTD " to list", guid);
+                    sLog->outDebug(LOG_FILTER_TSCR, "TSCR: Selin: Adding Fel Crystal " UI64FMTD " to list", guid);
                     Crystals.push_back(guid);
                 }
             }
@@ -83,7 +83,7 @@ public:
 
         InstanceScript* pInstance;
 
-        std::list<uint64> Crystals;
+        std::list<uint64> Crystals;     //Q: is destructor needed for clearing this? it inits once in constructor only
 
         uint32 DrainLifeTimer;
         uint32 DrainManaTimer;
@@ -169,7 +169,7 @@ public:
                 CrystalChosen->CastSpell(CrystalChosen, SPELL_FEL_CRYSTAL_COSMETIC, true);
 
                 float x, y, z;                                  // coords that we move to, close to the crystal.
-                CrystalChosen->GetClosePoint(x, y, z, me->GetObjectSize(), CONTACT_DISTANCE);
+                CrystalChosen->GetClosePoint(x, y, z, me->GetObjectSize(), CONTACT_DISTANCE, 0.0f, me);
 
                 me->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
                 me->GetMotionMaster()->MovePoint(1, x, y, z);
@@ -253,7 +253,7 @@ public:
                 {
                     if (DrainLifeTimer <= diff)
                     {
-                        DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_DRAIN_LIFE);
+                        DoCast(SelectTarget(SELECT_TARGET_RANDOM, 0), SPELL_DRAIN_LIFE);
                         DrainLifeTimer = 10000;
                     } else DrainLifeTimer -= diff;
 
@@ -262,7 +262,7 @@ public:
                     {
                         if (DrainManaTimer <= diff)
                         {
-                            DoCast(SelectUnit(SELECT_TARGET_RANDOM, 1), SPELL_DRAIN_MANA);
+                            DoCast(SelectTarget(SELECT_TARGET_RANDOM, 1), SPELL_DRAIN_MANA);
                             DrainManaTimer = 10000;
                         } else DrainManaTimer -= diff;
                     }
@@ -347,7 +347,7 @@ public:
             if (InstanceScript* pInstance = me->GetInstanceScript())
             {
                 Creature* Selin = (Unit::GetCreature(*me, pInstance->GetData64(DATA_SELIN)));
-                if (Selin && Selin->isAlive())
+                if (Selin && Selin->isAlive() && Selin->AI())
                 {
                     if (CAST_AI(boss_selin_fireheart::boss_selin_fireheartAI, Selin->AI())->CrystalGUID == me->GetGUID())
                     {

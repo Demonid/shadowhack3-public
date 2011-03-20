@@ -29,7 +29,7 @@ extern LoginDatabaseWorkerPool LoginDatabase;
 
 Log::Log() :
     raLogfile(NULL), logfile(NULL), gmLogfile(NULL), charLogfile(NULL),
-    dberLogfile(NULL), chatLogfile(NULL), arenaLogFile(NULL), sqlLogFile(NULL),
+    dberLogfile(NULL), chatLogfile(NULL), cheatLogfile(NULL), arenaLogFile(NULL), sqlLogFile(NULL),
     m_gmlog_per_account(false), m_enableLogDBLater(false),
     m_enableLogDB(false), m_colored(false)
 {
@@ -62,6 +62,9 @@ Log::~Log()
         fclose(chatLogfile);
     chatLogfile = NULL;
 
+    if (cheatLogfile != NULL)
+        fclose(cheatLogfile);
+    cheatLogfile = NULL;
     if (arenaLogFile != NULL)
         fclose(arenaLogFile);
     arenaLogFile = NULL;
@@ -159,6 +162,7 @@ void Log::Initialize()
     dberLogfile = openLogFile("DBErrorLogFile", NULL, "a");
     raLogfile = openLogFile("RaLogFile", NULL, "a");
     chatLogfile = openLogFile("ChatLogFile", "ChatLogTimestamp", "a");
+    cheatLogfile = openLogFile("CheatersLogFile", NULL, "a");
     arenaLogFile = openLogFile("ArenaLogFile", NULL,"a");
     sqlLogFile = openLogFile("SQLDriverLogFile", NULL, "a");
 
@@ -168,16 +172,7 @@ void Log::Initialize()
     m_dbLogLevel   = sConfig->GetIntDefault("DBLogLevel", LOGL_NORMAL);
     m_sqlDriverQueryLogging  = sConfig->GetBoolDefault("SQLDriverQueryLogging", false);
 
-    m_logFilter = 0;
-
-    if(sConfig->GetBoolDefault("LogFilter_TransportMoves", true))
-        m_logFilter |= LOG_FILTER_TRANSPORT_MOVES;
-    if(sConfig->GetBoolDefault("LogFilter_CreatureMoves", true))
-        m_logFilter |= LOG_FILTER_CREATURE_MOVES;
-    if(sConfig->GetBoolDefault("LogFilter_VisibilityChanges", true))
-        m_logFilter |= LOG_FILTER_VISIBILITY_CHANGES;
-    if(sConfig->GetBoolDefault("LogFilter_AchievementUpdates", true))
-        m_logFilter |= LOG_FILTER_ACHIEVEMENT_UPDATES;
+    m_DebugLogMask = DebugLogFilters(sConfig->GetIntDefault("DebugLogMask", LOG_FILTER_NONE));
 
     // Char log settings
     m_charLog_Dump = sConfig->GetBoolDefault("CharLogDump", false);
@@ -518,6 +513,37 @@ void Log::outError(const char * err, ...)
     fflush(stderr);
 }
 
+void Log::outCheater(const char * cheat, ...)
+{
+    if (!cheat)
+        return;
+
+    if (m_colored)
+        SetColor(false,LRED);
+
+    va_list ap;
+
+    va_start(ap, cheat);
+    vutf8printf(stdout, cheat, &ap);
+    va_end(ap);
+
+    if (m_colored)
+        ResetColor(false);
+
+    fprintf( stdout, "\n");
+    if (cheatLogfile)
+    {
+        outTimestamp(cheatLogfile);
+        va_start(ap, cheat);
+        vfprintf(cheatLogfile, cheat, ap);
+        va_end(ap);
+
+        fprintf(cheatLogfile, "\n");
+        fflush(cheatLogfile);
+    }
+    fflush(stdout);
+}
+
 void Log::outArena(const char * str, ...)
 {
     if (!str)
@@ -723,8 +749,11 @@ void Log::outDebugInLine(const char * str, ...)
     }
 }
 
-void Log::outDebug(const char * str, ...)
+void Log::outDebug(DebugLogFilters f, const char * str, ...)
 {
+    if (!(m_DebugLogMask & f))
+        return;
+
     if (!str)
         return;
 

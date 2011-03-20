@@ -650,6 +650,8 @@ INSERT INTO `command` VALUES
 ('reload spell_target_position',3,'Syntax: .reload spell_target_position\nReload spell_target_position table.'),
 ('reload spell_threats',3,'Syntax: .reload spell_threats\nReload spell_threats table.'),
 ('reload trinity_string',3,'Syntax: .reload trinity_string\nReload trinity_string table.'),
+('reload vehicle_accessory', 3, 'Syntax: .reload vehicle_accessory\n\nReloads GUID-based vehicle accessory definitions from the database.'),
+('reload vehicle_template_accessory', 3, 'Syntax: .reload vehicle_template_accessory\n\nReloads entry-based vehicle accessory definitions from the database.'),
 ('reload waypoint_scripts',3,'Syntax: .reload waypoint_scripts\nReload waypoint_scripts table.'),
 ('repairitems',2,'Syntax: .repairitems\r\n\r\nRepair all selected player''s items.'),
 ('reset',3,'Syntax: .reset $subcommand\nType .reset to see the list of possible subcommands or .help reset $subcommand to see info on subcommands'),
@@ -16737,34 +16739,34 @@ DROP TABLE IF EXISTS `smart_scripts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `smart_scripts` (
-  `entryorguid` mediumint(11) NOT NULL,
-  `source_type` mediumint(5) unsigned NOT NULL DEFAULT '0',
-  `id` mediumint(11) unsigned NOT NULL DEFAULT '0',
-  `link` mediumint(11) unsigned NOT NULL DEFAULT '0',
-  `event_type` mediumint(5) unsigned NOT NULL DEFAULT '0',
-  `event_phase_mask` mediumint(11) unsigned NOT NULL DEFAULT '0',
-  `event_chance` mediumint(5) unsigned NOT NULL DEFAULT '100',
-  `event_flags` mediumint(11) unsigned NOT NULL DEFAULT '0',
-  `event_param1` mediumint(11) unsigned NOT NULL DEFAULT '0',
-  `event_param2` mediumint(11) unsigned NOT NULL DEFAULT '0',
-  `event_param3` mediumint(11) unsigned NOT NULL DEFAULT '0',
-  `event_param4` mediumint(11) unsigned NOT NULL DEFAULT '0',
-  `action_type` mediumint(5) unsigned NOT NULL DEFAULT '0',
-  `action_param1` mediumint(11) unsigned NOT NULL DEFAULT '0',
-  `action_param2` mediumint(11) unsigned NOT NULL DEFAULT '0',
-  `action_param3` mediumint(11) unsigned NOT NULL DEFAULT '0',
-  `action_param4` mediumint(11) unsigned NOT NULL DEFAULT '0',
-  `action_param5` mediumint(11) unsigned NOT NULL DEFAULT '0',
-  `action_param6` mediumint(11) unsigned NOT NULL DEFAULT '0',
-  `target_type` mediumint(11) unsigned NOT NULL DEFAULT '0',
-  `target_param1` mediumint(11) unsigned NOT NULL DEFAULT '0',
-  `target_param2` mediumint(11) unsigned NOT NULL DEFAULT '0',
-  `target_param3` mediumint(11) unsigned NOT NULL DEFAULT '0',
+  `entryorguid` int(11) NOT NULL,
+  `source_type` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `id` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `link` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `event_type` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `event_phase_mask` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `event_chance` tinyint(3) unsigned NOT NULL DEFAULT '100',
+  `event_flags` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `event_param1` int(10) unsigned NOT NULL DEFAULT '0',
+  `event_param2` int(10) unsigned NOT NULL DEFAULT '0',
+  `event_param3` int(10) unsigned NOT NULL DEFAULT '0',
+  `event_param4` int(10) unsigned NOT NULL DEFAULT '0',
+  `action_type` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `action_param1` int(10) unsigned NOT NULL DEFAULT '0',
+  `action_param2` int(10) unsigned NOT NULL DEFAULT '0',
+  `action_param3` int(10) unsigned NOT NULL DEFAULT '0',
+  `action_param4` int(10) unsigned NOT NULL DEFAULT '0',
+  `action_param5` int(10) unsigned NOT NULL DEFAULT '0',
+  `action_param6` int(10) unsigned NOT NULL DEFAULT '0',
+  `target_type` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `target_param1` int(10) unsigned NOT NULL DEFAULT '0',
+  `target_param2` int(10) unsigned NOT NULL DEFAULT '0',
+  `target_param3` int(10) unsigned NOT NULL DEFAULT '0',
   `target_x` float NOT NULL DEFAULT '0',
   `target_y` float NOT NULL DEFAULT '0',
   `target_z` float NOT NULL DEFAULT '0',
   `target_o` float NOT NULL DEFAULT '0',
-  `comment` varchar(255) NOT NULL DEFAULT '' COMMENT 'Event Comment',
+  `comment` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT 'Event Comment',
   PRIMARY KEY (`entryorguid`,`source_type`,`id`,`link`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 ROW_FORMAT=FIXED;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -18019,6 +18021,7 @@ INSERT INTO `spell_linked_spell` (`spell_trigger`,`spell_effect`,`type`,`comment
 ( 17851, 54501, 2, 'Consume Shadows - Rank 3'),
 ( 17850, 54501, 2, 'Consume Shadows - Rank 2'),
 ( 17767, 54501, 2, 'Consume Shadows - Rank 1'),
+(-11129,-28682, 0, 'Combustion'),
 (-5143, -36032, 0, 'Arcane Missiles Rank 1'),
 (-5144, -36032, 0, 'Arcane Missiles Rank 2'),
 (-5145, -36032, 0, 'Arcane Missiles Rank 3'),
@@ -18064,6 +18067,13 @@ INSERT INTO `spell_linked_spell` (`spell_trigger`,`spell_effect`,`type`,`comment
 ( 20066,-61840, 0, 'Repentance'),
 ( 66235, 66233, 0, 'Ardent Defender Visuals'),
 ( 58875, 58876, 1, 'Spirit Walk'),
+-- Misc
+( 55428, 55475, 0, 'Lifeblood (Rank 1)'),
+( 55480, 55475, 0, 'Lifeblood (Rank 2)'),
+( 55500, 55475, 0, 'Lifeblood (Rank 3)'),
+( 55501, 55475, 0, 'Lifeblood (Rank 4)'),
+( 55502, 55475, 0, 'Lifeblood (Rank 5)'),
+( 55503, 55475, 0, 'Lifeblood (Rank 6)'),
 -- Quest
 ( 26286, 44430, 0, 'Small Red Rocket - questcredit'),
 ( 26292, 44430, 0, 'Small Green Rocket - questcredit'),
@@ -18141,6 +18151,7 @@ INSERT INTO `spell_linked_spell` (`spell_trigger`,`spell_effect`,`type`,`comment
 (-59743, 54343, 0, 'Void Shift (Heroic) - Void Shifted'),
 -- Gundrak
 ( 54850, 54851, 1, 'Emerge - Emerge Summon'),
+( 55814, 55817, 1, 'Eck Residue'),
 -- Trial of the Champion
 ( 66680, 66547, 0, 'Confess - Confess'),
 ( 66889,-66865, 0, 'Remove Vengeance'),
@@ -18151,6 +18162,7 @@ INSERT INTO `spell_linked_spell` (`spell_trigger`,`spell_effect`,`type`,`comment
 ( 67623,-67620, 1, 'Remove Paralytic Toxin when hit by Burning Bite'),
 (-66683, 68667, 0, 'Icehowl - Surge of Adrenaline'),
 (-67661, 68667, 0, 'Icehowl - Surge of Adrenaline'),
+( 65940, 65941, 0, 'Trial of the Crusader: Shattering Throw'),
 -- Forge of Souls
 (-68839, 68846, 0, 'Bronjahm: Corrupt Soul Summon'),
 -- Icecrown Citadel
@@ -19087,6 +19099,7 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 54488, 0x00,   0, 0x20000021, 0x00009000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Missile Barrage (Rank 3)
 ( 54489, 0x00,   0, 0x20000021, 0x00009000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Missile Barrage (Rank 4)
 ( 54490, 0x00,   0, 0x20000021, 0x00009000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Missile Barrage (Rank 5)
+( 54646, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002,   0,   0,   0), -- Focus Magic
 ( 54695, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  45), -- Item - Death Knight's Anguish Base
 ( 54707, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  60), -- Sonic Awareness (DND)
 ( 54738, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002,   0,   0,  45), -- Star of Light
@@ -19107,6 +19120,7 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 55640, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  45), -- Lightweave Embroidery
 ( 55677, 0x00,   6, 0x00000000, 0x00000001, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Glyph of Dispel Magic
 ( 55680, 0x00,   6, 0x00000200, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Glyph of Prayer of Healing
+( 55681, 0x00,   6, 0x00008000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Glyph of Shadow Word: Pain
 ( 55689, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002,   0,   0,   0), -- Glyph of Shadow
 ( 55747, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  45), -- Argent Fury
 ( 55768, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  45), -- Darkglow Embroidery
@@ -19382,6 +19396,8 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 71640, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  30), -- Corpse Tongue Coin (Heroic)
 ( 71642, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  45), -- Althor's Abacus (Heroic)
 ( 71645, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  45), -- Dislodged Foreign Object (Heroic)
+( 71880, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   1,   0,   0), -- Heartpierce
+( 71892, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   1,   0,   0), -- Heartpierce (Heroic)
 ( 72417, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  60), -- Item - Icecrown Reputation Ring Caster Trigger
 ( 72413, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  60), -- Item - Icecrown Reputation Ring Melee
 ( 72419, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  60), -- Item - Icecrown Reputation Ring Healer Trigger
@@ -27742,6 +27758,42 @@ INSERT INTO `trinity_string` (`entry`,`content_default`,`content_loc1`,`content_
 UNLOCK TABLES;
 
 --
+-- Table structure for table `vehicle_template_accessory`
+--
+
+DROP TABLE IF EXISTS `vehicle_template_accessory`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `vehicle_template_accessory` (
+  `entry` MEDIUMINT(8) UNSIGNED NOT NULL DEFAULT 0,
+  `accessory_entry` MEDIUMINT(8) UNSIGNED NOT NULL DEFAULT 0,
+  `seat_id` TINYINT(1) SIGNED NOT NULL DEFAULT 0,
+  `minion` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+  `description` TEXT NOT NULL,
+  PRIMARY KEY (`entry`, `seat_id`)
+)
+COLLATE=utf8_general_ci
+ENGINE=MyISAM
+ROW_FORMAT=FIXED
+AVG_ROW_LENGTH=0;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `vehicle_template_accessory`
+--
+
+LOCK TABLES `vehicle_template_accessory` WRITE;
+/*!40000 ALTER TABLE `vehicle_template_accessory` DISABLE KEYS */;
+INSERT INTO `vehicle_template_accessory` VALUES
+(36476,36477,0,0, 'Krick and Ick'),
+(36661,36658,0,0, 'Scourgelord Tyrannus and Rimefang'),
+(36891,31260,0,0, 'Ymirjar Skycaller on Drake'),
+(36678,38309,0,1, 'Professor Putricide - trigger'),
+(36678,38308,1,1, 'Professor Putricide - trigger');
+/*!40000 ALTER TABLE `vehicle_template_accessory` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `vehicle_accessory`
 --
 
@@ -27749,7 +27801,7 @@ DROP TABLE IF EXISTS `vehicle_accessory`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `vehicle_accessory` (
-  `entry` MEDIUMINT(8) UNSIGNED NOT NULL DEFAULT 0,
+  `guid` MEDIUMINT(8) UNSIGNED NOT NULL DEFAULT 0,
   `accessory_entry` MEDIUMINT(8) UNSIGNED NOT NULL DEFAULT 0,
   `seat_id` TINYINT(1) SIGNED NOT NULL DEFAULT 0,
   `minion` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
@@ -27768,12 +27820,6 @@ AVG_ROW_LENGTH=0;
 
 LOCK TABLES `vehicle_accessory` WRITE;
 /*!40000 ALTER TABLE `vehicle_accessory` DISABLE KEYS */;
-INSERT INTO `vehicle_accessory` VALUES
-(36476,36477,0,0, 'Krick and Ick'),
-(36661,36658,0,0, 'Scourgelord Tyrannus and Rimefang'),
-(36891,31260,0,0, 'Ymirjar Skycaller on Drake'),
-(36678,38309,0,1, 'Professor Putricide - trigger'),
-(36678,38308,1,1, 'Professor Putricide - trigger');
 /*!40000 ALTER TABLE `vehicle_accessory` ENABLE KEYS */;
 UNLOCK TABLES;
 

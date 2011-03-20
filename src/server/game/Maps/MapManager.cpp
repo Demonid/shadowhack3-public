@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
@@ -124,7 +125,6 @@ Map* MapManager::_createBaseMap(uint32 id)
 Map* MapManager::CreateMap(uint32 id, const WorldObject* obj, uint32 /*instanceId*/)
 {
     ASSERT(obj);
-    //if (!obj->IsInWorld()) sLog->outError("GetMap: called for map %d with object (typeid %d, guid %d, mapid %d, instanceid %d) who is not in world!", id, obj->GetTypeId(), obj->GetGUIDLow(), obj->GetMapId(), obj->GetInstanceId());
     Map *m = _createBaseMap(id);
 
     if (m && (obj->GetTypeId() == TYPEID_PLAYER) && m->Instanceable()) m = ((MapInstanced*)m)->CreateInstance(id, (Player*)obj);
@@ -187,7 +187,7 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
             // probably there must be special opcode, because client has this string constant in GlobalStrings.lua
             // TODO: this is not a good place to send the message
             player->GetSession()->SendAreaTriggerMessage(player->GetSession()->GetTrinityString(LANG_INSTANCE_RAID_GROUP_ONLY), mapName);
-            sLog->outDebug("MAP: Player '%s' must be in a raid group to enter instance '%s'", player->GetName(), mapName);
+            sLog->outDebug(LOG_FILTER_MAPS, "MAP: Player '%s' must be in a raid group to enter instance '%s'", player->GetName(), mapName);
             return false;
         }
     }
@@ -211,13 +211,13 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
             {
                 WorldPacket data(SMSG_CORPSE_NOT_IN_INSTANCE);
                 player->GetSession()->SendPacket(&data);
-                sLog->outDebug("MAP: Player '%s' does not have a corpse in instance '%s' and cannot enter.", player->GetName(), mapName);
+                sLog->outDebug(LOG_FILTER_MAPS, "MAP: Player '%s' does not have a corpse in instance '%s' and cannot enter.", player->GetName(), mapName);
                 return false;
             }
-            sLog->outDebug("MAP: Player '%s' has corpse in instance '%s' and can enter.", player->GetName(), mapName);
+            sLog->outDebug(LOG_FILTER_MAPS, "MAP: Player '%s' has corpse in instance '%s' and can enter.", player->GetName(), mapName);
         }
         else
-            sLog->outDebug("Map::CanPlayerEnter - player '%s' is dead but does not have a corpse!", player->GetName());
+            sLog->outDebug(LOG_FILTER_MAPS, "Map::CanPlayerEnter - player '%s' is dead but does not have a corpse!", player->GetName());
     }
 
     //Get instance where player's group is bound & its map
@@ -228,16 +228,6 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
             if (Map* boundMap = sMapMgr->FindMap(mapid, boundInstance->save->GetInstanceId()))
                 if (!loginCheck && !boundMap->CanEnter(player))
                     return false;
-            /*
-                This check has to be moved to InstanceMap::CanEnter()
-                // Player permanently bounded to different instance than groups one
-                InstancePlayerBind* playerBoundedInstance = player->GetBoundInstance(mapid, player->GetDifficulty(entry->IsRaid()));
-                if (playerBoundedInstance && playerBoundedInstance->perm && playerBoundedInstance->save &&
-                    boundedInstance->save->GetInstanceId() != playerBoundedInstance->save->GetInstanceId())
-                {
-                    //TODO: send some kind of error message to the player
-                    return false;
-                }*/
     }
 
     // players are only allowed to enter 5 instances per hour
@@ -297,7 +287,7 @@ bool MapManager::ExistMapAndVMap(uint32 mapid, float x,float y)
     int gx=63-p.x_coord;
     int gy=63-p.y_coord;
 
-    return Map::ExistMap(mapid,gx,gy) && Map::ExistVMap(mapid,gx,gy);
+    return GridMap::ExistMap(mapid,gx,gy) && GridMap::ExistVMap(mapid,gx,gy);
 }
 
 bool MapManager::IsValidMAP(uint32 mapid)

@@ -72,10 +72,10 @@ m_effectsToApply(effMask), m_removeMode(AURA_REMOVE_NONE), m_needClientUpdate(fa
             m_slot = slot;
             GetTarget()->SetVisibleAura(slot, this);
             SetNeedClientUpdate();
-            sLog->outDebug("Aura: %u Effect: %d put to unit visible auras slot: %u", GetBase()->GetId(), GetEffectMask(), slot);
+            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Aura: %u Effect: %d put to unit visible auras slot: %u", GetBase()->GetId(), GetEffectMask(), slot);
         }
         else
-            sLog->outDebug("Aura: %u Effect: %d could not find empty unit visible slot", GetBase()->GetId(), GetEffectMask());
+            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Aura: %u Effect: %d could not find empty unit visible slot", GetBase()->GetId(), GetEffectMask());
     }
 
     _InitFlags(caster, effMask);
@@ -154,7 +154,7 @@ void AuraApplication::_HandleEffect(uint8 effIndex, bool apply)
     ASSERT(aurEff);
     ASSERT(HasEffect(effIndex) == (!apply));
     ASSERT((1<<effIndex) & m_effectsToApply);
-    sLog->outDebug("AuraApplication::_HandleEffect: %u, apply: %u: amount: %u", aurEff->GetAuraType(), apply, aurEff->GetAmount());
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AuraApplication::_HandleEffect: %u, apply: %u: amount: %u", aurEff->GetAuraType(), apply, aurEff->GetAmount());
 
     if (apply)
     {
@@ -190,7 +190,7 @@ void AuraApplication::ClientUpdate(bool remove)
     {
         ASSERT(!m_target->GetVisibleAura(m_slot));
         data << uint32(0);
-        sLog->outDebug("Aura %u removed slot %u",GetBase()->GetId(), m_slot);
+        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Aura %u removed slot %u",GetBase()->GetId(), m_slot);
         m_target->SendMessageToSet(&data, true);
         return;
     }
@@ -315,10 +315,10 @@ Aura * Aura::Create(SpellEntry const* spellproto, uint8 effMask, WorldObject * o
     {
         case TYPEID_UNIT:
         case TYPEID_PLAYER:
-            aura = new UnitAura(spellproto,effMask,owner,caster,baseAmount,castItem, casterGUID);
+            aura = new UnitAura(spellproto, effMask, owner, caster, baseAmount, castItem, casterGUID);
             break;
         case TYPEID_DYNAMICOBJECT:
-            aura = new DynObjAura(spellproto,effMask,owner,caster,baseAmount,castItem, casterGUID);
+            aura = new DynObjAura(spellproto, effMask, owner, caster, baseAmount, castItem, casterGUID);
             break;
         default:
             ASSERT(false);
@@ -330,7 +330,7 @@ Aura * Aura::Create(SpellEntry const* spellproto, uint8 effMask, WorldObject * o
     return aura;
 }
 
-Aura::Aura(SpellEntry const* spellproto, uint8 effMask, WorldObject * owner, Unit * caster, int32 *baseAmount, Item * castItem, uint64 casterGUID):
+Aura::Aura(SpellEntry const* spellproto, WorldObject * owner, Unit * caster, Item * castItem, uint64 casterGUID) :
 m_spellProto(spellproto), m_casterGuid(casterGUID ? casterGUID : caster->GetGUID()),
 m_castItemGuid(castItem ? castItem->GetGUID() : 0), m_applyTime(time(NULL)),
 m_owner(owner), m_timeCla(0), m_updateTargetMapInterval(0),
@@ -1022,8 +1022,8 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                         if (target->GetTypeId() == TYPEID_PLAYER)
                             if (GameObject* obj = target->GetGameObject(48018))
                             {
-                                target->ToPlayer()->TeleportTo(obj->GetMapId(),obj->GetPositionX(),obj->GetPositionY(),obj->GetPositionZ(),obj->GetOrientation());
-                                target->ToPlayer()->RemoveMovementImpairingAuras();
+                              target->ToPlayer()->TeleportTo(obj->GetMapId(),obj->GetPositionX(),obj->GetPositionY(),obj->GetPositionZ(),obj->GetOrientation(), TELE_TO_NOT_LEAVE_COMBAT);
+                              target->ToPlayer()->RemoveMovementImpairingAuras();
                             }
                         break;
                 }
@@ -1196,8 +1196,8 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                 }
                 if (!caster)
                     break;
-                // Ice barrier - dispel/absorb remove
-                if (removeMode == AURA_REMOVE_BY_ENEMY_SPELL && GetSpellProto()->SpellFamilyFlags[1] & 0x1)
+                // Ice barrier - absorb remove
+                if (removeMode == AURA_REMOVE_BY_ENEMY_SPELL && GetSpellProto()->SpellFamilyFlags[1] & 0x1 && !GetEffect(0)->GetAmount())
                 {
                     // Shattered Barrier
                     if (caster->GetDummyAuraEffect(SPELLFAMILY_MAGE, 2945, 0))
@@ -1255,6 +1255,11 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                         if (spellId)
                             caster->CastSpell(target, spellId, true);
                     }
+                }
+                // Glyph of Shadowflame
+                else if (GetSpellProto()->SpellFamilyFlags[2] & 0x00000002 )
+                {
+                    target->RemoveAurasDueToSpell(63311, this->GetCasterGUID());
                 }
                 switch(GetId())
                 {
@@ -1479,6 +1484,20 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                         target->RemoveAurasDueToSpell(64364, GetCasterGUID());
                     break;
             }
+            if (GetSpellSpecific(GetSpellProto()) == SPELL_SPECIFIC_AURA)
+		{
+                // Improved devotion aura
+                if (caster->HasAura(20140) || caster->HasAura(20138) || caster->HasAura(20139))
+                    if (apply)
+                        target->CastSpell(target, 63514, true);
+                    else target->RemoveAura(63514);
+                // 63531 - linked aura for both Sanctified Retribution and Swift Retribution talents
+                // Not allow for Retribution Aura (prevent stacking)
+                if ((GetSpellProto()->SpellIconID != 555) && (caster->HasAura(53648) || caster->HasAura(53484) || caster->HasAura(53379) || caster->HasAura(31869)))
+                    if (apply)
+                        target->CastSpell(target, 63531, true);
+                    else target->RemoveAura(63531);
+            }
             break;
         case SPELLFAMILY_DEATHKNIGHT:
             if (GetSpellSpecific(GetSpellProto()) == SPELL_SPECIFIC_PRESENCE)
@@ -1592,6 +1611,16 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                         caster->RemoveAurasDueToSpell(200000);
                 }
             }
+            //Improved Health Funnel
+            if(GetSpellProto()->AttributesEx2 & SPELL_ATTR2_HEALTH_FUNNEL && target != caster)
+            {
+                uint32 ihf=caster->HasAura(18703)?60955:
+                    (caster->HasAura(18704)?60956:0);
+                if(apply)
+                    target->CastSpell(target, ihf, true, 0, 0, caster->GetGUID());
+                else
+                    target->RemoveAurasDueToSpell(ihf, caster->GetGUID());
+            }
             break;
     }
 }
@@ -1664,7 +1693,7 @@ void Aura::_DeleteRemovedApplications()
 
 void Aura::LoadScripts()
 {
-    sLog->outDebug("Aura::LoadScripts");
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Aura::LoadScripts");
     sScriptMgr->CreateAuraScripts(m_spellProto->Id, m_loadedScripts);
     for(std::list<AuraScript *>::iterator itr = m_loadedScripts.begin(); itr != m_loadedScripts.end() ;)
     {
@@ -1863,7 +1892,7 @@ void Aura::CallScriptEffectAfterManaShieldHandlers(AuraEffect * aurEff, AuraAppl
 }
 
 UnitAura::UnitAura(SpellEntry const* spellproto, uint8 effMask, WorldObject * owner, Unit * caster, int32 *baseAmount, Item * castItem, uint64 casterGUID)
-    : Aura(spellproto, effMask, owner, caster, baseAmount, castItem, casterGUID)
+    : Aura(spellproto, owner, caster, castItem, casterGUID)
 {
     m_AuraDRGroup = DIMINISHING_NONE;
     LoadScripts();
@@ -1876,8 +1905,10 @@ void UnitAura::_ApplyForTarget(Unit * target, Unit * caster, AuraApplication * a
     Aura::_ApplyForTarget(target, caster, aurApp);
 
     // register aura diminishing on apply
-    if (DiminishingGroup group = GetDiminishGroup())
-        target->ApplyDiminishingAura(group,true);
+    diminished = !GetDuration();
+    if(!diminished)
+        if (DiminishingGroup group = GetDiminishGroup())
+            target->ApplyDiminishingAura(group,true);
 }
 
 void UnitAura::_UnapplyForTarget(Unit * target, Unit * caster, AuraApplication * aurApp)
@@ -1885,8 +1916,9 @@ void UnitAura::_UnapplyForTarget(Unit * target, Unit * caster, AuraApplication *
     Aura::_UnapplyForTarget(target, caster, aurApp);
 
     // unregister aura diminishing (and store last time)
-    if (DiminishingGroup group = GetDiminishGroup())
-        target->ApplyDiminishingAura(group,false);
+    if(!diminished)
+        if (DiminishingGroup group = GetDiminishGroup())
+            target->ApplyDiminishingAura(group,false);
 }
 
 void UnitAura::Remove(AuraRemoveMode removeMode)
@@ -1975,7 +2007,7 @@ void UnitAura::FillTargetMap(std::map<Unit *, uint8> & targets, Unit * caster)
 }
 
 DynObjAura::DynObjAura(SpellEntry const* spellproto, uint8 effMask, WorldObject * owner, Unit * caster, int32 *baseAmount, Item * castItem, uint64 casterGUID)
-    : Aura(spellproto, effMask, owner, caster, baseAmount, castItem, casterGUID)
+    : Aura(spellproto, owner, caster, castItem, casterGUID)
 {
     LoadScripts();
     ASSERT(GetDynobjOwner());

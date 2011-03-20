@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
@@ -444,29 +445,32 @@ enum DeathState
 
 enum UnitState
 {
-    UNIT_STAT_DIED            = 0x00000001,
-    UNIT_STAT_MELEE_ATTACKING = 0x00000002,                     // player is melee attacking someone
+    UNIT_STAT_DIED                = 0x00000001,
+    UNIT_STAT_MELEE_ATTACKING     = 0x00000002,                     // player is melee attacking someone
     //UNIT_STAT_MELEE_ATTACK_BY = 0x00000004,                     // player is melee attack by someone
-    UNIT_STAT_STUNNED         = 0x00000008,
-    UNIT_STAT_ROAMING         = 0x00000010,
-    UNIT_STAT_CHASE           = 0x00000020,
+    UNIT_STAT_STUNNED             = 0x00000008,
+    UNIT_STAT_ROAMING             = 0x00000010,
+    UNIT_STAT_CHASE               = 0x00000020,
     //UNIT_STAT_SEARCHING       = 0x00000040,
-    UNIT_STAT_FLEEING         = 0x00000080,
-    UNIT_STAT_IN_FLIGHT       = 0x00000100,                     // player is in flight mode
-    UNIT_STAT_FOLLOW          = 0x00000200,
-    UNIT_STAT_ROOT            = 0x00000400,
-    UNIT_STAT_CONFUSED        = 0x00000800,
-    UNIT_STAT_DISTRACTED      = 0x00001000,
-    UNIT_STAT_ISOLATED        = 0x00002000,                     // area auras do not affect other players
-    UNIT_STAT_ATTACK_PLAYER   = 0x00004000,
-    UNIT_STAT_CASTING         = 0x00008000,
-    UNIT_STAT_POSSESSED       = 0x00010000,
-    UNIT_STAT_CHARGING        = 0x00020000,
-    UNIT_STAT_JUMPING         = 0x00040000,
-    UNIT_STAT_ONVEHICLE       = 0x00080000,
-    UNIT_STAT_MOVE            = 0x00100000,
-    UNIT_STAT_ROTATING        = 0x00200000,
-    UNIT_STAT_EVADE           = 0x00400000,
+    UNIT_STAT_FLEEING             = 0x00000080,
+    UNIT_STAT_IN_FLIGHT           = 0x00000100,                     // player is in flight mode
+    UNIT_STAT_FOLLOW              = 0x00000200,
+    UNIT_STAT_ROOT                = 0x00000400,
+    UNIT_STAT_CONFUSED            = 0x00000800,
+    UNIT_STAT_DISTRACTED          = 0x00001000,
+    UNIT_STAT_ISOLATED            = 0x00002000,                     // area auras do not affect other players
+    UNIT_STAT_ATTACK_PLAYER       = 0x00004000,
+    UNIT_STAT_CASTING             = 0x00008000,
+    UNIT_STAT_POSSESSED           = 0x00010000,
+    UNIT_STAT_CHARGING            = 0x00020000,
+    UNIT_STAT_JUMPING             = 0x00040000,
+    UNIT_STAT_ONVEHICLE           = 0x00080000,
+    UNIT_STAT_MOVE                = 0x00100000,
+    UNIT_STAT_ROTATING            = 0x00200000,
+    UNIT_STAT_EVADE               = 0x00400000,
+    UNIT_STAT_TIMED_EVADE         = 0x00800000,
+    UNIT_STAT_IGNORE_PATHFINDING  = 0x08000000,
+
     UNIT_STAT_UNATTACKABLE    = (UNIT_STAT_IN_FLIGHT | UNIT_STAT_ONVEHICLE),
     UNIT_STAT_MOVING          = (UNIT_STAT_ROAMING | UNIT_STAT_CHASE),
     UNIT_STAT_CONTROLLED      = (UNIT_STAT_CONFUSED | UNIT_STAT_STUNNED | UNIT_STAT_FLEEING),
@@ -474,6 +478,12 @@ enum UnitState
     UNIT_STAT_SIGHTLESS       = (UNIT_STAT_LOST_CONTROL | UNIT_STAT_EVADE),
     UNIT_STAT_CANNOT_AUTOATTACK     = (UNIT_STAT_LOST_CONTROL | UNIT_STAT_CASTING),
     UNIT_STAT_CANNOT_TURN     = (UNIT_STAT_LOST_CONTROL | UNIT_STAT_ROTATING),
+
+    UNIT_STAT_CAN_NOT_REACT   = (UNIT_STAT_STUNNED | UNIT_STAT_DIED | UNIT_STAT_CONFUSED | UNIT_STAT_FLEEING | UNIT_STAT_CHARGING),
+    UNIT_STAT_CAN_NOT_REACT_OR_LOST_CONTROL  = (UNIT_STAT_CAN_NOT_REACT | UNIT_STAT_LOST_CONTROL),
+
+    UNIT_STAT_NOT_MOVE        = (UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DIED | UNIT_STAT_DISTRACTED),
+
     UNIT_STAT_ALL_STATE       = 0xffffffff                      //(UNIT_STAT_STOPPED | UNIT_STAT_MOVING | UNIT_STAT_IN_COMBAT | UNIT_STAT_IN_FLIGHT)
 };
 
@@ -556,7 +566,7 @@ enum UnitFlags
     UNIT_FLAG_UNK_6                 = 0x00000040,
     UNIT_FLAG_NOT_ATTACKABLE_1      = 0x00000080,           // ?? (UNIT_FLAG_PVP_ATTACKABLE | UNIT_FLAG_NOT_ATTACKABLE_1) is NON_PVP_ATTACKABLE
     UNIT_FLAG_OOC_NOT_ATTACKABLE    = 0x00000100,           // 2.0.8 - (OOC Out Of Combat) Can not be attacked when not in combat. Removed if unit for some reason enter combat.
-    UNIT_FLAG_UNK_9                 = 0x00000200,           // 3.0.3 - makes you unable to attack everything
+    UNIT_FLAG_PASSIVE               = 0x00000200,           // makes you unable to attack everything. Almost identical to our "civilian"-term. Will ignore it's surroundings and not engage in combat unless "called upon" or engaged by another unit.
     UNIT_FLAG_LOOTING               = 0x00000400,           // loot animation
     UNIT_FLAG_PET_IN_COMBAT         = 0x00000800,           // in combat?, 2.0.8
     UNIT_FLAG_PVP                   = 0x00001000,           // changed in 3.0.3
@@ -622,7 +632,7 @@ enum NPCFlags
     UNIT_NPC_FLAG_AUCTIONEER            = 0x00200000,       // 100%
     UNIT_NPC_FLAG_STABLEMASTER          = 0x00400000,       // 100%
     UNIT_NPC_FLAG_GUILD_BANKER          = 0x00800000,       // cause client to send 997 opcode
-    UNIT_NPC_FLAG_SPELLCLICK            = 0x01000000,       // cause client to send 1015 opcode (spell click), dynamic, set at loading and don't must be set in DB
+    UNIT_NPC_FLAG_SPELLCLICK            = 0x01000000,       // cause client to send 1015 opcode (spell click)
     UNIT_NPC_FLAG_PLAYER_VEHICLE        = 0x02000000,       // players with mounts that have vehicle data should have it set
 };
 
@@ -721,7 +731,7 @@ enum SplineFlags
     SPLINEFLAG_UNKNOWN22      = 0x00200000,
     SPLINEFLAG_UNKNOWN23      = 0x00400000,
     SPLINEFLAG_TRANSPORT      = 0x00800000,
-    SPLINEFLAG_UNKNOWN25      = 0x01000000,
+    SPLINEFLAG_EXIT_VEHICLE   = 0x01000000,
     SPLINEFLAG_UNKNOWN26      = 0x02000000,
     SPLINEFLAG_UNKNOWN27      = 0x04000000,
     SPLINEFLAG_UNKNOWN28      = 0x08000000,
@@ -937,6 +947,30 @@ enum CurrentSpellTypes
 #define CURRENT_FIRST_NON_MELEE_SPELL 1
 #define CURRENT_MAX_SPELL             4
 
+struct GlobalCooldown
+{
+    explicit GlobalCooldown(uint32 _dur = 0, uint32 _time = 0) : duration(_dur), cast_time(_time) {}
+
+    uint32 duration;
+    uint32 cast_time;
+};
+
+typedef UNORDERED_MAP<uint32 /*category*/, GlobalCooldown> GlobalCooldownList;
+
+class GlobalCooldownMgr                                     // Shared by Player and CharmInfo
+{
+public:
+    GlobalCooldownMgr() {}
+
+public:
+    bool HasGlobalCooldown(SpellEntry const* spellInfo) const;
+    void AddGlobalCooldown(SpellEntry const* spellInfo, uint32 gcd);
+    void CancelGlobalCooldown(SpellEntry const* spellInfo);
+
+private:
+    GlobalCooldownList m_GlobalCooldowns;
+};
+
 enum ActiveStates
 {
     ACT_PASSIVE  = 0x01,                                    // 0x01 - passive
@@ -1032,9 +1066,6 @@ struct CharmInfo
         void SetCommandState(CommandStates st) { m_CommandState = st; }
         CommandStates GetCommandState() const { return m_CommandState; }
         bool HasCommandState(CommandStates state) const { return (m_CommandState == state); }
-        //void SetReactState(ReactStates st) { m_reactState = st; }
-        //ReactStates GetReactState() { return m_reactState; }
-        //bool HasReactState(ReactStates state) { return (m_reactState == state); }
 
         void InitPossessCreateSpells();
         void InitCharmCreateSpells();
@@ -1068,6 +1099,8 @@ struct CharmInfo
         void SaveStayPosition();
         void GetStayPosition(float &x, float &y, float &z);
 
+        GlobalCooldownMgr& GetGlobalCooldownMgr() { return m_GlobalCooldownMgr; }
+
     private:
 
         Unit* m_unit;
@@ -1088,6 +1121,8 @@ struct CharmInfo
         float m_stayX;
         float m_stayY;
         float m_stayZ;
+
+        GlobalCooldownMgr m_GlobalCooldownMgr;
 };
 
 // for clearing special attacks
@@ -1227,6 +1262,7 @@ class Unit : public WorldObject
         bool isHunterPet() const{ return m_unitTypeMask & UNIT_MASK_HUNTER_PET; }
         bool isTotem() const    { return m_unitTypeMask & UNIT_MASK_TOTEM; }
         bool IsVehicle() const  { return m_unitTypeMask & UNIT_MASK_VEHICLE; }
+        bool IsGuardianPetStuff() const { return m_unitTypeMask & (UNIT_MASK_SUMMON|UNIT_MASK_GUARDIAN|UNIT_MASK_PET|UNIT_MASK_HUNTER_PET|UNIT_MASK_TOTEM); } 
 
         uint8 getLevel() const { return uint8(GetUInt32Value(UNIT_FIELD_LEVEL)); }
         uint8 getLevelForTarget(WorldObject const* /*target*/) const { return getLevel(); }
@@ -1486,6 +1522,7 @@ class Unit : public WorldObject
         bool SetPosition(const Position &pos, bool teleport = false) { return SetPosition(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), teleport); }
 
         void KnockbackFrom(float x, float y, float speedXY, float speedZ);
+        void KnockBackWithAngle(float angle, float horizontalSpeed, float verticalSpeed);
         void JumpTo(float speedXY, float speedZ, bool forward = true);
         void JumpTo(WorldObject *obj, float speedZ);
 
@@ -1493,19 +1530,27 @@ class Unit : public WorldObject
         void SendMonsterStop(bool on_death = false);
         void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 Time, Player* player = NULL);
         void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 MoveFlags, uint32 time, float speedZ, Player *player = NULL);
+        void SendMonsterMoveExitVehicle(Position const* newPos);
         //void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint8 type, uint32 MovementFlags, uint32 Time, Player* player = NULL);
         void SendMonsterMoveTransport(Unit *vehicleOwner);
         void SendMonsterMoveWithSpeed(float x, float y, float z, uint32 transitTime = 0, Player* player = NULL);
         void SendMonsterMoveWithSpeedToCurrentDestination(Player* player = NULL);
         void SendMovementFlagUpdate();
 
+
+        void MonsterMoveByPath(float x, float y, float z, uint32 speed, bool smoothPath = true);
+
         template<typename PathElem, typename PathNode>
-        void SendMonsterMoveByPath(Path<PathElem,PathNode> const& path, uint32 start, uint32 end);
+        void MonsterMoveByPath(Path<PathElem,PathNode> const& path, uint32 start, uint32 end, uint32 transitTime = 0);
+        template<typename PathElem, typename PathNode>
+        void SendMonsterMoveByPath(Path<PathElem,PathNode> const& path, uint32 start, uint32 end, uint32 traveltime);
 
         void SendChangeCurrentVictimOpcode(HostileReference* pHostileReference);
         void SendClearThreatListOpcode();
         void SendRemoveFromThreatListOpcode(HostileReference* pHostileReference);
         void SendThreatListUpdate();
+
+        void SendClearTarget();
 
         void BuildHeartBeatMsg(WorldPacket *data) const;
 
@@ -1811,7 +1856,7 @@ class Unit : public WorldObject
         void SetFacingToObject(WorldObject* pObject);
 
         // Visibility system
-        bool IsVisible() const { return (m_serverSideVisibility.GetValue(SERVERSIDE_VISIBILITY_GM) > SEC_PLAYER) ? false : true; }
+        bool IsVisible() const { return (m_serverSideVisibility.GetValue(SERVERSIDE_VISIBILITY_GM) > SEC_MODERATOR) ? false : true; }
         void SetVisible(bool x);
 
         // common function for visibility checks for player/creatures with detection code
@@ -1972,6 +2017,7 @@ class Unit : public WorldObject
         // reactive attacks
         void ClearAllReactives();
         void StartReactiveTimer(ReactiveType reactive) { m_reactiveTimer[reactive] = REACTIVE_TIMER_START;}
+        bool HasReactiveTimer ( ReactiveType reactive )	{return m_reactiveTimer[reactive] > 0;}	
         void UpdateReactives(uint32 p_time);
 
         // group updates
@@ -2008,7 +2054,7 @@ class Unit : public WorldObject
         Unit *GetMisdirectionTarget() { return m_misdirectionTargetGUID ? GetUnit(*this, m_misdirectionTargetGUID) : NULL; }
 
         bool IsAIEnabled, NeedChangeAI;
-        bool CreateVehicleKit(uint32 id);
+        bool CreateVehicleKit(uint32 id, uint32 creatureEntry);
         void RemoveVehicleKit();
         Vehicle *GetVehicleKit()const { return m_vehicleKit; }
         Vehicle *GetVehicle()   const { return m_vehicle; }
@@ -2026,10 +2072,14 @@ class Unit : public WorldObject
         bool m_ControlledByPlayer;
 
         bool CheckPlayerCondition(Player* pPlayer);
-        void EnterVehicle(Unit *base, int8 seatId = -1, AuraApplication const * aurApp = NULL) { EnterVehicle(base->GetVehicleKit(), seatId, aurApp); }
-        void EnterVehicle(Vehicle *vehicle, int8 seatId = -1, AuraApplication const * aurApp = NULL);
-        void ExitVehicle();
-        void ChangeSeat(int8 seatId, bool next = true, bool byAura = false);
+        bool HandleSpellClick(Unit* clicker, int8 seatId = -1);
+        void EnterVehicle(Unit *base, int8 seatId = -1);
+        void ExitVehicle(Position const* exitPosition = NULL);
+        void ChangeSeat(int8 seatId, bool next = true);
+
+        // Should only be called by AuraEffect::HandleAuraControlVehicle(AuraApplication const* auraApp, uint8 mode, bool apply) const;
+        void _ExitVehicle(Position const* exitPosition = NULL);
+        void _EnterVehicle(Vehicle* vehicle, int8 seatId, AuraApplication const* aurApp = NULL);
 
         void BuildMovementPacket(ByteBuffer *data) const;
 
@@ -2046,6 +2096,9 @@ class Unit : public WorldObject
         void OutDebugInfo() const;
         virtual bool isBeingLoaded() const { return false;}
         bool IsDuringRemoveFromWorld() const {return m_duringRemoveFromWorld;}
+
+        bool IsTargetReachable(Unit const* target) const;
+        bool IsDestinationReachable(float x, float y, float z) const;
 
         Pet* ToPet(){ if (isPet()) return reinterpret_cast<Pet*>(this); else return NULL; }
         Totem* ToTotem(){ if (isTotem()) return reinterpret_cast<Totem*>(this); else return NULL; }
@@ -2207,30 +2260,5 @@ namespace Trinity
     };
 }
 
-template<typename Elem, typename Node>
-inline void Unit::SendMonsterMoveByPath(Path<Elem,Node> const& path, uint32 start, uint32 end)
-{
-    uint32 traveltime = uint32(path.GetTotalLength(start, end) * 32);
-    uint32 pathSize = end - start;
-    WorldPacket data(SMSG_MONSTER_MOVE, (GetPackGUID().size()+1+4+4+4+4+1+4+4+4+pathSize*4*3));
-    data.append(GetPackGUID());
-    data << uint8(0);
-    data << GetPositionX();
-    data << GetPositionY();
-    data << GetPositionZ();
-    data << uint32(getMSTime());
-    data << uint8(0);
-    data << uint32(((GetUnitMovementFlags() & MOVEMENTFLAG_LEVITATING) || isInFlight()) ? (SPLINEFLAG_FLYING|SPLINEFLAG_WALKING) : SPLINEFLAG_WALKING);
-    data << uint32(traveltime);
-    data << uint32(pathSize);
 
-    for (uint32 i = start; i < end; ++i)
-    {
-        data << float(path[i].x);
-        data << float(path[i].y);
-        data << float(path[i].z);
-    }
-
-    SendMessageToSet(&data, true);
-}
 #endif

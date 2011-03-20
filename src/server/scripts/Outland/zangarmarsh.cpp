@@ -301,7 +301,7 @@ public:
 
 enum eKayra
 {
-    SAY_START           = -1000343,
+    SAY_START           = -1000343, //DB: old at -1000360
     SAY_AMBUSH1         = -1000344,
     SAY_PROGRESS        = -1000345,
     SAY_AMBUSH2         = -1000346,

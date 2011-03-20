@@ -96,7 +96,8 @@ public:
 
         void JustSummoned(Creature* pSummoned)
         {
-            if (Player* pPlayer = GetPlayerForEscort())
+            Player* pPlayer = GetPlayerForEscort();
+            if (pPlayer && pSummoned->AI())
                 pSummoned->AI()->AttackStart(pPlayer);
         }
 
@@ -117,8 +118,7 @@ public:
             {
                 if (Player* pPlayer = GetPlayerForEscort())
                 {
-                    if (pPlayer->GetTypeId() == TYPEID_PLAYER)
-                        CAST_PLR(pPlayer)->GroupEventHappens(QUEST_MISSING_DIPLO_PT11, me);
+                    pPlayer->GroupEventHappens(QUEST_MISSING_DIPLO_PT11, me);
 
                     uiDamage = 0;
 

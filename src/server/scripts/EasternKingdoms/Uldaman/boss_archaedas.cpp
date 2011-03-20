@@ -115,7 +115,7 @@ class boss_archaedas : public CreatureScript
             void SpellHit(Unit* /*caster*/, const SpellEntry *spell)
             {
                 // Being woken up from the altar, start the awaken sequence
-                if (spell == GetSpellStore()->LookupEntry(SPELL_ARCHAEDAS_AWAKEN))
+                if (spell->Id == SPELL_ARCHAEDAS_AWAKEN)
                 {
                     me->MonsterYell(SAY_AGGRO,LANG_UNIVERSAL,NULL);
                     DoPlaySoundToSet(me,SOUND_AGGRO);
@@ -269,7 +269,7 @@ class mob_archaedas_minions : public CreatureScript
 
             void SpellHit (Unit* /*caster*/, const SpellEntry *spell) {
                 // time to wake up, start animation
-                if (spell == GetSpellStore()->LookupEntry(SPELL_ARCHAEDAS_AWAKEN))
+                if (spell->Id == SPELL_ARCHAEDAS_AWAKEN)
                 {
                     iAwakenTimer = 5000;
                     bWakingUp = true;

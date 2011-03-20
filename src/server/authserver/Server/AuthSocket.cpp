@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
@@ -213,7 +214,7 @@ void AuthSocket::OnAccept(void)
 
 void AuthSocket::OnClose(void)
 {
-    sLog->outDebug("AuthSocket::OnClose");
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "AuthSocket::OnClose");
 }
 
 // Read the packet from the client
@@ -394,6 +395,9 @@ bool AuthSocket::_HandleLogonChallenge()
                 //set expired bans to inactive
                 LoginDatabase.Execute(LoginDatabase.GetPreparedStatement(LOGIN_SET_EXPIREDACCBANS));
 
+				//set expired premiums to inactive
+				LoginDatabase.Execute(LoginDatabase.GetPreparedStatement(LOGIN_SET_EXPIREDACCPREM));
+
                 // If the account is banned, reject the logon attempt
                 stmt = LoginDatabase.GetPreparedStatement(LOGIN_GET_ACCBANNED);
                 stmt->setUInt32(0, fields[1].GetUInt32());
@@ -420,7 +424,7 @@ bool AuthSocket::_HandleLogonChallenge()
                     std::string databaseV = fields[5].GetString();
                     std::string databaseS = fields[6].GetString();
 
-                    sLog->outDebug("database authentication values: v='%s' s='%s'", databaseV.c_str(), databaseS.c_str());
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "database authentication values: v='%s' s='%s'", databaseV.c_str(), databaseS.c_str());
 
                     // multiply with 2 since bytes are stored as hexstring
                     if (databaseV.size() != s_BYTE_SIZE * 2 || databaseS.size() != s_BYTE_SIZE * 2)
@@ -505,7 +509,7 @@ bool AuthSocket::_HandleLogonProof()
     if (_expversion == NO_VALID_EXP_FLAG)
     {
         // Check if we have the appropriate patch on the disk
-        sLog->outDebug("Client with invalid version, patching is not implemented");
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "Client with invalid version, patching is not implemented");
         socket().shutdown();
         return true;
     }
@@ -1017,7 +1021,7 @@ void Patcher::LoadPatchMD5(char *szFileName)
     std::string path = "./patches/";
     path += szFileName;
     FILE *pPatch = fopen(path.c_str(), "rb");
-    sLog->outDebug("Loading patch info from %s\n", path.c_str());
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "Loading patch info from %s\n", path.c_str());
 
     if (!pPatch)
     {
