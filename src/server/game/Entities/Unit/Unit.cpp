@@ -14555,7 +14555,7 @@ bool InitTriggerAuraData()
     isAlwaysTriggeredAura[SPELL_AURA_MOD_ROOT] = true;
     isAlwaysTriggeredAura[SPELL_AURA_MOD_STUN] = true;
     isAlwaysTriggeredAura[SPELL_AURA_TRANSFORM] = true;
-    isAlwaysTriggeredAura[SPELL_AURA_SPELL_MAGNET] = true;
+    //isAlwaysTriggeredAura[SPELL_AURA_SPELL_MAGNET] = true;
     isAlwaysTriggeredAura[SPELL_AURA_SCHOOL_ABSORB] = true;
     isAlwaysTriggeredAura[SPELL_AURA_MOD_STEALTH] = true;
 
