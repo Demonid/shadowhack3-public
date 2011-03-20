@@ -5038,8 +5038,8 @@ bool Unit::HandleHasteAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                 case 13877:
                 case 33735:
                 {
-                    target = SelectNearbyTarget();
-                    if (!target || target == pVictim)
+                    target = SelectNearbyTarget(5, pVictim);
+                    if (!target)
                         return false;
                     basepoints0 = damage;
                     triggered_spell_id = 22482;
@@ -5199,8 +5199,8 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                 case 18765:
                 case 35429:
                 {
-                    target = SelectNearbyTarget();
-                    if (!target || target == pVictim)
+                    target = SelectNearbyTarget(5, pVictim);
+                    if (!target)
                         return false;
 
                     triggered_spell_id = 26654;
@@ -5932,11 +5932,8 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                 {
                     if(procSpell && procSpell->Id == 50622)
                         return false;
-                    target = SelectNearbyTarget();
+                    SelectNearbyTarget(5, pVictim);
                     if (!target)
-                        return false;
-
-                    if(target == pVictim)
                         return false;
                     if (procSpell && procSpell->Id == 50622)
                         this->ToPlayer()->AddSpellCooldown(12328, 0, time(NULL) + 0.5);
@@ -6008,8 +6005,8 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                 if (!pVictim || !pVictim->isAlive() || !procSpell)
                     return false;
 
-                target = SelectNearbyTarget();
-                if (!target || target == pVictim)
+                target = SelectNearbyTarget(5, pVictim);
+                if (!target)
                     return false;
 
                 CastSpell(target, 58567, true);
@@ -15217,7 +15214,7 @@ void Unit::UpdateReactives(uint32 p_time)
     }
 }
 
-Unit* Unit::SelectNearbyTarget(float dist) const
+Unit* Unit::SelectNearbyTarget(float dist, Unit * except) const
 {
     std::list<Unit *> targets;
     Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(this, this, dist);
@@ -15225,8 +15222,8 @@ Unit* Unit::SelectNearbyTarget(float dist) const
     VisitNearbyObject(dist, searcher);
 
     // remove current target
-    if (getVictim())
-        targets.remove(getVictim());
+    if (except)
+        targets.remove(except);
 
     // remove not LoS targets
     for (std::list<Unit *>::iterator tIter = targets.begin(); tIter != targets.end();)
