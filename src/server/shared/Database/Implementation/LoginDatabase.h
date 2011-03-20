@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -45,6 +46,7 @@ enum LoginDatabaseStatements
     LOGIN_GET_REALMLIST,
     LOGIN_SET_EXPIREDIPBANS,
     LOGIN_SET_EXPIREDACCBANS,
+    LOGIN_SET_EXPIREDACCPREM,
     LOGIN_GET_IPBANNED,
     LOGIN_SET_IPAUTOBANNED,
     LOGIN_GET_ACCBANNED,

@@ -226,7 +226,7 @@ public:
                 pInst->SetData(DATA_CTHUN_PHASE, PHASE_NOT_STARTED);
 
             //to avoid having a following void zone
-            Creature* pPortal= me->FindNearestCreature(MOB_CTHUN_PORTAL, 10);
+            Creature* pPortal= me->FindNearestCreature(MOB_CTHUN_PORTAL, 10.0f);
             if (pPortal)
                 pPortal->SetReactState(REACT_PASSIVE);
         }
@@ -240,8 +240,8 @@ public:
 
         void SpawnEyeTentacle(float x, float y)
         {
-            if (Creature* Spawned = DoSpawnCreature(MOB_EYE_TENTACLE, x, y, 0, 0, TEMPSUMMON_CORPSE_DESPAWN, 500))
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if (Creature* Spawned = DoSpawnCreature(MOB_EYE_TENTACLE, x, y, 0.0f, 0.0f, TEMPSUMMON_CORPSE_DESPAWN, 500))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                     if (Spawned->AI())
                         Spawned->AI()->AttackStart(pTarget);
         }
@@ -263,15 +263,15 @@ public:
                 if (EyeTentacleTimer <= diff)
                 {
                     //Spawn the 8 Eye Tentacles in the corret spots
-                    SpawnEyeTentacle(0, 20);                //south
-                    SpawnEyeTentacle(10, 10);               //south west
-                    SpawnEyeTentacle(20, 0);                //west
-                    SpawnEyeTentacle(10, -10);              //north west
+                    SpawnEyeTentacle(0.0f, 20.0f);                //south
+                    SpawnEyeTentacle(10.0f, 10.0f);               //south west
+                    SpawnEyeTentacle(20.0f, 0.0f);                //west
+                    SpawnEyeTentacle(10.0f, -10.0f);              //north west
 
-                    SpawnEyeTentacle(0, -20);               //north
-                    SpawnEyeTentacle(-10, -10);             //north east
-                    SpawnEyeTentacle(-20, 0);               // east
-                    SpawnEyeTentacle(-10, 10);              // south east
+                    SpawnEyeTentacle(0.0f, -20.0f);               //north
+                    SpawnEyeTentacle(-10.0f, -10.0f);             //north east
+                    SpawnEyeTentacle(-20.0f, 0.0f);               // east
+                    SpawnEyeTentacle(-10.0f, 10.0f);              // south east
 
                     EyeTentacleTimer = 45000;
                 } else EyeTentacleTimer -= diff;
@@ -284,7 +284,7 @@ public:
                     if (BeamTimer <= diff)
                     {
                         //SPELL_GREEN_BEAM
-                        if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                        if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                         {
                             me->InterruptNonMeleeSpells(false);
                             DoCast(pTarget, SPELL_GREEN_BEAM);
@@ -300,7 +300,7 @@ public:
                     //ClawTentacleTimer
                     if (ClawTentacleTimer <= diff)
                     {
-                        if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                        if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                         {
                             Creature* Spawned = NULL;
 
@@ -328,7 +328,7 @@ public:
                         me->SetUInt64Value(UNIT_FIELD_TARGET, 0);
 
                         //Select random target for dark beam to start on
-                        if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                         {
                             //Face our target
                             DarkGlareAngle = me->GetAngle(pTarget);
@@ -556,7 +556,7 @@ public:
         void SpawnEyeTentacle(float x, float y)
         {
             Creature* Spawned;
-            Spawned = DoSpawnCreature(MOB_EYE_TENTACLE, x, y, 0, 0, TEMPSUMMON_CORPSE_DESPAWN, 500);
+            Spawned = DoSpawnCreature(MOB_EYE_TENTACLE, x, y, 0.0f, 0.0f, TEMPSUMMON_CORPSE_DESPAWN, 500);
             if (Spawned && Spawned->AI())
                 if (Unit *pTarget = SelectRandomNotStomach())
                     Spawned->AI()->AttackStart(pTarget);
@@ -641,15 +641,15 @@ public:
                 if (EyeTentacleTimer <= diff)
                 {
                     //Spawn the 8 Eye Tentacles in the corret spots
-                    SpawnEyeTentacle(0, 20);                //south
-                    SpawnEyeTentacle(10, 10);               //south west
-                    SpawnEyeTentacle(20, 0);                //west
-                    SpawnEyeTentacle(10, -10);              //north west
+                    SpawnEyeTentacle(0.0f, 20.0f);                //south
+                    SpawnEyeTentacle(10.0f, 10.0f);               //south west
+                    SpawnEyeTentacle(20.0f, 0.0f);                //west
+                    SpawnEyeTentacle(10.0f, -10.0f);              //north west
 
-                    SpawnEyeTentacle(0, -20);               //north
-                    SpawnEyeTentacle(-10, -10);             //north east
-                    SpawnEyeTentacle(-20, 0);               // east
-                    SpawnEyeTentacle(-10, 10);              // south east
+                    SpawnEyeTentacle(0.0f, -20.0f);               //north
+                    SpawnEyeTentacle(-10.0f, -10.0f);             //north east
+                    SpawnEyeTentacle(-20.0f, 0.0f);               // east
+                    SpawnEyeTentacle(-10.0f, 10.0f);              // south east
 
                     EyeTentacleTimer = 30000; // every 30sec in phase 2
                 } else EyeTentacleTimer -= diff;
@@ -988,7 +988,7 @@ public:
             //MindflayTimer
             if (MindflayTimer <= diff)
             {
-                Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,0);
+                Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0);
                 if (pTarget && !pTarget->HasAura(SPELL_DIGESTIVE_ACID))
                     DoCast(pTarget, SPELL_MIND_FLAY);
 
@@ -1064,7 +1064,7 @@ public:
                     //Dissapear and reappear at new position
                     me->SetVisible(false);
 
-                    Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,0);
+                    Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0);
                     if (!pTarget)
                     {
                         me->Kill(me);
@@ -1073,7 +1073,7 @@ public:
 
                     if (!pTarget->HasAura(SPELL_DIGESTIVE_ACID))
                     {
-                        me->GetMap()->CreatureRelocation(me, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), 0);
+                        me->GetMap()->CreatureRelocation(me, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), 0.0f);
                         if (Creature* pPortal = me->SummonCreature(MOB_SMALL_PORTAL, *me, TEMPSUMMON_CORPSE_DESPAWN))
                         {
                             pPortal->SetReactState(REACT_PASSIVE);
@@ -1176,7 +1176,7 @@ public:
                     //Dissapear and reappear at new position
                     me->SetVisible(false);
 
-                    Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                    Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
                     if (!pTarget)
                     {
                         me->Kill(me);
@@ -1185,7 +1185,7 @@ public:
 
                     if (!pTarget->HasAura(SPELL_DIGESTIVE_ACID))
                     {
-                        me->GetMap()->CreatureRelocation(me, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), 0);
+                        me->GetMap()->CreatureRelocation(me, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), 0.0f);
                         if (Creature* pPortal = me->SummonCreature(MOB_GIANT_PORTAL, *me, TEMPSUMMON_CORPSE_DESPAWN))
                         {
                             pPortal->SetReactState(REACT_PASSIVE);
@@ -1281,7 +1281,7 @@ public:
             //BeamTimer
             if (BeamTimer <= diff)
             {
-                Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,0);
+                Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0);
                 if (pTarget && !pTarget->HasAura(SPELL_DIGESTIVE_ACID))
                     DoCast(pTarget, SPELL_GREEN_BEAM);
 

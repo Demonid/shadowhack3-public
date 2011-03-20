@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
@@ -154,11 +155,15 @@ m_formation(NULL)
 
     m_CreatureSpellCooldowns.clear();
     m_CreatureCategoryCooldowns.clear();
+
     DisableReputationGain = false;
     //m_unit_movement_flags = MONSTER_MOVE_WALK;
 
     m_SightDistance = sWorld->getFloatConfig(CONFIG_SIGHT_MONSTER);
     m_CombatDistance = 0;//MELEE_RANGE;
+
+    m_lastEvadeCheck = 0;
+    singleAndUnreachableTarget = true;
 
     ResetLootMode(); // restore default loot mode
     TriggerJustRespawned = false;
@@ -409,7 +414,8 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData *data)
     if (isTrigger())
         SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
 
-    InitializeReactState();
+    if (!GetOwner() || GetOwner()->GetTypeId() != TYPEID_PLAYER)
+        InitializeReactState();
 
     if (cInfo->flags_extra & CREATURE_FLAG_EXTRA_NO_TAUNT)
     {
@@ -1251,7 +1257,7 @@ bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, uint32 vehId, uint3
     if (!vehId)
         vehId = cinfo->VehicleId;
 
-    if (vehId && !CreateVehicleKit(vehId))
+    if (vehId && !CreateVehicleKit(vehId, Entry))
         vehId = 0;
 
     Object::_Create(guidlow, Entry, vehId ? HIGHGUID_VEHICLE : HIGHGUID_UNIT);
@@ -1425,6 +1431,9 @@ bool Creature::canStartAttack(Unit const* who, bool force) const
     if (isCivilian())
         return false;
 
+    if (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PASSIVE))
+        return false;
+
     if (!canFly() && (GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE + m_CombatDistance))
         //|| who->IsControlledByPlayer() && who->IsFlying()))
         // we cannot check flying for other creatures, too much map/vmap calculation
@@ -1496,6 +1505,9 @@ void Creature::setDeathState(DeathState s)
         m_corpseRemoveTime = time(NULL) + m_corpseDelay;
         m_respawnTime = time(NULL) + m_respawnDelay + m_corpseDelay;
 
+        m_lastEvadeCheck = 0;
+        singleAndUnreachableTarget = true;
+
         // always save boss respawn time at death to prevent crash cheating
         if (sWorld->getBoolConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY) || isWorldBoss())
             SaveRespawnTime();
@@ -1546,7 +1558,7 @@ void Creature::setDeathState(DeathState s)
         if (GetCreatureInfo()->InhabitType & INHABIT_WATER)
             AddUnitMovementFlag(MOVEMENTFLAG_SWIMMING);
         SetUInt32Value(UNIT_NPC_FLAGS, cinfo->npcflag);
-        ClearUnitState(UNIT_STAT_ALL_STATE);
+        ClearUnitState(uint32(UNIT_STAT_ALL_STATE));
         SetMeleeDamageSchool(SpellSchools(cinfo->dmgschool));
         LoadCreaturesAddon(true);
         Motion_Initialize();
@@ -1567,6 +1579,14 @@ bool Creature::FallGround()
     GetPosition(x, y, z);
     // use larger distance for vmap height search than in most other cases
     float ground_Z = GetMap()->GetHeight(x, y, z, true, MAX_FALL_DISTANCE);
+
+	if (ground_Z <= INVALID_HEIGHT)
+	{
+		sLog->outStaticDebug("FallGround: creature %u at map %u (x: %f, y: %f, z: %f), not able to retrive a proper GetHeight (z: %f).",
+			GetEntry(), GetMap()->GetId(), GetPositionX(), GetPositionX(), GetPositionZ(), ground_Z);
+		return false;
+	}
+
     if (fabs(ground_Z - z) < 0.1f)
         return false;
 
@@ -1609,7 +1629,7 @@ void Creature::Respawn(bool force)
         {
             setDeathState(JUST_DIED);
             i_motionMaster.Clear();
-            ClearUnitState(UNIT_STAT_ALL_STATE);
+            ClearUnitState(uint32(UNIT_STAT_ALL_STATE));
             LoadCreaturesAddon(true);
         }
         else
@@ -1661,7 +1681,7 @@ void Creature::ForcedDespawn(uint32 timeMSToDespawn)
 void Creature::DespawnOrUnsummon(uint32 msTimeToDespawn /*= 0*/)
 {
     if (TempSummon* summon = this->ToTempSummon())
-        summon->UnSummon();
+        summon->UnSummon(msTimeToDespawn);
     else
         ForcedDespawn(msTimeToDespawn);
 }
@@ -1921,6 +1941,9 @@ bool Creature::CanAssistTo(const Unit* u, const Unit* enemy, bool checkfaction /
 
     // we don't need help from non-combatant ;)
     if (isCivilian())
+        return false;
+
+    if (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PASSIVE))
         return false;
 
     // skip fighting creature
@@ -2410,8 +2433,73 @@ void Creature::FarTeleportTo(Map* map, float X, float Y, float Z, float O)
     SetPosition(X, Y, Z, O, true);
 }
 
+bool Creature::IsTargetReachabilityCheckFailed(Unit* target)
+{
+	if (!target)
+		return true;
+
+    if (HasUnitState(UNIT_STAT_IGNORE_PATHFINDING))
+        return false;
+
+	// check if currently selected target is reachable
+    if((GetMotionMaster()->GetCurrentMovementGeneratorType() == TARGETED_MOTION_TYPE && !GetMotionMaster()->top()->IsReachable()) || 
+		(GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE && !IsTargetReachable(target)))
+	{
+		// remove all taunts
+		RemoveAurasByType(SPELL_AURA_MOD_TAUNT);
+
+		if(m_ThreatManager.getThreatList().size() < 2)
+		{
+			uint32 curr_time = time(NULL);
+
+			if (singleAndUnreachableTarget)
+			{
+				singleAndUnreachableTarget = false;
+				m_lastEvadeCheck = curr_time;
+				AddUnitState(UNIT_STAT_TIMED_EVADE);
+			}
+
+			if (m_lastEvadeCheck == 0 || ((curr_time - m_lastEvadeCheck) > EVADE_WAIT_TIME))
+			{
+				m_lastEvadeCheck = 0;
+				// only one target in list, we have to evade after timer
+				AI()->EnterEvadeMode();
+				singleAndUnreachableTarget = true;
+				ClearUnitState(UNIT_STAT_TIMED_EVADE);
+				return true;
+			}
+
+			if (!IsStopped())
+				StopMoving();
+
+			GetMotionMaster()->MoveIdle();
+
+			return false;
+		}
+		else
+		{
+			// remove unreachable target from our threat list
+			// next iteration we will select next possible target
+			getHostileRefManager().deleteReference(target);
+			m_ThreatManager.modifyThreatPercent(target, -101);
+			_removeAttacker(target);
+			ClearUnitState(UNIT_STAT_TIMED_EVADE);
+			return true;
+		}		
+	}
+
+	if (GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE)
+		GetMotionMaster()->MoveChase(target);
+
+	singleAndUnreachableTarget = false;
+	ClearUnitState(UNIT_STAT_TIMED_EVADE);	
+	m_lastEvadeCheck = 0;
+	return false;
+}
+
 bool Creature::IsDungeonBoss() const
 {
     CreatureInfo const *cinfo = ObjectMgr::GetCreatureTemplate(GetEntry());
     return cinfo && (cinfo->flags_extra & CREATURE_FLAG_EXTRA_DUNGEON_BOSS);
 }
+

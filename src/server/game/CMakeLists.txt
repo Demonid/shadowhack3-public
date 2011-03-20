@@ -34,6 +34,7 @@ file(GLOB_RECURSE sources_Instances Instances/*.cpp Instances/*.h)
 file(GLOB_RECURSE sources_Loot Loot/*.cpp Loot/*.h)
 file(GLOB_RECURSE sources_Mails Mails/*.cpp Mails/*.h)
 file(GLOB_RECURSE sources_Maps Maps/*.cpp Maps/*.h)
+file(GLOB_RECURSE sources_Pathfinding Pathfinding/*.cpp Pathfinding/*.h)
 file(GLOB_RECURSE sources_Miscellaneous Miscellaneous/*.cpp Miscellaneous/*.h)
 file(GLOB_RECURSE sources_Movement Movement/*.cpp Movement/*.h)
 file(GLOB_RECURSE sources_OutdoorPvP OutdoorPvP/*.cpp OutdoorPvP/*.h)
@@ -83,6 +84,7 @@ set(game_STAT_SRCS
   ${sources_Loot}
   ${sources_Mails}
   ${sources_Maps}
+  ${sources_Pathfinding}
   ${sources_Miscellaneous}
   ${sources_Movement}
   ${sources_OutdoorPvP}
@@ -107,6 +109,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/dep/zlib
   ${CMAKE_SOURCE_DIR}/src/server/collision
   ${CMAKE_SOURCE_DIR}/src/server/collision/Management
+  ${CMAKE_SOURCE_DIR}/src/server/pathfinding
   ${CMAKE_SOURCE_DIR}/src/server/shared
   ${CMAKE_SOURCE_DIR}/src/server/shared/Configuration
   ${CMAKE_SOURCE_DIR}/src/server/shared/Cryptography
@@ -168,6 +171,7 @@ include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/Loot
   ${CMAKE_CURRENT_SOURCE_DIR}/Mails
   ${CMAKE_CURRENT_SOURCE_DIR}/Maps
+  ${CMAKE_CURRENT_SOURCE_DIR}/Pathfinding
   ${CMAKE_CURRENT_SOURCE_DIR}/Miscellaneous
   ${CMAKE_CURRENT_SOURCE_DIR}/Movement
   ${CMAKE_CURRENT_SOURCE_DIR}/Movement/MovementGenerators
@@ -190,6 +194,7 @@ include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/Weather
   ${CMAKE_CURRENT_SOURCE_DIR}/World
   ${CMAKE_SOURCE_DIR}/src/server/scripts/PrecompiledHeaders
+  ${CMAKE_SOURCE_DIR}/src/server/scripts/OutdoorPvP
   ${ACE_INCLUDE_DIR}
   ${MYSQL_INCLUDE_DIR}
   ${OPENSSL_INCLUDE_DIR}

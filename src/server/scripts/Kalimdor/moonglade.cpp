@@ -350,12 +350,7 @@ public:
 
         void EnterCombat(Unit* who)
         {
-            uint32 rnd = rand()%2;
-            switch(rnd)
-            {
-                case 0: DoScriptText(CLINTAR_SPIRIT_SAY_UNDER_ATTACK_1, me, who); break;
-                case 1: DoScriptText(CLINTAR_SPIRIT_SAY_UNDER_ATTACK_2, me, who); break;
-            }
+            DoScriptText(RAND(CLINTAR_SPIRIT_SAY_UNDER_ATTACK_1, CLINTAR_SPIRIT_SAY_UNDER_ATTACK_2), me, who); 
         }
 
         void StartEvent(Player* pPlayer)
@@ -471,7 +466,7 @@ public:
                                 if (mob)
                                 {
                                     mob->AddThreat(me,10000.0f);
-                                    mob->AI()->AttackStart(me);
+                                    if (mob->AI()) mob->AI()->AttackStart(me);
                                 }
                                 Event_Timer = 2000;
                                 Step = 1;
@@ -568,7 +563,7 @@ public:
         if (quest->GetQuestId() == 10965)
         {
             Creature *clintar_spirit = pCreature->SummonCreature(CLINTAR_SPIRIT, CLINTAR_SPIRIT_SUMMON_X, CLINTAR_SPIRIT_SUMMON_Y, CLINTAR_SPIRIT_SUMMON_Z, CLINTAR_SPIRIT_SUMMON_O, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 100000);
-            if (clintar_spirit)
+            if (clintar_spirit && clintar_spirit->AI())
                 CAST_AI(npc_clintar_spirit::npc_clintar_spiritAI, clintar_spirit->AI())->StartEvent(pPlayer);
         }
         return true;

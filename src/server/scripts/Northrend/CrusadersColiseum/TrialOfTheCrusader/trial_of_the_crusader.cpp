@@ -106,7 +106,8 @@ class npc_announcer_toc10 : public CreatureScript
         {
             npc_announcer_toc10AI(Creature* pCreature) : ScriptedAI(pCreature)
             {
-                m_pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+                m_pInstance = pCreature->GetInstanceScript();
+                pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
             }
 
             InstanceScript* m_pInstance;
@@ -239,7 +240,8 @@ class boss_lich_king_toc : public CreatureScript
         {
             boss_lich_king_tocAI(Creature *pCreature) : ScriptedAI(pCreature)
             {
-                m_pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+                m_pInstance = pCreature->GetInstanceScript();
+                pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
             }
 
             InstanceScript* m_pInstance;
@@ -351,7 +353,8 @@ class npc_fizzlebang_toc : public CreatureScript
         {
             npc_fizzlebang_tocAI(Creature* pCreature) : ScriptedAI(pCreature), Summons(me)
             {
-                m_pInstance = (InstanceScript*)me->GetInstanceScript();
+                m_pInstance = me->GetInstanceScript();
+                pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
             }
 
             InstanceScript* m_pInstance;
@@ -463,7 +466,7 @@ class npc_fizzlebang_toc : public CreatureScript
                             {
                                 pTemp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                                 pTemp->SetReactState(REACT_PASSIVE);
-                                pTemp->GetMotionMaster()->MovePoint(0, ToCCommonLoc[1].GetPositionX(), ToCCommonLoc[1].GetPositionY()-10, ToCCommonLoc[1].GetPositionZ());
+                                pTemp->GetMotionMaster()->MovePoint(0, ToCCommonLoc[1].GetPositionX(), ToCCommonLoc[1].GetPositionY()-10, ToCCommonLoc[1].GetPositionZ(), false);
                             }
                             m_pInstance->SetData(TYPE_EVENT, 1142);
                             m_uiUpdateTimer = 5000;
@@ -518,7 +521,8 @@ class npc_tirion_toc : public CreatureScript
         {
             npc_tirion_tocAI(Creature* pCreature) : ScriptedAI(pCreature)
             {
-                m_pInstance = (InstanceScript*)me->GetInstanceScript();
+                m_pInstance = me->GetInstanceScript();
+                pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
             }
 
             InstanceScript* m_pInstance;
@@ -832,7 +836,8 @@ class npc_garrosh_toc : public CreatureScript
         {
             npc_garrosh_tocAI(Creature* pCreature) : ScriptedAI(pCreature)
             {
-                m_pInstance = (InstanceScript*)me->GetInstanceScript();
+                m_pInstance = me->GetInstanceScript();
+                pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
             }
 
             InstanceScript* m_pInstance;
@@ -910,7 +915,8 @@ class npc_varian_toc : public CreatureScript
         {
             npc_varian_tocAI(Creature* pCreature) : ScriptedAI(pCreature)
             {
-                m_pInstance = (InstanceScript*)me->GetInstanceScript();
+                m_pInstance = me->GetInstanceScript();
+                pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
             }
 
             InstanceScript* m_pInstance;

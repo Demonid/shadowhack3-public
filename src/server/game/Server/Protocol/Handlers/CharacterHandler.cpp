@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
@@ -40,6 +41,9 @@
 #include "Util.h"
 #include "ScriptMgr.h"
 #include "Battleground.h"
+
+#include "OutdoorPvPWG.h"
+#include "OutdoorPvPMgr.h"
 
 class LoginQueryHolder : public SQLQueryHolder
 {
@@ -272,7 +276,7 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
 
     WorldPacket data(SMSG_CHAR_CREATE, 1);                  // returned with diff.values in all cases
 
-    if (GetSecurity() == SEC_PLAYER)
+    if (GetSecurity() <= SEC_MODERATOR)
     {
         if (uint32 mask = sWorld->getIntConfig(CONFIG_CHARACTER_CREATING_DISABLED))
         {
@@ -330,7 +334,7 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
         return;
     }
 
-    if (GetSecurity() == SEC_PLAYER)
+    if (GetSecurity() <= SEC_MODERATOR)
     {
         uint32 raceMaskDisabled = sWorld->getIntConfig(CONFIG_CHARACTER_CREATING_DISABLED_RACEMASK);
         if ((1 << (race_ - 1)) & raceMaskDisabled)
@@ -367,7 +371,7 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
         return;
     }
 
-    if (GetSecurity() == SEC_PLAYER && sObjectMgr->IsReservedName(name))
+    if (GetSecurity() <= SEC_MODERATOR && sObjectMgr->IsReservedName(name))
     {
         data << (uint8)CHAR_NAME_RESERVED;
         SendPacket(&data);
@@ -412,7 +416,7 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
 
     // speedup check for heroic class disabled case
     uint32 heroic_free_slots = sWorld->getIntConfig(CONFIG_HEROIC_CHARACTERS_PER_REALM);
-    if (heroic_free_slots == 0 && GetSecurity() == SEC_PLAYER && class_ == CLASS_DEATH_KNIGHT)
+    if (heroic_free_slots == 0 && GetSecurity() <= SEC_MODERATOR && class_ == CLASS_DEATH_KNIGHT)
     {
         data << (uint8)CHAR_CREATE_UNIQUE_CLASS_LIMIT;
         SendPacket(&data);
@@ -421,14 +425,14 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
 
     // speedup check for heroic class disabled case
     uint32 req_level_for_heroic = sWorld->getIntConfig(CONFIG_CHARACTER_CREATING_MIN_LEVEL_FOR_HEROIC_CHARACTER);
-    if (GetSecurity() == SEC_PLAYER && class_ == CLASS_DEATH_KNIGHT && req_level_for_heroic > sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
+    if (GetSecurity() <= SEC_MODERATOR && class_ == CLASS_DEATH_KNIGHT && req_level_for_heroic > sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
     {
         data << (uint8)CHAR_CREATE_LEVEL_REQUIREMENT;
         SendPacket(&data);
         return;
     }
 
-    bool AllowTwoSideAccounts = !sWorld->IsPvPRealm() || sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_ACCOUNTS) || GetSecurity() > SEC_PLAYER;
+    bool AllowTwoSideAccounts = !sWorld->IsPvPRealm() || sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_ACCOUNTS) || GetSecurity() > SEC_MODERATOR;
     uint32 skipCinematics = sWorld->getIntConfig(CONFIG_SKIP_CINEMATICS);
 
     bool have_same_race = false;
@@ -447,7 +451,7 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
             Field* field = result2->Fetch();
             uint8 acc_race  = field[1].GetUInt32();
 
-            if (GetSecurity() == SEC_PLAYER && class_ == CLASS_DEATH_KNIGHT)
+            if (GetSecurity() <= SEC_MODERATOR && class_ == CLASS_DEATH_KNIGHT)
             {
                 uint8 acc_class = field[2].GetUInt32();
                 if (acc_class == CLASS_DEATH_KNIGHT)
@@ -500,7 +504,7 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
                 if (!have_same_race)
                     have_same_race = race_ == acc_race;
 
-                if (GetSecurity() == SEC_PLAYER && class_ == CLASS_DEATH_KNIGHT)
+                if (GetSecurity() <= SEC_MODERATOR && class_ == CLASS_DEATH_KNIGHT)
                 {
                     uint8 acc_class = field[2].GetUInt32();
                     if (acc_class == CLASS_DEATH_KNIGHT)
@@ -527,7 +531,7 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
         }
     }
 
-    if (GetSecurity() == SEC_PLAYER && class_ == CLASS_DEATH_KNIGHT && !have_req_level_for_heroic)
+    if (GetSecurity() <= SEC_MODERATOR && class_ == CLASS_DEATH_KNIGHT && !have_req_level_for_heroic)
     {
         data << (uint8)CHAR_CREATE_LEVEL_REQUIREMENT;
         SendPacket(&data);
@@ -810,7 +814,24 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     }
 
     sObjectAccessor->AddObject(pCurrChar);
-    //sLog->outDebug("Player %s added to Map.",pCurrChar->GetName());
+
+	if (sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+	{
+		if (OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197))
+		{
+				if (pvpWG->isWarTime())
+				{
+					// "Battle in progress"
+					pCurrChar->SendUpdateWorldState(ClockWorldState[1], uint32(time(NULL)));
+				}
+				else
+				{
+					// Time to next battle
+					pvpWG->SendInitWorldStatesTo(pCurrChar);
+					pCurrChar->SendUpdateWorldState(ClockWorldState[1], uint32(time(NULL) + pvpWG->GetTimer()));
+				}
+		}
+	}
 
     pCurrChar->SendInitialPacketsAfterAddToMap();
 
@@ -1030,7 +1051,7 @@ void WorldSession::HandleCharRenameOpcode(WorldPacket& recv_data)
     }
 
     // check name limitations
-    if (GetSecurity() == SEC_PLAYER && sObjectMgr->IsReservedName(newname))
+    if (GetSecurity() <= SEC_MODERATOR && sObjectMgr->IsReservedName(newname))
     {
         WorldPacket data(SMSG_CHAR_RENAME, 1);
         data << uint8(CHAR_NAME_RESERVED);
@@ -1292,7 +1313,7 @@ void WorldSession::HandleCharCustomize(WorldPacket& recv_data)
     }
 
     // check name limitations
-    if (GetSecurity() == SEC_PLAYER && sObjectMgr->IsReservedName(newname))
+    if (GetSecurity() <= SEC_MODERATOR && sObjectMgr->IsReservedName(newname))
     {
         WorldPacket data(SMSG_CHAR_CUSTOMIZE, 1);
         data << uint8(CHAR_NAME_RESERVED);
@@ -1481,7 +1502,7 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recv_data)
         return;
     }
 
-    if (GetSecurity() == SEC_PLAYER)
+    if (GetSecurity() <= SEC_MODERATOR)
     {
         uint32 raceMaskDisabled = sWorld->getIntConfig(CONFIG_CHARACTER_CREATING_DISABLED_RACEMASK);
         if ((1 << (race - 1)) & raceMaskDisabled)
@@ -1512,7 +1533,7 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recv_data)
     }
 
     // check name limitations
-    if (GetSecurity() == SEC_PLAYER && sObjectMgr->IsReservedName(newname))
+    if (GetSecurity() <= SEC_MODERATOR && sObjectMgr->IsReservedName(newname))
     {
         WorldPacket data(SMSG_CHAR_FACTION_CHANGE, 1);
         data << uint8(CHAR_NAME_RESERVED);
@@ -1684,8 +1705,12 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recv_data)
 
         if (!sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GUILD))
         {
-            // Reset guild
-            trans->PAppend("DELETE FROM `guild_member` WHERE `guid`= '%u'", lowGuid);
+			if (uint32 glId = Player::GetGuildIdFromDB(lowGuid))
+			{
+				Guild* targetGuild = sObjectMgr->GetGuildById(glId);
+				if (targetGuild)
+					targetGuild->DeleteMember(lowGuid, false, true);
+			}
         }
 
         if (!sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_ADD_FRIEND))

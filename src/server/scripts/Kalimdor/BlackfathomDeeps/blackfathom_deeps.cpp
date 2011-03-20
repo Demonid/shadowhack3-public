@@ -29,6 +29,7 @@ enum eSpells
 };
 
 #define GOSSIP_ITEM_MORRIDUNE "Please port me to Darnassus"
+#define GOSSIP_ITEM_MORRIDUNE_RU "Телепортируй меня в Дарнас, пожалуйста"
 
 const Position HomePosition = {-815.817f,-145.299f,-25.870f, 0};
 
@@ -161,7 +162,7 @@ public:
                 {
                     if (uiFrostBoltVolleyTimer <= uiDiff)
                     {
-                        if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                        if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                         {
                             if (pTarget)
                                 DoCast(pTarget, SPELL_FROST_BOLT_VOLLEY);
@@ -217,7 +218,7 @@ public:
 
     bool OnGossipHello(Player* pPlayer, Creature* pCreature)
     {
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_MORRIDUNE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, pPlayer->isRussianLocale() ? GOSSIP_ITEM_MORRIDUNE_RU:GOSSIP_ITEM_MORRIDUNE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
         pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
         return true;
