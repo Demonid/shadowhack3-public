@@ -33,9 +33,11 @@ EndScriptData */
 #define LOCALE_TRICK_OR_TREAT_2 "Des bonbons ou des blagues!"
 #define LOCALE_TRICK_OR_TREAT_3 "Süßes oder Saures!"
 #define LOCALE_TRICK_OR_TREAT_6 "¡Truco o trato!"
+#define LOCALE_TRICK_OR_TREAT_8 "Конфеты или жизнь!"
 
 #define LOCALE_INNKEEPER_0 "Make this inn my home."
 #define LOCALE_INNKEEPER_3 "Ich möchte dieses Gasthaus zu meinem Heimatort machen."
+#define LOCALE_INNKEEPER_8 "Пожалуй, я сниму у вас комнату."
 
 class npc_innkeeper : public CreatureScript
 {
@@ -52,6 +54,7 @@ public:
                 case LOCALE_frFR: localizedEntry = LOCALE_TRICK_OR_TREAT_2; break;
                 case LOCALE_deDE: localizedEntry = LOCALE_TRICK_OR_TREAT_3; break;
                 case LOCALE_esES: localizedEntry = LOCALE_TRICK_OR_TREAT_6; break;
+                case LOCALE_ruRU: localizedEntry = LOCALE_TRICK_OR_TREAT_8; break;
                 case LOCALE_enUS: default: localizedEntry = LOCALE_TRICK_OR_TREAT_0;
             }
             pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, localizedEntry, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+HALLOWEEN_EVENTID);
@@ -61,7 +64,7 @@ public:
             pPlayer->PrepareQuestMenu(pCreature->GetGUID());
 
         if (pCreature->isVendor())
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, GOSSIP_TEXT_BROWSE_GOODS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, (pPlayer->isRussianLocale()) ? GOSSIP_TEXT_BROWSE_GOODS_RU:GOSSIP_TEXT_BROWSE_GOODS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
 
         if (pCreature->isInnkeeper())
         {
@@ -69,6 +72,7 @@ public:
             switch (pPlayer->GetSession()->GetSessionDbcLocale())
             {
                 case LOCALE_deDE: localizedEntry = LOCALE_INNKEEPER_3; break;
+                case LOCALE_ruRU: localizedEntry = LOCALE_INNKEEPER_8; break;
                 case LOCALE_enUS: default: localizedEntry = LOCALE_INNKEEPER_0;
             }
             pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, localizedEntry, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INN);

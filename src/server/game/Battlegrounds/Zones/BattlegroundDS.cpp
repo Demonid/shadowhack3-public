@@ -76,6 +76,32 @@ void BattlegroundDS::Update(uint32 diff)
     }
     else
         setWaterFallTimer(getWaterFallTimer() - diff);
+    if (GetStatus() == STATUS_IN_PROGRESS)
+    {
+        // knockback
+        if(getKnockBackTimer() < diff)
+        {
+            for(BattlegroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
+            {
+                Player * plr = sObjectMgr->GetPlayer(itr->first);
+                if (plr && plr->IsWithinLOS(1214, 765, 14) && plr->GetDistance2d(1214, 765) <= 50)
+                {
+                    plr->KnockBackWithAngle(6.40f, 35, 6);
+                    if (Pet* pet = plr->GetPet())
+                        pet->KnockBackWithAngle(6.40f, 35, 6);
+                }
+                if (plr && plr->IsWithinLOS(1369, 817, 14) && plr->GetDistance2d(1369, 817) <= 50)
+                {
+                    plr->KnockBackWithAngle(3.03f, 35, 6);
+                    if (Pet* pet = plr->GetPet())
+                        pet->KnockBackWithAngle(3.03f, 35, 6);
+                }
+            }
+            setKnockBackTimer(3000);
+        }
+        else
+            setKnockBackTimer(getKnockBackTimer() - diff);
+    }
 }
 
 void BattlegroundDS::StartingEventCloseDoors()
@@ -93,6 +119,7 @@ void BattlegroundDS::StartingEventOpenDoors()
         SpawnBGObject(i, 60);
 
     setWaterFallTimer(urand(BG_DS_WATERFALL_TIMER_MIN, BG_DS_WATERFALL_TIMER_MAX));
+    setKnockBackTimer(3000);
     setWaterFallActive(false);
 
     for (uint32 i = BG_DS_OBJECT_WATER_1; i <= BG_DS_OBJECT_WATER_2; ++i)
@@ -169,6 +196,7 @@ void BattlegroundDS::Reset()
 {
     //call parent's class reset
     Battleground::Reset();
+    setKnockBackTimer(3000);
 }
 
 
@@ -181,8 +209,8 @@ bool BattlegroundDS::SetupBattleground()
         || !AddObject(BG_DS_OBJECT_WATER_1, BG_DS_OBJECT_TYPE_WATER_1, 1291.56f, 790.837f, 7.1f, 3.14238f, 0, 0, 0.694215f, -0.719768f, 120)
         || !AddObject(BG_DS_OBJECT_WATER_2, BG_DS_OBJECT_TYPE_WATER_2, 1291.56f, 790.837f, 7.1f, 3.14238f, 0, 0, 0.694215f, -0.719768f, 120)
     // buffs
-        || !AddObject(BG_DS_OBJECT_BUFF_1, BG_DS_OBJECT_TYPE_BUFF_1, 1291.7f, 813.424f, 7.11472f, 4.64562f, 0, 0, 0.730314f, -0.683111f, 120)
-        || !AddObject(BG_DS_OBJECT_BUFF_2, BG_DS_OBJECT_TYPE_BUFF_2, 1291.7f, 768.911f, 7.11472f, 1.55194f, 0, 0, 0.700409f, 0.713742f, 120))
+        || !AddObject(BG_DS_OBJECT_BUFF_1, BG_DS_OBJECT_TYPE_BUFF_1, 1261.37f, 820.39f, 3.159702f, 4.64562f, 0, 0, 0.730314f, -0.683111f, 120)
+        || !AddObject(BG_DS_OBJECT_BUFF_2, BG_DS_OBJECT_TYPE_BUFF_2, 1322.18f, 760.493f, 3.160444f, 1.55194f, 0, 0, 0.700409f, 0.713742f, 120))
     {
         sLog->outErrorDb("BatteGroundDS: Failed to spawn some object!");
         return false;

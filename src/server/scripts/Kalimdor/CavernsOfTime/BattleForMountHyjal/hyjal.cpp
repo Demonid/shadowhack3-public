@@ -230,7 +230,7 @@ public:
                          pPlayer->SendNewItem(item,1,true,false,true);
                 }
                 pPlayer->SEND_GOSSIP_MENU(907, pCreature->GetGUID());
-                CAST_AI(hyjalAI, pCreature->AI());
+                CAST_AI(hyjalAI, pCreature->AI());  //Q: didn't undesrstand
         }
         return true;
     }

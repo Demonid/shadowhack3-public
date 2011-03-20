@@ -73,6 +73,7 @@ enum DataTypes
     DATA_SPINESTALKER               = 23,
     DATA_RIMEFANG                   = 24,
     DATA_COLDFLAME_JETS             = 25,
+    DATA_TEAM_IN_INSTANCE           = 26,
 };
 
 #define MAX_ENCOUNTER 12
@@ -80,6 +81,9 @@ enum DataTypes
 enum CreaturesIds
 {
     // At Light's Hammer
+    NPC_HIGHLORD_TIRION_FORDRING_LH             = 37119,
+    NPC_THE_LICH_KING_LH                        = 37181,
+    NPC_HIGHLORD_BOLVAR_FORDRAGON_LH            = 37183,
     NPC_KOR_KRON_GENERAL                        = 37189,
     NPC_ALLIANCE_COMMANDER                      = 37190,
     NPC_TORTUNOK                                = 37992,    // Druid Armor H
@@ -208,6 +212,7 @@ enum GameObjectsIds
     GO_DOODAD_ICECROWN_GREENTUBES02         = 201618,
     GO_SCIENTIST_ENTRANCE                   = 201372,
     GO_DRINK_ME                             = 201584,
+    GO_PLAGUE_SIGIL                         = 202182,
 
     // Blood Prince Council
     GO_CRIMSON_HALL_DOOR                    = 201376,
@@ -217,6 +222,7 @@ enum GameObjectsIds
     // Blood-Queen Lana'thel
     GO_DOODAD_ICECROWN_BLOODPRINCE_DOOR_01  = 201746,
     GO_DOODAD_ICECROWN_GRATE_01             = 201755,
+    GO_BLOODWING_SIGIL                      = 202183,
 
     // Valithria Dreamwalker
     GO_GREEN_DRAGON_BOSS_ENTRANCE           = 201375,
@@ -228,6 +234,7 @@ enum GameObjectsIds
     GO_SINDRAGOSA_SHORTCUT_EXIT_DOOR        = 201379,
     GO_ICE_WALL                             = 202396,
     GO_ICE_BLOCK                            = 201722,
+    GO_SIGIL_OF_THE_FROSTWING               = 202181,
 };
 
 enum AchievementCriteriaIds

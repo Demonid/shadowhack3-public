@@ -56,7 +56,7 @@ public:
 
         void JustDied(Unit* Killer)
         {
-            if (Killer->GetTypeId() == TYPEID_PLAYER)
+            if (Killer->GetTypeId() == TYPEID_PLAYER)   //Q: what about pet-killer?
                 me->SummonCreature(11064, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 60000);
         }
     };

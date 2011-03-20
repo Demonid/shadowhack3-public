@@ -172,7 +172,7 @@ public:
             {
                 //Cast a random class call
                 //On official it is based on what classes are currently on the hostil list
-                //but we can't do that yet so just randomly call one
+                //but we can't do that yet so just randomly call one    //Q: why not?
 
                 switch (urand(0,8))
                 {
@@ -221,7 +221,7 @@ public:
             if (!Phase3 && HealthBelowPct(20))
             {
                 Phase3 = true;
-                DoScriptText(SAY_RAISE_SKELETONS, me);
+                DoScriptText(SAY_RAISE_SKELETONS, me);  //Q: and what about phase3 events?
             }
 
             DoMeleeAttackIfReady();

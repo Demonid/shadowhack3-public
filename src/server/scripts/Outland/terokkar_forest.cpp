@@ -41,7 +41,7 @@ EndContentData */
 ## mob_unkor_the_ruthless
 ######*/
 
-#define SAY_SUBMIT                      -1000194
+#define SAY_SUBMIT                      -1000194    //DB: old  -1000351
 
 #define FACTION_HOSTILE                 45
 #define FACTION_FRIENDLY                35
@@ -344,7 +344,7 @@ public:
 
 enum eFloon
 {
-    SAY_FLOON_ATTACK        = -1000195,
+    SAY_FLOON_ATTACK        = -1000195, //DB: old -1000352
 
     SPELL_SILENCE           = 6726,
     SPELL_FROSTBOLT         = 9672,
@@ -451,7 +451,7 @@ public:
 ######*/
 enum eIslaStarmaneData
 {
-    SAY_PROGRESS_1  = -1000571,
+    SAY_PROGRESS_1  = -1000571, //DB: old -1000353
     SAY_PROGRESS_2  = -1000572,
     SAY_PROGRESS_3  = -1000573,
     SAY_PROGRESS_4  = -1000574,

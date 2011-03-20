@@ -265,7 +265,7 @@ class boss_hexlord_malacrass : public CreatureScript
                 for (uint8 i = 0; i < 4; ++i)
                 {
                     Unit* Temp = Unit::GetUnit((*me),AddGUID[i]);
-                    if (Temp && Temp->isAlive())
+                    if (Temp && Temp->isAlive() && CAST_CRE(Temp)->AI())
                         CAST_CRE(Temp)->AI()->AttackStart(me->getVictim());
                     else
                     {
@@ -319,7 +319,7 @@ class boss_hexlord_malacrass : public CreatureScript
                 uint8 i = 0;
                 for (std::vector<uint32>::const_iterator itr = AddList.begin(); itr != AddList.end(); ++itr, ++i)
                     AddEntry[i] = *itr;
-            }
+            }   //Q: AddList.clear() ?
 
             void SpawnAdds()
             {
@@ -334,7 +334,7 @@ class boss_hexlord_malacrass : public CreatureScript
                     }
                     else
                     {
-                        pCreature->AI()->EnterEvadeMode();
+                        if (pCreature->AI()) pCreature->AI()->EnterEvadeMode();
                         pCreature->GetMap()->CreatureRelocation(me, Pos_X[i], POS_Y, POS_Z, ORIENT);
                         pCreature->StopMoving();
                     }
@@ -348,7 +348,7 @@ class boss_hexlord_malacrass : public CreatureScript
 
                 if (ResetTimer <= diff)
                 {
-                    if (me->IsWithinDist3d(119.223f, 1035.45f, 29.4481f, 10))
+                    if (me->IsWithinDist3d(119.223f, 1035.45f, 29.4481f, 10.0f))
                     {
                         EnterEvadeMode();
                         return;
@@ -360,7 +360,7 @@ class boss_hexlord_malacrass : public CreatureScript
                 {
                     for (uint8 i = 0; i < 4; ++i)
                         if (Creature *pTemp = Unit::GetCreature(*me, AddGUID[i]))
-                            if (pTemp->isAlive() && !pTemp->getVictim())
+                            if (pTemp->isAlive() && !pTemp->getVictim() && pTemp->AI())
                                 pTemp->AI()->AttackStart(me->getVictim());
 
                     CheckAddState_Timer = 5000;
@@ -391,8 +391,8 @@ class boss_hexlord_malacrass : public CreatureScript
 
                 if (SiphonSoul_Timer <= diff)
                 {
-                    Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 70, true);
-                    Unit *trigger = DoSpawnCreature(MOB_TEMP_TRIGGER, 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN, 30000);
+                    Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 70.0f, true);
+                    Unit *trigger = DoSpawnCreature(MOB_TEMP_TRIGGER, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 30000);
                     if (!pTarget || !trigger)
                     {
                         EnterEvadeMode();
@@ -449,16 +449,16 @@ class boss_hexlord_malacrass : public CreatureScript
                         break;
                     case ABILITY_TARGET_ENEMY:
                     default:
-                        pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true);
+                        pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true);
                         break;
                     case ABILITY_TARGET_HEAL:
-                        pTarget = DoSelectLowestHpFriendly(50, 0);
+                        pTarget = DoSelectLowestHpFriendly(50.0f, 0);
                         break;
                     case ABILITY_TARGET_BUFF:
                         {
-                            std::list<Creature*> templist = DoFindFriendlyMissingBuff(50, PlayerAbility[PlayerClass][random].spell);
+                            std::list<Creature*> templist = DoFindFriendlyMissingBuff(50.0f, PlayerAbility[PlayerClass][random].spell);
                             if (!templist.empty())
-                                pTarget = *(templist.begin());
+                                pTarget = *(templist.begin());  //Q: templist.clear() ?
                         }
                         break;
                 }
@@ -508,13 +508,13 @@ class boss_thurg : public CreatureScript
 
                 if (bloodlust_timer <= diff)
                 {
-                    std::list<Creature*> templist = DoFindFriendlyMissingBuff(50, SPELL_BLOODLUST);
+                    std::list<Creature*> templist = DoFindFriendlyMissingBuff(50.0f, SPELL_BLOODLUST);
                     if (!templist.empty())
                     {
                         if (Unit *pTarget = *(templist.begin()))
                             DoCast(pTarget, SPELL_BLOODLUST, false);
                     }
-                    bloodlust_timer = 12000;
+                    bloodlust_timer = 12000;    //Q: templist.clear() ?
                 } else bloodlust_timer -= diff;
 
                 if (cleave_timer <= diff)
@@ -572,7 +572,7 @@ class boss_alyson_antille : public CreatureScript
                 {
                     if (me->Attack(who, false))
                     {
-                        me->GetMotionMaster()->MoveChase(who, 20);
+                        me->GetMotionMaster()->MoveChase(who, 20.0f);
                         me->AddThreat(who, 0.0f);
                     }
                 }
@@ -585,10 +585,10 @@ class boss_alyson_antille : public CreatureScript
 
                 if (flashheal_timer <= diff)
                 {
-                    Unit *pTarget = DoSelectLowestHpFriendly(99, 30000);
+                    Unit *pTarget = DoSelectLowestHpFriendly(99.0f, 30000);
                     if (pTarget)
                     {
-                        if (pTarget->IsWithinDistInMap(me, 50))
+                        if (pTarget->IsWithinDistInMap(me, 50.0f))
                             DoCast(pTarget, SPELL_FLASH_HEAL, false);
                         else
                         {
@@ -600,9 +600,9 @@ class boss_alyson_antille : public CreatureScript
                     else
                     {
                         if (urand(0,1))
-                            pTarget = DoSelectLowestHpFriendly(50, 0);
+                            pTarget = DoSelectLowestHpFriendly(50.0f, 0);
                         else
-                            pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                            pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
                         if (pTarget)
                             DoCast(pTarget, SPELL_DISPEL_MAGIC, false);
                     }
@@ -633,49 +633,49 @@ class boss_alyson_antille : public CreatureScript
         }
 };
 
-#define SPELL_FIREBOLT        43584
-
-struct boss_gazakrothAI : public boss_hexlord_addAI
-{
-    boss_gazakrothAI(Creature *c) : boss_hexlord_addAI(c)  {}
-
-    uint32 firebolt_timer;
-
-    void Reset()
-    {
-        firebolt_timer = 2000;
-        boss_hexlord_addAI::Reset();
-    }
-
-    void AttackStart(Unit* who)
-    {
-        if (!who)
-            return;
-
-        if (who->isTargetableForAttack())
-        {
-            if (me->Attack(who, false))
-            {
-                me->GetMotionMaster()->MoveChase(who, 20);
-                me->AddThreat(who, 0.0f);
-            }
-        }
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-        if (!UpdateVictim())
-            return;
-
-        if (firebolt_timer <= diff)
-        {
-            DoCast(me->getVictim(), SPELL_FIREBOLT, false);
-            firebolt_timer = 700;
-        } else firebolt_timer -= diff;
-
-        boss_hexlord_addAI::UpdateAI(diff);
-    }
-};
+//#define SPELL_FIREBOLT        43584
+//
+//struct boss_gazakrothAI : public boss_hexlord_addAI     //Q: why this isn't used? in new script()
+//{
+//    boss_gazakrothAI(Creature *c) : boss_hexlord_addAI(c)  {}
+//
+//    uint32 firebolt_timer;
+//
+//    void Reset()
+//    {
+//        firebolt_timer = 2000;
+//        boss_hexlord_addAI::Reset();
+//    }
+//
+//    void AttackStart(Unit* who)
+//    {
+//        if (!who)
+//            return;
+//
+//        if (who->isTargetableForAttack())
+//        {
+//            if (me->Attack(who, false))
+//            {
+//                me->GetMotionMaster()->MoveChase(who, 20);
+//                me->AddThreat(who, 0.0f);
+//            }
+//        }
+//    }
+//
+//    void UpdateAI(const uint32 diff)
+//    {
+//        if (!UpdateVictim())
+//            return;
+//
+//        if (firebolt_timer <= diff)
+//        {
+//            DoCast(me->getVictim(), SPELL_FIREBOLT, false);
+//            firebolt_timer = 700;
+//        } else firebolt_timer -= diff;
+//
+//        boss_hexlord_addAI::UpdateAI(diff);
+//    }
+//};
 
 #define SPELL_FLAME_BREATH    43582
 #define SPELL_THUNDERCLAP     43583
@@ -806,7 +806,7 @@ class boss_slither : public CreatureScript
                 {
                     if (me->Attack(who, false))
                     {
-                        me->GetMotionMaster()->MoveChase(who, 20);
+                        me->GetMotionMaster()->MoveChase(who, 20.0f);
                         me->AddThreat(who, 0.0f);
                     }
                 }
@@ -819,7 +819,7 @@ class boss_slither : public CreatureScript
 
                 if (venomspit_timer <= diff)
                 {
-                    if (Unit* victim = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                    if (Unit* victim = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))
                         DoCast(victim, SPELL_VENOM_SPIT, false);
                     venomspit_timer = 2500;
                 } else venomspit_timer -= diff;
@@ -918,7 +918,7 @@ class boss_koragg : public CreatureScript
                 }
                 if (coldstare_timer <= diff)
                 {
-                    if (Unit* victim = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                    if (Unit* victim = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))
                         DoCast(victim, SPELL_COLD_STARE, false);
                     coldstare_timer = 12000;
                 }

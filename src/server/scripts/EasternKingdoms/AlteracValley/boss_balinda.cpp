@@ -27,8 +27,8 @@ enum Spells
 
 enum Yells
 {
-    YELL_AGGRO                                    = -2100019,
-    YELL_EVADE                                    = -2100020
+    YELL_AGGRO                                    = -1810023,
+    YELL_EVADE                                    = -1810024
 };
 
 enum Creatures
@@ -132,8 +132,11 @@ public:
 
         void JustSummoned(Creature* summoned)
         {
-            CAST_AI(mob_water_elemental::mob_water_elementalAI, summoned->AI())->uiBalindaGUID = me->GetGUID();
-            summoned->AI()->AttackStart(SelectTarget(SELECT_TARGET_RANDOM,0, 50, true));
+            if (summoned->AI())
+            {
+                CAST_AI(mob_water_elemental::mob_water_elementalAI, summoned->AI())->uiBalindaGUID = me->GetGUID();
+                summoned->AI()->AttackStart(SelectTarget(SELECT_TARGET_RANDOM,0, 50.f, true));
+            }
             summoned->setFaction(me->getFaction());
             Summons.Summon(summoned);
         }
@@ -151,7 +154,7 @@ public:
             if (uiWaterElementalTimer < diff)
             {
                 if (Summons.empty())
-                    me->SummonCreature(NPC_WATER_ELEMENTAL, 0, 0, 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 45*IN_MILLISECONDS);
+                    me->SummonCreature(NPC_WATER_ELEMENTAL, 0.f, 0.f, 0.f, 0.f, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 45*IN_MILLISECONDS);
                 uiWaterElementalTimer = 50*IN_MILLISECONDS;
             } else uiWaterElementalTimer -= diff;
 

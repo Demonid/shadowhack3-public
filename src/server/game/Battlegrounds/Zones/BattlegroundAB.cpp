@@ -435,12 +435,16 @@ void BattlegroundAB::EventPlayerClickedOnFlag(Player *source, GameObject* /*targ
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
 
+    BattlegroundMap *pMap = GetBgMap();
+    if (!pMap)
+        return;
+
     uint8 node = BG_AB_NODE_STABLES;
-    GameObject* obj=GetBgMap()->GetGameObject(m_BgObjects[node*8+7]);
+    GameObject* obj = pMap->GetGameObject(m_BgObjects[node*8+7]);
     while ((node < BG_AB_DYNAMIC_NODES_COUNT) && ((!obj) || (!source->IsWithinDistInMap(obj,10))))
     {
         ++node;
-        obj=GetBgMap()->GetGameObject(m_BgObjects[node*8+BG_AB_OBJECT_AURA_CONTESTED]);
+        obj = pMap->GetGameObject(m_BgObjects[node*8+BG_AB_OBJECT_AURA_CONTESTED]);
     }
 
     if (node == BG_AB_DYNAMIC_NODES_COUNT)

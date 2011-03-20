@@ -131,11 +131,10 @@ class boss_nalorakk : public CreatureScript
             {
                 if (MoveEvent)
                 {
-                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                     inMove = false;
                     waitTimer = 0;
-                    me->SetSpeed(MOVE_RUN,2);
+                    me->SetSpeed(MOVE_RUN,2.0f);
                     me->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
                 }else
                 {
@@ -183,9 +182,9 @@ class boss_nalorakk : public CreatureScript
                     if ((*i) && me->IsWithinDistInMap((*i),25))
                     {
                         (*i)->SetNoCallAssistance(true);
-                        (*i)->AI()->AttackStart(pTarget);
+                        if ((*i)->AI()) (*i)->AI()->AttackStart(pTarget);
                     }
-                }
+                }   //Q: templist.clear() ?
             }
 
             void AttackStart(Unit* who)
@@ -209,7 +208,7 @@ class boss_nalorakk : public CreatureScript
                             switch(MovePhase)
                             {
                                 case 0:
-                                    if (me->IsWithinDistInMap(who, 50))
+                                    if (me->IsWithinDistInMap(who, 50.0f))
                                     {
                                         me->MonsterYell(YELL_NALORAKK_WAVE1, LANG_UNIVERSAL, NULL);
                                         DoPlaySoundToSet(me, SOUND_NALORAKK_WAVE1);
@@ -222,7 +221,7 @@ class boss_nalorakk : public CreatureScript
                                     }
                                     break;
                                 case 2:
-                                    if (me->IsWithinDistInMap(who, 40))
+                                    if (me->IsWithinDistInMap(who, 40.0f))
                                     {
                                         me->MonsterYell(YELL_NALORAKK_WAVE2, LANG_UNIVERSAL, NULL);
                                         DoPlaySoundToSet(me, SOUND_NALORAKK_WAVE2);
@@ -235,7 +234,7 @@ class boss_nalorakk : public CreatureScript
                                     }
                                     break;
                                 case 5:
-                                    if (me->IsWithinDistInMap(who, 40))
+                                    if (me->IsWithinDistInMap(who, 40.0f))
                                     {
                                         me->MonsterYell(YELL_NALORAKK_WAVE3, LANG_UNIVERSAL, NULL);
                                         DoPlaySoundToSet(me, SOUND_NALORAKK_WAVE3);
@@ -248,7 +247,7 @@ class boss_nalorakk : public CreatureScript
                                     }
                                     break;
                                 case 7:
-                                    if (me->IsWithinDistInMap(who, 50))
+                                    if (me->IsWithinDistInMap(who, 50.0f))
                                     {
                                         SendAttacker(who);
 

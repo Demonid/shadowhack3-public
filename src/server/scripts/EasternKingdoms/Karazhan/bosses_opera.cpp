@@ -96,7 +96,7 @@ void SummonCroneIfReady(InstanceScript* pInstance, Creature* pCreature)
     {
         if (Creature* pCrone = pCreature->SummonCreature(CREATURE_CRONE, -10891.96f, -1755.95f, pCreature->GetPositionZ(), 4.64f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, HOUR*2*IN_MILLISECONDS))
         {
-            if (pCreature->getVictim())
+            if (pCreature->getVictim() && pCrone->AI())
                 pCrone->AI()->AttackStart(pCreature->getVictim());
         }
     }
@@ -194,7 +194,7 @@ public:
 
             if (WaterBoltTimer <= diff)
             {
-                DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_WATERBOLT);
+                DoCast(SelectTarget(SELECT_TARGET_RANDOM, 0), SPELL_WATERBOLT);
                 WaterBoltTimer = TitoDied ? 1500 : 5000;
             } else WaterBoltTimer -= diff;
 
@@ -277,8 +277,11 @@ void boss_dorothee::boss_dorotheeAI::SummonTito()
     if (Creature* pTito = me->SummonCreature(CREATURE_TITO, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
     {
         DoScriptText(SAY_DOROTHEE_SUMMON, me);
-        CAST_AI(mob_tito::mob_titoAI, pTito->AI())->DorotheeGUID = me->GetGUID();
-        pTito->AI()->AttackStart(me->getVictim());
+        if (pTito->AI())
+        {
+            CAST_AI(mob_tito::mob_titoAI, pTito->AI())->DorotheeGUID = me->GetGUID();
+            pTito->AI()->AttackStart(me->getVictim());
+        }
         SummonedTito = true;
         TitoDied = false;
     }
@@ -388,7 +391,7 @@ public:
 
             if (BrainWipeTimer <= diff)
             {
-                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.f, true))
                     DoCast(pTarget, SPELL_BRAIN_WIPE);
                 BrainWipeTimer = 20000;
             } else BrainWipeTimer -= diff;
@@ -683,7 +686,7 @@ public:
 
             if (CycloneTimer <= diff)
             {
-                if (Creature* Cyclone = DoSpawnCreature(CREATURE_CYCLONE, float(urand(0,9)), float(urand(0,9)), 0, 0, TEMPSUMMON_TIMED_DESPAWN, 15000))
+                if (Creature* Cyclone = DoSpawnCreature(CREATURE_CYCLONE, float(urand(0,9)), float(urand(0,9)), 0.f, 0.f, TEMPSUMMON_TIMED_DESPAWN, 15000))
                     Cyclone->CastSpell(Cyclone, SPELL_CYCLONE_VISUAL, true);
                 CycloneTimer = 30000;
             } else CycloneTimer -= diff;
@@ -735,7 +738,7 @@ public:
             if (MoveTimer <= diff)
             {
                 Position pos;
-                me->GetRandomNearPosition(pos, 10);
+                me->GetRandomNearPosition(pos, 10.f);
                 me->GetMotionMaster()->MovePoint(0, pos);
                 MoveTimer = urand(5000,8000);
             } else MoveTimer -= diff;
@@ -782,7 +785,7 @@ public:
         if (uiAction == GOSSIP_ACTION_INFO_DEF)
         {
             if (Creature* pBigBadWolf = pCreature->SummonCreature(CREATURE_BIG_BAD_WOLF, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, HOUR*2*IN_MILLISECONDS))
-                pBigBadWolf->AI()->AttackStart(pPlayer);
+                if (pBigBadWolf->AI()) pBigBadWolf->AI()->AttackStart(pPlayer);
 
             pCreature->DespawnOrUnsummon();
         }
@@ -877,7 +880,7 @@ public:
             {
                 if (!IsChasing)
                 {
-                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.f, true))
                     {
                         DoScriptText(SAY_WOLF_HOOD, me);
                         DoCast(pTarget, SPELL_LITTLE_RED_RIDING_HOOD, true);
@@ -1194,10 +1197,11 @@ public:
                 Phase = PHASE_BOTH;
 
                 if (Creature* Julianne = (Unit::GetCreature((*me), JulianneGUID)))
-                {
-                    CAST_AI(boss_julianne::boss_julianneAI, Julianne->AI())->RomuloDead = true;
-                    CAST_AI(boss_julianne::boss_julianneAI, Julianne->AI())->ResurrectSelfTimer = 10000;
-                }
+                    if (Julianne->AI())
+                    {
+                        CAST_AI(boss_julianne::boss_julianneAI, Julianne->AI())->RomuloDead = true;
+                        CAST_AI(boss_julianne::boss_julianneAI, Julianne->AI())->ResurrectSelfTimer = 10000;
+                    }
 
                 damage = 0;
                 return;
@@ -1223,8 +1227,11 @@ public:
                 {
                     PretendToDie(me);
                     IsFakingDeath = true;
-                    CAST_AI(boss_julianne::boss_julianneAI, Julianne->AI())->ResurrectTimer = 10000;
-                    CAST_AI(boss_julianne::boss_julianneAI, Julianne->AI())->RomuloDead = true;
+                    if (Julianne->AI())
+                    {
+                        CAST_AI(boss_julianne::boss_julianneAI, Julianne->AI())->ResurrectTimer = 10000;
+                        CAST_AI(boss_julianne::boss_julianneAI, Julianne->AI())->RomuloDead = true;
+                    }
                     damage = 0;
                     return;
                 }
@@ -1285,7 +1292,7 @@ public:
                 if (ResurrectTimer <= diff)
                 {
                     Creature* Julianne = (Unit::GetCreature((*me), JulianneGUID));
-                    if (Julianne && CAST_AI(boss_julianne::boss_julianneAI, Julianne->AI())->IsFakingDeath)
+                    if (Julianne && Julianne->AI() && CAST_AI(boss_julianne::boss_julianneAI, Julianne->AI())->IsFakingDeath)
                     {
                         DoScriptText(SAY_ROMULO_RESURRECT, me);
                         Resurrect(Julianne);
@@ -1298,7 +1305,7 @@ public:
 
             if (BackwardLungeTimer <= diff)
             {
-                Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 100, true);
+                Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 100.f, true);
                 if (pTarget && !me->HasInArc(M_PI, pTarget))
                 {
                     DoCast(pTarget, SPELL_BACKWARD_LUNGE);
@@ -1314,7 +1321,7 @@ public:
 
             if (DeadlySwatheTimer <= diff)
             {
-                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.f, true))
                     DoCast(pTarget, SPELL_DEADLY_SWATHE);
                 DeadlySwatheTimer = urand(15000,25000);
             } else DeadlySwatheTimer -= diff;
@@ -1372,8 +1379,11 @@ void boss_julianne::boss_julianneAI::UpdateAI(const uint32 diff)
             if (Creature* pRomulo = me->SummonCreature(CREATURE_ROMULO, ROMULO_X, ROMULO_Y, me->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, HOUR*2*IN_MILLISECONDS))
             {
                 RomuloGUID = pRomulo->GetGUID();
-                CAST_AI(boss_romulo::boss_romuloAI, pRomulo->AI())->JulianneGUID = me->GetGUID();
-                CAST_AI(boss_romulo::boss_romuloAI, pRomulo->AI())->Phase = PHASE_ROMULO;
+                if (pRomulo->AI())
+                {
+                    CAST_AI(boss_romulo::boss_romuloAI, pRomulo->AI())->JulianneGUID = me->GetGUID();
+                    CAST_AI(boss_romulo::boss_romuloAI, pRomulo->AI())->Phase = PHASE_ROMULO;
+                }
                 DoZoneInCombat(pRomulo);
 
                 pRomulo->setFaction(16);
@@ -1406,7 +1416,7 @@ void boss_julianne::boss_julianneAI::UpdateAI(const uint32 diff)
         if (ResurrectTimer <= diff)
         {
             Creature* Romulo = (Unit::GetCreature((*me), RomuloGUID));
-            if (Romulo && CAST_AI(boss_romulo::boss_romuloAI, Romulo->AI())->IsFakingDeath)
+            if (Romulo && Romulo->AI() && CAST_AI(boss_romulo::boss_romuloAI, Romulo->AI())->IsFakingDeath)
             {
                 DoScriptText(SAY_JULIANNE_RESURRECT, me);
                 Resurrect(Romulo);
@@ -1419,7 +1429,7 @@ void boss_julianne::boss_julianneAI::UpdateAI(const uint32 diff)
 
     if (BlindingPassionTimer <= diff)
     {
-        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.f, true))
             DoCast(pTarget, SPELL_BLINDING_PASSION);
         BlindingPassionTimer = urand(30000,45000);
     } else BlindingPassionTimer -= diff;
@@ -1432,7 +1442,7 @@ void boss_julianne::boss_julianneAI::UpdateAI(const uint32 diff)
 
     if (PowerfulAttractionTimer <= diff)
     {
-        DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_POWERFUL_ATTRACTION);
+        DoCast(SelectTarget(SELECT_TARGET_RANDOM, 0), SPELL_POWERFUL_ATTRACTION);
         PowerfulAttractionTimer = urand(5000,30000);
     } else PowerfulAttractionTimer -= diff;
 
@@ -1470,7 +1480,6 @@ void boss_julianne::boss_julianneAI::DamageTaken(Unit* /*done_by*/, uint32 &dama
         DoCast(me, SPELL_DRINK_POISON);
 
         IsFakingDeath = true;
-        //IS THIS USEFULL? Creature* Julianne = (Unit::GetCreature((*me), JulianneGUID));
         return;
     }
 
@@ -1504,8 +1513,11 @@ void boss_julianne::boss_julianneAI::DamageTaken(Unit* /*done_by*/, uint32 &dama
         {
             PretendToDie(me);
             IsFakingDeath = true;
-            CAST_AI(boss_romulo::boss_romuloAI, Romulo->AI())->ResurrectTimer = 10000;
-            CAST_AI(boss_romulo::boss_romuloAI, Romulo->AI())->JulianneDead = true;
+            if (Romulo->AI())
+            {
+                CAST_AI(boss_romulo::boss_romuloAI, Romulo->AI())->ResurrectTimer = 10000;
+                CAST_AI(boss_romulo::boss_romuloAI, Romulo->AI())->JulianneDead = true;
+            }
             damage = 0;
             return;
         }
