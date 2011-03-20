@@ -19,7 +19,7 @@
 /* ScriptData
 SDName: Azuremyst_Isle
 SD%Complete: 75
-SDComment: Quest support: 9283, 9537, 9582, 9554, 9531, 9303(special flight path, proper model for mount missing). Injured Draenei cosmetic only, 9582.
+SDComment: Quest support: 9283, 9537, 9582, 9554, 9531, ? (special flight path, proper model for mount missing). Injured Draenei cosmetic only, 9582.
 SDCategory: Azuremyst Isle
 EndScriptData */
 
@@ -29,7 +29,6 @@ npc_engineer_spark_overgrind
 npc_injured_draenei
 npc_magwin
 npc_geezle
-mob_nestlewood_owlkin
 go_ravager_cage
 npc_death_ravager
 EndContentData */
@@ -44,7 +43,7 @@ EndContentData */
 
 enum eEnums
 {
-    SAY_HEAL1           = -1000176,
+    SAY_HEAL1           = -1000176, //DB: check all 8 ids, old begun at -1000248
     SAY_HEAL2           = -1000177,
     SAY_HEAL3           = -1000178,
     SAY_HEAL4           = -1000179,
@@ -92,8 +91,7 @@ public:
 
             DoCast(me, SPELL_IRRIDATION, true);
 
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE | UNIT_FLAG_IN_COMBAT);
             me->SetHealth(me->CountPctFromMaxHealth(10));
             me->SetStandState(UNIT_STAND_STATE_SLEEP);
         }
@@ -178,7 +176,7 @@ public:
 
 enum eOvergrind
 {
-    SAY_TEXT        = -1000184,
+    SAY_TEXT        = -1000184, //DB: old begun at -1000256
     SAY_EMOTE       = -1000185,
     ATTACK_YELL     = -1000186,
 
@@ -190,6 +188,7 @@ enum eOvergrind
 };
 
 #define GOSSIP_FIGHT "Traitor! You will be brought to justice!"
+#define GOSSIP_FIGHT_RU "Предатель! Твоё наказание неотвратимо!"
 
 class npc_engineer_spark_overgrind : public CreatureScript
 {
@@ -211,7 +210,7 @@ public:
     bool OnGossipHello(Player* pPlayer, Creature* pCreature)
     {
         if (pPlayer->GetQuestStatus(QUEST_GNOMERCY) == QUEST_STATUS_INCOMPLETE)
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_FIGHT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, (pPlayer->isRussianLocale()) ? GOSSIP_FIGHT_RU:GOSSIP_FIGHT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
 
         pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
         return true;
@@ -226,7 +225,7 @@ public:
     {
         npc_engineer_spark_overgrindAI(Creature *c) : ScriptedAI(c)
         {
-            NormFaction = c->getFaction();
+            NormFaction = c->getFaction();  //Q: remove this and use RestoreFaction()?
             NpcFlags = c->GetUInt32Value(UNIT_NPC_FLAGS);
 
             if (c->GetAreaId() == AREA_COVE || c->GetAreaId() == AREA_ISLE)
@@ -311,11 +310,7 @@ public:
         {
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
             me->SetHealth(me->CountPctFromMaxHealth(15));
-            switch (rand()%2)
-            {
-                case 0: me->SetStandState(UNIT_STAND_STATE_SIT); break;
-                case 1: me->SetStandState(UNIT_STAND_STATE_SLEEP); break;
-            }
+            me->SetStandState(RAND(UNIT_STAND_STATE_SIT, UNIT_STAND_STATE_SLEEP));
         }
 
         void EnterCombat(Unit * /*who*/) {}
@@ -420,7 +415,7 @@ enum eGeezle
 
     SPELL_TREE_DISGUISE = 30298,
 
-    GEEZLE_SAY_1    = -1000629,
+    GEEZLE_SAY_1    = -1000629, //DB: old begun at -1000259
     SPARK_SAY_2     = -1000630,
     SPARK_SAY_3     = -1000631,
     GEEZLE_SAY_4    = -1000632,
@@ -470,7 +465,7 @@ public:
         {
             Step = 0;
             EventStarted = true;
-            Creature* Spark = me->SummonCreature(MOB_SPARK, SparkPos[0], SparkPos[1], SparkPos[2], 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000);
+            Creature* Spark = me->SummonCreature(MOB_SPARK, SparkPos[0], SparkPos[1], SparkPos[2], 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000);
             if (Spark)
             {
                 SparkGUID = Spark->GetGUID();
@@ -558,7 +553,7 @@ public:
                     }
                     else
                         (*itr)->Respawn();
-                }
+                }   //Q: FlagList.clear() ?
             } else sLog->outError("SD2 ERROR: FlagList is empty!");
         }
 
@@ -573,79 +568,6 @@ public:
             } else SayTimer -= diff;
         }
     };
-
-};
-
-/*######
-## mob_nestlewood_owlkin
-######*/
-
-enum eOwlkin
-{
-    SPELL_INOCULATE_OWLKIN  = 29528,
-    ENTRY_OWLKIN            = 16518,
-    ENTRY_OWLKIN_INOC       = 16534
-};
-
-class npc_nestlewood_owlkin : public CreatureScript
-{
-public:
-    npc_nestlewood_owlkin() : CreatureScript("npc_nestlewood_owlkin") { }
-
-    struct npc_nestlewood_owlkinAI : public ScriptedAI
-    {
-        npc_nestlewood_owlkinAI(Creature *c) : ScriptedAI(c) {}
-
-        uint32 DespawnTimer;
-
-        void Reset()
-        {
-            DespawnTimer = 0;
-        }
-
-        void UpdateAI(const uint32 diff)
-        {
-            //timer gets adjusted by the triggered aura effect
-            if (DespawnTimer)
-            {
-                if (DespawnTimer <= diff)
-                {
-                    //once we are able to, despawn us
-                    me->DespawnOrUnsummon();
-                    return;
-                } else DespawnTimer -= diff;
-            }
-
-            if (!UpdateVictim())
-                return;
-
-            DoMeleeAttackIfReady();
-        }
-    };
-
-    bool EffectDummyCreature(Unit * /*pCaster*/, uint32 spellId, uint32 effIndex, Creature *pCreatureTarget)
-    {
-        //always check spellid and effectindex
-        if (spellId == SPELL_INOCULATE_OWLKIN && effIndex == 0)
-        {
-            if (pCreatureTarget->GetEntry() != ENTRY_OWLKIN)
-                return true;
-
-            pCreatureTarget->UpdateEntry(ENTRY_OWLKIN_INOC);
-
-            //set despawn timer, since we want to remove Creature after a short time
-            CAST_AI(npc_nestlewood_owlkin::npc_nestlewood_owlkinAI, pCreatureTarget->AI())->DespawnTimer = 15000;
-
-            //always return true when we are handling this spell and effect
-            return true;
-        }
-        return false;
-    }
-
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new npc_nestlewood_owlkinAI (pCreature);
-    }
 
 };
 
@@ -673,7 +595,7 @@ public:
             {
                 ravager->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
                 ravager->SetReactState(REACT_AGGRESSIVE);
-                ravager->AI()->AttackStart(pPlayer);
+                if (ravager->AI()) ravager->AI()->AttackStart(pPlayer);
             }
         }
         return true ;
@@ -731,6 +653,39 @@ public:
 
 };
 
+/*######
+## mob Siltfin Murloc - 17190
+## quest "Control" - 9595
+######*/
+
+class npc_siltfin_murloc : public CreatureScript
+{
+public:
+    npc_siltfin_murloc() : CreatureScript("npc_siltfin_murloc") {}
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_siltfin_murlocAI(pCreature);
+    }
+
+    struct npc_siltfin_murlocAI : public ScriptedAI
+    {
+        npc_siltfin_murlocAI(Creature *c) : ScriptedAI(c) {}
+
+        void JustDied(Unit* slayer)
+	    {
+            if(Player* const killer = slayer->GetCharmerOrOwnerPlayerOrPlayerItself())
+		    {
+			    if(urand(1,100) <= 40)
+			    {
+				    if(killer->GetQuestStatus(9595) != QUEST_STATUS_NONE)
+					    killer->SummonCreature(17612,me->GetPositionX(),me->GetPositionY(),me->GetPositionZ()/*, 0.0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN*/);
+			    }
+		    }
+	    }
+    };
+};
+
 /*########
 ## Quest: The Prophecy of Akida
 ########*/
@@ -758,7 +713,7 @@ public:
         void Reset()
         {
             FleeTimer = 0;
-            GameObject* cage = me->FindNearestGameObject(GO_BRISTELIMB_CAGE, 5.0f);
+            GameObject* cage = me->FindNearestGameObject(GO_BRISTELIMB_CAGE, INTERACTION_DISTANCE);
             if(cage)
                 cage->ResetDoorOrButton();
         }
@@ -790,13 +745,13 @@ public:
     {
         if(pPlayer->GetQuestStatus(QUEST_THE_PROPHECY_OF_AKIDA) == QUEST_STATUS_INCOMPLETE)
         {
-            Creature* pCreature = pGo->FindNearestCreature(NPC_STILLPINE_CAPITIVE, 5.0f, true);
+            Creature* pCreature = pGo->FindNearestCreature(NPC_STILLPINE_CAPITIVE, INTERACTION_DISTANCE, true);
             if(pCreature)
             {
                 DoScriptText(RAND(CAPITIVE_SAY_1, CAPITIVE_SAY_2, CAPITIVE_SAY_3), pCreature, pPlayer);
                 pCreature->GetMotionMaster()->MoveFleeing(pPlayer, 3500);
                 pPlayer->KilledMonsterCredit(pCreature->GetEntry(), pCreature->GetGUID());
-                CAST_AI(npc_stillpine_capitive::npc_stillpine_capitiveAI, pCreature->AI())->FleeTimer = 3500;
+                if (pCreature->AI()) CAST_AI(npc_stillpine_capitive::npc_stillpine_capitiveAI, pCreature->AI())->FleeTimer = 3500;
                 return false;
             }
         }
@@ -812,9 +767,9 @@ void AddSC_azuremyst_isle()
     new npc_injured_draenei();
     new npc_magwin();
     new npc_geezle();
-    new npc_nestlewood_owlkin();
     new npc_death_ravager();
     new go_ravager_cage();
+    new npc_siltfin_murloc();
     new npc_stillpine_capitive();
     new go_bristlelimb_cage();
 }

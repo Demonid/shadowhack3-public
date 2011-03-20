@@ -63,8 +63,8 @@ public:
 
         void SummonAdds(Unit* pVictim)
         {
-            if (Creature *Add = DoSpawnCreature(13456, float(irand(-7,7)), float(irand(-7,7)), 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 90000))
-                Add->AI()->AttackStart(pVictim);
+            if (Creature *Add = DoSpawnCreature(13456, float(irand(-7,7)), float(irand(-7,7)), 0.0f, 0.0f, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 90000))
+                if (Add->AI()) Add->AI()->AttackStart(pVictim);
         }
 
         void UpdateAI(const uint32 diff)

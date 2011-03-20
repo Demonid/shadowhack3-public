@@ -90,7 +90,7 @@ class boss_jindo : public CreatureScript
                 if (HealingWard_Timer <= diff)
                 {
                     //DoCast(me, SPELL_POWERFULLHEALINGWARD);
-                    me->SummonCreature(14987, me->GetPositionX()+3, me->GetPositionY()-2, me->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,30000);
+                    me->SummonCreature(14987, me->GetPositionX()+3, me->GetPositionY()-2, me->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,30000);
                     HealingWard_Timer = 14000 + rand()%6000;
                 } else HealingWard_Timer -= diff;
 
@@ -108,12 +108,12 @@ class boss_jindo : public CreatureScript
                 //Casting the delusion curse with a shade. So shade will attack the same target with the curse.
                 if (Delusions_Timer <= diff)
                 {
-                    if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                     {
                         DoCast(pTarget, SPELL_DELUSIONSOFJINDO);
 
-                        Creature *Shade = me->SummonCreature(14986, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
-                        if (Shade)
+                        Creature *Shade = me->SummonCreature(14986, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
+                        if (Shade && Shade->AI())
                             Shade->AI()->AttackStart(pTarget);
                     }
 
@@ -124,7 +124,7 @@ class boss_jindo : public CreatureScript
                 if (Teleport_Timer <= diff)
                 {
                     Unit *pTarget = NULL;
-                    pTarget = SelectUnit(SELECT_TARGET_RANDOM,0);
+                    pTarget = SelectTarget(SELECT_TARGET_RANDOM,0);
                     if (pTarget && pTarget->GetTypeId() == TYPEID_PLAYER)
                     {
                         DoTeleportPlayer(pTarget, -11583.7783f,-1249.4278f,77.5471f,4.745f);
@@ -134,31 +134,31 @@ class boss_jindo : public CreatureScript
 
                         Creature *Skeletons;
                         Skeletons = me->SummonCreature(14826, pTarget->GetPositionX()+2, pTarget->GetPositionY(), pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
-                        if (Skeletons)
+                        if (Skeletons && Skeletons->AI())
                             Skeletons->AI()->AttackStart(pTarget);
                         Skeletons = me->SummonCreature(14826, pTarget->GetPositionX()-2, pTarget->GetPositionY(), pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
-                        if (Skeletons)
+                        if (Skeletons && Skeletons->AI())
                             Skeletons->AI()->AttackStart(pTarget);
                         Skeletons = me->SummonCreature(14826, pTarget->GetPositionX()+4, pTarget->GetPositionY(), pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
-                        if (Skeletons)
+                        if (Skeletons && Skeletons->AI())
                             Skeletons->AI()->AttackStart(pTarget);
                         Skeletons = me->SummonCreature(14826, pTarget->GetPositionX()-4, pTarget->GetPositionY(), pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
-                        if (Skeletons)
+                        if (Skeletons && Skeletons->AI())
                             Skeletons->AI()->AttackStart(pTarget);
                         Skeletons = me->SummonCreature(14826, pTarget->GetPositionX(), pTarget->GetPositionY()+2, pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
-                        if (Skeletons)
+                        if (Skeletons && Skeletons->AI())
                             Skeletons->AI()->AttackStart(pTarget);
                         Skeletons = me->SummonCreature(14826, pTarget->GetPositionX(), pTarget->GetPositionY()-2, pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
-                        if (Skeletons)
+                        if (Skeletons && Skeletons->AI())
                             Skeletons->AI()->AttackStart(pTarget);
                         Skeletons = me->SummonCreature(14826, pTarget->GetPositionX(), pTarget->GetPositionY()+4, pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
-                        if (Skeletons)
+                        if (Skeletons && Skeletons->AI())
                             Skeletons->AI()->AttackStart(pTarget);
                         Skeletons = me->SummonCreature(14826, pTarget->GetPositionX(), pTarget->GetPositionY()-4, pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
-                        if (Skeletons)
+                        if (Skeletons && Skeletons->AI())
                             Skeletons->AI()->AttackStart(pTarget);
                         Skeletons = me->SummonCreature(14826, pTarget->GetPositionX()+3, pTarget->GetPositionY(), pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
-                        if (Skeletons)
+                        if (Skeletons && Skeletons->AI())
                             Skeletons->AI()->AttackStart(pTarget);
                     }
 

@@ -215,6 +215,8 @@ enum CharacterDatabaseStatements
 
     CHAR_DEL_AURA,
     CHAR_ADD_AURA,
+    
+    CHAR_LOG_ADDITEM,
 
     CHAR_LOAD_ACCOUNT_DATA,
     CHAR_SET_ACCOUNT_DATA,
@@ -228,7 +230,7 @@ enum CharacterDatabaseStatements
     CHAR_ADD_TUTORIALS,
     CHAR_SET_TUTORIALS,
     CHAR_DEL_TUTORIALS,
-
+    
     CHAR_ADD_INSTANCE_SAVE,
     CHAR_UPDATE_INSTANCE_DATA,
 

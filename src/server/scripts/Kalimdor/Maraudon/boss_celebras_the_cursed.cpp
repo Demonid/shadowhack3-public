@@ -58,7 +58,7 @@ public:
 
         void JustDied(Unit* /*Killer*/)
         {
-            me->SummonCreature(13716, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 600000);
+            me->SummonCreature(13716, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 600000);
         }
 
         void UpdateAI(const uint32 diff)
@@ -70,7 +70,7 @@ public:
             if (Wrath_Timer <= diff)
             {
                 Unit *pTarget = NULL;
-                pTarget = SelectUnit(SELECT_TARGET_RANDOM,0);
+                pTarget = SelectTarget(SELECT_TARGET_RANDOM,0);
                 if (pTarget)
                     DoCast(pTarget, SPELL_WRATH);
                 Wrath_Timer = 8000;

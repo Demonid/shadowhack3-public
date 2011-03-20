@@ -410,12 +410,18 @@ struct PetLevelInfo
 
 struct MailLevelReward
 {
-    MailLevelReward() : raceMask(0), mailTemplateId(0), senderEntry(0) {}
-    MailLevelReward(uint32 _raceMask, uint32 _mailTemplateId, uint32 _senderEntry) : raceMask(_raceMask), mailTemplateId(_mailTemplateId), senderEntry(_senderEntry) {}
+    MailLevelReward() : raceMask(0), mailTemplateId(0), senderEntry(0),  subject(""), message(""), money(0), ItemID(0), ItemCount(0){}
+    MailLevelReward(uint32 _raceMask, uint32 _mailTemplateId, uint32 _senderEntry, std::string _subject, std::string _message, uint32 _money, uint32 _ItemID, uint32 _ItemCount) :
+	raceMask(_raceMask), mailTemplateId(_mailTemplateId), senderEntry(_senderEntry), subject(_subject), message(_message), money(_money), ItemID(_ItemID), ItemCount(_ItemCount) {}
 
     uint32 raceMask;
     uint32 mailTemplateId;
     uint32 senderEntry;
+	std::string subject;
+	std::string message;
+	uint32 money;
+	uint32 ItemID;
+	uint32 ItemCount;
 };
 
 typedef std::list<MailLevelReward> MailLevelRewardList;
@@ -702,7 +708,7 @@ class ObjectMgr
         uint32 GetPlayerAccountIdByGUID(const uint64 &guid) const;
         uint32 GetPlayerAccountIdByPlayerName(const std::string& name) const;
 
-        uint32 GetNearestTaxiNode(float x, float y, float z, uint32 mapid, uint32 team);
+        uint32 GetNearestTaxiNode(float x, float y, float z, uint32 mapid, uint32 team, uint32 searched_node );
         void GetTaxiPath(uint32 source, uint32 destination, uint32 &path, uint32 &cost);
         uint32 GetTaxiMountDisplayId(uint32 id, uint32 team, bool allowed_alt_team = false);
 
@@ -802,10 +808,19 @@ class ObjectMgr
             return NULL;
         }
 
-        VehicleAccessoryList const* GetVehicleAccessoryList(uint32 uiEntry) const
+        VehicleAccessoryList const* GetVehicleAccessoryList(Vehicle* veh) const
         {
-            VehicleAccessoryMap::const_iterator itr = m_VehicleAccessoryMap.find(uiEntry);
-            if (itr != m_VehicleAccessoryMap.end())
+            if (Creature* cre = veh->GetBase()->ToCreature())
+            {
+                // Give preference to GUID-based accessories
+                VehicleAccessoryMap::const_iterator itr = m_VehicleAccessoryMap.find(cre->GetDBTableGUIDLow());
+                if (itr != m_VehicleAccessoryMap.end())
+                    return &itr->second;
+            }
+
+            // Otherwise return entry-based
+            VehicleAccessoryMap::const_iterator itr = m_VehicleTemplateAccessoryMap.find(veh->GetCreatureEntry());
+            if (itr != m_VehicleTemplateAccessoryMap.end())
                 return &itr->second;
             return NULL;
         }
@@ -916,6 +931,7 @@ class ObjectMgr
         void LoadInstanceTemplate();
         void LoadInstanceEncounters();
         void LoadMailLevelRewards();
+        void LoadVehicleTemplateAccessories();
         void LoadVehicleAccessories();
         void LoadVehicleScaling();
 
@@ -967,6 +983,9 @@ class ObjectMgr
         }
 
         void ReturnOrDeleteOldMails(bool serverUp);
+
+		// External Mail
+		void SendExternalMails();
 
         CreatureBaseStats const* GetCreatureBaseStats(uint8 level, uint8 unitClass);
 
@@ -1315,6 +1334,7 @@ class ObjectMgr
 
         ItemRequiredTargetMap m_ItemRequiredTarget;
 
+        VehicleAccessoryMap m_VehicleTemplateAccessoryMap;
         VehicleAccessoryMap m_VehicleAccessoryMap;
         VehicleScalingMap m_VehicleScalingMap;
 

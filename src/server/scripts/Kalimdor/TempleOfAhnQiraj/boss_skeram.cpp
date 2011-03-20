@@ -209,9 +209,9 @@ public:
         {
             DoScriptText(SAY_SPLIT, me);
 
-            ov_mycoordinates *place1 = new ov_mycoordinates(-8340.782227f,2083.814453f,125.648788f,0);
-            ov_mycoordinates *place2 = new ov_mycoordinates(-8341.546875f,2118.504639f,133.058151f,0);
-            ov_mycoordinates *place3 = new ov_mycoordinates(-8318.822266f,2058.231201f,133.058151f,0);
+            ov_mycoordinates *place1 = new ov_mycoordinates(-8340.782227f,2083.814453f,125.648788f,0.0f);
+            ov_mycoordinates *place2 = new ov_mycoordinates(-8341.546875f,2118.504639f,133.058151f,0.0f);
+            ov_mycoordinates *place3 = new ov_mycoordinates(-8318.822266f,2058.231201f,133.058151f,0.0f);
 
             ov_mycoordinates *bossc=place1, *i1=place2, *i2=place3;
 
@@ -236,7 +236,7 @@ public:
 
             for (uint16 i = 0; i < 41; ++i)
             {
-                if (Player *pTarget = CAST_PLR(SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true)))
+                if (Player *pTarget = CAST_PLR(SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true)))
                 {
                     if (Group *pGrp = pTarget->GetGroup())
                         for (uint8 ico = 0; ico < TARGETICONCOUNT; ++ico)
@@ -264,16 +264,19 @@ public:
                 case 25: Images25 = true; break;
             }
 
-            Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,0);
+            Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0);
 
             Creature *Image1 = me->SummonCreature(15263, i1->x, i1->y, i1->z, i1->r, TEMPSUMMON_CORPSE_DESPAWN, 30000);
             if (Image1)
             {
                 Image1->SetMaxHealth(me->GetMaxHealth() / 5);
                 Image1->SetHealth(me->GetHealth() / 5);
-                if (pTarget)
-                    Image1->AI()->AttackStart(pTarget);
-                CAST_AI(boss_skeram::boss_skeramAI, Image1->AI())->IsImage = true;
+                if (Image1->AI())
+                {
+                    if (pTarget)
+                        Image1->AI()->AttackStart(pTarget);
+                    CAST_AI(boss_skeram::boss_skeramAI, Image1->AI())->IsImage = true;
+                }
             }
 
             Creature *Image2 = me->SummonCreature(15263,i2->x, i2->y, i2->z, i2->r, TEMPSUMMON_CORPSE_DESPAWN, 30000);
@@ -281,9 +284,12 @@ public:
             {
                 Image2->SetMaxHealth(me->GetMaxHealth() / 5);
                 Image2->SetHealth(me->GetHealth() / 5);
-                if (pTarget)
-                    Image2->AI()->AttackStart(pTarget);
-                CAST_AI(boss_skeram::boss_skeramAI, Image2->AI())->IsImage = true;
+                if (Image2->AI())
+                {
+                    if (pTarget)
+                        Image2->AI()->AttackStart(pTarget);
+                    CAST_AI(boss_skeram::boss_skeramAI, Image2->AI())->IsImage = true;
+                }
             }
             Invisible = true;
             delete place1;

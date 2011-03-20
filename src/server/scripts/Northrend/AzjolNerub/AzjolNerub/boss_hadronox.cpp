@@ -157,7 +157,7 @@ public:
 
             if (uiAcidTimer <= diff)
             {
-                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))
                     DoCast(pTarget, SPELL_ACID_CLOUD);
 
                 uiAcidTimer = urand(20*IN_MILLISECONDS,30*IN_MILLISECONDS);
@@ -165,7 +165,7 @@ public:
 
             if (uiLeechTimer <= diff)
             {
-                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))
                     DoCast(pTarget, SPELL_LEECH_POISON);
 
                 uiLeechTimer = urand(11*IN_MILLISECONDS,14*IN_MILLISECONDS);
@@ -173,7 +173,7 @@ public:
 
             if (uiGrabTimer <= diff)
             {
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0)) // Draws all players (and attacking Mobs) to itself.
+                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0)) // Draws all players (and attacking Mobs) to itself.
                     DoCast(pTarget, SPELL_WEB_GRAB);
 
                 uiGrabTimer = urand(15*IN_MILLISECONDS,30*IN_MILLISECONDS);

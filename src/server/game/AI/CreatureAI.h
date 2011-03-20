@@ -138,6 +138,8 @@ class CreatureAI : public UnitAI
 
         void DoZoneInCombat(Creature* pUnit = NULL);
 
+		void AggroAllPlayersInRange(float fMaxSearchRange = 100.0f, Creature* creature = NULL);
+
         // Called at text emote receive from player
         virtual void ReceiveEmote(Player* /*pPlayer*/, uint32 /*text_emote*/) {}
 
@@ -168,7 +170,7 @@ class CreatureAI : public UnitAI
 
         virtual void PassengerBoarded(Unit * /*who*/, int8 /*seatId*/, bool /*apply*/) {}
 
-        virtual bool CanSeeAlways(WorldObject const* obj) {return false;}
+        virtual bool CanSeeAlways(WorldObject const* /*obj*/) { return false; }
     protected:
         virtual void MoveInLineOfSight(Unit *);
 
