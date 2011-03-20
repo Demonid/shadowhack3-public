@@ -14549,6 +14549,7 @@ bool InitTriggerAuraData()
     isNonTriggerAura[SPELL_AURA_REDUCE_PUSHBACK]=true;
     isNonTriggerAura[SPELL_AURA_MOD_POWER_REGEN] = true;
     isNonTriggerAura[SPELL_AURA_REDUCE_PUSHBACK] = true;
+    isNonTriggerAura[SPELL_AURA_SPELL_MAGNET] = true;
 
     isAlwaysTriggeredAura[SPELL_AURA_OVERRIDE_CLASS_SCRIPTS] = true;
     isAlwaysTriggeredAura[SPELL_AURA_MOD_FEAR] = true;
