@@ -18720,7 +18720,7 @@ void Player::_SaveStats(SQLTransaction& trans)
     ss << "INSERT INTO character_stats (guid, maxhealth, maxpower1, maxpower2, maxpower3, maxpower4, maxpower5, maxpower6, maxpower7, "
         "strength, agility, stamina, intellect, spirit, pos_strength, pos_agility, pos_stamina, pos_intellect, pos_spirit, "
         "neg_strength, neg_agility, neg_stamina, neg_intellect, neg_spirit, armor,  resHoly, resFire, resNature, resFrost, resShadow, resArcane, "
-        "blockPct, dodgePct, parryPct, critPct, rangedCritPct, spellCritPct, attackPower, rangedAttackPower, spellPower, mindamage, maxdamage) VALUES ("
+        "blockPct, dodgePct, parryPct, critPct, rangedCritPct, spellCritPct, attackPower, rangedAttackPower, spellPower, baseatttime, mindamage, maxdamage) VALUES ("
         << GetGUIDLow() << ", "
         << GetMaxHealth() << ", ";
     for (uint8 i = 0; i < MAX_POWERS; ++i)
@@ -18743,6 +18743,7 @@ void Player::_SaveStats(SQLTransaction& trans)
        << GetUInt32Value(UNIT_FIELD_ATTACK_POWER) << ", "
        << GetUInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER) << ", "
        << GetBaseSpellPowerBonus() << ", "
+       << GetFloatValue(UNIT_FIELD_BASEATTACKTIME) << ", "
        << GetFloatValue(UNIT_FIELD_MINDAMAGE) << ", "
        << GetFloatValue(UNIT_FIELD_MAXDAMAGE) << ")";
     trans->Append(ss.str().c_str());
