@@ -5932,7 +5932,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                 {
                     if(procSpell && procSpell->Id == 50622)
                         return false;
-                    SelectNearbyTarget(5, pVictim);
+                    target = SelectNearbyTarget(5, pVictim);
                     if (!target)
                         return false;
                     if (procSpell && procSpell->Id == 50622)
