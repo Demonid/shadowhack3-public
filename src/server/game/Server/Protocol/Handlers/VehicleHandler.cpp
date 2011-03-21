@@ -99,7 +99,7 @@ void WorldSession::HandleChangeSeatsOnControlledVehicle(WorldPacket &recv_data)
             {
                 if (Vehicle *vehicle = vehUnit->GetVehicleKit())
                     if (vehicle->HasEmptySeat(seatId))
-                        GetPlayer()->_EnterVehicle(vehicle, seatId);
+                        vehUnit->HandleSpellClick(GetPlayer(), seatId);
             }
             break;
         }
@@ -116,7 +116,7 @@ void WorldSession::HandleChangeSeatsOnControlledVehicle(WorldPacket &recv_data)
             else if (Unit *vehUnit = Unit::GetUnit(*GetPlayer(), guid))
                 if (Vehicle *vehicle = vehUnit->GetVehicleKit())
                     if (vehicle->HasEmptySeat(seatId))
-                        GetPlayer()->_EnterVehicle(vehicle, seatId);
+                        vehUnit->HandleSpellClick(GetPlayer(), seatId);
             break;
         }
         default:
