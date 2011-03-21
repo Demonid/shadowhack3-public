@@ -46,9 +46,7 @@ void ChargeMovementGenerator<T>::_setTargetPosition(T &unit)
     if (unit.GetTypeId() == TYPEID_PLAYER)
         unit.ToPlayer()->addAnticheatTemporaryImmunity(transitTime+250);
 
-    unit.MonsterMoveByPath(i_path, 1, i_path.size(), transitTime);
-
-    
+    unit.MonsterMoveByPath(i_path, 1, i_path.size(), transitTime);    
 }
 
 template<class T>
