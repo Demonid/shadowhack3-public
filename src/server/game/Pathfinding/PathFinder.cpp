@@ -25,8 +25,10 @@
 #include "DetourCommon.h"
 
 ////////////////// PathInfo //////////////////
-PathInfo::PathInfo(const Unit* owner, const float destX, const float destY, const float destZ, bool useStraightPath) :
-    m_polyLength(0), m_type(PATHFIND_BLANK), m_useStraightPath(useStraightPath),
+PathInfo::PathInfo(const Unit* owner, const float destX, const float destY, const float destZ,
+                   bool useStraightPath, bool forceDest) :
+    m_polyLength(0), m_type(PATHFIND_BLANK),
+    m_useStraightPath(useStraightPath), m_forceDestination(forceDest),
     m_sourceUnit(owner), m_navMesh(NULL), m_navMeshQuery(NULL)
 {
     PathNode endPoint(destX, destY, destZ);
@@ -37,7 +39,7 @@ PathInfo::PathInfo(const Unit* owner, const float destX, const float destY, cons
     PathNode startPoint(x, y, z);
     setStartPosition(startPoint);
 
-    PATH_DEBUG("++ PathInfo::PathInfo for %u \n", m_sourceUnit->GetGUID());
+    sLog->outStaticDebug("++ PathInfo::PathInfo for %u \n", m_sourceUnit->GetGUID());
 
     uint32 mapId = m_sourceUnit->GetMapId();
     if (MMAP::MMapFactory::IsPathfindingEnabled(mapId))
@@ -62,10 +64,11 @@ PathInfo::PathInfo(const Unit* owner, const float destX, const float destY, cons
 
 PathInfo::~PathInfo()
 {
-    PATH_DEBUG("++ PathInfo::~PathInfo() for %u \n", m_sourceUnit->GetGUID());
+    sLog->outStaticDebug("++ PathInfo::~PathInfo() for %u \n", m_sourceUnit->GetGUID());
 }
 
-bool PathInfo::Update(const float destX, const float destY, const float destZ, bool useStraightPath)
+bool PathInfo::Update(const float destX, const float destY, const float destZ,
+                      bool useStraightPath, bool forceDest)
 {
     PathNode newDest(destX, destY, destZ);
     PathNode oldDest = getEndPosition();
@@ -78,8 +81,9 @@ bool PathInfo::Update(const float destX, const float destY, const float destZ, b
     setStartPosition(newStart);
 
     m_useStraightPath = useStraightPath;
+    m_forceDestination = forceDest;
 
-    PATH_DEBUG("++ PathInfo::Update() for %u \n", m_sourceUnit->GetGUID());
+    sLog->outStaticDebug("++ PathInfo::Update() for %u \n", m_sourceUnit->GetGUID());
 
     // make sure navMesh works - we can run on map w/o mmap
     if (m_sourceUnit->HasUnitState(UNIT_STAT_IGNORE_PATHFINDING) ||
@@ -99,7 +103,7 @@ bool PathInfo::Update(const float destX, const float destY, const float destZ, b
     {
         // our target is not moving - we just coming closer
         // we are moving on precalculated path - enjoy the ride
-        PATH_DEBUG("++ PathInfo::Update:: precalculated path\n");
+        sLog->outStaticDebug("++ PathInfo::Update:: precalculated path\n");
 
         m_pathPoints.crop(1, 0);
         setNextPosition(m_pathPoints[1]);
@@ -206,7 +210,7 @@ void PathInfo::BuildPolyPath(PathNode startPos, PathNode endPos)
     // its up to caller how he will use this info
     if (startPoly == INVALID_POLYREF || endPoly == INVALID_POLYREF)
     {
-        PATH_DEBUG("++ BuildPolyPath :: (startPoly == 0 || endPoly == 0)\n");
+        sLog->outStaticDebug("++ BuildPolyPath :: (startPoly == 0 || endPoly == 0)\n");
         BuildShortcut();
         m_type = (m_sourceUnit->GetTypeId() == TYPEID_UNIT && m_sourceUnit->ToCreature()->canFly())
                     ? PathType(PATHFIND_NORMAL | PATHFIND_NOT_USING_PATH) : PATHFIND_NOPATH;
@@ -218,7 +222,7 @@ void PathInfo::BuildPolyPath(PathNode startPos, PathNode endPos)
     bool farFromPoly = (distToStartPoly > 7.0f || distToEndPoly > 7.0f);
     if (farFromPoly)
     {
-        PATH_DEBUG("++ BuildPolyPath :: farFromPoly distToStartPoly=%.3f distToEndPoly=%.3f\n", distToStartPoly, distToEndPoly);
+        sLog->outStaticDebug("++ BuildPolyPath :: farFromPoly distToStartPoly=%.3f distToEndPoly=%.3f\n", distToStartPoly, distToEndPoly);
 
         bool buildShotrcut = false;
         if (m_sourceUnit->GetTypeId() == TYPEID_UNIT)
@@ -228,13 +232,13 @@ void PathInfo::BuildPolyPath(PathNode startPos, PathNode endPos)
             PathNode p = (distToStartPoly > 7.0f) ? startPos : endPos;
             if (m_sourceUnit->GetBaseMap()->IsUnderWater(p.x, p.y, p.z))
             {
-                PATH_DEBUG("++ BuildPolyPath :: underWater case\n");
-                if (owner->canSwim() || owner->isPet())
+                sLog->outStaticDebug("++ BuildPolyPath :: underWater case\n");
+                if (owner->canSwim())
                     buildShotrcut = true;
             }
             else
             {
-                PATH_DEBUG("++ BuildPolyPath :: flying case\n");
+                sLog->outStaticDebug("++ BuildPolyPath :: flying case\n");
                 if (owner->canFly())
                     buildShotrcut = true;
             }
@@ -266,7 +270,7 @@ void PathInfo::BuildPolyPath(PathNode startPos, PathNode endPos)
     // just need to move in straight line
     if (startPoly == endPoly)
     {
-        PATH_DEBUG("++ BuildPolyPath :: (startPoly == endPoly)\n");
+        sLog->outStaticDebug("++ BuildPolyPath :: (startPoly == endPoly)\n");
 
         BuildShortcut();
 
@@ -274,7 +278,7 @@ void PathInfo::BuildPolyPath(PathNode startPos, PathNode endPos)
         m_polyLength = 1;
 
         m_type = farFromPoly ? PATHFIND_INCOMPLETE : PATHFIND_NORMAL;
-        PATH_DEBUG("++ BuildPolyPath :: path type %d\n", m_type);
+        sLog->outStaticDebug("++ BuildPolyPath :: path type %d\n", m_type);
         return;
     }
 
@@ -308,7 +312,7 @@ void PathInfo::BuildPolyPath(PathNode startPos, PathNode endPos)
 
     if (startPolyFound && endPolyFound)
     {
-        PATH_DEBUG("++ BuildPolyPath :: (startPolyFound && endPolyFound)\n");
+        sLog->outStaticDebug("++ BuildPolyPath :: (startPolyFound && endPolyFound)\n");
 
         // we moved along the path and the target did not move out of our old poly-path
         // our path is a simple subpath case, we have all the data we need
@@ -319,7 +323,7 @@ void PathInfo::BuildPolyPath(PathNode startPos, PathNode endPos)
     }
     else if (startPolyFound && !endPolyFound)
     {
-        PATH_DEBUG("++ BuildPolyPath :: (startPolyFound && !endPolyFound)\n");
+        sLog->outStaticDebug("++ BuildPolyPath :: (startPolyFound && !endPolyFound)\n");
 
         // we are moving on the old path but target moved out
         // so we have atleast part of poly-path ready
@@ -371,14 +375,14 @@ void PathInfo::BuildPolyPath(PathNode startPos, PathNode endPos)
             sLog->outError("%u's Path Build failed: 0 length path", m_sourceUnit->GetGUID());
         }
 
-        PATH_DEBUG("++  m_polyLength=%u prefixPolyLength=%u suffixPolyLength=%u \n",m_polyLength, prefixPolyLength, suffixPolyLength);
+        sLog->outStaticDebug("++  m_polyLength=%u prefixPolyLength=%u suffixPolyLength=%u \n",m_polyLength, prefixPolyLength, suffixPolyLength);
 
         // new path = prefix + suffix - overlap
         m_polyLength = prefixPolyLength + suffixPolyLength - 1;
     }
     else
     {
-        PATH_DEBUG("++ BuildPolyPath :: (!startPolyFound && !endPolyFound)\n");
+        sLog->outStaticDebug("++ BuildPolyPath :: (!startPolyFound && !endPolyFound)\n");
 
         // either we have no path at all -> first run
         // or something went really wrong -> we aren't moving along the path to the target
@@ -454,7 +458,7 @@ void PathInfo::BuildPointPath(float *startPoint, float *endPoint)
         // only happens if pass bad data to findStraightPath or navmesh is broken
         // single point paths can be generated here
         // TODO : check the exact cases
-        PATH_DEBUG("++ PathInfo::BuildPointPath FAILED! path sized %d returned\n", pointCount);
+        sLog->outStaticDebug("++ PathInfo::BuildPointPath FAILED! path sized %d returned\n", pointCount);
         BuildShortcut();
         m_type = PATHFIND_NOPATH;
         return;
@@ -472,12 +476,22 @@ void PathInfo::BuildPointPath(float *startPoint, float *endPoint)
     setNextPosition(m_pathPoints[1]);
     setActualEndPosition(m_pathPoints[pointCount-1]);
 
-    PATH_DEBUG("++ PathInfo::BuildPointPath path type %d size %d poly-size %d\n", m_type, pointCount, m_polyLength);
+    // force the given destination, if needed
+    if(m_forceDestination &&
+        (!(m_type & PATHFIND_NORMAL) || !inRange(getEndPosition(), getActualEndPosition(), 1.0f, 1.0f)))
+    {
+        setActualEndPosition(getEndPosition());
+        BuildShortcut();
+        m_type = PathType(PATHFIND_NORMAL | PATHFIND_NOT_USING_PATH);
+        return;
+    }
+
+    sLog->outStaticDebug("++ PathInfo::BuildPointPath path type %d size %d poly-size %d\n", m_type, pointCount, m_polyLength);
 }
 
 void PathInfo::BuildShortcut()
 {
-    PATH_DEBUG("++ BuildShortcut :: making shortcut\n");
+    sLog->outStaticDebug("++ BuildShortcut :: making shortcut\n");
 
     clear();
 
@@ -504,13 +518,11 @@ void PathInfo::createFilter()
             includeFlags |= NAV_GROUND;          // walk
 
         // creatures don't take environmental damage
-        if (creature->canSwim() || creature->isPet())
+        if (creature->canSwim())
             includeFlags |= (NAV_WATER | NAV_MAGMA | NAV_SLIME);           // swim
     }
     else if (m_sourceUnit->GetTypeId() == TYPEID_PLAYER)
     {
-        Player* player = (Player*)m_sourceUnit;
-
         // perfect support not possible, just stay 'safe'
         includeFlags |= (NAV_GROUND | NAV_WATER);
     }
