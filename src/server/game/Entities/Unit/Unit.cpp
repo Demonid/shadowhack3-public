@@ -17358,8 +17358,12 @@ template void Unit::MonsterMoveByPath<PathNode>(const Path<PathNode> &, uint32, 
 template<typename Elem, typename Node>
 void Unit::SendMonsterMoveByPath(Path<Elem,Node> const& path, uint32 start, uint32 end, uint32 traveltime)
 {
-    if (!IsStopped() && !isInFlight())     // If we're already moving by path and we're not on taxi...
-        StopMoving();                      // ... we must send our current position to client to avoid position mismatch
+    if ( !IsStopped() && !isInFlight() && GetMotionMaster()->GetCurrentMovementGeneratorType() != WAYPOINT_MOTION_TYPE )
+    {    
+        WorldPacket heartbeat;
+        BuildHeartBeatMsg(&heartbeat);
+        SendMessageToSet(&heartbeat, false);        // ... we must send our current position to client to avoid position mismatch
+    }                     
 
     uint32 pathSize = end - start;
 
