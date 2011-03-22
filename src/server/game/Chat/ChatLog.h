@@ -53,8 +53,8 @@ enum LexicsActions
 
 class ChatLog
 {
-		friend class ACE_Singleton<ChatLog, ACE_Null_Mutex>;
-		ChatLog();
+        friend class ACE_Singleton<ChatLog, ACE_Null_Mutex>;
+        ChatLog();
     public:
         ~ChatLog();
 

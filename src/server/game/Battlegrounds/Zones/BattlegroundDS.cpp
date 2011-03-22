@@ -55,29 +55,6 @@ void BattlegroundDS::Update(uint32 diff)
             UpdateArenaWorldState();
             CheckArenaAfterTimerConditions();
         }
-    }
-
-    if (getWaterFallTimer() < diff)
-    {
-        if (isWaterFallActive())
-        {
-            setWaterFallTimer(urand(BG_DS_WATERFALL_TIMER_MIN, BG_DS_WATERFALL_TIMER_MAX));
-            for (uint32 i = BG_DS_OBJECT_WATER_1; i <= BG_DS_OBJECT_WATER_2; ++i)
-                SpawnBGObject(i, getWaterFallTimer());
-            setWaterFallActive(false);
-        }
-        else
-        {
-            setWaterFallTimer(BG_DS_WATERFALL_DURATION);
-            for (uint32 i = BG_DS_OBJECT_WATER_1; i <= BG_DS_OBJECT_WATER_2; ++i)
-                SpawnBGObject(i, RESPAWN_IMMEDIATELY);
-            setWaterFallActive(true);
-        }
-    }
-    else
-        setWaterFallTimer(getWaterFallTimer() - diff);
-    if (GetStatus() == STATUS_IN_PROGRESS)
-    {
         // knockback
         if(getKnockBackTimer() < diff)
         {
@@ -86,21 +63,40 @@ void BattlegroundDS::Update(uint32 diff)
                 Player * plr = sObjectMgr->GetPlayer(itr->first);
                 if (plr && plr->IsWithinLOS(1214, 765, 14) && plr->GetDistance2d(1214, 765) <= 50)
                 {
-                    plr->KnockBackWithAngle(6.40f, 35, 6);
+                    plr->KnockBackPlayerWithAngle(6.40f, 35, 6);
                     if (Pet* pet = plr->GetPet())
-                        pet->KnockBackWithAngle(6.40f, 35, 6);
+                        pet->KnockBackPlayerWithAngle(6.40f, 35, 6);
                 }
                 if (plr && plr->IsWithinLOS(1369, 817, 14) && plr->GetDistance2d(1369, 817) <= 50)
                 {
-                    plr->KnockBackWithAngle(3.03f, 35, 6);
+                    plr->KnockBackPlayerWithAngle(3.03f, 35, 6);
                     if (Pet* pet = plr->GetPet())
-                        pet->KnockBackWithAngle(3.03f, 35, 6);
+                        pet->KnockBackPlayerWithAngle(3.03f, 35, 6);
                 }
             }
             setKnockBackTimer(3000);
         }
         else
             setKnockBackTimer(getKnockBackTimer() - diff);
+        if (getWaterFallTimer() < diff)
+        {
+            if (isWaterFallActive())
+            {
+                setWaterFallTimer(urand(BG_DS_WATERFALL_TIMER_MIN, BG_DS_WATERFALL_TIMER_MAX));
+                for (uint32 i = BG_DS_OBJECT_WATER_1; i <= BG_DS_OBJECT_WATER_2; ++i)
+                    SpawnBGObject(i, getWaterFallTimer());
+                setWaterFallActive(false);
+            }
+            else
+            {
+                setWaterFallTimer(BG_DS_WATERFALL_DURATION);
+                for (uint32 i = BG_DS_OBJECT_WATER_1; i <= BG_DS_OBJECT_WATER_2; ++i)
+                    SpawnBGObject(i, RESPAWN_IMMEDIATELY);
+                setWaterFallActive(true);
+            }
+        }
+        else
+            setWaterFallTimer(getWaterFallTimer() - diff);
     }
 }
 
@@ -202,6 +198,7 @@ void BattlegroundDS::Reset()
 
 bool BattlegroundDS::SetupBattleground()
 {
+    m_uiKnockback=10000;
     // gates
     if (!AddObject(BG_DS_OBJECT_DOOR_1, BG_DS_OBJECT_TYPE_DOOR_1, 1350.95f, 817.2f, 20.8096f, 3.15f, 0, 0, 0.99627f, 0.0862864f, RESPAWN_IMMEDIATELY)
         || !AddObject(BG_DS_OBJECT_DOOR_2, BG_DS_OBJECT_TYPE_DOOR_2, 1232.65f, 764.913f, 20.0729f, 6.3f, 0, 0, 0.0310211f, -0.999519f, RESPAWN_IMMEDIATELY)
