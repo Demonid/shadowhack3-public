@@ -10170,6 +10170,10 @@ void Unit::SetCharm(Unit* charm, bool apply)
 
 int32 Unit::DealHeal(Unit *pVictim, uint32 addhealth)
 {
+    if((pVictim->GetTypeId() == TYPEID_PLAYER && ((Player*)pVictim)->duel && pVictim!=this) && !HasUnitTypeMask(UNIT_MASK_SUMMON|
+        UNIT_MASK_GUARDIAN| UNIT_MASK_PET|UNIT_MASK_HUNTER_PET|UNIT_MASK_TOTEM))
+        return NULL;
+
     int32 gain = 0;
 
     if (pVictim->IsAIEnabled)
