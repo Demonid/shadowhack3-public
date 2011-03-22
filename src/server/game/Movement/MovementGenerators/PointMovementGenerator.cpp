@@ -92,7 +92,7 @@ bool PointMovementGenerator<T>::Update(T &unit, const uint32 &diff)
             return true;
     }
 
-    if (i_path.empty())
+    if (i_path.empty() && m_usePathfinding)
         return false;
 
     Traveller<T> traveller(unit);
