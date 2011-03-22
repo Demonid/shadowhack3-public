@@ -210,7 +210,13 @@ class ArenaTeam
 
         void FinishWeek();
         void FinishGame(int32 mod);
-        void SetName(std::string name) { m_Name=name;}
+        void SetName(std::string name) 
+        { 
+            m_Name=name;
+            SQLTransaction trans = CharacterDatabase.BeginTransaction();
+            trans->PAppend("UPDATE arena_team SET name='%s' WHERE arenateamid = '%u'", m_Name, GetId());
+            LoginDatabase.CommitTransaction(trans);
+        }
 
     protected:
 
