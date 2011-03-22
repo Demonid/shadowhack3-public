@@ -595,6 +595,14 @@ public:
     const std::string& GetMOTD() const { return m_motd; }
     const std::string& GetInfo() const { return m_info; }
 
+    // Setters
+    void SetName(std::string name) 
+    { 
+        m_name=name; 
+        SQLTransaction trans = CharacterDatabase.BeginTransaction();
+        trans->PAppend("UPDATE guild SET name='%s' WHERE guildid = '%u'", m_name, GetId());
+        LoginDatabase.CommitTransaction(trans);
+    }
     // Handle client commands
     void HandleRoster(WorldSession *session = NULL);          // NULL = broadcast
     void HandleQuery(WorldSession *session);

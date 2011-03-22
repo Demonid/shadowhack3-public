@@ -27,6 +27,7 @@ void AddSC_crw_scripts();
 void AddSC_strand_of_the_ancients();
 void AddSC_spectator();
 void AddSC_prof_master();
+void AddSC_renamer();
 
 //examples
 void AddSC_example_creature();
@@ -1255,6 +1256,7 @@ void AddCustomScripts()
     AddSC_crw_scripts();
     AddSC_strand_of_the_ancients();
     AddSC_spectator();
+    AddSC_renamer();
     AddSC_prof_master();
 #endif
 }
