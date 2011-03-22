@@ -70,7 +70,7 @@ void BattlegroundRV::Update(uint32 diff)
     if (getTimer() < diff)
     {
         uint32 i;
-        if (GetBgMap(false))
+        if (GetBgMap())
             switch(getState())
             {
                 case BG_RV_STATE_OPEN_FENCES:
