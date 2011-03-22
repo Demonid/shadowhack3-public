@@ -4461,10 +4461,10 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 49224:     // Magic Suppression
         case 49611:
-        case 36032:     // Arcane Blast buff
+        /*case 36032:     // Arcane Blast buff
             spellInfo->procCharges = 0;
             count++;
-            break;
+            break;*/
         // Blood Tap
         case 45529:
             spellInfo->EffectMiscValue[0] = RUNE_BLOOD;

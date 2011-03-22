@@ -19721,7 +19721,9 @@ void Player::RemovePrecastSpellMods(Spell * spell)
                     // remove from list
                     spell->m_appliedMods.erase(iterMod);
 
-                    if (mod->ownerAura->DropCharge())
+                    // Arcane Blast
+                    if ((spell->m_spellInfo->SpellFamilyFlags[0] == 0x20000000 && 
+                        spell->m_spellInfo->SpellFamilyName == SPELLFAMILY_MAGE) || mod->ownerAura->DropCharge())
                         itr = m_spellMods[i].begin();
                 }
                 break;
