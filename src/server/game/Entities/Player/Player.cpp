@@ -18720,7 +18720,8 @@ void Player::_SaveStats(SQLTransaction& trans)
     ss << "INSERT INTO character_stats (guid, maxhealth, maxpower1, maxpower2, maxpower3, maxpower4, maxpower5, maxpower6, maxpower7, "
         "strength, agility, stamina, intellect, spirit, pos_strength, pos_agility, pos_stamina, pos_intellect, pos_spirit, "
         "neg_strength, neg_agility, neg_stamina, neg_intellect, neg_spirit, armor,  resHoly, resFire, resNature, resFrost, resShadow, resArcane, "
-        "blockPct, dodgePct, parryPct, critPct, rangedCritPct, spellCritPct, attackPower, rangedAttackPower, spellPower, baseatttime, mindamage, maxdamage) VALUES ("
+        "blockPct, dodgePct, parryPct, critPct, rangedCritPct, spellCritPct, attackPower, rangedAttackPower, ap_multi, ap_mods, spellPower, pos_resbuffmods, neg_resbuffmods, "
+        "mainhandrating, hasterating, baseatttime, rangedatttime, mindamage, maxdamage, minrangeddamage, maxrangeddamage) VALUES ("
         << GetGUIDLow() << ", "
         << GetMaxHealth() << ", ";
     for (uint8 i = 0; i < MAX_POWERS; ++i)
@@ -18742,10 +18743,19 @@ void Player::_SaveStats(SQLTransaction& trans)
        << GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1) << ", "
        << GetUInt32Value(UNIT_FIELD_ATTACK_POWER) << ", "
        << GetUInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER) << ", "
+       << GetFloatValue(UNIT_FIELD_ATTACK_POWER_MULTIPLIER) << ", " //ap_multi
+       << GetUInt32Value(UNIT_FIELD_ATTACK_POWER_MODS) << ", " //ap_mods
        << GetBaseSpellPowerBonus() << ", "
+       << GetResistanceBuffMods(SPELL_SCHOOL_NORMAL, true) << ", "
+       << GetResistanceBuffMods(SPELL_SCHOOL_NORMAL, false) << ", "
+       << GetFloatValue(PLAYER_FIELD_COMBAT_RATING_1 + 20) << ", " //MainHandMeleeSkill rating
+       << GetFloatValue(PLAYER_FIELD_COMBAT_RATING_1 + 17) << ", " //haste rating
        << GetFloatValue(UNIT_FIELD_BASEATTACKTIME) << ", "
+       << GetFloatValue(UNIT_FIELD_RANGEDATTACKTIME) << ", "
        << GetFloatValue(UNIT_FIELD_MINDAMAGE) << ", "
-       << GetFloatValue(UNIT_FIELD_MAXDAMAGE) << ")";
+       << GetFloatValue(UNIT_FIELD_MAXDAMAGE) << ", "
+       << GetFloatValue(UNIT_FIELD_MINRANGEDDAMAGE) << ", "
+       << GetFloatValue(UNIT_FIELD_MAXRANGEDDAMAGE) << ")";
     trans->Append(ss.str().c_str());
 }
 
