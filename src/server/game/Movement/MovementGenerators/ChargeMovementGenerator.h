@@ -55,8 +55,8 @@ class ChargeMovementGenerator
         void MoveToNextNode(T &);
         void _setTargetPosition(T &);
 
-		uint32 i_currentNode;
-		DestinationHolder< Traveller<T> > i_destinationHolder;
+        uint32 i_currentNode;
+        DestinationHolder< Traveller<T> > i_destinationHolder;
         PointPath i_path;
 };
 

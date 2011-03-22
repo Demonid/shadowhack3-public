@@ -198,7 +198,7 @@ class spell_dru_savage_defense : public SpellScriptLoader
 
             void Absorb(AuraEffect * aurEff, DamageInfo & /*dmgInfo*/, uint32 & absorbAmount)
             {
-                absorbAmount = uint32(CalculatePctN(GetTarget()->GetTotalAttackPowerValue(BASE_ATTACK), absorbPct));
+                absorbAmount = uint32(CalculatePctN(GetTarget()->GetTotalAttackPowerValue(BASE_ATTACK, NULL), absorbPct));
                 aurEff->SetAmount(0);
             }
 
