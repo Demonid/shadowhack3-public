@@ -1418,6 +1418,9 @@ void World::SetInitialWorldSettings()
     sLog->outString("Loading Spell Bonus Data...");
     sSpellMgr->LoadSpellBonusess();
 
+    sLog->outString("Loading Pet Spell Bonus Data...");
+    sSpellMgr->LoadPetSpellBonusess();
+
     sLog->outString("Loading Aggro Spells Definitions...");
     sSpellMgr->LoadSpellThreats();
 

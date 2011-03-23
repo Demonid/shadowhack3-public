@@ -3086,7 +3086,11 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
                 return DIMINISHING_LIMITONLY;
             // Intimidating Shout
             else if (spellproto->SpellFamilyFlags[0] & 0x40000)
+            {
+                if (triggered)
+                    return DIMINISHING_NONE;
                 return DIMINISHING_FEAR_BLIND;
+            }
             // Charge Stun
             else if (spellproto->Id == 7922)
                 return DIMINISHING_CHARGE;
