@@ -645,6 +645,7 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
     isDebugAreaTriggers = false;
 
     SetPendingBind(NULL, 0);
+    UpdateArenaItemEquiped();
 }
 
 Player::~Player ()
@@ -11286,6 +11287,9 @@ uint8 Player::CanEquipItem(uint8 slot, uint16 &dest, Item *pItem, bool swap, boo
             if (pItem->IsBindedNotWith(this))
                 return EQUIP_ERR_DONT_OWN_THAT_ITEM;
 
+            if (GetArenaPersonalRating(0) < pProto->userating)
+                return EQUIP_ERR_PERSONAL_ARENA_RATING_TOO_LOW;
+
             // check count of items (skip for auto move for same player from bank)
             uint8 res = CanTakeMoreSimilarItems(pItem);
             if (res != EQUIP_ERR_OK)
@@ -19855,6 +19859,30 @@ void Player::RemovePetitionsAndSigns(uint64 guid, uint32 type)
         trans->PAppend("DELETE FROM petition_sign WHERE ownerguid = '%u' AND type = '%u'", GUID_LOPART(guid), type);
     }
     CharacterDatabase.CommitTransaction(trans);
+}
+
+void Player::UpdateArenaItemEquiped()
+{
+    for (uint8 i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; i++)
+        if (Item *pItem = GetItemByPos(INVENTORY_SLOT_BAG_0, i))
+            if (GetArenaPersonalRating(0) < pItem->GetProto()->userating)
+            {
+                uint8 srcbag, srcslot, dstbag;
+                srcbag = pItem->GetBagSlot();
+                srcslot = pItem->GetSlot();
+                dstbag = 0;
+                uint16 src = pItem->GetPos();
+                ItemPosCountVec dest;
+                uint8 msg = CanStoreItem(dstbag, NULL_SLOT, dest, pItem, false);
+                if (msg != EQUIP_ERR_OK)
+                {
+                    RemoveItem(srcbag, srcslot, true);
+                    StoreItem(dest, pItem, true);
+                    continue;
+                }
+                RemoveItem(srcbag, srcslot, true);
+                StoreItem(dest, pItem, true);
+            }
 }
 
 void Player::LeaveAllArenaTeams(uint64 guid)
