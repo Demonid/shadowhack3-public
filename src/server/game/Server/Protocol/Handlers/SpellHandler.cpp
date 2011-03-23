@@ -313,6 +313,19 @@ void WorldSession::HandleGameobjectReportUse(WorldPacket& recvPacket)
     _player->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_USE_GAMEOBJECT, go->GetEntry());
 }
 
+bool WorldSession::HandleClearTargetOpcode(WorldPacket& recvPacket, Unit* sender)
+{
+    Unit* mover = _player->m_mover;
+    if(!mover || !_player->IsHostileTo(sender))
+        return false;
+    /*if(mover == _player && mover->GetTypeId() == TYPEID_PLAYER && _player->HasUnitState(UNIT_STAT_CASTING))
+        for (uint32 i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
+            if((_player)->GetCurrentSpell(i) && (_player)->GetCurrentSpell(i)->m_targets.getUnitTargetGUID() == sender->GetGUID())
+                (_player)->InterruptSpell(CurrentSpellTypes(i), false);
+*/
+    return true;
+}
+
 void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 {
     uint32 spellId;
@@ -392,6 +405,17 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 
     Spell *spell = new Spell(mover, spellInfo, false);
     spell->m_cast_count = castCount;                       // set count of casts
+    // writed for a motherfucking clicking dumbs
+    if(spellInfo->EffectApplyAuraName[0] == SPELL_AURA_MOD_SHAPESHIFT && 
+        (mover->HasRemovedAura(spellId) || mover->GetShapeshiftForm() == spellInfo->EffectMiscValue[0]) && 
+        (spellInfo->activeIconID == 122 || spellInfo->activeIconID == 55))
+    {
+        mover->RemoveAurasDueToSpell(spellId, mover->GetGUID());
+        spell->SendCastResult(SPELL_FAILED_SUCCESS);
+        spell->finish(false);
+        //mover->InterruptNonMeleeSpells(true, spellId, true);
+        return;
+    }
     spell->prepare(&targets);
 }
 
@@ -435,20 +459,20 @@ void WorldSession::HandleCancelAuraOpcode(WorldPacket& recvPacket)
         return;
     }
 
-	for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-	{
-		if (spellInfo->EffectApplyAuraName[i] == SPELL_AURA_FLY || spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED ||
-			spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED || spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED ||
-			spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS || spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_SPEED ||
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+    {
+        if (spellInfo->EffectApplyAuraName[i] == SPELL_AURA_FLY || spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED ||
+            spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED || spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED ||
+            spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS || spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_SPEED ||
             spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_MOUNTED_SPEED)
-				_player->addAnticheatTemporaryImmunity(250);
-	}
+            _player->addAnticheatTemporaryImmunity(250);
+    }
 
     // non channeled case
     // maybe should only remove one buff when there are multiple?
     _player->RemoveOwnedAura(spellId, 0, 0, AURA_REMOVE_BY_CANCEL);
 
-	
+    
 }
 
 void WorldSession::HandlePetCancelAuraOpcode(WorldPacket& recvPacket)

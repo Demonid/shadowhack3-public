@@ -195,14 +195,14 @@ class ArenaTeam
         void InspectStats(WorldSession *session, uint64 guid);
 
         uint32 GetPoints(uint32 MemberRating);
-        int32 GetRatingMod(uint32 own_rating, uint32 enemy_rating, bool won, bool calculating_mmr = false);
-        int32 GetPersonalRatingMod(int32 base_rating, uint32 own_rating, uint32 enemy_rating);
-        float GetChanceAgainst(uint32 own_rating, uint32 enemy_rating);
-        int32 WonAgainst(uint32 againstRating);
-        void MemberWon(Player * plr, uint32 againstMatchmakerRating, int32 teamratingchange = 12);
-        int32 LostAgainst(uint32 againstRating);
-        void MemberLost(Player * plr, uint32 againstMatchmakerRating, int32 teamratingchange = -12);
-        void OfflineMemberLost(uint64 guid, uint32 againstMatchmakerRating, int32 teamratingchange = -12);
+        int32 GetRatingMod(uint32 own_rating, uint32 enemy_rating, uint32 own_mmr, uint32 enemy_mmr, bool won, bool calculating_mmr = false);
+        float GetChanceAgainst(uint32 own_rating, uint32 enemy_rating, uint32 own_mmr, uint32 enemy_mmr, bool win);
+        int32 WonAgainst(uint32 enemy_rating, uint32 own_mmr, uint32 enemy_mmr);
+        void MemberWon(Player * plr, uint32 enemy_rating, uint32 own_mmr, uint32 enemy_mmr, int32 dmmr);
+        int32 LostAgainst(uint32 enemy_rating, uint32 own_mmr, uint32 enemy_mmr);
+        void MemberLost(Player * plr, uint32 enemy_rating, uint32 own_mmr, uint32 enemy_mmr, int32 dmmr);
+        void OfflineMemberLost(uint64 guid, uint32 enemy_rating, uint32 own_mmr, uint32 enemy_mmr, int32 dmmr);
+
 
         void UpdateArenaPointsHelper(std::map<uint32, uint32> & PlayerPoints);
 
@@ -210,6 +210,13 @@ class ArenaTeam
 
         void FinishWeek();
         void FinishGame(int32 mod);
+        void SetName(std::string name) 
+        { 
+            m_Name=name;
+            SQLTransaction trans = CharacterDatabase.BeginTransaction();
+            trans->PAppend("UPDATE arena_team SET name='%s' WHERE arenateamid = '%u'", m_Name, GetId());
+            LoginDatabase.CommitTransaction(trans);
+        }
 
     protected:
 

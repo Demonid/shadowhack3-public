@@ -1580,12 +1580,12 @@ bool Creature::FallGround()
     // use larger distance for vmap height search than in most other cases
     float ground_Z = GetMap()->GetHeight(x, y, z, true, MAX_FALL_DISTANCE);
 
-	if (ground_Z <= INVALID_HEIGHT)
-	{
-		sLog->outStaticDebug("FallGround: creature %u at map %u (x: %f, y: %f, z: %f), not able to retrive a proper GetHeight (z: %f).",
-			GetEntry(), GetMap()->GetId(), GetPositionX(), GetPositionX(), GetPositionZ(), ground_Z);
-		return false;
-	}
+    if (ground_Z <= INVALID_HEIGHT)
+    {
+        sLog->outStaticDebug("FallGround: creature %u at map %u (x: %f, y: %f, z: %f), not able to retrive a proper GetHeight (z: %f).",
+            GetEntry(), GetMap()->GetId(), GetPositionX(), GetPositionX(), GetPositionZ(), ground_Z);
+        return false;
+    }
 
     if (fabs(ground_Z - z) < 0.1f)
         return false;
@@ -2435,66 +2435,66 @@ void Creature::FarTeleportTo(Map* map, float X, float Y, float Z, float O)
 
 bool Creature::IsTargetReachabilityCheckFailed(Unit* target)
 {
-	if (!target)
-		return true;
+    if (!target)
+        return true;
 
     if (HasUnitState(UNIT_STAT_IGNORE_PATHFINDING))
         return false;
 
-	// check if currently selected target is reachable
+    // check if currently selected target is reachable
     if((GetMotionMaster()->GetCurrentMovementGeneratorType() == TARGETED_MOTION_TYPE && !GetMotionMaster()->top()->IsReachable()) || 
-		(GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE && !IsTargetReachable(target)))
-	{
-		// remove all taunts
-		RemoveAurasByType(SPELL_AURA_MOD_TAUNT);
+        (GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE && !IsTargetReachable(target)))
+    {
+        // remove all taunts
+        RemoveAurasByType(SPELL_AURA_MOD_TAUNT);
 
-		if(m_ThreatManager.getThreatList().size() < 2)
-		{
-			uint32 curr_time = time(NULL);
+        if(m_ThreatManager.getThreatList().size() < 2)
+        {
+            uint32 curr_time = time(NULL);
 
-			if (singleAndUnreachableTarget)
-			{
-				singleAndUnreachableTarget = false;
-				m_lastEvadeCheck = curr_time;
-				AddUnitState(UNIT_STAT_TIMED_EVADE);
-			}
+            if (singleAndUnreachableTarget)
+            {
+                singleAndUnreachableTarget = false;
+                m_lastEvadeCheck = curr_time;
+                AddUnitState(UNIT_STAT_TIMED_EVADE);
+            }
 
-			if (m_lastEvadeCheck == 0 || ((curr_time - m_lastEvadeCheck) > EVADE_WAIT_TIME))
-			{
-				m_lastEvadeCheck = 0;
-				// only one target in list, we have to evade after timer
-				AI()->EnterEvadeMode();
-				singleAndUnreachableTarget = true;
-				ClearUnitState(UNIT_STAT_TIMED_EVADE);
-				return true;
-			}
+            if (m_lastEvadeCheck == 0 || ((curr_time - m_lastEvadeCheck) > EVADE_WAIT_TIME))
+            {
+                m_lastEvadeCheck = 0;
+                // only one target in list, we have to evade after timer
+                AI()->EnterEvadeMode();
+                singleAndUnreachableTarget = true;
+                ClearUnitState(UNIT_STAT_TIMED_EVADE);
+                return true;
+            }
 
-			if (!IsStopped())
-				StopMoving();
+            if (!IsStopped())
+                StopMoving();
 
-			GetMotionMaster()->MoveIdle();
+            GetMotionMaster()->MoveIdle();
 
-			return false;
-		}
-		else
-		{
-			// remove unreachable target from our threat list
-			// next iteration we will select next possible target
-			getHostileRefManager().deleteReference(target);
-			m_ThreatManager.modifyThreatPercent(target, -101);
-			_removeAttacker(target);
-			ClearUnitState(UNIT_STAT_TIMED_EVADE);
-			return true;
-		}		
-	}
+            return false;
+        }
+        else
+        {
+            // remove unreachable target from our threat list
+            // next iteration we will select next possible target
+            getHostileRefManager().deleteReference(target);
+            m_ThreatManager.modifyThreatPercent(target, -101);
+            _removeAttacker(target);
+            ClearUnitState(UNIT_STAT_TIMED_EVADE);
+            return true;
+        }        
+    }
 
-	if (GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE)
-		GetMotionMaster()->MoveChase(target);
+    if (GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE)
+        GetMotionMaster()->MoveChase(target);
 
-	singleAndUnreachableTarget = false;
-	ClearUnitState(UNIT_STAT_TIMED_EVADE);	
-	m_lastEvadeCheck = 0;
-	return false;
+    singleAndUnreachableTarget = false;
+    ClearUnitState(UNIT_STAT_TIMED_EVADE);    
+    m_lastEvadeCheck = 0;
+    return false;
 }
 
 bool Creature::IsDungeonBoss() const
@@ -2503,3 +2503,70 @@ bool Creature::IsDungeonBoss() const
     return cinfo && (cinfo->flags_extra & CREATURE_FLAG_EXTRA_DUNGEON_BOSS);
 }
 
+void Creature::ProhibitSpellScholl(SpellSchoolMask idSchoolMask, uint32 unTimeMs)
+{
+    time_t curTime = time(NULL);
+    for (uint8 i=0; i<8; ++i)
+    {
+        uint32 unSpellId = m_spells[i];
+        if (!unSpellId)
+            continue;
+        SpellEntry const *spellInfo = sSpellStore.LookupEntry(unSpellId);
+        if (!spellInfo)
+        {
+            ASSERT(spellInfo);
+            continue;
+        }
+
+        // Not send cooldown for this spells
+        if (spellInfo->Attributes & SPELL_ATTR0_DISABLED_WHILE_ACTIVE)
+            continue;
+
+        if (spellInfo->PreventionType != SPELL_PREVENTION_TYPE_SILENCE)
+            continue;
+
+        if ((idSchoolMask & GetSpellSchoolMask(spellInfo)) && GetSpellCooldownDelay(unSpellId) < unTimeMs)
+            // in m.secs
+            _AddCreatureSpellCooldown(unSpellId, curTime + unTimeMs/IN_MILLISECONDS);
+    }
+    if (isPet())
+    {
+        Player * owner = GetOwner() && GetOwner()->GetTypeId() == TYPEID_PLAYER ? GetOwner()->ToPlayer(): NULL;
+        Pet * pet = this->ToPet();
+        WorldPacket data(SMSG_SPELL_COOLDOWN, 8+1+pet->m_spells.size()*8);
+        if (owner)
+        {
+            data << uint64(GetGUID());
+            data << uint8(0x0);                                     // flags (0x1, 0x2)
+        }
+        for (PetSpellMap::iterator itr = pet->m_spells.begin(); itr!=pet->m_spells.end(); ++itr)
+        {
+            uint32 unSpellId = itr->first;
+            if(!unSpellId)
+                continue;
+                
+            SpellEntry const *spellInfo = sSpellStore.LookupEntry(unSpellId);
+            if (!spellInfo)
+            {
+                ASSERT(spellInfo);
+                continue;
+            }
+
+            // Not send cooldown for this spells
+            if (spellInfo->Attributes & SPELL_ATTR0_DISABLED_WHILE_ACTIVE)
+                continue;
+
+            if (spellInfo->PreventionType != SPELL_PREVENTION_TYPE_SILENCE)
+                continue;
+
+            if ((idSchoolMask & GetSpellSchoolMask(spellInfo)) && GetSpellCooldownDelay(unSpellId) < unTimeMs)
+            {
+                // in m.secs
+                _AddCreatureSpellCooldown(unSpellId, curTime + unTimeMs/IN_MILLISECONDS);
+                data << uint32(unSpellId);
+                data << uint32(unTimeMs);
+            }
+        }
+        owner->GetSession()->SendPacket(&data);
+    }
+}

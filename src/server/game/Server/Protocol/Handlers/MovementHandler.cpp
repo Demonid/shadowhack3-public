@@ -78,6 +78,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
         oldMap->Remove(GetPlayer(), false);
     }
 
+    uint32 Zone = GetPlayer()->GetZoneId();
     // relocate the player to the teleport destination
     Map * newMap = sMapMgr->CreateMap(loc.GetMapId(), GetPlayer(), 0);
     // the CanEnter checks are done in TeleporTo but conditions may change
@@ -105,6 +106,8 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     }
 
     // battleground state prepare (in case join to BG), at relogin/tele player not invited
+    // resummon pet
+    GetPlayer()->ResummonPetTemporaryUnSummonedIfAny();
     // only add to bg group and object, if the player was invited (else he entered through command)
     if (_player->InBattleground())
     {
@@ -121,6 +124,8 @@ void WorldSession::HandleMoveWorldportAckOpcode()
         {
             if (_player->IsInvitedForBattlegroundInstance(_player->GetBattlegroundId()))
                 bg->AddPlayer(_player);
+            if( bg->isArena() && sWorld->getBoolConfig(CONFIG_ANTIDODGE))
+                _player->Oldzone = Zone;
         }
     }
 
@@ -187,9 +192,6 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     // in friendly area
     else if (GetPlayer()->IsPvP() && !GetPlayer()->HasFlag(PLAYER_FLAGS,PLAYER_FLAGS_IN_PVP))
         GetPlayer()->UpdatePvP(false, false);
-
-    // resummon pet
-    GetPlayer()->ResummonPetTemporaryUnSummonedIfAny();
 
     //lets process all delayed operations on successful teleport
     GetPlayer()->ProcessDelayedOperations();
@@ -360,7 +362,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
         movementInfo.t_pos.Relocate(0.0f, 0.0f, 0.0f, 0.0f);
         movementInfo.t_time = 0;
         movementInfo.t_seat = -1;
-        plMover->m_anti_TransportGUID = 0; 
+        plMover->m_anti_TransportGUID = 0;        
     }
 
     
