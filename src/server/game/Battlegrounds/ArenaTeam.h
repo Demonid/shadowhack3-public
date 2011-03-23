@@ -214,7 +214,7 @@ class ArenaTeam
         { 
             m_Name=name;
             SQLTransaction trans = CharacterDatabase.BeginTransaction();
-            trans->PAppend("UPDATE arena_team SET name='%s' WHERE arenateamid = '%u'", m_Name, GetId());
+            trans->PAppend("UPDATE arena_team SET name='%s' WHERE arenateamid = '%u'", m_Name.c_str(), GetId());
             LoginDatabase.CommitTransaction(trans);
         }
 
