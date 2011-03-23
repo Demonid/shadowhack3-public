@@ -695,7 +695,8 @@ void Player::CleanupsBeforeDelete(bool finalCleanup)
     // clean up player-instance binds, may unload some instance saves
     for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
         for (BoundInstancesMap::iterator itr = m_boundInstances[i].begin(); itr != m_boundInstances[i].end(); ++itr)
-            itr->second.save->RemovePlayer(this);
+            if (itr->second.save)
+                itr->second.save->RemovePlayer(this);
 }
 
 bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 class_, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair, uint8 /*outfitId*/)
@@ -2048,12 +2049,22 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             if (!GetSession()->PlayerLogout())
             {
                 // send transfer packets
-                WorldPacket data(SMSG_TRANSFER_PENDING, 4 + 4 + 4);
+                WorldPacket data(SMSG_TRANSFER_PENDING, (4+4+4));
                 data << uint32(mapid);
                 if (m_transport)
+                {
                     data << m_transport->GetEntry() << GetMapId();
+                }
+                GetSession()->SendPacket(&data);
+
+                data.Initialize(SMSG_NEW_WORLD, (20));
+                if (m_transport)
+                    data << (uint32)mapid << m_movementInfo.t_pos.PositionXYZOStream();
+                else
+                    data << (uint32)mapid << (float)x << (float)y << (float)z << (float)orientation;
 
                 GetSession()->SendPacket(&data);
+                SendSavedInstances();
             }
 
             // remove from old map now
@@ -2078,19 +2089,6 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             SetFallInformation(0, final_z);
             // if the player is saved before worldportack (at logout for example)
             // this will be used instead of the current location in SaveToDB
-
-            if (!GetSession()->PlayerLogout())
-            {
-                WorldPacket data(SMSG_NEW_WORLD, 4 + 4 + 4 + 4 + 4);
-                data << uint32(mapid);
-                if (m_transport)
-                    data << m_movementInfo.t_pos.PositionXYZOStream();
-                else
-                    data << m_teleport_dest.PositionXYZOStream();
-
-                GetSession()->SendPacket(&data);
-                SendSavedInstances();
-            }
 
             // move packet sent by client always after far teleport
             // code for finish transfer to new map called in WorldSession::HandleMoveWorldportAckOpcode at client packet
@@ -2663,12 +2661,12 @@ void Player::UninviteFromGroup()
         if (group->IsCreated())
         {
             group->Disband(true);
-            sObjectMgr->RemoveGroup(group);
         }
         else
+        {
             group->RemoveAllInvites();
-
-        delete group;
+            delete group;
+        }
     }
 }
 
@@ -2676,14 +2674,8 @@ void Player::RemoveFromGroup(Group* group, uint64 guid, RemoveMethod method /* =
 {
     if (group)
     {
-        if (group->RemoveMember(guid, method, kicker, reason) <= 1)
-        {
-            // group->Disband(); already disbanded in RemoveMember
-            sObjectMgr->RemoveGroup(group);
-            delete group;
-            group = NULL;
-            // removemember sets the player's group pointer to NULL
-        }
+        group->RemoveMember(guid, method, kicker, reason);
+        group = NULL;
     }
 }
 
@@ -4578,7 +4570,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
     // the player was uninvited already on logout so just remove from group
     QueryResult resultGroup = CharacterDatabase.PQuery("SELECT guid FROM group_member WHERE memberGuid=%u", guid);
     if (resultGroup)
-        if (Group* group = sObjectMgr->GetGroupByGUID((*resultGroup)[0].GetUInt32()))
+        if (Group* group = sObjectMgr->GetGroupByStorageId((*resultGroup)[0].GetUInt32()))
             RemoveFromGroup(group, playerguid);
 
     // Remove signs from petitions (also remove petitions if owner);
@@ -7283,7 +7275,7 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
 
     // group update
     if (GetGroup())
-        SetGroupUpdateFlag(GROUP_UPDATE_FLAG_ZONE);
+        SetGroupUpdateFlag(GROUP_UPDATE_FULL);
 
     UpdateZoneDependentAuras(newZone);
 }
@@ -17664,7 +17656,7 @@ void Player::_LoadGroup(PreparedQueryResult result)
     //QueryResult *result = CharacterDatabase.PQuery("SELECT guid FROM group_member WHERE memberGuid=%u", GetGUIDLow());
     if (result)
     {
-        if (Group* group = sObjectMgr->GetGroupByGUID((*result)[0].GetUInt32()))
+        if (Group* group = sObjectMgr->GetGroupByStorageId((*result)[0].GetUInt32()))
         {
             uint8 subgroup = group->GetMemberGroup(GetGUID());
             SetGroup(group, subgroup);
@@ -17907,50 +17899,26 @@ void Player::SendSavedInstances()
 }
 
 /// convert the player's binds to the group
-void Player::ConvertInstancesToGroup(Player *player, Group *group, uint64 player_guid)
+void Player::ConvertInstancesToGroup(Player *player, Group *group, bool switchLeader)
 {
-    bool has_binds = false;
-    bool has_solo = false;
-
-    if (player)
-    {
-        player_guid = player->GetGUID();
-        if (!group)
-            group = player->GetGroup();
-    }
-    ASSERT(player_guid);
-
     // copy all binds to the group, when changing leader it's assumed the character
     // will not have any solo binds
 
-    if (player)
+    for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
     {
-        for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
+        for (BoundInstancesMap::iterator itr = player->m_boundInstances[i].begin(); itr != player->m_boundInstances[i].end();)
         {
-            for (BoundInstancesMap::iterator itr = player->m_boundInstances[i].begin(); itr != player->m_boundInstances[i].end();)
+            group->BindToInstance(itr->second.save, itr->second.perm, false);
+            // permanent binds are not removed
+            if (switchLeader && !itr->second.perm)
             {
-                has_binds = true;
-                if (group)
-                    group->BindToInstance(itr->second.save, itr->second.perm, true);
-                // permanent binds are not removed
-                if (!itr->second.perm)
-                {
-                    // increments itr in call
-                    player->UnbindInstance(itr, Difficulty(i), true);
-                    has_solo = true;
-                }
-                else
-                    ++itr;
+                // increments itr in call
+                player->UnbindInstance(itr, Difficulty(i), false);
             }
+            else
+                ++itr;
         }
     }
-
-    // if the player's not online we don't know what binds it has
-    if (!player || !group || has_binds)
-        CharacterDatabase.PExecute("INSERT INTO group_instance SELECT guid, instance, permanent FROM character_instance WHERE guid = '%u'", GUID_LOPART(player_guid));
-    // the following should not get executed when changing leaders
-    if (!player || has_solo)
-        CharacterDatabase.PExecute("DELETE FROM character_instance WHERE guid = '%d' AND permanent = 0", GUID_LOPART(player_guid));
 }
 
 bool Player::Satisfy(AccessRequirement const* ar, uint32 target_map, bool report)
@@ -18038,14 +18006,6 @@ bool Player::CheckInstanceLoginValid()
         // cannot be in normal instance without a group and more players than 1 in instance
         if (!GetGroup() && GetMap()->GetPlayersCountExceptGMs() > 1)
             return false;
-    }
-
-    // and do one more check before InstanceMap::CanPlayerEnter
-    // instance full don't checks in CanPlayerEnter due ignore login case.
-    if (GetMap()->GetPlayersCountExceptGMs() > ((InstanceMap*)GetMap())->GetMaxPlayers())
-    {
-        SendTransferAborted(GetMap()->GetId(), TRANSFER_ABORT_MAX_PLAYERS);
-        return false;
     }
 
     // do checks for satisfy accessreqs, instance full, encounter in progress (raid), perm bind group != perm bind player
@@ -18718,20 +18678,14 @@ void Player::_SaveStats(SQLTransaction& trans)
     trans->PAppend("DELETE FROM character_stats WHERE guid = '%u'", GetGUIDLow());
     std::ostringstream ss;
     ss << "INSERT INTO character_stats (guid, maxhealth, maxpower1, maxpower2, maxpower3, maxpower4, maxpower5, maxpower6, maxpower7, "
-        "strength, agility, stamina, intellect, spirit, pos_strength, pos_agility, pos_stamina, pos_intellect, pos_spirit, "
-        "neg_strength, neg_agility, neg_stamina, neg_intellect, neg_spirit, armor,  resHoly, resFire, resNature, resFrost, resShadow, resArcane, "
-        "blockPct, dodgePct, parryPct, critPct, rangedCritPct, spellCritPct, attackPower, rangedAttackPower, ap_multi, ap_mods, spellPower, pos_resbuffmods, neg_resbuffmods, "
-        "mainhandrating, hasterating, baseatttime, rangedatttime, mindamage, maxdamage, minrangeddamage, maxrangeddamage) VALUES ("
+        "strength, agility, stamina, intellect, spirit, armor, resHoly, resFire, resNature, resFrost, resShadow, resArcane, "
+        "blockPct, dodgePct, parryPct, critPct, rangedCritPct, spellCritPct, attackPower, rangedAttackPower, spellPower) VALUES ("
         << GetGUIDLow() << ", "
         << GetMaxHealth() << ", ";
     for (uint8 i = 0; i < MAX_POWERS; ++i)
         ss << GetMaxPower(Powers(i)) << ", ";
     for (uint8 i = 0; i < MAX_STATS; ++i)
         ss << GetStat(Stats(i)) << ", ";
-    for (uint8 i = 0; i < MAX_STATS; ++i)
-        ss << GetPosStat(Stats(i)) << ", ";
-    for (uint8 i = 0; i < MAX_STATS; ++i)
-        ss << GetNegStat(Stats(i)) << ", ";
     // armor + school resistances
     for (int i = 0; i < MAX_SPELL_SCHOOL; ++i)
         ss << GetResistance(SpellSchools(i)) << ",";
@@ -18743,19 +18697,7 @@ void Player::_SaveStats(SQLTransaction& trans)
        << GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1) << ", "
        << GetUInt32Value(UNIT_FIELD_ATTACK_POWER) << ", "
        << GetUInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER) << ", "
-       << GetFloatValue(UNIT_FIELD_ATTACK_POWER_MULTIPLIER) << ", " //ap_multi
-       << GetUInt32Value(UNIT_FIELD_ATTACK_POWER_MODS) << ", " //ap_mods
-       << GetBaseSpellPowerBonus() << ", "
-       << GetResistanceBuffMods(SPELL_SCHOOL_NORMAL, true) << ", "
-       << GetResistanceBuffMods(SPELL_SCHOOL_NORMAL, false) << ", "
-       << GetFloatValue(PLAYER_FIELD_COMBAT_RATING_1 + 20) << ", " //MainHandMeleeSkill rating
-       << GetFloatValue(PLAYER_FIELD_COMBAT_RATING_1 + 17) << ", " //haste rating
-       << GetFloatValue(UNIT_FIELD_BASEATTACKTIME) << ", "
-       << GetFloatValue(UNIT_FIELD_RANGEDATTACKTIME) << ", "
-       << GetFloatValue(UNIT_FIELD_MINDAMAGE) << ", "
-       << GetFloatValue(UNIT_FIELD_MAXDAMAGE) << ", "
-       << GetFloatValue(UNIT_FIELD_MINRANGEDDAMAGE) << ", "
-       << GetFloatValue(UNIT_FIELD_MAXRANGEDDAMAGE) << ")";
+       << GetBaseSpellPowerBonus() << ")";
     trans->Append(ss.str().c_str());
 }
 
