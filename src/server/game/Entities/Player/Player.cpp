@@ -2048,22 +2048,12 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             if (!GetSession()->PlayerLogout())
             {
                 // send transfer packets
-                WorldPacket data(SMSG_TRANSFER_PENDING, (4+4+4));
+                WorldPacket data(SMSG_TRANSFER_PENDING, 4 + 4 + 4);
                 data << uint32(mapid);
                 if (m_transport)
-                {
                     data << m_transport->GetEntry() << GetMapId();
-                }
-                GetSession()->SendPacket(&data);
-
-                data.Initialize(SMSG_NEW_WORLD, (20));
-                if (m_transport)
-                    data << (uint32)mapid << m_movementInfo.t_pos.PositionXYZOStream();
-                else
-                    data << (uint32)mapid << (float)x << (float)y << (float)z << (float)orientation;
 
                 GetSession()->SendPacket(&data);
-                SendSavedInstances();
             }
 
             // remove from old map now
@@ -2088,6 +2078,19 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             SetFallInformation(0, final_z);
             // if the player is saved before worldportack (at logout for example)
             // this will be used instead of the current location in SaveToDB
+
+            if (!GetSession()->PlayerLogout())
+            {
+                WorldPacket data(SMSG_NEW_WORLD, 4 + 4 + 4 + 4 + 4);
+                data << uint32(mapid);
+                if (m_transport)
+                    data << m_movementInfo.t_pos.PositionXYZOStream();
+                else
+                    data << m_teleport_dest.PositionXYZOStream();
+
+                GetSession()->SendPacket(&data);
+                SendSavedInstances();
+            }
 
             // move packet sent by client always after far teleport
             // code for finish transfer to new map called in WorldSession::HandleMoveWorldportAckOpcode at client packet
@@ -18007,6 +18010,14 @@ bool Player::CheckInstanceLoginValid()
             return false;
     }
 
+    // and do one more check before InstanceMap::CanPlayerEnter
+    // instance full don't checks in CanPlayerEnter due ignore login case.
+    if (GetMap()->GetPlayersCountExceptGMs() > ((InstanceMap*)GetMap())->GetMaxPlayers())
+    {
+        SendTransferAborted(GetMap()->GetId(), TRANSFER_ABORT_MAX_PLAYERS);
+        return false;
+    }
+
     // do checks for satisfy accessreqs, instance full, encounter in progress (raid), perm bind group != perm bind player
     return sMapMgr->CanPlayerEnter(GetMap()->GetId(), this, true);
 }
@@ -18677,14 +18688,20 @@ void Player::_SaveStats(SQLTransaction& trans)
     trans->PAppend("DELETE FROM character_stats WHERE guid = '%u'", GetGUIDLow());
     std::ostringstream ss;
     ss << "INSERT INTO character_stats (guid, maxhealth, maxpower1, maxpower2, maxpower3, maxpower4, maxpower5, maxpower6, maxpower7, "
-        "strength, agility, stamina, intellect, spirit, armor, resHoly, resFire, resNature, resFrost, resShadow, resArcane, "
-        "blockPct, dodgePct, parryPct, critPct, rangedCritPct, spellCritPct, attackPower, rangedAttackPower, spellPower) VALUES ("
+        "strength, agility, stamina, intellect, spirit, pos_strength, pos_agility, pos_stamina, pos_intellect, pos_spirit, "
+        "neg_strength, neg_agility, neg_stamina, neg_intellect, neg_spirit, armor,  resHoly, resFire, resNature, resFrost, resShadow, resArcane, "
+        "blockPct, dodgePct, parryPct, critPct, rangedCritPct, spellCritPct, attackPower, rangedAttackPower, ap_multi, ap_mods, spellPower, pos_resbuffmods, neg_resbuffmods, "
+        "mainhandrating, hasterating, baseatttime, rangedatttime, mindamage, maxdamage, minrangeddamage, maxrangeddamage) VALUES ("
         << GetGUIDLow() << ", "
         << GetMaxHealth() << ", ";
     for (uint8 i = 0; i < MAX_POWERS; ++i)
         ss << GetMaxPower(Powers(i)) << ", ";
     for (uint8 i = 0; i < MAX_STATS; ++i)
         ss << GetStat(Stats(i)) << ", ";
+    for (uint8 i = 0; i < MAX_STATS; ++i)
+        ss << GetPosStat(Stats(i)) << ", ";
+    for (uint8 i = 0; i < MAX_STATS; ++i)
+        ss << GetNegStat(Stats(i)) << ", ";
     // armor + school resistances
     for (int i = 0; i < MAX_SPELL_SCHOOL; ++i)
         ss << GetResistance(SpellSchools(i)) << ",";
@@ -18696,7 +18713,19 @@ void Player::_SaveStats(SQLTransaction& trans)
        << GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1) << ", "
        << GetUInt32Value(UNIT_FIELD_ATTACK_POWER) << ", "
        << GetUInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER) << ", "
-       << GetBaseSpellPowerBonus() << ")";
+       << GetFloatValue(UNIT_FIELD_ATTACK_POWER_MULTIPLIER) << ", " //ap_multi
+       << GetUInt32Value(UNIT_FIELD_ATTACK_POWER_MODS) << ", " //ap_mods
+       << GetBaseSpellPowerBonus() << ", "
+       << GetResistanceBuffMods(SPELL_SCHOOL_NORMAL, true) << ", "
+       << GetResistanceBuffMods(SPELL_SCHOOL_NORMAL, false) << ", "
+       << GetFloatValue(PLAYER_FIELD_COMBAT_RATING_1 + 20) << ", " //MainHandMeleeSkill rating
+       << GetFloatValue(PLAYER_FIELD_COMBAT_RATING_1 + 17) << ", " //haste rating
+       << GetFloatValue(UNIT_FIELD_BASEATTACKTIME) << ", "
+       << GetFloatValue(UNIT_FIELD_RANGEDATTACKTIME) << ", "
+       << GetFloatValue(UNIT_FIELD_MINDAMAGE) << ", "
+       << GetFloatValue(UNIT_FIELD_MAXDAMAGE) << ", "
+       << GetFloatValue(UNIT_FIELD_MINRANGEDDAMAGE) << ", "
+       << GetFloatValue(UNIT_FIELD_MAXRANGEDDAMAGE) << ")";
     trans->Append(ss.str().c_str());
 }
 

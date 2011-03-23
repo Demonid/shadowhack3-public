@@ -58,18 +58,24 @@ HomeMovementGenerator<Creature>::_setTargetLocation(Creature & owner)
     float x, y, z;
     owner.GetHomePosition(x, y, z, ori);
 
-    CreatureTraveller traveller(owner);
-
-    i_destinationHolder.SetDestination(traveller, x, y, z, false);
-
     PathInfo path(&owner, x, y, z);
-    PointPath pointPath = path.getFullPath();
+    i_path = path.getFullPath();
+
+    CreatureTraveller traveller(owner);
+    MoveToNextNode(traveller);
 
     float speed = traveller.Speed() * 0.001f; // in ms
-    uint32 traveltime = uint32(pointPath.GetTotalLength() / speed);
-    modifyTravelTime(traveltime);
-    owner.SendMonsterMoveByPath(pointPath, 1, pointPath.size(), traveltime);
+    uint32 transitTime = uint32(i_path.GetTotalLength() / speed);
+
+    owner.SendMonsterMoveByPath(i_path, 1, i_path.size(), transitTime);
     owner.ClearUnitState(UNIT_STAT_ALL_STATE & ~UNIT_STAT_EVADE);
+}
+
+void HomeMovementGenerator<Creature>::MoveToNextNode(Creature &owner)
+{
+    CreatureTraveller traveller(owner);
+    PathNode &node = i_path[i_currentNode];
+    i_destinationHolder.SetDestination(traveller, node.x, node.y, node.z, false);
 }
 
 bool
@@ -77,28 +83,38 @@ HomeMovementGenerator<Creature>::Update(Creature &owner, const uint32& time_diff
 {
     CreatureTraveller traveller(owner);
 
-    i_destinationHolder.UpdateTraveller(traveller, time_diff);
+    i_destinationHolder.UpdateTraveller(traveller, time_diff, false);
 
-    if (time_diff > i_travel_timer)
+    if (i_path.empty())
+        return false;
+
+    if (i_destinationHolder.HasArrived())
     {
-        owner.AddUnitMovementFlag(MOVEMENTFLAG_WALKING);
+        ++i_currentNode;
 
-        // restore orientation of not moving creature at returning to home
-        if (owner.GetDefaultMovementType() == IDLE_MOTION_TYPE)
+        // if we are at the last node, stop charge
+        if (i_currentNode >= i_path.size())
         {
-            owner.SetOrientation(ori);
-            WorldPacket packet;
-            owner.BuildHeartBeatMsg(&packet);
-            owner.SendMessageToSet(&packet, false);
+            owner.AddUnitMovementFlag(MOVEMENTFLAG_WALKING);
+
+            // restore orientation of not moving creature at returning to home
+            if (owner.GetDefaultMovementType() == IDLE_MOTION_TYPE)
+            {
+                owner.SetOrientation(ori);
+                WorldPacket packet;
+                owner.BuildHeartBeatMsg(&packet);
+                owner.SendMessageToSet(&packet, false);
+            }
+
+            owner.ClearUnitState(UNIT_STAT_EVADE);
+            owner.LoadCreaturesAddon(true);
+            owner.AI()->JustReachedHome();
+
+            return false;
         }
 
-        owner.ClearUnitState(UNIT_STAT_EVADE);
-        owner.LoadCreaturesAddon(true);
-        owner.AI()->JustReachedHome();
-        return false;
+        MoveToNextNode(traveller);
     }
-
-    i_travel_timer -= time_diff;
 
     return true;
 }

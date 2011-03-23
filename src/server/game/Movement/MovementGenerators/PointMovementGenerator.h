@@ -22,6 +22,7 @@
 
 #include "MovementGenerator.h"
 #include "DestinationHolder.h"
+#include "Path.h"
 #include "Traveller.h"
 #include "FollowerReference.h"
 #include "PathFinder.h"
@@ -31,7 +32,7 @@ class PointMovementGenerator
 : public MovementGeneratorMedium< T, PointMovementGenerator<T> >
 {
     public:
-        PointMovementGenerator(uint32 _id, float _x, float _y, float _z, bool _usePathfinding, bool _straightPath) : id(_id),
+        PointMovementGenerator(uint32 _id, float _x, float _y, float _z, bool _usePathfinding, bool _straightPath) : i_currentNode(0), id(_id),
             i_x(_x), i_y(_y), i_z(_z), i_nextMoveTime(0), arrived(false), m_usePathfinding(_usePathfinding), m_straightPath(_straightPath){}
 
         void Initialize(T &);
@@ -46,12 +47,19 @@ class PointMovementGenerator
         bool GetDestination(float& x, float& y, float& z) const { x=i_x; y=i_y; z=i_z; return true; }
     private:
         uint32 id;
-        float i_x,i_y,i_z;
+        float i_x, i_y, i_z;
         bool m_usePathfinding;
         bool m_straightPath;
+
+        void MoveToNextNode(T &);
+        void _setTargetPosition(T &);
+
         TimeTracker i_nextMoveTime;
         DestinationHolder< Traveller<T> > i_destinationHolder;
         bool arrived;
+
+        PointPath i_path;
+        uint32 i_currentNode;
 };
 
 class AssistanceMovementGenerator

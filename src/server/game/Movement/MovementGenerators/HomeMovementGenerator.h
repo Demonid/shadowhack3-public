@@ -22,6 +22,7 @@
 
 #include "MovementGenerator.h"
 #include "DestinationHolder.h"
+#include "Path.h"
 #include "Traveller.h"
 #include "PathFinder.h"
 
@@ -36,7 +37,7 @@ class HomeMovementGenerator<Creature>
 {
     public:
 
-        HomeMovementGenerator() {}
+        HomeMovementGenerator():i_currentNode(0) {}
         ~HomeMovementGenerator() {}
 
         void Initialize(Creature &);
@@ -52,8 +53,13 @@ class HomeMovementGenerator<Creature>
         void _setTargetLocation(Creature &);
         DestinationHolder< Traveller<Creature> > i_destinationHolder;
 
+        void MoveToNextNode(Creature &);
+
         float ori;
         uint32 i_travel_timer;
+
+        PointPath i_path;
+        uint32 i_currentNode;
 };
 #endif
 
