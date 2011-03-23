@@ -18,6 +18,16 @@
 
 #include "ScriptLoader.h"
 
+//custom
+void AddSC_petguy();
+void AddSC_npc_titlevendor();
+void AddSC_shadowmorn_vendor();
+void AddSC_teleguy();
+void AddSC_crw_scripts();
+void AddSC_strand_of_the_ancients();
+void AddSC_spectator();
+void AddSC_prof_master();
+void AddSC_renamer();
 
 //examples
 void AddSC_example_creature();
@@ -1206,7 +1216,7 @@ void AddNorthrendScripts()
     AddSC_storm_peaks();
     AddSC_zuldrak();
     AddSC_crystalsong_forest();
-	AddSC_wintergrasp();
+    AddSC_wintergrasp();
     AddSC_isle_of_conquest();
 #endif
 }
@@ -1220,7 +1230,7 @@ void AddOutdoorPvPScripts()
     AddSC_outdoorpvp_si();
     AddSC_outdoorpvp_tf();
     AddSC_outdoorpvp_zm();
-	AddSC_outdoorpvp_wg();
+    AddSC_outdoorpvp_wg();
 #endif
 }
 
@@ -1238,7 +1248,15 @@ void AddBattlegroundScripts()
 void AddCustomScripts()
 {
 #ifdef SCRIPTS
-    /* This is where custom scripts should be added. */
-
+    // custom scripts
+    AddSC_petguy();
+    AddSC_npc_titlevendor();
+    AddSC_shadowmorn_vendor();
+    AddSC_teleguy();
+    AddSC_crw_scripts();
+    AddSC_strand_of_the_ancients();
+    AddSC_spectator();
+    AddSC_renamer();
+    AddSC_prof_master();
 #endif
 }

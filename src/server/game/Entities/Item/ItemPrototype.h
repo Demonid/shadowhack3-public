@@ -652,6 +652,7 @@ struct ItemPrototype
     uint32 FoodType;
     uint32 MinMoneyLoot;
     uint32 MaxMoneyLoot;
+    uint32 userating;
 
     // helpers
     bool CanChangeEquipStateInCombat() const
