@@ -600,7 +600,7 @@ public:
     { 
         m_name=name; 
         SQLTransaction trans = CharacterDatabase.BeginTransaction();
-        trans->PAppend("UPDATE guild SET name='%s' WHERE guildid = '%u'", m_name, GetId());
+        trans->PAppend("UPDATE guild SET name='%s' WHERE guildid = '%u'", m_name.c_str(), GetId());
         LoginDatabase.CommitTransaction(trans);
     }
     // Handle client commands
