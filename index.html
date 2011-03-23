@@ -1,7 +1,11 @@
-<!DOCTYPE html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
 <head>
-  <meta charset='utf-8'>
+  <meta name="keywords" content="Trinity,Trnitycore,Trinity core,mmorpg, framework, c++, mysql" />
+  <meta name="author" content="KingPin" />
+  <meta name="description" content="Trinitycore, an opensource mmorpg framework utlizing C++, mysql, cmake" />
+  <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
 
   <title>TrinityCore</title>
 
@@ -15,7 +19,17 @@
     #container {
       margin: 0 auto;
       width: 700px;
-    }
+    }    
+    #dload1 {
+	  background: #000;
+	  color: #fff;
+	  padding: 15px;
+	  width: auto;
+	  text-align: justify;
+	  vertical-align: middle;
+  }
+
+    img {border:0}
     h1 { font-size: 3.8em; color: #000000; margin-bottom: 3px; }
     h1 .small { font-size: 0.4em; }
     h1 a { text-decoration: none }
@@ -23,7 +37,7 @@
     h3 { text-align: center; color: #000000; }
     a { color: #000000; }
     .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
-    .download { float: right; }
+    .download { float: right; }    
     pre { background: #000; color: #fff; padding: 15px;}
     hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
     .footer { text-align:center; padding-top:30px; font-style: italic; }
@@ -38,13 +52,16 @@
 
     <div class="download">
       <a href="http://github.com/TrinityCore/TrinityCore/zipball/master">
-        <img border="0" width="90" src="http://github.com/images/modules/download/zip.png"></a>
+        <img alt="Download TrinityCore source as Zip" width="90" src="http://github.com/images/modules/download/zip.png" /></a>
       <a href="http://github.com/TrinityCore/TrinityCore/tarball/master">
-        <img border="0" width="90" src="http://github.com/images/modules/download/tar.png"></a>
+        <img alt="Download TrinityCore source as Tar" width="90" src="http://github.com/images/modules/download/tar.png" /></a>
       <a href="http://www.trinitycore.org/w/">
-        <img border="0" width="90" src="http://trinitycore.github.com/TrinityCore/wiki-icon.gif"></a>
+        <img alt="TrinityCore Wiki" width="90" src="http://trinitycore.github.com/TrinityCore/wiki-icon.gif" /></a>
       <a href="http://www.trinitycore.org/t/trinitycore">
-        <img border="0" width="90" src="http://trinitycore.github.com/TrinityCore/trac.png"></a>
+        <img alt="TrinityCore Wiki" width="90" src="http://trinitycore.github.com/TrinityCore/trac.png" /></a>
+    </div>
+    <div class="download">
+      <script type="text/javascript" src="http://www.ohloh.net/p/26962/widgets/project_users.js?style=rainbow"></script>
     </div>
 
     <h1><a href="http://github.com/TrinityCore/TrinityCore">TrinityCore</a></h1>
@@ -62,7 +79,8 @@
 <p>Trinity Core is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; version 2 of the License.</p>
 
 <h2>Contributors</h2>
-<p>Please check <a href="http://github.com/TrinityCore/TrinityCore/blob/master/THANKS">here</a> for the latest list of people who have contributed in some way to TrinityCore.<br/>      </p>
+<p>Please check <a href="http://github.com/TrinityCore/TrinityCore/blob/master/THANKS">here</a> for the latest list of people who have contributed in some way to TrinityCore.
+<br/>      </p>
 
 <h2>P2P Support forum / Announcements</h2>
 <p><a href="http://www.trinitycore.org">trinitycore.org</a></p>
@@ -75,7 +93,10 @@
       <a href="http://github.com/TrinityCore/TrinityCore/tarball/master">tar</a> formats.
     or you can also clone the project with <a href="http://git-scm.com">Git</a>
       by running:
-      <pre>$ git clone git://github.com/TrinityCore/TrinityCore</pre>
+
+    </p>
+	<p>      <br />
+      <span id="dload1">$ git clone git://github.com/TrinityCore/TrinityCore</span>
     </p>
    
 
@@ -86,14 +107,15 @@
 
   </div>
   
-<div style="width: 30%; float: right">
-<br /><br /><br /><br />
-<h2><a href="http://github.com/TrinityCore/TrinityCore/commits/master">Commits</a></h2>   
-<script src='http://gitlive.com/githublive.min.js'></script>
-<script>var GithubPush = {num_old:5,nodes:['TrinityCore/TrinityCore']}</script>
-<div id='commits'></div>
+<div style="width: 35%; float: right">
+	<script type="text/javascript" src="http://www.ohloh.net/p/26962/widgets/project_basic_stats.js"></script>
+	<script type="text/javascript" src="http://www.ohloh.net/p/26962/widgets/project_languages.js"></script>
+	<h2><a href="http://github.com/TrinityCore/TrinityCore/commits/master">Commits</a></h2>   
+	<script src='http://gitlive.com/githublive.min.js' type="text/javascript"></script>
+	<script type="text/javascript">var GithubPush = {num_old:3,nodes:['TrinityCore/TrinityCore']}</script>
+	<div id='commits'></div>
 </div>
-<div style="width: 10%; float: right">&nbsp;</div>
+
 
   <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
