@@ -27,14 +27,6 @@
 
 class Unit;
 
-#define PRINT_DEBUG_INFO    0
-#define PATH_DEBUG(...)             \
-    do {                            \
-        if (PRINT_DEBUG_INFO)       \
-            printf(__VA_ARGS__);    \
-    } while(0)
-
-
 // 64*6.0f=384y  number_of_points*interval = max_path_len
 // this is way more than actual evade range
 // I think we can safely cut those down even more
@@ -61,11 +53,13 @@ enum PathType
 class PathInfo
 {
     public:
-        PathInfo(Unit const* owner, const float destX, const float destY, const float destZ, bool useStraightPath = false);
+        PathInfo(Unit const* owner, const float destX, const float destY, const float destZ,
+                 bool useStraightPath = false, bool forceDest = false);
         ~PathInfo();
 
         // return value : true if new path was calculated
-        bool Update(const float destX, const float destY, const float destZ, bool useStraightPath = false);
+        bool Update(const float destX, const float destY, const float destZ,
+                    bool useStraightPath = false, bool forceDest = false);
 
         inline void getStartPosition(float &x, float &y, float &z) { x = m_startPosition.x; y = m_startPosition.y; z = m_startPosition.z; }
         inline void getNextPosition(float &x, float &y, float &z) { x = m_nextPosition.x; y = m_nextPosition.y; z = m_nextPosition.z; }
@@ -89,6 +83,7 @@ class PathInfo
         PathType        m_type;             // tells what kind of path this is
 
         bool            m_useStraightPath;  // type of path will be generated
+        bool            m_forceDestination; // when set, we will always arrive at given point
 
         PathNode        m_startPosition;    // {x, y, z} of current location
         PathNode        m_nextPosition;     // {x, y, z} of next location on the path
