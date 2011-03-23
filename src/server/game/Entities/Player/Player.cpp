@@ -2663,12 +2663,12 @@ void Player::UninviteFromGroup()
         if (group->IsCreated())
         {
             group->Disband(true);
-            sObjectMgr->RemoveGroup(group);
         }
         else
+        {
             group->RemoveAllInvites();
-
-        delete group;
+            delete group;
+        }
     }
 }
 
@@ -2676,14 +2676,8 @@ void Player::RemoveFromGroup(Group* group, uint64 guid, RemoveMethod method /* =
 {
     if (group)
     {
-        if (group->RemoveMember(guid, method, kicker, reason) <= 1)
-        {
-            // group->Disband(); already disbanded in RemoveMember
-            sObjectMgr->RemoveGroup(group);
-            delete group;
-            group = NULL;
-            // removemember sets the player's group pointer to NULL
-        }
+        group->RemoveMember(guid, method, kicker, reason);
+        group = NULL;
     }
 }
 
@@ -4578,7 +4572,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
     // the player was uninvited already on logout so just remove from group
     QueryResult resultGroup = CharacterDatabase.PQuery("SELECT guid FROM group_member WHERE memberGuid=%u", guid);
     if (resultGroup)
-        if (Group* group = sObjectMgr->GetGroupByGUID((*resultGroup)[0].GetUInt32()))
+        if (Group* group = sObjectMgr->GetGroupByStorageId((*resultGroup)[0].GetUInt32()))
             RemoveFromGroup(group, playerguid);
 
     // Remove signs from petitions (also remove petitions if owner);
@@ -7283,7 +7277,7 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
 
     // group update
     if (GetGroup())
-        SetGroupUpdateFlag(GROUP_UPDATE_FLAG_ZONE);
+        SetGroupUpdateFlag(GROUP_UPDATE_FULL);
 
     UpdateZoneDependentAuras(newZone);
 }
@@ -17664,7 +17658,7 @@ void Player::_LoadGroup(PreparedQueryResult result)
     //QueryResult *result = CharacterDatabase.PQuery("SELECT guid FROM group_member WHERE memberGuid=%u", GetGUIDLow());
     if (result)
     {
-        if (Group* group = sObjectMgr->GetGroupByGUID((*result)[0].GetUInt32()))
+        if (Group* group = sObjectMgr->GetGroupByStorageId((*result)[0].GetUInt32()))
         {
             uint8 subgroup = group->GetMemberGroup(GetGUID());
             SetGroup(group, subgroup);
@@ -17907,50 +17901,26 @@ void Player::SendSavedInstances()
 }
 
 /// convert the player's binds to the group
-void Player::ConvertInstancesToGroup(Player *player, Group *group, uint64 player_guid)
+void Player::ConvertInstancesToGroup(Player *player, Group *group, bool switchLeader)
 {
-    bool has_binds = false;
-    bool has_solo = false;
-
-    if (player)
-    {
-        player_guid = player->GetGUID();
-        if (!group)
-            group = player->GetGroup();
-    }
-    ASSERT(player_guid);
-
     // copy all binds to the group, when changing leader it's assumed the character
     // will not have any solo binds
 
-    if (player)
+    for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
     {
-        for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
+        for (BoundInstancesMap::iterator itr = player->m_boundInstances[i].begin(); itr != player->m_boundInstances[i].end();)
         {
-            for (BoundInstancesMap::iterator itr = player->m_boundInstances[i].begin(); itr != player->m_boundInstances[i].end();)
+            group->BindToInstance(itr->second.save, itr->second.perm, false);
+            // permanent binds are not removed
+            if (switchLeader && !itr->second.perm)
             {
-                has_binds = true;
-                if (group)
-                    group->BindToInstance(itr->second.save, itr->second.perm, true);
-                // permanent binds are not removed
-                if (!itr->second.perm)
-                {
-                    // increments itr in call
-                    player->UnbindInstance(itr, Difficulty(i), true);
-                    has_solo = true;
-                }
-                else
-                    ++itr;
+                // increments itr in call
+                player->UnbindInstance(itr, Difficulty(i), false);
             }
+            else
+                ++itr;
         }
     }
-
-    // if the player's not online we don't know what binds it has
-    if (!player || !group || has_binds)
-        CharacterDatabase.PExecute("INSERT INTO group_instance SELECT guid, instance, permanent FROM character_instance WHERE guid = '%u'", GUID_LOPART(player_guid));
-    // the following should not get executed when changing leaders
-    if (!player || has_solo)
-        CharacterDatabase.PExecute("DELETE FROM character_instance WHERE guid = '%d' AND permanent = 0", GUID_LOPART(player_guid));
 }
 
 bool Player::Satisfy(AccessRequirement const* ar, uint32 target_map, bool report)
