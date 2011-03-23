@@ -104,7 +104,7 @@ template<> void WaypointMovementGenerator<Creature>::MoveToNextNode(CreatureTrav
 	PointPath pointPath = sub_path.getFullPath();
 
 	float speed = traveller.Speed()*0.001f; // in ms
-	uint32 traveltime = uint32(pointPath.GetTotalLength() / speed);
+	uint32 traveltime = uint32(pointPath.GetTotalLength()/speed);
 	owner->SendMonsterMoveByPath(pointPath, 1, pointPath.size(), traveltime);
 
 	i_nextMoveTime.Reset(traveltime);
@@ -169,7 +169,7 @@ WaypointMovementGenerator<Creature>::Update(Creature &unit, const uint32 &diff)
     i_nextMoveTime.Update(diff);
     i_destinationHolder.UpdateTraveller(traveller, diff, true);
 
-    if (i_nextMoveTime.Passed())
+    if (i_nextMoveTime.GetExpiry() < TIMEDIFF_NEXT_WP)
     {
         if (unit.IsStopped())
         {
@@ -218,7 +218,7 @@ WaypointMovementGenerator<Creature>::Update(Creature &unit, const uint32 &diff)
             MovementInform(unit);
             unit.UpdateWaypointID(i_currentNode);
             unit.ClearUnitState(UNIT_STAT_ROAMING);
-            //unit.Relocate(node->x, node->y, node->z);
+            unit.Relocate(node->x, node->y, node->z);
         }
     }
     else

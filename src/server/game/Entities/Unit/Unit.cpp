@@ -260,7 +260,7 @@ void Unit::Update(uint32 p_time)
         SendThreatListUpdate();
 
     // update combat timer only for players and pets (only pets with PetAI)
-    if (isInCombat() && GetCharmerOrOwnerPlayerOrPlayerItself())
+    if (isInCombat() && (GetTypeId() == TYPEID_PLAYER || (ToCreature()->isPet() && IsControlledByPlayer())))
     {
         // Check UNIT_STAT_MELEE_ATTACKING or UNIT_STAT_CHASE (without UNIT_STAT_FOLLOW in this case) so pets can reach far away
         // targets without stopping half way there and running off.
@@ -16377,7 +16377,7 @@ void Unit::KnockBackWithAngle(float angle, float horizontalSpeed, float vertical
         data << float(vsin);                                // y direction
         data << float(horizontalSpeed);                     // Horizontal speed
         data << float(-verticalSpeed);                      // Z Movement speed (vertical)
-        ToPlayer()->addAnticheatTemporaryImmunity(verticalSpeed * 100 + 250);
+        ToPlayer()->addAnticheatTemporaryImmunity(verticalSpeed*100);
         ToPlayer()->GetSession()->SendPacket(&data);
     }
     else
@@ -17333,8 +17333,14 @@ bool Unit::IsDestinationReachable(float x, float y, float z) const
 
 void Unit::MonsterMoveByPath(float x, float y, float z, uint32 speed, bool smoothPath)
 {
-    PathInfo path(this, x, y, z, !smoothPath, true);
+    PathInfo path(this, x, y, z, !smoothPath);
     PointPath pointPath = path.getFullPath();
+
+	uint32 size = pointPath.size();
+    // tiny hack for underwater charge cases
+    pointPath[size-1].x = x;
+    pointPath[size-1].y = y;
+    pointPath[size-1].z = z;
 
     uint32 traveltime = uint32(pointPath.GetTotalLength()/float(speed));
     MonsterMoveByPath(pointPath, 1, pointPath.size(), traveltime);
@@ -17358,12 +17364,8 @@ template void Unit::MonsterMoveByPath<PathNode>(const Path<PathNode> &, uint32, 
 template<typename Elem, typename Node>
 void Unit::SendMonsterMoveByPath(Path<Elem,Node> const& path, uint32 start, uint32 end, uint32 traveltime)
 {
-    if ( !IsStopped() && !isInFlight() && GetMotionMaster()->GetCurrentMovementGeneratorType() != WAYPOINT_MOTION_TYPE )
-    {    
-        WorldPacket heartbeat;
-        BuildHeartBeatMsg(&heartbeat);
-        SendMessageToSet(&heartbeat, false);        // ... we must send our current position to client to avoid position mismatch
-    }                     
+    if (!IsStopped() && !isInFlight())     // If we're already moving by path and we're not on taxi...
+        StopMoving();                      // ... we must send our current position to client to avoid position mismatch
 
     uint32 pathSize = end - start;
 
