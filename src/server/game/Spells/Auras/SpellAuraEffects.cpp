@@ -787,7 +787,12 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
         case SPELL_AURA_MOD_INCREASE_ENERGY:
             // Hymn of Hope
             if (GetId() == 64904)
-                ApplyPctU(amount, GetBase()->GetUnitOwner()->GetMaxPower(GetBase()->GetUnitOwner()->getPowerType()));
+            {
+                if (AuraEffect * aur = caster->GetAuraEffect(64904, 1, caster->GetGUID()))
+                    amount = aur->GetAmount();
+                else
+                    amount = caster->GetMaxPower(POWER_MANA) * amount / 100;
+            }
             break;
         case SPELL_AURA_MOD_INCREASE_SPEED:
             // Dash, Feral Swiftness - do not set speed if not in cat form

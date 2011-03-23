@@ -4086,8 +4086,14 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetB[1] = 16;
             count++;
             break;
+        case 46629:     // Deathfrost
+            spellInfo->maxLevel = 73;
+            spellInfo->MaxTargetLevel = 73;
+            count++;
+            break;
         case 66:        // Invisibility
             spellInfo->EffectAmplitude[1] = 333;
+            count++;
             break;
         case 29444:     // Magic Absorption
         case 29441:
