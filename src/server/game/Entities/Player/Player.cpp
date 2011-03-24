@@ -18689,9 +18689,12 @@ void Player::_SaveStats(SQLTransaction& trans)
     std::ostringstream ss;
     ss << "INSERT INTO character_stats (guid, maxhealth, maxpower1, maxpower2, maxpower3, maxpower4, maxpower5, maxpower6, maxpower7, "
         "strength, agility, stamina, intellect, spirit, pos_strength, pos_agility, pos_stamina, pos_intellect, pos_spirit, "
-        "neg_strength, neg_agility, neg_stamina, neg_intellect, neg_spirit, armor,  resHoly, resFire, resNature, resFrost, resShadow, resArcane, "
-        "blockPct, dodgePct, parryPct, critPct, rangedCritPct, spellCritPct, attackPower, rangedAttackPower, ap_multi, ap_mods, spellPower, pos_resbuffmods, neg_resbuffmods, "
-        "mainhandrating, hasterating, baseatttime, rangedatttime, mindamage, maxdamage, minrangeddamage, maxrangeddamage) VALUES ("
+        "neg_strength, neg_agility, neg_stamina, neg_intellect, neg_spirit, armor, resHoly, resFire, resNature, resFrost, resShadow, resArcane, "
+        "crit1, crit2, crit3, crit4, crit5, crit6, "
+        "blockPct, dodgePct, parryPct, critPct, rangedCritPct, spellCritPct, shieldBlock, attackPower, rangedAttackPower, ap_multi, rang_ap_multi,  "
+        "ap_mods, rang_ap_mods, spellPower, pos_resbuffmods, neg_resbuffmods, mainhandrating, defskillrating, dodgerating, parryrating, blockrating, "
+        "meeleehitrating, ranghitrating, spellhitrating, hasterating, ranghasterating, spellhasterating, critrating, rangcritrating, spellcritrating, "
+        "tar_resistance, phys_resistance, modhealdone, rangeditem, baseatttime, rangedatttime, mindamage, maxdamage, minrangeddamage, maxrangeddamage) VALUES ("
         << GetGUIDLow() << ", "
         << GetMaxHealth() << ", ";
     for (uint8 i = 0; i < MAX_POWERS; ++i)
@@ -18702,6 +18705,8 @@ void Player::_SaveStats(SQLTransaction& trans)
         ss << GetPosStat(Stats(i)) << ", ";
     for (uint8 i = 0; i < MAX_STATS; ++i)
         ss << GetNegStat(Stats(i)) << ", ";
+    for (uint8 i = 1; i < MAX_SPELL_SCHOOL; ++i)
+        ss << GetUInt32Value(PLAYER_SPELL_CRIT_PERCENTAGE1 + i) << ", ";
     // armor + school resistances
     for (int i = 0; i < MAX_SPELL_SCHOOL; ++i)
         ss << GetResistance(SpellSchools(i)) << ",";
@@ -18711,15 +18716,34 @@ void Player::_SaveStats(SQLTransaction& trans)
        << GetFloatValue(PLAYER_CRIT_PERCENTAGE) << ", "
        << GetFloatValue(PLAYER_RANGED_CRIT_PERCENTAGE) << ", "
        << GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1) << ", "
+       << GetUInt32Value(PLAYER_SHIELD_BLOCK) << ", "
        << GetUInt32Value(UNIT_FIELD_ATTACK_POWER) << ", "
        << GetUInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER) << ", "
        << GetFloatValue(UNIT_FIELD_ATTACK_POWER_MULTIPLIER) << ", " //ap_multi
+       << GetFloatValue(UNIT_FIELD_RANGED_ATTACK_POWER_MULTIPLIER) << ", " //rang_ap_multi
        << GetUInt32Value(UNIT_FIELD_ATTACK_POWER_MODS) << ", " //ap_mods
+       << GetUInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER_MODS) << ", " //rang_ap_mods
        << GetBaseSpellPowerBonus() << ", "
        << GetResistanceBuffMods(SPELL_SCHOOL_NORMAL, true) << ", "
        << GetResistanceBuffMods(SPELL_SCHOOL_NORMAL, false) << ", "
-       << GetFloatValue(PLAYER_FIELD_COMBAT_RATING_1 + 20) << ", " //MainHandMeleeSkill rating
-       << GetFloatValue(PLAYER_FIELD_COMBAT_RATING_1 + 17) << ", " //haste rating
+       << GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_WEAPON_SKILL_MAINHAND) << ", " //MainHandMeleeSkill rating
+       << GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_DEFENSE_SKILL) << ", " //defskill rating
+       << GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_DODGE) << ", " //dodge rating
+       << GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_PARRY) << ", " //parry rating
+       << GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_BLOCK) << ", " //block rating
+       << GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_HIT_MELEE) << ", " //meelee hit rating
+       << GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_HIT_RANGED) << ", " //ranged hit rating
+       << GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_HIT_SPELL) << ", " //spell hit rating
+       << GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_HASTE_MELEE) << ", " //haste rating
+       << GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_HASTE_RANGED) << ", " //ranged haste rating
+       << GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_HASTE_SPELL) << ", " //spell haste rating
+       << GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_CRIT_MELEE) << ", " //crit rating
+       << GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_CRIT_RANGED) << ", " //rang crit rating
+       << GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_CRIT_SPELL) << ", " //spell crit rating
+       << GetUInt32Value(PLAYER_FIELD_MOD_TARGET_RESISTANCE) << ", " //tar_resistance
+       << GetUInt32Value(PLAYER_FIELD_MOD_TARGET_PHYSICAL_RESISTANCE) << ", " //phys_resistance 
+       << GetUInt32Value(PLAYER_FIELD_MOD_HEALING_DONE_POS) << ", " //modhealdone
+       << GetUInt32Value(PLAYER_VISIBLE_ITEM_18_ENTRYID) << ", " //Ranged item        
        << GetFloatValue(UNIT_FIELD_BASEATTACKTIME) << ", "
        << GetFloatValue(UNIT_FIELD_RANGEDATTACKTIME) << ", "
        << GetFloatValue(UNIT_FIELD_MINDAMAGE) << ", "
@@ -18755,7 +18779,7 @@ void Player::outDebugValues() const
 void Player::UpdateSpeakTime()
 {
     // ignore chat spam protection for GMs in any mode
-    if (GetSession()->GetSecurity() > SEC_MODERATOR)
+    if (GetSession()->GetSecurity() > SEC_MODERATOR_NOANN)
         return;
 
     time_t current = time (NULL);
