@@ -22,3 +22,9 @@ INSERT INTO `spell_proc_event` VALUES (12574, 0x00, 0x03, 0x00000000, 0x00000000
 -- (12573) Arcane Concentration (Rank 1)
 DELETE FROM `spell_proc_event` WHERE `entry` IN (12573);
 INSERT INTO `spell_proc_event` VALUES (12573, 0x00, 0x03, 0x00000000, 0x00000000, 0x00000000, 0x00010000, 0x00000001, 0, 2, 0);
+
+-- scriptname for Nibelung
+UPDATE `creature_template` SET `ScriptName`='npc_valkyr' WHERE (`entry`='38392');
+
+ALTER TABLE `item_template`
+    ADD COLUMN `userating` smallint(4) unsigned NOT NULL DEFAULT '0' AFTER `maxMoneyLoot`;
