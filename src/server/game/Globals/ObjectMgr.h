@@ -844,6 +844,33 @@ class ObjectMgr
 
         void LoadGuilds();
         void LoadArenaTeams();
+        void ReloadArenaTeamRanks()
+        {
+            for (uint8 i=2; i<6; ++i)
+            {
+                if (i == 4) 
+                    continue;
+
+                QueryResult result = CharacterDatabase.PQuery("Select * from arena_team_stats where arenateamid in"
+                    "(select arenateamid from arena_team where type = '%u') ORDER BY rating DESC", i);
+                if(!result)
+                    continue;
+                uint32 rank=1;
+                do
+                {
+                    Field *fields = result->Fetch();
+                    if(ArenaTeam* team=GetArenaTeamById(fields[0].GetUInt32()))
+                    {
+                        team->m_stats.rank=rank;
+                        for(ArenaTeam::MemberList::iterator itr = team->m_membersBegin(); itr!=team->m_membersEnd(); ++itr)
+                            if(Player * pl = GetPlayer(itr->guid))
+                                team->Stats(pl->GetSession());
+                    }
+                    CharacterDatabase.PExecute("Update arena_team_stats set rank='%u' where arenateamid ='%u'", rank++, fields[0].GetUInt32());
+                }while (result->NextRow());
+            }
+
+        }
         void LoadGroups();
         void LoadQuests();
         void LoadQuestRelations()

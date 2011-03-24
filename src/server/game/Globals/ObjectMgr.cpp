@@ -4018,6 +4018,7 @@ void ObjectMgr::LoadArenaTeams()
         AddArenaTeam(newArenaTeam);
     }while (result->NextRow());
 
+    ReloadArenaTeamRanks();
     sLog->outString();
     sLog->outString(">> Loaded %u arena team definitions in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }

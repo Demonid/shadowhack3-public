@@ -217,7 +217,8 @@ class ArenaTeam
             trans->PAppend("UPDATE arena_team SET name='%s' WHERE arenateamid = '%u'", m_Name.c_str(), GetId());
             LoginDatabase.CommitTransaction(trans);
         }
-
+        ArenaTeamStats m_stats;
+        
     protected:
 
         uint32 m_TeamId;
@@ -232,7 +233,6 @@ class ArenaTeam
         uint32 m_BorderColor;     // ARGB format
 
         MemberList m_members;
-        ArenaTeamStats m_stats;
 };
 #endif
 
