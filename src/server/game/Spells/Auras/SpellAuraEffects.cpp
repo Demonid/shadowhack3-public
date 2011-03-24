@@ -613,6 +613,10 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
             {
                 amount += caster->SpellBaseDamageBonus(GetSpellSchoolMask(m_spellProto)) * 0.538f;
                 amount = caster->SpellHealingBonus(target, GetSpellProto(), amount, SPELL_DIRECT_DAMAGE);
+
+                // Glyph of Earth Shield
+                if (AuraEffect* aur = caster->GetAuraEffect(63279,0))
+                    AddPctN(amount, aur->GetAmount());
             }
             break;
         case SPELL_AURA_DAMAGE_SHIELD:
