@@ -394,9 +394,6 @@ public:
 
 };
 
-
-
-
 void AddSC_wailing_caverns()
 {
     new npc_disciple_of_naralex();

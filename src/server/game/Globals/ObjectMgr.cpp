@@ -299,8 +299,7 @@ ObjectMgr::~ObjectMgr()
         delete *itr;
 
     for (GuildMap::iterator itr = mGuildMap.begin(); itr != mGuildMap.end(); ++itr)
-        if (*itr)
-            delete *itr;
+        delete itr->second;
 
     for (ArenaTeamMap::iterator itr = mArenaTeamMap.begin(); itr != mArenaTeamMap.end(); ++itr)
         delete itr->second;
@@ -328,14 +327,13 @@ Group* ObjectMgr::GetGroupByStorageId(uint32 storageId) const
     return NULL;
 }
 
-
-
 // Guild collection
 Guild* ObjectMgr::GetGuildById(uint32 guildId) const
 {
-    // Make sure given index exists in collection
-    if (guildId < uint32(mGuildMap.size()))
-        return mGuildMap[guildId];
+    GuildMap::const_iterator itr = mGuildMap.find(guildId);
+    if (itr != mGuildMap.end())
+        return itr->second;
+
     return NULL;
 }
 
@@ -345,13 +343,10 @@ Guild* ObjectMgr::GetGuildByName(const std::string& guildname) const
     std::transform(search.begin(), search.end(), search.begin(), ::toupper);
     for (GuildMap::const_iterator itr = mGuildMap.begin(); itr != mGuildMap.end(); ++itr)
     {
-        if (*itr)
-        {
-            std::string gname = (*itr)->GetName();
-            std::transform(gname.begin(), gname.end(), gname.begin(), ::toupper);
-            if (search == gname)
-                return *itr;
-        }
+        std::string gname = itr->second->GetName();
+        std::transform(gname.begin(), gname.end(), gname.begin(), ::toupper);
+        if (search == gname)
+            return itr->second;
     }
     return NULL;
 }
@@ -366,29 +361,20 @@ std::string ObjectMgr::GetGuildNameById(uint32 guildId) const
 Guild* ObjectMgr::GetGuildByLeader(const uint64 &guid) const
 {
     for (GuildMap::const_iterator itr = mGuildMap.begin(); itr != mGuildMap.end(); ++itr)
-        if ((*itr) && (*itr)->GetLeaderGUID() == guid)
-            return *itr;
+        if (itr->second->GetLeaderGUID() == guid)
+            return itr->second;
 
     return NULL;
 }
 
-void ObjectMgr::AddGuild(Guild* pGuild)
+void ObjectMgr::AddGuild(Guild* guild)
 {
-    uint32 guildId = pGuild->GetId();
-    // Allocate space if necessary
-    if (guildId >= uint32(mGuildMap.size()))
-        // Reserve a bit more space than necessary.
-        // 16 is intentional and it will allow creation of next 16 guilds happen
-        // without reallocation.
-        mGuildMap.resize(guildId + 16);
-    mGuildMap[guildId] = pGuild;
+    mGuildMap[guild->GetId()] = guild;
 }
 
 void ObjectMgr::RemoveGuild(uint32 guildId)
 {
-    // Make sure given index exists
-    if (guildId < uint32(mGuildMap.size()))
-        mGuildMap[guildId] = NULL;
+    mGuildMap.erase(guildId);
 }
 
 // Arena teams collection
@@ -456,7 +442,6 @@ void ObjectMgr::LoadCreatureLocales()
     if (!result)
         return;
 
-
     do
     {
         Field *fields = result->Fetch();
@@ -496,7 +481,6 @@ void ObjectMgr::LoadGossipMenuItemsLocales()
     if (!result)
         return;
 
-
     do
     {
         Field *fields = result->Fetch();
@@ -531,7 +515,6 @@ void ObjectMgr::LoadPointOfInterestLocales()
 
     if (!result)
         return;
-
 
     do
     {
@@ -1436,8 +1419,8 @@ void ObjectMgr::LoadCreatures()
     QueryResult result = WorldDatabase.Query("SELECT creature.guid, id, map, modelid,"
     //   4             5           6           7           8            9              10         11
         "equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint,"
-    //   12         13       14          15            16         17         18     19
-        "curhealth, curmana, DeathState, MovementType, spawnMask, phaseMask, event, pool_entry,"
+    //   12         13       14          15            16         17             18        19
+        "curhealth, curmana, DeathState, MovementType, spawnMask, phaseMask, eventEntry, pool_entry,"
     //   20                21                   22
         "creature.npcflag, creature.unit_flags, creature.dynamicflags "
         "FROM creature LEFT OUTER JOIN game_event_creature ON creature.guid = game_event_creature.guid "
@@ -1468,7 +1451,6 @@ void ObjectMgr::LoadCreatures()
 
     //TODO: remove this
     //sGameEventMgr->mGameEventCreatureGuids.resize(52*2-1);
-
 
     do
     {
@@ -1768,7 +1750,6 @@ uint32 ObjectMgr::AddCreData(uint32 entry, uint32 /*team*/, uint32 mapId, float 
     data.unit_flags = cInfo->unit_flags;
     data.dynamicflags = cInfo->dynamicflags;
 
-
     AddCreatureToGrid(guid, &data);
 
     // Spawn if necessary (loaded grids only)
@@ -1799,8 +1780,8 @@ void ObjectMgr::LoadGameobjects()
 
     //                                                0                1   2    3           4           5           6
     QueryResult result = WorldDatabase.Query("SELECT gameobject.guid, id, map, position_x, position_y, position_z, orientation,"
-    //   7          8          9          10         11             12            13     14         15         16     17
-        "rotation0, rotation1, rotation2, rotation3, spawntimesecs, animprogress, state, spawnMask, phaseMask, event, pool_entry "
+    //   7          8          9          10         11             12            13     14         15             16          17
+        "rotation0, rotation1, rotation2, rotation3, spawntimesecs, animprogress, state, spawnMask, phaseMask, eventEntry, pool_entry "
         "FROM gameobject LEFT OUTER JOIN game_event_gameobject ON gameobject.guid = game_event_gameobject.guid "
         "LEFT OUTER JOIN pool_gameobject ON gameobject.guid = pool_gameobject.guid");
 
@@ -1818,7 +1799,6 @@ void ObjectMgr::LoadGameobjects()
             for (int k = 0; k < MAX_DIFFICULTY; ++k)
                 if (GetMapDifficultyData(i,Difficulty(k)))
                     spawnMasks[i] |= (1 << k);
-
 
     do
     {
@@ -2016,7 +1996,6 @@ void ObjectMgr::LoadGameobjectRespawnTimes()
         return;
     }
 
-
     do
     {
         Field *fields = result->Fetch();
@@ -2134,7 +2113,6 @@ void ObjectMgr::LoadItemLocales()
 
     if (!result)
         return;
-
 
     do
     {
@@ -2639,7 +2617,6 @@ void ObjectMgr::LoadItemSetNameLocales()
     if (!result)
         return;
 
-
     do
     {
         Field *fields = result->Fetch();
@@ -2715,7 +2692,6 @@ void ObjectMgr::LoadItemSetNames()
         itemSetItems.erase(entry);
         ++count;
     } while (result->NextRow());
-
 
     if (!itemSetItems.empty())
     {
@@ -2810,7 +2786,7 @@ void ObjectMgr::LoadVehicleAccessories()
 
     if (!result)
     {
-        sLog->outErrorDb(">> Loaded 0 vehicle accessories. DB table `vehicle_accessory` is empty.");
+        sLog->outString(">> Loaded 0 Vehicle Accessories in %u ms", GetMSTimeDiffToNow(oldMSTime));
         sLog->outString();
         return;
     }
@@ -2858,7 +2834,6 @@ void ObjectMgr::LoadVehicleScaling()
         sLog->outString();
         return;
     }
-
 
     do
     {
@@ -3677,21 +3652,19 @@ void ObjectMgr::LoadGuilds()
         }
         else
         {
-            mGuildMap.resize(m_guildId, NULL);         // Reserve space and initialize storage for loading guilds //TODOLEAK: fix this shit
-
             uint32 count = 0;
-
             do
             {
-
                 Field* fields = result->Fetch();
                 Guild* pNewGuild = new Guild();
+
                 if (!pNewGuild->LoadFromDB(fields))
                 {
                     delete pNewGuild;
                     continue;
                 }
                 AddGuild(pNewGuild);
+
                 ++count;
             }
             while (result->NextRow());
@@ -3721,14 +3694,14 @@ void ObjectMgr::LoadGuilds()
         else
         {
             uint32 count = 0;
-
             do
             {
-
                 Field* fields = result->Fetch();
                 uint32 guildId = fields[0].GetUInt32();
+
                 if (Guild* pGuild = GetGuildById(guildId))
-                    pGuild->LoadRankFromDB(fields);                     //TODOLEAK: untangle that shit
+                    pGuild->LoadRankFromDB(fields);
+
                 ++count;
             }
             while (result->NextRow());
@@ -3761,11 +3734,12 @@ void ObjectMgr::LoadGuilds()
 
             do
             {
-
                 Field* fields = result->Fetch();
                 uint32 guildId = fields[0].GetUInt32();
+
                 if (Guild* pGuild = GetGuildById(guildId))
                     pGuild->LoadMemberFromDB(fields);
+
                 ++count;
             }
             while (result->NextRow());
@@ -3795,14 +3769,14 @@ void ObjectMgr::LoadGuilds()
         else
         {
             uint32 count = 0;
-
             do
             {
-
                 Field* fields = result->Fetch();
                 uint32 guildId = fields[0].GetUInt32();
+
                 if (Guild* pGuild = GetGuildById(guildId))
                     pGuild->LoadBankRightFromDB(fields);
+
                 ++count;
             }
             while (result->NextRow());
@@ -3832,14 +3806,14 @@ void ObjectMgr::LoadGuilds()
         else
         {
             uint32 count = 0;
-
             do
             {
-
                 Field* fields = result->Fetch();
                 uint32 guildId = fields[0].GetUInt32();
+
                 if (Guild* pGuild = GetGuildById(guildId))
                     pGuild->LoadEventLogFromDB(fields);
+
                 ++count;
             }
             while (result->NextRow());
@@ -3870,14 +3844,14 @@ void ObjectMgr::LoadGuilds()
         else
         {
             uint32 count = 0;
-
             do
             {
-
                 Field* fields = result->Fetch();
                 uint32 guildId = fields[0].GetUInt32();
+
                 if (Guild* pGuild = GetGuildById(guildId))
                     pGuild->LoadBankEventLogFromDB(fields);
+
                 ++count;
             }
             while (result->NextRow());
@@ -3907,14 +3881,14 @@ void ObjectMgr::LoadGuilds()
         else
         {
             uint32 count = 0;
-
             do
             {
-
                 Field* fields = result->Fetch();
                 uint32 guildId = fields[0].GetUInt32();
+
                 if (Guild* pGuild = GetGuildById(guildId))
                     pGuild->LoadBankTabFromDB(fields);
+
                 ++count;
             }
             while (result->NextRow());
@@ -3944,14 +3918,14 @@ void ObjectMgr::LoadGuilds()
         else
         {
             uint32 count = 0;
-
             do
             {
-
                 Field* fields = result->Fetch();
                 uint32 guildId = fields[11].GetUInt32();
+
                 if (Guild* pGuild = GetGuildById(guildId))
                     pGuild->LoadBankItemFromDB(fields);
+
                 ++count;
             }
             while (result->NextRow());
@@ -3968,7 +3942,7 @@ void ObjectMgr::LoadGuilds()
 
         for (GuildMap::iterator itr = mGuildMap.begin(); itr != mGuildMap.end(); ++itr)
         {
-            Guild* pGuild = *itr;
+            Guild* pGuild = itr->second;
             if (pGuild)
             {
                 if (!pGuild->Validate())
@@ -4695,7 +4669,6 @@ void ObjectMgr::LoadQuests()
                 }
             }
 
-
             else if (qinfo->RewRepValue[j] != 0)
             {
                 sLog->outErrorDb("Quest %u has `RewRepFaction%d` = 0 but `RewRepValue%d` = %i.",
@@ -4703,7 +4676,6 @@ void ObjectMgr::LoadQuests()
                 // no changes, quest ignore this data
             }
         }
-
 
         if (qinfo->RewSpell)
         {
@@ -4878,7 +4850,6 @@ void ObjectMgr::LoadQuestLocales()
     if (!result)
         return;
 
-
     do
     {
         Field *fields = result->Fetch();
@@ -4946,7 +4917,6 @@ void ObjectMgr::LoadScripts(ScriptsType type)
     char buff[125];
     sprintf(buff, "SELECT id,delay,command,datalong,datalong2,dataint,x,y,z,o%s FROM %s", isSpellScriptTable ? ",effIndex" : "", tableName.c_str());
     QueryResult result = WorldDatabase.Query(buff);
-
 
     if (!result)
     {
@@ -5468,7 +5438,6 @@ void ObjectMgr::ValidateSpellScripts()
         sScriptMgr->CreateSpellScriptLoaders(itr->first, SpellScriptLoaders);
         itr = mSpellScripts.upper_bound(itr->first);
 
-
         for (std::vector<std::pair<SpellScriptLoader *, SpellScriptsMap::iterator> >::iterator sitr = SpellScriptLoaders.begin(); sitr != SpellScriptLoaders.end(); ++sitr)
         {
             SpellScript * spellScript = sitr->first->GetSpellScript();
@@ -5571,7 +5540,6 @@ void ObjectMgr::LoadPageTextLocales()
 
     if (!result)
         return;
-
 
     do
     {
@@ -5734,14 +5702,12 @@ void ObjectMgr::LoadGossipText()
 
     int cic;
 
-
     do
     {
         ++count;
         cic = 0;
 
         Field *fields = result->Fetch();
-
 
         uint32 Text_ID    = fields[cic++].GetUInt32();
         if (!Text_ID)
@@ -5791,7 +5757,6 @@ void ObjectMgr::LoadNpcTextLocales()
 
     if (!result)
         return;
-
 
     do
     {
@@ -6362,7 +6327,6 @@ WorldSafeLocsEntry const *ObjectMgr::GetClosestGraveYard(float x, float y, float
         return NULL;
     }
 
-
     // Simulate std. algorithm:
     //   found some graveyard associated to (ghost_zone,ghost_map)
     //
@@ -6578,7 +6542,6 @@ void ObjectMgr::LoadAreaTriggerTeleports()
     {
         Field *fields = result->Fetch();
 
-
         ++count;
 
         uint32 Trigger_ID = fields[0].GetUInt32();
@@ -6639,7 +6602,6 @@ void ObjectMgr::LoadAccessRequirements()
     do
     {
         Field *fields = result->Fetch();
-
 
         ++count;
 
@@ -6964,7 +6926,6 @@ void ObjectMgr::LoadGameObjectLocales()
 
     if (!result)
         return;
-
 
     do
     {
@@ -7382,7 +7343,6 @@ void ObjectMgr::LoadReputationRewardRate()
         return;
     }
 
-
     do
     {
 
@@ -7453,7 +7413,6 @@ void ObjectMgr::LoadReputationOnKill()
         return;
     }
 
-
     do
     {
         Field *fields = result->Fetch();
@@ -7521,7 +7480,6 @@ void ObjectMgr::LoadReputationSpilloverTemplate()
         sLog->outString();
         return;
     }
-
 
     do
     {
@@ -7638,7 +7596,6 @@ void ObjectMgr::LoadPointsOfInterest()
         return;
     }
 
-
     do
     {
         Field *fields = result->Fetch();
@@ -7688,7 +7645,6 @@ void ObjectMgr::LoadQuestPOI()
 
     //                                                0        1   2  3
     QueryResult points = WorldDatabase.PQuery("SELECT questId, id, x, y FROM quest_poi_points ORDER BY questId DESC, idx");
-
 
     std::vector<std::vector<std::vector<QuestPOIPoint> > > POIs;
 
@@ -8023,7 +7979,6 @@ void ObjectMgr::LoadQuestRelationsHelper(QuestRelations& map, std::string table,
         sLog->outString();
         return;
     }
-
 
     PooledQuestRelation* poolRelationMap = go ? &sPoolMgr->mQuestGORelation : &sPoolMgr->mQuestCreatureRelation;
     if (starter)
@@ -8400,7 +8355,6 @@ bool ObjectMgr::LoadTrinityStrings(char const* table, int32 min_value, int32 max
     if (!result)
     {
 
-
         if (min_value == MIN_TRINITY_STRING_ID)              // error only in case internal strings
             sLog->outErrorDb(">> Loaded 0 trinity strings. DB table `%s` is empty. Cannot continue.",table);
         else
@@ -8410,7 +8364,6 @@ bool ObjectMgr::LoadTrinityStrings(char const* table, int32 min_value, int32 max
     }
 
     uint32 count = 0;
-
 
     do
     {
@@ -8446,7 +8399,6 @@ bool ObjectMgr::LoadTrinityStrings(char const* table, int32 min_value, int32 max
             AddLocaleString(str, LocaleConstant(i), data.Content);
         }
     } while (result->NextRow());
-
 
     if (min_value == MIN_TRINITY_STRING_ID)
         sLog->outString(">> Loaded %u Trinity strings from table %s in %u ms", count, table, GetMSTimeDiffToNow(oldMSTime));
@@ -9256,7 +9208,6 @@ void ObjectMgr::LoadScriptNames()
         sLog->outErrorDb(">> Loaded empty set of Script Names!");
         return;
     }
-
 
     uint32 count = 1;
 

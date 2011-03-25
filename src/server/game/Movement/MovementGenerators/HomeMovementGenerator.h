@@ -63,4 +63,3 @@ class HomeMovementGenerator<Creature>
 };
 #endif
 
-

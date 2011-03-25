@@ -199,7 +199,6 @@ void BattlegroundDS::Reset()
     setKnockBackTimer(3000);
 }
 
-
 bool BattlegroundDS::SetupBattleground()
 {
     // gates

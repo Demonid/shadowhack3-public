@@ -808,7 +808,6 @@ public:
 
 };
 
-
 void AddSC_boss_kalecgos()
 {
     new boss_kalecgos();

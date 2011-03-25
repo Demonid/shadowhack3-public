@@ -127,7 +127,6 @@ public:
 
 };
 
-
 /*######
 ## npc_ancestral_wolf
 ######*/
@@ -202,7 +201,6 @@ public:
 
 };
 
-
 /*######
 ## go_haaleshi_altar
 ######*/
@@ -256,7 +254,6 @@ public:
     }
 
 };
-
 
 /*######
 ## npc_tracy_proudwell
@@ -314,7 +311,6 @@ public:
 
 };
 
-
 /*######
 ## npc_trollbane
 ######*/
@@ -367,7 +363,6 @@ public:
     }
 
 };
-
 
 /*######
 ## npc_wounded_blood_elf
@@ -601,7 +596,6 @@ class npc_unstable_living_flare : public CreatureScript
 {
 public:
     npc_unstable_living_flare() : CreatureScript("npc_unstable_living_flare") {}
-
     struct npc_unstable_living_flareAI : public ScriptedAI
     {
         npc_unstable_living_flareAI(Creature *pCreature): ScriptedAI(pCreature)
@@ -641,7 +635,6 @@ public:
         return new npc_unstable_living_flareAI(pCreature);
     }
 };
-
 /*######
 ## npc_fel_guard_hound
 ######*/
@@ -713,7 +706,6 @@ public:
     };
 
 };
-
 
 void AddSC_hellfire_peninsula()
 {
