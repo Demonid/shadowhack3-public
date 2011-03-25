@@ -18744,8 +18744,8 @@ void Player::_SaveStats(SQLTransaction& trans)
        << GetUInt32Value(PLAYER_FIELD_MOD_TARGET_PHYSICAL_RESISTANCE) << ", " //phys_resistance 
        << GetUInt32Value(PLAYER_FIELD_MOD_HEALING_DONE_POS) << ", " //modhealdone
        << GetUInt32Value(PLAYER_VISIBLE_ITEM_18_ENTRYID) << ", " //Ranged item        
-       << GetFloatValue(UNIT_FIELD_BASEATTACKTIME) << ", "
-       << GetFloatValue(UNIT_FIELD_RANGEDATTACKTIME) << ", "
+       << GetUInt32Value(UNIT_FIELD_BASEATTACKTIME) << ", "
+       << GetUInt32Value(UNIT_FIELD_RANGEDATTACKTIME) << ", "
        << GetFloatValue(UNIT_FIELD_MINDAMAGE) << ", "
        << GetFloatValue(UNIT_FIELD_MAXDAMAGE) << ", "
        << GetFloatValue(UNIT_FIELD_MINRANGEDDAMAGE) << ", "
