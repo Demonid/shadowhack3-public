@@ -14951,8 +14951,8 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit * pTarget, uint32 procFlag,
                                 && !(procSpell->AttributesEx5 & SPELL_ATTR5_START_PERIODIC_AT_APPLY)))
                             {
                                 // vanish
-                                if(GetAuraEffect(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE, 0x00000800, 0, 0))
-                                    if(IsCCSpell(procSpell) && !procSpell->Mechanic)
+                                if(AuraEffect* aur = GetAuraEffect(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE, 0x00000800, 0, 0))
+                                    if(IsCCSpell(procSpell) && (damage && aur->GetBase()->GetDuration() > 9000))
                                         continue;
                                 RemoveAura(i->aura);
                             }
