@@ -1536,7 +1536,7 @@ bool Battleground::DelCreature(uint32 type)
     if (!pMap)
         return false;
 
-    if (Creature *cr = pMap->GetCreature(m_BgCreatures[type]))
+    if (Creature *creature = pMap->GetCreature(m_BgCreatures[type]))
     {
         creature->AddObjectToRemoveList();
         m_BgCreatures[type] = 0;
