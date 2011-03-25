@@ -1476,10 +1476,10 @@ void AuraEffect::PeriodicTick(AuraApplication * aurApp, Unit * caster) const
 
             SpellPeriodicAuraLogInfo pInfo(this, damage, overkill, absorb, resist, 0.0f, crit);
             target->SendPeriodicAuraLog(&pInfo);
+            caster->DealDamage(target, damage, &cleanDamage, DOT, GetSpellSchoolMask(GetSpellProto()), GetSpellProto(), true);
 
             caster->ProcDamageAndSpell(target, procAttacker, procVictim, procEx, damage, absorb, BASE_ATTACK, GetSpellProto());
 
-            caster->DealDamage(target, damage, &cleanDamage, DOT, GetSpellSchoolMask(GetSpellProto()), GetSpellProto(), true);
             break;
         }
         case SPELL_AURA_PERIODIC_LEECH:
@@ -1553,8 +1553,8 @@ void AuraEffect::PeriodicTick(AuraApplication * aurApp, Unit * caster) const
                 procVictim|=PROC_FLAG_TAKEN_DAMAGE;
              if(absorb)
                  procEx|=PROC_EX_ABSORB;
-            caster->ProcDamageAndSpell(target, procAttacker, procVictim, procEx, damage, absorb, BASE_ATTACK, GetSpellProto());
             int32 new_damage = caster->DealDamage(target, damage, &cleanDamage, DOT, GetSpellSchoolMask(GetSpellProto()), GetSpellProto(), false);
+            caster->ProcDamageAndSpell(target, procAttacker, procVictim, procEx, damage, absorb, BASE_ATTACK, GetSpellProto());
 
             if (!target->isAlive() && caster->IsNonMeleeSpellCasted(false))
                 for (uint32 i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; ++i)
@@ -1983,8 +1983,8 @@ void AuraEffect::PeriodicTick(AuraApplication * aurApp, Unit * caster) const
             if (damageInfo.damage)
                 procVictim|=PROC_FLAG_TAKEN_DAMAGE;
 
-            caster->ProcDamageAndSpell(damageInfo.target, procAttacker, procVictim, procEx, damageInfo.damage, damageInfo.absorb, BASE_ATTACK, spellProto);
             caster->DealSpellDamage(&damageInfo, true);
+            caster->ProcDamageAndSpell(damageInfo.target, procAttacker, procVictim, procEx, damageInfo.damage, damageInfo.absorb, BASE_ATTACK, spellProto);
             break;
         }
         case SPELL_AURA_DUMMY:
