@@ -560,7 +560,6 @@ public:
         return true;
     }
 };
-
 void AddSC_azshara()
 {
     new mobs_spitelashes();

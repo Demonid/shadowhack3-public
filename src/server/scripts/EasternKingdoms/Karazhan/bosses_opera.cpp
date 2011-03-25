@@ -747,13 +747,6 @@ public:
 
 };
 
-
-
-
-
-
-
-
 /**************************************/
 /**** Opera Red Riding Hood Event ****/
 /************************************/
@@ -802,7 +795,6 @@ public:
     }
 
 };
-
 
 class boss_bigbadwolf : public CreatureScript
 {
@@ -929,7 +921,6 @@ public:
     };
 
 };
-
 
 /**********************************************/
 /******** Opera Romeo and Juliet Event *******/
@@ -1524,7 +1515,6 @@ void boss_julianne::boss_julianneAI::DamageTaken(Unit* /*done_by*/, uint32 &dama
     }
     sLog->outError("TSCR: boss_julianneAI: DamageTaken reach end of code, that should not happen.");
 }
-
 
 void AddSC_bosses_opera()
 {

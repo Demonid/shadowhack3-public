@@ -177,8 +177,6 @@ public:
 
 };
 
-
-
 /*####
 # npc_prospector_remtravel
 ####*/
@@ -314,8 +312,6 @@ public:
 
 };
 
-
-
 /*####
 # npc_threshwackonator
 ####*/
@@ -352,7 +348,6 @@ public:
 
         return true;
     }
-
 
     bool OnGossipHello(Player* pPlayer, Creature* pCreature)
     {
@@ -400,9 +395,6 @@ public:
     };
 
 };
-
-
-
 
 void AddSC_darkshore()
 {

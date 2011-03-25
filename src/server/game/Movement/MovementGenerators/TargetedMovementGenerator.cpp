@@ -451,4 +451,3 @@ template bool TargetedMovementGenerator<Creature>::Update(Creature &, const uint
 template Unit* TargetedMovementGenerator<Player>::GetTarget() const;
 template Unit* TargetedMovementGenerator<Creature>::GetTarget() const;
 
-

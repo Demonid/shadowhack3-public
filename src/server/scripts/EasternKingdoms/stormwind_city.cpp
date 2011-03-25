@@ -75,7 +75,6 @@ public:
 
 };
 
-
 /*######
 ## npc_bartleby
 ######*/
@@ -147,8 +146,6 @@ public:
     };
 
 };
-
-
 
 /*######
 ## npc_dashel_stonefist     //Q: the same as npc_bartleby above, unite?
@@ -222,8 +219,6 @@ public:
 
 };
 
-
-
 /*######
 ## npc_lady_katrana_prestor     //Q: move to DB entirely?
 ######*/
@@ -277,7 +272,6 @@ public:
     }
 
 };
-
 
 /*######
 ## npc_lord_gregor_lescovar
@@ -453,7 +447,6 @@ public:
 
 };
 
-
 /*######
 ## npc_marzon_silent_blade
 ######*/
@@ -534,7 +527,6 @@ public:
     };
 
 };
-
 
 /*######
 ## npc_tyrion_spybot
@@ -687,7 +679,6 @@ public:
     };
 
 };
-
 
 /*######
 ## npc_tyrion
