@@ -18709,7 +18709,7 @@ void Player::_SaveStats(SQLTransaction& trans)
     for (int i = 0; i < MAX_SPELL_SCHOOL; ++i)
         ss << GetResistance(SpellSchools(i)) << ",";
     for (uint8 i = 1; i < MAX_SPELL_SCHOOL; ++i)
-        ss << GetUInt32Value(PLAYER_SPELL_CRIT_PERCENTAGE1 + i) << ", ";
+        ss << GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + i) << ", ";
     ss << GetFloatValue(PLAYER_BLOCK_PERCENTAGE) << ", "
        << GetFloatValue(PLAYER_DODGE_PERCENTAGE) << ", "
        << GetFloatValue(PLAYER_PARRY_PERCENTAGE) << ", "
