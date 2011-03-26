@@ -1,5 +1,5 @@
 #################################################
-# Izb00shkaCore World Server configuration file #
+# Shadowhack3 World Server configuration file #
 #################################################
 [worldserver]
 
@@ -265,6 +265,14 @@ PlayerSave.Stats.MinLevel = 0
 
 PlayerSave.Stats.SaveOnlyOnLogout = 1
 
+#    DuelResetCooldown
+#        Custom option for reset cooldown and hp under duel begin
+#        Default: 0 (disable)
+#                 1 (enable)
+#
+
+DuelResetCooldown = 0
+
 #
 #    vmap.enableLOS
 #    vmap.enableHeight
@@ -310,6 +318,13 @@ vmap.enableIndoorCheck = 1
 
 PathFinding.Enable = 0
 
+#    PathFinding.MaxPathLength
+#       Max long path for creatures and charging effects
+#        Default: 50
+#
+
+PathFinding.MaxPathLength = 50
+
 #
 #    PathFinding.ignoreMapIds
 #        Map id that will be ignored by PathFinding
@@ -319,6 +334,13 @@ PathFinding.Enable = 0
 #        Example: "369,0,1,530"
 
 PathFinding.ignoreMapIds = ""
+
+#
+#    PathFinding.MovemapType
+#       Mmaps using type
+#        
+
+PathFinding.MovemapType = "1"
 
 #
 #    DetectPosCollision
@@ -1457,10 +1479,10 @@ BeepAtStart = 1
 #    Motd
 #        Description: Message of the Day, displayed at login.
 #                     Use '@' for a newline and be sure to escape special characters.
-#        Example:     "Welcome to John\'s Server@This server runs on Izb00shka Core."
-#        Default:     "Welcome to a Izb00shkaCore server."
+#        Example:     "Welcome to John\'s Server@This server runs on Shadowhack3."
+#        Default:     "Welcome to a Shadowhack3 server."
 
-Motd = "Welcome to a Izb00shkaCore server."
+Motd = "Welcome to a Shadowhack3 server."
 
 #
 #    Server.LoginInfo
@@ -2212,6 +2234,12 @@ Rate.Auction.Cut     = 1
 
 Rate.Honor = 1
 
+#    PvPRank.Rate.ExtraHonor
+#        Extra honor gain rate for killing ranked players
+#
+
+Rate.Rank.ExtraHonor = 1
+
 #
 #    Rate.Mining.Amount
 #        Description: Rate for minimum/maximum times a deposit can be used.
@@ -2501,6 +2529,14 @@ BattleGround.PremadeGroupWaitForMatch = 1800000
 Battleground.GiveXPForKills = 0
 
 #
+#    Battleground.GiveMarks
+#        Old system for added marks on completion battleground
+#        Default: 0 (disable)
+#                 1 (enable)
+
+Battleground.GiveMarks = 0
+
+#
 #    Battleground.Random.ResetHour
 #        Description: Hour of the day when the global instance resets occur.
 #        Range:       0-23
@@ -2589,6 +2625,38 @@ Arena.ArenaStartPersonalRating = 0
 #        Default:     1500
 
 Arena.ArenaStartMatchmakerRating = 1500
+
+#    Arena.2v2.Bracket.Enable
+#     Enable or disable 2x2 arena bracket
+#     Default: 1 (enable)
+#              0 (disable)
+#
+
+Arena.2v2.Bracket.Enable = 1
+
+#    Arena.3v3.Bracket.Enable
+#     Enable or disable 3v3 arena bracket
+#     Default: 1 (enable)
+#              0 (disable)
+#
+
+Arena.3v3.Bracket.Enable = 1
+
+#    Arena.5v5.Bracket.Enable
+#     Enable or disable 5v5 arena bracket
+#     Default: 1 (enable)
+#              0 (disable)
+#
+
+Arena.5v5.Bracket.Enable = 1
+
+#    Arena.MarkOfWin.Enable
+#     Custom event for arenas. Winning command is added in inventory items (2x2 - 75557; 3x3, 5x5 - 75556) 
+#     Default: 0 (disable)
+#              1 (enable)
+#
+
+Arena.MarkOfWin.Enable = 0
 
 #
 ###################################################################################################
@@ -2770,6 +2838,12 @@ HonorPointsAfterDuel = 0
 
 AlwaysMaxWeaponSkill = 0
 
+#    PvPRank.HKPerRank
+#        Need kills for next rank
+#
+
+PvPRank.HKPerRank = 10,50,100,200,450,750,1300,2000,3500,6000,9500,15000,21000,30000
+
 #
 #    PvPToken.Enable
 #        Description: Character will receive a token after defeating another character that yields
@@ -2803,6 +2877,22 @@ PvPToken.ItemID = 29434
 #        Default:     1
 
 PvPToken.ItemCount = 1
+
+#
+#   AntiDodge
+#        Enable antidodge system for arenas
+#         Default: 0 - off
+#                  1 - on
+
+AntiDodge = 0
+
+#
+#   AntiPereliv
+#        Enable antipereliv check for pvp zones
+#         Default: 0 - off
+#                  1 - on   
+
+AntiPereliv = 0
 
 #
 #    NoResetTalentsCost
@@ -2988,21 +3078,21 @@ OutdoorPvP.Wintergrasp.CustomHonorIntactBuilding = 1500
 
 #
 #   OutdoorPvP.Wintergrasp.Antifarm.Enable
-#		Enable or Disable antifarm system
+#        Enable or Disable antifarm system
 #              (Default: 0)
 
 OutdoorPvP.Wintergrasp.Antifarm.Enable = 1
 
 #
 #   OutdoorPvP.Wintergrasp.Antifarm.Atk
-#		Min count atack players for antifarm
+#        Min count atack players for antifarm
 #              (Default: 5)
 
 OutdoorPvP.Wintergrasp.Antifarm.Atk = 1
 
 #
 #   OutdoorPvP.Wintergrasp.Antifarm.Def
-#		Min count defense players for antifarm
+#        Min count defense players for antifarm
 #              (Default: 5)
 
 OutdoorPvP.Wintergrasp.Antifarm.Def = 1

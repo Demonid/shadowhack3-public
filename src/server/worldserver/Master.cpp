@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
@@ -126,14 +126,15 @@ int Master::Run()
     sLog->outString("%s (core-daemon)", _FULLVERSION);
     sLog->outString("<Ctrl-C> to stop.\n");
 
-    sLog->outString( "                                                                          \n");
-    sLog->outString( "      _____     _      ___   ___      _     _           ___               ");
-    sLog->outString( "      \\_   \\____ |__  / _ \\ / _ \\ ___| |__ | | ____ _  / __\\___  _ __ ___ ");
-    sLog->outString( "       / /\\/_  / '_ \\| | | | | | / __| '_ \\| |/ / _` |/ /  / _ \\| '__/ _ \\");
-    sLog->outString( "    /\\/ /_  / /| |_) | |_| | |_| \\__ \\ | | |   < (_| / /___ (_) | | |  __/");
-    sLog->outString( "    \\____/ /___|_.__/ \\___/ \\___/|___/_| |_|_|\\_\\__,_\\____/\\___/|_|  \\___|");
-    sLog->outString( "                                                                          ");
-    sLog->outString( "    http://izbooshka.net\n");
+    sLog->outString( "                                                                         \n");    
+    sLog->outString( "      _____ _               _               _                _        ____ ");
+    sLog->outString( "     / ____| |             | |             | |              | |      |___ \\ ");
+    sLog->outString( "    | (___ | |__   __ _  __| | _____      _| |__   __ _  ___| | __     __) | ");
+    sLog->outString( "     \\___ \\| '_ \\ / _` |/ _` |/ _ \\ \\ /\\ / / '_ \\ / _` |/ __| |/ /    |__ < ");
+    sLog->outString( "     ____) | | | | (_| | (_| | (_) \\ V  V /| | | | (_| | (__|   <     ___) | ");
+    sLog->outString( "    |_____/|_| |_|\\__,_|\\__,_|\\___/ \\_/\\_/ |_| |_|\\__,_|\\___|_|\\_\\   |____/ ");
+    sLog->outString( "                                                                           ");
+    sLog->outString( "                                                                        \n");
 
 #ifdef USE_SFMT_FOR_RNG
     sLog->outString("\n");
@@ -234,7 +235,7 @@ int Master::Run()
         if (Prio)
         {
             if(SetPriorityClass(hProcess,HIGH_PRIORITY_CLASS))
-                sLog->outString("Izb00shkaCore process priority class set to HIGH");
+                sLog->outString("Shadowhack3 process priority class set to HIGH");
             else
                 sLog->outError("Can't set Trinityd process priority class.");
             sLog->outString("");
