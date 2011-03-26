@@ -543,6 +543,8 @@ class Spell
         void CleanupTargetList();
 
         void SetSpellValue(SpellValueMod mod, int32 value);
+
+        SpellModifier *bugged_mod;
     protected:
 
         bool HasGlobalCooldown();
@@ -633,6 +635,7 @@ class Spell
             bool   processed:1;
             bool   alive:1;
             bool   crit:1;
+            bool   isfrozen:1;
             bool   scaleAura:1;
             int32  damage;
         };
