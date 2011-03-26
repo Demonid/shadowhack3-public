@@ -44,7 +44,7 @@ void ChargeMovementGenerator<T>::_setTargetPosition(T &unit)
     uint32 transitTime = uint32(i_path.GetTotalLength() / speed);
 
     if (unit.GetTypeId() == TYPEID_PLAYER)
-        unit.ToPlayer()->addAnticheatTemporaryImmunity(transitTime+250);
+        unit.ToPlayer()->addAnticheatTemporaryImmunity(transitTime+500);
 
     unit.MonsterMoveByPath(i_path, 1, i_path.size(), transitTime);    
 }
