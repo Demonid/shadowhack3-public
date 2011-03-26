@@ -585,9 +585,16 @@ struct DungeonEncounter
     uint32 lastEncounterDungeon;
 };
 
+struct ItemRequirements
+{
+    uint32 id;
+    uint32 rating;
+    uint32 requitem;
+};
+
 typedef std::list<DungeonEncounter const*> DungeonEncounterList;
 typedef UNORDERED_MAP<uint32,DungeonEncounterList> DungeonEncounterMap;
-
+typedef UNORDERED_MAP<uint32, ItemRequirements> ItemRequirementsMap;
 class PlayerDumpReader;
 
 class ObjectMgr
@@ -1282,11 +1289,13 @@ class ObjectMgr
         CharacterConversionMap factionchange_items;
         CharacterConversionMap factionchange_spells;
         CharacterConversionMap factionchange_reputations;
+        ItemRequirementsMap item_req;
 
         void LoadFactionChangeAchievements();
         void LoadFactionChangeItems();
         void LoadFactionChangeSpells();
         void LoadFactionChangeReputations();
+        void LoadItemRequirements();
 
     protected:
 

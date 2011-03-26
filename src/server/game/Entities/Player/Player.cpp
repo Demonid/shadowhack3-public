@@ -11287,7 +11287,8 @@ uint8 Player::CanEquipItem(uint8 slot, uint16 &dest, Item *pItem, bool swap, boo
             if (pItem->IsBindedNotWith(this))
                 return EQUIP_ERR_DONT_OWN_THAT_ITEM;
 
-            if (GetArenaPersonalRating(0) < pProto->userating)
+            ItemRequirementsMap::iterator req = sObjectMgr->item_req.find(pItem->GetProto()->ItemId);
+            if (req != sObjectMgr->item_req.end() && GetArenaPersonalRating(0) < req->second.rating)
                 return EQUIP_ERR_PERSONAL_ARENA_RATING_TOO_LOW;
 
             // check count of items (skip for auto move for same player from bank)
@@ -19875,24 +19876,27 @@ void Player::UpdateArenaItemEquiped()
 {
     for (uint8 i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; i++)
         if (Item *pItem = GetItemByPos(INVENTORY_SLOT_BAG_0, i))
-            if (GetArenaPersonalRating(0) < pItem->GetProto()->userating)
-            {
-                uint8 srcbag, srcslot, dstbag;
-                srcbag = pItem->GetBagSlot();
-                srcslot = pItem->GetSlot();
-                dstbag = 0;
-                uint16 src = pItem->GetPos();
-                ItemPosCountVec dest;
-                uint8 msg = CanStoreItem(dstbag, NULL_SLOT, dest, pItem, false);
-                if (msg != EQUIP_ERR_OK)
+        {
+            ItemRequirementsMap::iterator req = sObjectMgr->item_req.find(pItem->GetProto()->ItemId);
+                if (req != sObjectMgr->item_req.end() && GetArenaPersonalRating(0) < req->second.rating)
                 {
+                    uint8 srcbag, srcslot, dstbag;
+                    srcbag = pItem->GetBagSlot();
+                    srcslot = pItem->GetSlot();
+                    dstbag = 0;
+                    uint16 src = pItem->GetPos();
+                    ItemPosCountVec dest;
+                    uint8 msg = CanStoreItem(dstbag, NULL_SLOT, dest, pItem, false);
+                    if (msg != EQUIP_ERR_OK)
+                    {
+                        RemoveItem(srcbag, srcslot, true);
+                        StoreItem(dest, pItem, true);
+                        continue;
+                    }
                     RemoveItem(srcbag, srcslot, true);
                     StoreItem(dest, pItem, true);
-                    continue;
                 }
-                RemoveItem(srcbag, srcslot, true);
-                StoreItem(dest, pItem, true);
-            }
+        }
 }
 
 void Player::LeaveAllArenaTeams(uint64 guid)

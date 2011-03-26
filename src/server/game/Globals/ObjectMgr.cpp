@@ -9599,3 +9599,40 @@ void ObjectMgr::LoadFactionChangeReputations()
     sLog->outString(">> Loaded %u faction change reputation pairs in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
     sLog->outString();
 }
+
+void ObjectMgr::LoadItemRequirements()
+{
+    QueryResult result = WorldDatabase.Query("SELECT * FROM item_requirements");
+
+    if (!result)
+    {
+        sLog->outString(">> Loaded 0 item requirements pairs. DB table `item_requirements` is empty.");
+        sLog->outString();
+        return;
+    }
+
+    uint32 count = 0;
+
+    do
+    {
+        Field *fields = result->Fetch();
+
+        uint32 id = fields[0].GetUInt32();
+        if (!sItemStorage.LookupEntry<ItemPrototype>(id))
+        {
+            sLog->outErrorDb("Item with id %u listed by id in item_requirements!", id);
+            continue;
+        }
+        uint32 rating = fields[1].GetUInt32();
+        uint32 requitem = fields[2].GetUInt32();
+        if (!sItemStorage.LookupEntry<ItemPrototype>(requitem))
+        {
+            sLog->outErrorDb("Item with id %u listed by requitem in item_requirements!", requitem);
+            continue;
+        }
+        ItemRequirements req = {id, rating, requitem};
+        item_req[id] = req;
+        ++count;
+    }
+    while (result->NextRow());
+}
