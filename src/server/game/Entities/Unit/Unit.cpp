@@ -16367,7 +16367,7 @@ void Unit::KnockBackWithAngle(float angle, float horizontalSpeed, float vertical
         data << float(vsin);                                // y direction
         data << float(horizontalSpeed);                     // Horizontal speed
         data << float(-verticalSpeed);                      // Z Movement speed (vertical)
-        ToPlayer()->addAnticheatTemporaryImmunity(verticalSpeed * 100 + 250);
+        ToPlayer()->addAnticheatTemporaryImmunity(verticalSpeed * 100 + 500);
         ToPlayer()->GetSession()->SendPacket(&data);
     }
     else
