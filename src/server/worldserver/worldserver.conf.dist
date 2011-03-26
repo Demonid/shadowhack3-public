@@ -1,5 +1,5 @@
 #################################################
-# Izb00shkaCore World Server configuration file #
+# Shadowhack3 World Server configuration file #
 #################################################
 [worldserver]
 
@@ -1479,10 +1479,10 @@ BeepAtStart = 1
 #    Motd
 #        Description: Message of the Day, displayed at login.
 #                     Use '@' for a newline and be sure to escape special characters.
-#        Example:     "Welcome to John\'s Server@This server runs on Izb00shka Core."
-#        Default:     "Welcome to a Izb00shkaCore server."
+#        Example:     "Welcome to John\'s Server@This server runs on Shadowhack3."
+#        Default:     "Welcome to a Shadowhack3 server."
 
-Motd = "Welcome to a Izb00shkaCore server."
+Motd = "Welcome to a Shadowhack3 server."
 
 #
 #    Server.LoginInfo
