@@ -26,5 +26,16 @@ INSERT INTO `spell_proc_event` VALUES (12573, 0x00, 0x03, 0x00000000, 0x00000000
 -- scriptname for Nibelung
 UPDATE `creature_template` SET `ScriptName`='npc_valkyr' WHERE (`entry`='38392');
 
+-- item requirements custom patch
 ALTER TABLE `item_template`
-    ADD COLUMN `userating` smallint(4) unsigned NOT NULL DEFAULT '0' AFTER `maxMoneyLoot`;
+DROP COLUMN `userating`;
+
+CREATE TABLE IF NOT EXISTS `item_requirements` (
+  `entry` MEDIUMINT(8) UNSIGNED NOT NULL DEFAULT 0,
+  `reqrating` MEDIUMINT(8) UNSIGNED NOT NULL DEFAULT 0,
+  `reqitem` MEDIUMINT(8) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`entry`)
+) ENGINE=MYISAM DEFAULT CHARSET=utf8 ROW_FORMAT=FIXED;
+	
+UPDATE `spell_bonus_data` SET `direct_bonus`='0' WHERE (`entry`='45297');
+UPDATE `spell_bonus_data` SET `direct_bonus`='0' WHERE (`entry`='45284');
