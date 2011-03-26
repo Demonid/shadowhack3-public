@@ -848,10 +848,11 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
         }
 
         mover->SetPosition(movementInfo.pos);
-        if (plMover && !vehMover)                                            // nothing is charmed, or player charmed
-        {
+        if(plMover)
             plMover->UpdateFallInformationIfNeed(movementInfo, opcode);
-            
+
+        if (plMover && !vehMover)                                            // nothing is charmed, or player charmed
+        {            
             if (plMover->InBattleground()
                 && plMover->GetBattleground()
                 
