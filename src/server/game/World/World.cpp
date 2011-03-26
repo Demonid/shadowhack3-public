@@ -1695,6 +1695,8 @@ void World::SetInitialWorldSettings()
 
     sLog->outString("Loading Autobroadcasts...");
     LoadAutobroadcasts();
+    sLog->outString("Loading ItemRequirements...");
+    sObjectMgr->LoadItemRequirements();
 
     ///- Load and initialize scripts
     sObjectMgr->LoadQuestStartScripts();                         // must be after load Creature/Gameobject(Template/Data) and QuestTemplate
