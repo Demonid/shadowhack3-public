@@ -791,6 +791,13 @@ void Spell::SpellDamageSchoolDmg(SpellEffIndex effIndex)
 
                 break;
             }
+            case SPELLFAMILY_SHAMAN:
+            {
+                // Lightning overload proc
+                if (m_spellInfo->SpellFamilyFlags[0] & 0x3 && m_spellInfo->AttributesEx == SPELL_ATTR1_NO_THREAT)
+                    apply_direct_bonus = false;
+                break;
+            }
         }
 
         if (m_originalCaster && damage > 0 && apply_direct_bonus)

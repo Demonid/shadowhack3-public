@@ -7584,8 +7584,8 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                     // Remove cooldown (Chain Lightning - have Category Recovery time)
                     ToPlayer()->RemoveSpellCooldown(spellId);
                 }
-
-                CastSpell(pVictim, spellId, true, castItem, triggeredByAura);
+                int32 basepoints = damage/2;
+                CastCustomSpell(pVictim, spellId, &basepoints, 0, 0, true, castItem, triggeredByAura);
 
                 if (cooldown && GetTypeId() == TYPEID_PLAYER)
                     ToPlayer()->AddSpellCooldown(dummySpell->Id, 0, time(NULL) + cooldown);
@@ -10967,8 +10967,8 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     // Default calculation
     if (DoneAdvertisedBenefit || TakenAdvertisedBenefit)
     {
-       if (!bonus || coeff < 0)
-        {
+       if (GetTypeId() != TYPEID_PLAYER && (!bonus || coeff < 0))
+       {
             // Damage Done from spell damage bonus
             int32 CastingTime = IsChanneledSpell(spellProto) ? GetSpellDuration(spellProto) : GetSpellCastTime(spellProto);
             // Damage over Time spells bonus calculation
@@ -11610,7 +11610,7 @@ uint32 Unit::SpellHealingBonus(Unit *pVictim, SpellEntry const *spellProto, uint
     // Default calculation
     if (DoneAdvertisedBenefit || TakenAdvertisedBenefit)
     {
-        if ((!bonus && !scripted) || coeff < 0)
+        if (GetTypeId() != TYPEID_PLAYER && ((!bonus && !scripted) || coeff < 0))
         {
             // Damage Done from spell damage bonus
             int32 CastingTime = !IsChanneledSpell(spellProto) ? GetSpellCastTime(spellProto) : GetSpellDuration(spellProto);
