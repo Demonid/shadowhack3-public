@@ -10,3 +10,13 @@ CREATE TABLE IF NOT EXISTS `vehicle_accessory` (
   `summontimer` INT(10) UNSIGNED NOT NULL DEFAULT 30000 COMMENT 'timer, only relevant for certain summontypes',
   PRIMARY KEY (`guid`,`seat_id`)
 ) ENGINE=MYISAM DEFAULT CHARSET=utf8 ROW_FORMAT=FIXED;
+
+-----
+
+
+CREATE TABLE IF NOT EXISTS `item_requirements` (
+  `entry` MEDIUMINT(8) UNSIGNED NOT NULL DEFAULT 0,
+  `reqrating` MEDIUMINT(8) UNSIGNED NOT NULL DEFAULT 0,
+  `reqitem` MEDIUMINT(8) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`entry`)
+) ENGINE=MYISAM DEFAULT CHARSET=utf8 ROW_FORMAT=FIXED;
