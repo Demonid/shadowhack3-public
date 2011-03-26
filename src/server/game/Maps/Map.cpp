@@ -2073,8 +2073,10 @@ void BattlegroundMap::RemoveAllPlayers()
         for (MapRefManager::iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
             if (Player* plr = itr->getSource())
                 if (!plr->IsBeingTeleportedFar())
+                {
                     plr->TeleportTo(plr->GetBattlegroundEntryPoint());
-
+                    plr->ResurrectPlayer(100);
+                }
 }
 
 Creature*

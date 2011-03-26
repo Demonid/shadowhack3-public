@@ -6272,10 +6272,10 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                     {
                         SpellEntry const * spell = sSpellStore.LookupEntry(71564);
                         if(spell)
-						{
+                        {
                             for (uint32 i=0; i < spell->StackAmount; ++i)
                                 caster->CastSpell(target, spell->Id, true, NULL, NULL, GetCasterGUID());
-						}
+                        }
                     }
                     else caster->RemoveAurasDueToSpell(71564);
                     break;

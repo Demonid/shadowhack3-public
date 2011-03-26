@@ -104,7 +104,7 @@ template<> void WaypointMovementGenerator<Creature>::MoveToNextNode(CreatureTrav
     PointPath pointPath = sub_path.getFullPath();
 
     float speed = traveller.Speed()*0.001f; // in ms
-	uint32 traveltime = uint32(pointPath.GetTotalLength() / speed);
+    uint32 traveltime = uint32(pointPath.GetTotalLength() / speed);
     owner->SendMonsterMoveByPath(pointPath, 1, pointPath.size(), traveltime);
 
     i_nextMoveTime.Reset(traveltime);

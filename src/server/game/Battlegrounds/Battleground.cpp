@@ -1106,12 +1106,6 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
     if (plr && plr->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
         plr->RemoveAurasByType(SPELL_AURA_MOD_SHAPESHIFT);
 
-    if (plr && !plr->isAlive())                              // resurrect on exit
-    {
-        plr->ResurrectPlayer(1.0f);
-        plr->SpawnCorpseBones();
-    }
-
     RemovePlayer(plr, guid);                                // BG subclass specific code
 
     if (participant) // if the player was a match participant, remove auras, calc rating, update queue
@@ -1206,6 +1200,12 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
         plr->GetAchievementMgr().ResetAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, ACHIEVEMENT_CRITERIA_CONDITION_MAP, GetMapId(), true);
     }
 
+    if (plr && !plr->isAlive())                              // resurrect on exit
+    {
+        plr->ResurrectPlayer(1.0f);
+        plr->SpawnCorpseBones();
+    }
+    
     //battleground object will be deleted next Battleground::Update() call
 }
 
