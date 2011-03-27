@@ -5903,6 +5903,8 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                 // Blessing of Ancient Kings (Val'anyr, Hammer of Ancient Kings)
                 case 64411:
                 {
+                    if (!pVictim)
+                        return false;
                     basepoints0 = int32(CalculatePctN(damage, 15));
                     if (AuraEffect* aurEff = pVictim->GetAuraEffect(64413, 0, GetGUID()))
                     {
