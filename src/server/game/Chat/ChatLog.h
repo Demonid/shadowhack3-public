@@ -17,13 +17,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef IZBOOSHKA__CHATLOG_H
-#define IZBOOSHKA__CHATLOG_H
+#ifndef IZBOOSHKA_CHATLOG_H
+#define IZBOOSHKA_CHATLOG_H
 
 #include "SharedDefines.h"
 #include "ChatLexicsCutter.h"
 #include "ObjectMgr.h"
-#include "ace/Singleton.h"
+#include <ace/Singleton.h>
 
 #define CHATLOG_CHAT_TYPES_COUNT 7
 
@@ -53,11 +53,11 @@ enum LexicsActions
 
 class ChatLog
 {
-		friend class ACE_Singleton<ChatLog, ACE_Null_Mutex>;
-		ChatLog();
-    public:
+        friend class ACE_Singleton<ChatLog, ACE_Thread_Mutex>;
+        ChatLog();
         ~ChatLog();
 
+    public:
         void Initialize();
         
         void ChatMsg(Player *player, std::string &msg, uint32 type);
@@ -105,5 +105,5 @@ class ChatLog
         void OutTimestamp(FILE *file);
 };
 
-#define sChatLog (*ACE_Singleton<ChatLog, ACE_Null_Mutex>::instance())
+#define sChatLog ACE_Singleton<ChatLog, ACE_Thread_Mutex>::instance()
 #endif
