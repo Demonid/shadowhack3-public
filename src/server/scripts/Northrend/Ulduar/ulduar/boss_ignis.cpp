@@ -18,7 +18,6 @@
 
 #include "ScriptPCH.h"
 #include "ulduar.h"
-#include "SpellAuraEffects.h"
 
 enum Yells
 {
@@ -509,7 +508,6 @@ class spell_ignis_slag_pot : public SpellScriptLoader
             return new spell_ignis_slag_pot_AuraScript();
         }
 };
-
 
 void AddSC_boss_ignis()
 {

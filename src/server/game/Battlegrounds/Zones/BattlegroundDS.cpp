@@ -195,7 +195,6 @@ void BattlegroundDS::Reset()
     setKnockBackTimer(3000);
 }
 
-
 bool BattlegroundDS::SetupBattleground()
 {
     m_uiKnockback=10000;

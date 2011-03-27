@@ -1871,7 +1871,6 @@ public:
         return true;
     }
 };
-
 void AddSC_boss_malygos()
 {
     new boss_malygos();

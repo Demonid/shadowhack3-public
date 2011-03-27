@@ -9,7 +9,7 @@ UPDATE `gameobject_template` SET `ScriptName`='';
 UPDATE `outdoorpvp_template` SET `ScriptName`='';
 
 /* AREA TRIGGERS */
-DELETE FROM `areatrigger_scripts` WHERE `entry` IN (822,5284,5285,5286,5287,4871,4872,4873,5108,5332,5338,5334,5340,5369,5423,5633,5604,5698,5649);
+DELETE FROM `areatrigger_scripts` WHERE `entry` IN (822,5284,5285,5286,5287,4871,4872,4873,5108,5332,5338,5334,5340,5369,5423,5633,5604,5698,5649,5729);
 DELETE FROM `areatrigger_scripts` WHERE `entry` BETWEEN 1726 AND 1740;
 INSERT INTO `areatrigger_scripts` (`entry`,`ScriptName`) VALUES 
 (822, 'at_map_chamber'),
@@ -45,7 +45,8 @@ INSERT INTO `areatrigger_scripts` (`entry`,`ScriptName`) VALUES
 (5633, 'at_tyrannus_event_starter'),
 (5604, 'at_sindragosa_lair'),
 (5698, 'at_icc_saurfang_portal'),
-(5649, 'at_icc_shutdown_traps');
+(5649, 'at_icc_shutdown_traps'),
+(5729, 'at_icc_start_blood_quickening');
 
 /* WORLD BOSS */
 UPDATE `creature_template` SET `ScriptName`='boss_ysondre' WHERE `entry`=14887;
@@ -833,6 +834,7 @@ UPDATE `creature_template` SET `ScriptName`='npc_guardian_pavilion' WHERE `entry
 /* ICECROWN CITADEL */
 UPDATE `instance_template` SET `script`='instance_icecrown_citadel' WHERE `map`=631;
 UPDATE `gameobject_template` SET `ScriptName`='icecrown_citadel_teleport' WHERE `entry` IN (202223,202235,202242,202243,202244,202245,202246);
+UPDATE `creature_template` SET `ScriptName`='npc_highlord_tirion_fordring_lh' WHERE `entry`=37119;
 UPDATE `creature_template` SET `ScriptName`='boss_lord_marrowgar' WHERE `entry`=36612;
 UPDATE `creature_template` SET `ScriptName`='npc_coldflame' WHERE `entry`=36672;
 UPDATE `creature_template` SET `ScriptName`='npc_bone_spike' WHERE `entry` IN (36619,38711,38712);
@@ -1505,12 +1507,15 @@ UPDATE `creature_template` SET `AIName`='TurretAI',`ScriptName`='' WHERE `entry`
 UPDATE `creature_template` SET `ScriptName`='boss_flame_leviathan_seat' WHERE `entry`=33114;
 UPDATE `creature_template` SET `ScriptName`='boss_flame_leviathan_defense_turret' WHERE `entry`=33142;
 UPDATE `creature_template` SET `ScriptName`='boss_flame_leviathan_overload_device' WHERE `entry`=33143;
+UPDATE `creature_template` SET `ScriptName`='boss_flame_leviathan_defense_cannon' WHERE `entry`=33139;
 UPDATE `creature_template` SET `ScriptName`='npc_colossus' WHERE `entry`=33237;
 UPDATE `creature_template` SET `ScriptName`='spell_pool_of_tar' WHERE `entry`=33090;
 UPDATE `creature_template` SET `ScriptName`='boss_ignis' WHERE `entry`=33118;
 UPDATE `creature_template` SET `ScriptName`='npc_iron_construct' WHERE `entry`=33121;
 UPDATE `creature_template` SET `ScriptName`='npc_scorch_ground' WHERE `entry`=33221;
 UPDATE `creature_template` SET `ScriptName`='boss_razorscale' WHERE `entry`=33186;
+UPDATE `creature_template` SET `ScriptName`='boss_razorscale_controller' WHERE `entry`=33233;
+UPDATE `gameobject_template` SET `ScriptName`='go_razorscale_harpoon' WHERE `entry` IN(194519,194541,194542,194543);
 UPDATE `creature_template` SET `ScriptName`='npc_devouring_flame' WHERE `entry`=34188;
 UPDATE `creature_template` SET `ScriptName`='npc_mole_machine_trigger' WHERE `entry`=33245;
 UPDATE `creature_template` SET `ScriptName`='npc_expedition_commander' WHERE `entry`=33210;
@@ -2057,6 +2062,7 @@ INSERT INTO `spell_script_names` (`spell_id`,`ScriptName`) VALUES
 ( 68646, 'spell_gen_leeching_swarm'),
 ( 68647, 'spell_gen_leeching_swarm'),
 -- Ulduar
+( 63308, 'spell_razorscale_devouring_flame'),
 ( 62717, 'spell_ignis_slag_pot'),
 ( 63477, 'spell_ignis_slag_pot'),
 ( 62521, 'spell_attuned_to_nature_dose_reduction'),

@@ -377,7 +377,6 @@ public:
 
 };
 
-
 void AddSC_boss_ionar()
 {
     new boss_ionar();

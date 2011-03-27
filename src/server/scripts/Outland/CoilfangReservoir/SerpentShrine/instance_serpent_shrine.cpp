@@ -209,7 +209,7 @@ class instance_serpent_shrine : public InstanceMapScript
                         BridgePart[2] = go->GetGUID();
                         go->setActive(true);
                         break;
-                    case GAMEOBJECT_FISHINGNODE_ENTRY: //no way checking if fish is hooked, so we create a timed event
+                    case 35591: //no way checking if fish is hooked, so we create a timed event
                         if (LurkerSubEvent == LURKER_NOT_STARTED)
                         {
                             FishingTimer = urand(10*IN_MILLISECONDS, 40*IN_MILLISECONDS); //random time before lurker emerges
@@ -460,7 +460,6 @@ class instance_serpent_shrine : public InstanceMapScript
             return new instance_serpentshrine_cavern_InstanceMapScript(pMap);
         }
 };
-
 
 void AddSC_instance_serpentshrine_cavern()
 {

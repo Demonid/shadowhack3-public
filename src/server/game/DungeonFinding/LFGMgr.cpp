@@ -1345,14 +1345,14 @@ void LFGMgr::UpdateProposal(uint32 proposalId, const uint64& guid, bool accept)
             if (!grp)
             {
                 grp = new Group();
-                grp->Create(pguid, plr->GetName());
+                grp->Create(plr);
                 grp->ConvertToLFG();
                 uint64 gguid = grp->GetGUID();
                 SetState(gguid, LFG_STATE_PROPOSAL);
                 sObjectMgr->AddGroup(grp);
             }
             else if (group != grp)
-                grp->AddMember(pguid, plr->GetName());
+                grp->AddMember(plr);
 
             // Update timers
             uint8 role = GetRoles(pguid);
@@ -1884,7 +1884,6 @@ std::string LFGMgr::ConcatenateGuids(LfgGuidList check)
         o << "|" << (*it);
     return o.str();
 }
-
 
 LfgState LFGMgr::GetState(const uint64& guid)
 {

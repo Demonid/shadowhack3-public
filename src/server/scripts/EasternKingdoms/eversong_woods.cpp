@@ -121,9 +121,6 @@ public:
 
 };
 
-
-
-
 /*######
 ## Quest 9686 Second Trial
 ######*/
@@ -502,7 +499,6 @@ void npc_second_trial_paladin::npc_secondTrialAI::JustDied(Unit* Killer)
     }
 }
 
-
 /*######
 ## go_second_trial
 ######*/
@@ -521,7 +517,6 @@ public:
     }
 
 };
-
 
 /*######
 ## npc_apprentice_mirveda
@@ -606,7 +601,6 @@ public:
     };
 
 };
-
 
 /*######
 ## npc_infused_crystal

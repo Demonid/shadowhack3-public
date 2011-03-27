@@ -311,7 +311,6 @@ public:
             }*/
         }
 
-
         void UpdateAI(const uint32 diff)
         {
             switch(Phase)
@@ -484,7 +483,6 @@ public:
     }
 
 };
-
 
 void AddSC_boss_skadi()
 {

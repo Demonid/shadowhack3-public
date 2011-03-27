@@ -50,7 +50,6 @@
 #include "Group.h"
 // apply implementation of the singletons
 
-
 TrainerSpell const* TrainerSpellData::Find(uint32 spell_id) const
 {
     TrainerSpellMap::const_iterator itr = spellList.find(spell_id);

@@ -191,7 +191,6 @@ public:
 
 };
 
-
 enum eMorridune
 {
     SAY_MORRIDUNE_1 = -1048003,
@@ -254,9 +253,6 @@ public:
     };
 
 };
-
-
-
 
 void AddSC_blackfathom_deeps()
 {

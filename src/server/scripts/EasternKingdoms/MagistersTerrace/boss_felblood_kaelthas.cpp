@@ -683,11 +683,6 @@ public:
 
 };
 
-
-
-
-
-
 void AddSC_boss_felblood_kaelthas()
 {
     new boss_felblood_kaelthas();

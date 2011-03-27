@@ -318,7 +318,6 @@ void Unit::SendMonsterMoveWithSpeedToCurrentDestination(Player* player)
         SendMonsterMoveWithSpeed(x, y, z, 0, player);
 }
 
-
 void Unit::SendMonsterMoveWithSpeed(float x, float y, float z, uint32 transitTime, Player* player)
 {
     if (!transitTime)
@@ -3852,7 +3851,6 @@ void Unit::RemoveAurasDueToSpellBySteal(uint32 spellId, uint64 casterGUID, Unit 
             else
                 RemoveAuraFromStack(iter, AURA_REMOVE_BY_ENEMY_SPELL);
 
-
             if (Aura * newAura = stealCharge ? stealer->GetAura(aura->GetId(), aura->GetCasterGUID()) : NULL)
             {
                 uint8 newCharges = newAura->GetCharges() + 1;
@@ -3972,7 +3970,6 @@ void Unit::RemoveNotOwnSingleTargetAuras(uint32 newPhase)
             ++iter;
     }
 }
-
 
 void Unit::RemoveAurasWithInterruptFlags(uint32 flag, uint32 except)
 {
@@ -6506,6 +6503,8 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                         if (!triggeredSpell)
                             return false;
                         basepoints0 = CalculatePctN(int32(damage), triggerAmount) / (GetSpellMaxDuration(triggeredSpell) / triggeredSpell->EffectAmplitude[0]);
+                        // Add remaining ticks to damage done
+                        basepoints0 += pVictim->GetRemainingDotDamage(GetGUID(), triggered_spell_id);
                     }
                     break;
                 }
@@ -9985,7 +9984,7 @@ void Unit::SetMinion(Minion *minion, bool apply)
             // Send infinity cooldown - client does that automatically but after relog cooldown needs to be set again
             SpellEntry const *spellInfo = sSpellStore.LookupEntry(minion->GetUInt32Value(UNIT_CREATED_BY_SPELL));
             if (spellInfo && (spellInfo->Attributes & SPELL_ATTR0_DISABLED_WHILE_ACTIVE))
-                this->ToPlayer()->AddSpellAndCategoryCooldowns(spellInfo, 0, NULL ,true);
+                this->ToPlayer()->AddSpellAndCategoryCooldowns(spellInfo, 0, NULL, true);
         }
     }
     else
@@ -10780,6 +10779,13 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
                     if (HasAura(200000))
                         TakenTotalMod *= 4;
             break;
+        case SPELLFAMILY_HUNTER:
+            // Steady Shot
+            if(spellProto->SpellFamilyFlags[1] & 0x1)
+                if (AuraEffect * aurEff = GetAuraEffect(56826, 0))  // Glyph of Steady Shot
+                    if (pVictim->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_HUNTER, 0x00004000, 0, 0, GetGUID()))
+                        AddPctN(DoneTotalMod, aurEff->GetAmount());
+        break;
             case SPELLFAMILY_DEATHKNIGHT:
                 // Improved Icy Touch
                 if (spellProto->SpellFamilyFlags[0] & 0x2)
@@ -11322,7 +11328,8 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
                         if (spellProto->SpellFamilyFlags[1] & 0x00001000)
                         {
                             if (pVictim->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_SHAMAN, 0x10000000, 0,0, GetGUID()))
-                                return true;
+                                if (pVictim->GetTotalAuraModifier(SPELL_AURA_MOD_ATTACKER_SPELL_AND_WEAPON_CRIT_CHANCE) > -100)
+                                    return true;
                             break;
                         }
                     break;
@@ -11722,7 +11729,6 @@ uint32 Unit::SpellHealingBonus(Unit *pVictim, SpellEntry const *spellProto, uint
         // Tenacity increase healing % taken
         if (AuraEffect const* Tenacity = pVictim->GetAuraEffect(58549, 0))
             TakenTotalMod *= (Tenacity->GetAmount() + 100.0f) / 100.0f;
-
 
         // Healing taken percent
         float minval = (float)pVictim->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
@@ -13368,7 +13374,6 @@ Unit* Creature::SelectVictim()
         if (target && _IsTargetAcceptable(target))
             return target;
     }
-
 
     Unit::AuraEffectList const& iAuras = GetAuraEffectsByType(SPELL_AURA_MOD_INVISIBILITY);
     if(!iAuras.empty())
@@ -15240,14 +15245,10 @@ Unit* Unit::SelectNearbyTarget(float dist, Unit * except) const
         targets.remove(except);
 
     // remove not LoS targets
-    for (std::list<Unit *>::iterator tIter = targets.begin(); tIter != targets.end();)
+    for (std::list<Unit*>::iterator tIter = targets.begin(); tIter != targets.end();)
     {
-         if ((*tIter)->isTotem() || !IsWithinLOSInMap(*tIter) )
-        {
-            std::list<Unit *>::iterator tIter2 = tIter;
-            ++tIter;
-            targets.erase(tIter2);
-        }
+        if (!IsWithinLOSInMap(*tIter) || (*tIter)->isTotem() || (*tIter)->isSpiritService() || (*tIter)->GetCreatureType() == CREATURE_TYPE_CRITTER)
+            targets.erase(tIter++);
         else
             ++tIter;
     }
@@ -15257,11 +15258,8 @@ Unit* Unit::SelectNearbyTarget(float dist, Unit * except) const
         return NULL;
 
     // select random
-    uint32 rIdx = urand(0,targets.size()-1);
-    std::list<Unit *>::const_iterator tcIter = targets.begin();
-    for (uint32 i = 0; i < rIdx; ++i)
-        ++tcIter;
-
+    std::list<Unit*>::const_iterator tcIter = targets.begin();
+    std::advance(tcIter, urand(0, targets.size()-1));
     return *tcIter;
 }
 
@@ -15862,7 +15860,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
             loot->generateMoneyLoot(creature->GetCreatureInfo()->mingold,creature->GetCreatureInfo()->maxgold);
         }
 
-        player->RewardPlayerAndGroupAtKill(pVictim);
+        player->RewardPlayerAndGroupAtKill(pVictim, false);
     }
 
     // Do KILL and KILLED procs. KILL proc is called only for the unit who landed the killing blow (and its owner - for pets and totems) regardless of who tapped the victim
@@ -16798,34 +16796,23 @@ void Unit::SetAuraStack(uint32 spellId, Unit *target, uint32 stack)
         aura->SetStackAmount(stack);
 }
 
-void Unit::ApplyResilience(const Unit *pVictim, float *crit, int32 *damage, bool isCrit, CombatRating type) const
+void Unit::ApplyResilience(Unit const* victim, float* crit, int32* damage, bool isCrit, CombatRating type) const
 {
-    if (IsVehicle() || pVictim->IsVehicle())
+    // player mounted on multi-passenger mount is also classified as vehicle
+    if (IsVehicle() || (victim->IsVehicle() && victim->GetTypeId() != TYPEID_PLAYER))
         return;
 
-    const Unit *source = ToPlayer();
-    if (!source)
-    {
-        source = ToCreature();
-        if (source)
-        {
-            source = source->ToCreature()->GetOwner();
-            if (source)
-                source = source->ToPlayer();
-        }
-    }
+    Unit const* source = NULL;
+    if (GetTypeId() == TYPEID_PLAYER)
+        source = this;
+    else if (GetTypeId() == TYPEID_UNIT && GetOwner() && GetOwner()->GetTypeId() == TYPEID_PLAYER)
+        source = GetOwner();
 
-    const Unit *target = pVictim->ToPlayer();
-    if (!target)
-    {
-        target = pVictim->ToCreature();
-        if (target)
-        {
-            target = target->ToCreature()->GetOwner();
-            if (target)
-                target = target->ToPlayer();
-        }
-    }
+    Unit const* target = NULL;
+    if (victim->GetTypeId() == TYPEID_PLAYER)
+        target = victim;
+    else if (victim->GetTypeId() == TYPEID_UNIT && victim->GetOwner() && victim->GetOwner()->GetTypeId() == TYPEID_PLAYER)
+        target = victim->GetOwner();
 
     if (!target)
         return;
@@ -16835,34 +16822,34 @@ void Unit::ApplyResilience(const Unit *pVictim, float *crit, int32 *damage, bool
         case CR_CRIT_TAKEN_MELEE:
             // Crit chance reduction works against nonpets
             if (crit)
-                *crit -= target->ToPlayer()->GetMeleeCritChanceReduction();
+                *crit -= target->GetMeleeCritChanceReduction();
             if (source && damage)
             {
                 if (isCrit)
-                    *damage -= target->ToPlayer()->GetMeleeCritDamageReduction(*damage);
-                *damage -= target->ToPlayer()->GetMeleeDamageReduction(*damage);
+                    *damage -= target->GetMeleeCritDamageReduction(*damage);
+                *damage -= target->GetMeleeDamageReduction(*damage);
             }
             break;
         case CR_CRIT_TAKEN_RANGED:
             // Crit chance reduction works against nonpets
             if (crit)
-                *crit -= target->ToPlayer()->GetRangedCritChanceReduction();
+                *crit -= target->GetRangedCritChanceReduction();
             if (source && damage)
             {
                 if (isCrit)
-                    *damage -= target->ToPlayer()->GetRangedCritDamageReduction(*damage);
-                *damage -= target->ToPlayer()->GetRangedDamageReduction(*damage);
+                    *damage -= target->GetRangedCritDamageReduction(*damage);
+                *damage -= target->GetRangedDamageReduction(*damage);
             }
             break;
         case CR_CRIT_TAKEN_SPELL:
             // Crit chance reduction works against nonpets
             if (crit)
-                *crit -= target->ToPlayer()->GetSpellCritChanceReduction();
+                *crit -= target->GetSpellCritChanceReduction();
             if (source && damage)
             {
                 if (isCrit)
-                    *damage -= target->ToPlayer()->GetSpellCritDamageReduction(*damage);
-                *damage -= target->ToPlayer()->GetSpellDamageReduction(*damage);
+                    *damage -= target->GetSpellCritDamageReduction(*damage);
+                *damage -= target->GetSpellDamageReduction(*damage);
             }
             break;
         default:
@@ -17015,15 +17002,13 @@ void Unit::KnockBackPlayerWithAngle(float angle, float horizontalSpeed, float ve
 
 float Unit::GetCombatRatingReduction(CombatRating cr) const
 {
-    if (GetTypeId() == TYPEID_PLAYER)
-        return ((Player const*)this)->GetRatingBonusValue(cr);
-    else if (((Creature const*)this)->isPet())
-    {
-        // Player's pet get resilience from owner
+    if (Player const* player = ToPlayer())
+        return player->GetRatingBonusValue(cr);
+    // Player's pet get resilience from owner
+    else if (isPet())
         if (Unit* owner = GetOwner())
-            if (owner->GetTypeId() == TYPEID_PLAYER)
-                return ((Player*)owner)->GetRatingBonusValue(cr);
-    }
+            if (Player* player = owner->ToPlayer())
+                return player->GetRatingBonusValue(cr);
 
     return 0.0f;
 }
@@ -17509,18 +17494,8 @@ void Unit::ExitVehicle(Position const* exitPosition)
     if (!m_vehicle)
         return;
 
-    Unit *vehicleBase = m_vehicle->GetBase();
-    const AuraEffectList &modAuras = vehicleBase->GetAuraEffectsByType(SPELL_AURA_CONTROL_VEHICLE);
-    for (AuraEffectList::const_iterator itr = modAuras.begin(); itr != modAuras.end(); ++itr)
-    {
-        if ((*itr)->GetBase()->GetOwner() == this)
-        {
-            vehicleBase->RemoveAura((*itr)->GetBase());
-            break; // there should be no case that a vehicle has two auras for one owner
-        }
-    }
-
-   _ExitVehicle(exitPosition);
+    GetVehicleBase()->RemoveAurasByType(SPELL_AURA_CONTROL_VEHICLE, GetGUID());
+    _ExitVehicle(exitPosition);
 }
 
 void Unit::_ExitVehicle(Position const* exitPosition)

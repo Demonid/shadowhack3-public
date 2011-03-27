@@ -1138,10 +1138,10 @@ void Guardian::UpdateMaxHealth()
         default:                multiplicator = 10.0f;  break;
     }
 
-    float value   = GetModifierValue(unitMod, BASE_VALUE) + GetCreateHealth();
-    value  *= GetModifierValue(unitMod, BASE_PCT);
-    value  += GetModifierValue(unitMod, TOTAL_VALUE) + stamina * multiplicator;
-    value  *= GetModifierValue(unitMod, TOTAL_PCT);
+    float value = GetModifierValue(unitMod, BASE_VALUE) + GetCreateHealth();
+    value *= GetModifierValue(unitMod, BASE_PCT);
+    value += GetModifierValue(unitMod, TOTAL_VALUE) + stamina * multiplicator;
+    value *= GetModifierValue(unitMod, TOTAL_PCT);
 
     SetMaxHealth((uint32)value);
 }

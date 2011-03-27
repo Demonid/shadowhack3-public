@@ -141,8 +141,8 @@ public:
             m_uiStaggeringStompTimer = 15*IN_MILLISECONDS;
             m_uiSummonTimer = urand(15*IN_MILLISECONDS, 30*IN_MILLISECONDS);;
 
-            if (getDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL ||
-                getDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC)
+            if (GetDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL ||
+                GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC)
                 m_uiSummonCount = 5;
             else
                 m_uiSummonCount = 4;
@@ -224,7 +224,6 @@ public:
     };
 
 };
-
 
 class mob_snobold_vassal : public CreatureScript
 {
@@ -359,7 +358,6 @@ public:
     };
 
 };
-
 
 struct boss_jormungarAI : public ScriptedAI
 {
@@ -574,7 +572,6 @@ struct boss_jormungarAI : public ScriptedAI
     bool   enraged;
 };
 
-
 class boss_acidmaw : public CreatureScript
 {
     public:
@@ -610,7 +607,6 @@ class boss_acidmaw : public CreatureScript
     }
 };
 
-
 class boss_dreadscale : public CreatureScript
 {
 public:
@@ -644,7 +640,6 @@ public:
         return new boss_dreadscaleAI(pCreature);
     }
 };
-
 
 class mob_slime_pool : public CreatureScript
 {
@@ -920,7 +915,6 @@ public:
     };
 
 };
-
 
 void AddSC_boss_northrend_beasts()
 {

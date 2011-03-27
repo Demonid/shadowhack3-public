@@ -171,8 +171,6 @@ public:
 
 };
 
-
-
 /*######
 ## npc_thrall_warchief
 ######*/
@@ -287,8 +285,6 @@ public:
     };
 
 };
-
-
 
 void AddSC_orgrimmar()
 {

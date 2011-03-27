@@ -72,7 +72,6 @@ public:
 
 };
 
-
 /*######
 ## npc_budd_nedreck
 ######*/
@@ -109,7 +108,6 @@ public:
 
 };
 
-
 /*######
 ## npc_rathis_tomber
 ######*/
@@ -143,7 +141,6 @@ public:
     }
 
 };
-
 
 /*######
 ## npc_ranger_lilatha
@@ -254,7 +251,6 @@ public:
     }
 
 };
-
 
 void AddSC_ghostlands()
 {

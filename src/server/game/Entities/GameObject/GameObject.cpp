@@ -451,7 +451,7 @@ void GameObject::Update(uint32 diff)
                         if (goInfo->trap.spellId)
                             CastSpell(ok, goInfo->trap.spellId);
 
-                        m_cooldownTime = time(NULL) + 4;        // 4 seconds
+                        m_cooldownTime = time(NULL) + goInfo->trap.cooldown ? goInfo->trap.cooldown :  uint32(4);   // template or 4 seconds
 
                         if (owner)  // || goInfo->trap.charges == 1)
                             SetLootState(GO_JUST_DEACTIVATED);
@@ -571,7 +571,11 @@ void GameObject::Update(uint32 diff)
                 SetGoState(GO_STATE_READY);
 
                 //any return here in case battleground traps
+                if (GetGOInfo()->flags & GO_FLAG_NODESPAWN)
+                    return;
             }
+
+            loot.clear();
 
             if (GetOwnerGUID())
             {
@@ -584,6 +588,8 @@ void GameObject::Update(uint32 diff)
                 return;
             }
 
+            SetLootState(GO_READY);
+
             //burning flags in some battlegrounds, if you find better condition, just add it
             if (GetGOInfo()->IsDespawnAtAction() || GetGoAnimProgress() > 0)
             {
@@ -591,9 +597,6 @@ void GameObject::Update(uint32 diff)
                 //reset flags
                 SetUInt32Value(GAMEOBJECT_FLAGS, GetGOInfo()->flags);
             }
-
-            loot.clear();
-            SetLootState(GO_READY);
 
             if (!m_respawnDelayTime)
                 return;
@@ -861,7 +864,6 @@ bool GameObject::IsDynTransport() const
     return gInfo->type == GAMEOBJECT_TYPE_MO_TRANSPORT || (gInfo->type == GAMEOBJECT_TYPE_TRANSPORT && !gInfo->transport.pause);
 }
 
-
 Unit* GameObject::GetOwner() const
 {
     return ObjectAccessor::GetUnit(*this, GetOwnerGUID());
@@ -1082,7 +1084,16 @@ void GameObject::Use(Unit* user)
         AI()->GossipHello(playerUser);
     }
 
-    switch(GetGoType())
+    // If cooldown data present in template
+    if (uint32 cooldown = GetGOInfo()->GetCooldown())
+    {
+        if (m_cooldownTime > sWorld->GetGameTime())
+            return;
+
+        m_cooldownTime = sWorld->GetGameTime() + cooldown;
+    }
+
+    switch (GetGoType())
     {
         case GAMEOBJECT_TYPE_DOOR:                          //0
         case GAMEOBJECT_TYPE_BUTTON:                        //1
