@@ -1860,6 +1860,9 @@ bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
         {
             if (const Player* objPlayer = obj->ToPlayer())
             {
+                if (thisPlayer->InArena() && thisPlayer->HasAura(8326) && thisPlayer->IsGroupVisibleFor(objPlayer))
+                    return true;
+
                 if (thisPlayer->GetTeam() != objPlayer->GetTeam() || !thisPlayer->IsGroupVisibleFor(objPlayer))
                     return false;
             }
