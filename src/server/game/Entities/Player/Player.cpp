@@ -2799,7 +2799,7 @@ void Player::SetGameMaster(bool on)
     {
         m_ExtraFlags |= PLAYER_EXTRA_GM_ON;
         setFaction(35);
-        SetFlag(PLAYER_FLAGS, GetSession()->GetSecurity() > SEC_GAMEMASTER ? PLAYER_FLAGS_DEVELOPER : PLAYER_FLAGS_GM);
+        SetFlag(PLAYER_FLAGS, /*GetSession()->GetSecurity() > SEC_GAMEMASTER ? PLAYER_FLAGS_DEVELOPER :*/ PLAYER_FLAGS_GM);
 
         if (Pet* pet = GetPet())
         {
