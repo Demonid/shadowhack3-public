@@ -102,6 +102,7 @@ public:
             { "item_enchantment_template",    SEC_ADMINISTRATOR, true,  &HandleReloadItemEnchantementsCommand,          "", NULL },
             { "item_loot_template",           SEC_ADMINISTRATOR, true,  &HandleReloadLootTemplatesItemCommand,          "", NULL },
             { "item_set_names",               SEC_ADMINISTRATOR, true,  &HandleReloadItemSetNamesCommand,               "", NULL },
+            { "item_requirements",            SEC_ADMINISTRATOR, true,  &HandleReloadItemRequirementsCommand,           "", NULL },
             { "lfg_dungeon_rewards",          SEC_ADMINISTRATOR, true,  &HandleReloadLfgRewardsCommand,                 "", NULL },
             { "locales_achievement_reward",   SEC_ADMINISTRATOR, true,  &HandleReloadLocalesAchievementRewardCommand,   "", NULL },
             { "locales_creature",             SEC_ADMINISTRATOR, true,  &HandleReloadLocalesCreatureCommand,            "", NULL },
@@ -931,6 +932,14 @@ public:
         sLog->outString("Re-Loading Item set names...");
         LoadRandomEnchantmentsTable();
         handler->SendGlobalGMSysMessage("DB table `item_set_names` reloaded.");
+        return true;
+    }
+    
+    static bool HandleReloadItemRequirementsCommand(ChatHandler* handler, const char* /*args*/)
+    {
+        sLog->outString("Re-Loading Item Requirements...");
+        sObjectMgr->LoadItemRequirements();
+        handler->SendGlobalGMSysMessage("DB table `item_requirements` reloaded.");
         return true;
     }
 
