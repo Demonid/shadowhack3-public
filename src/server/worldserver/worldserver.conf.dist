@@ -2885,6 +2885,33 @@ LevelReq.Mail = 1
 #
 ###################################################################################################
 
+###################################################################################################################
+# WARDEN DAEMON - This daemon requires a Windows box to run. If you don't have any, let it disabled
+#
+#    Wardend.enable
+#        Enable or disable warden functionnalities
+#        Default: 0  - Disabled, mangosd will neither use wardend, not generate any warden related traffic
+#                 1  - Enable, mangosd will connect to wardend and generate cheat ckecks for all sessions
+
+Wardend.enable = 0
+
+#
+#   Wardend.address
+#        IP Address of the computer running the Win32 Warden Daemon
+#        Default: 127.0.0.1  - Assume you run the Warden Daemon on the same machine as Mangos Daemon and on Windows
+
+Wardend.address = "127.0.0.1"
+
+#
+#   Wardend.port
+#        Port on which the Warden Daemon listens
+#        Default: 4321
+
+Wardend.port = 4321
+
+#
+###################################################################################################################
+
 #######################################################################
 #   OutdoorPvP.Wintergrasp.Enabled
 #       Determines whether the Wintergrasp battle is enabled or not.
