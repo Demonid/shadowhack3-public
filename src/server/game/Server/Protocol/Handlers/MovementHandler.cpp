@@ -31,6 +31,7 @@
 #include "WaypointMovementGenerator.h"
 #include "InstanceSaveMgr.h"
 #include "ObjectMgr.h"
+#include "WardenMgr.h"
 
 /*Movement anticheat DEBUG defines */
 //#define MOVEMENT_ANTICHEAT_DEBUG true
@@ -454,7 +455,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                             plMover->GetName(), plMover->m_anti_MistimingCount, sync_time);
             #endif
 
-            if (plMover->m_anti_MistimingCount > World::GetMistimingAlarms())
+            if (!sWardenMgr->IsEnabled() && (plMover->m_anti_MistimingCount > World::GetMistimingAlarms()))
             {
                 #ifdef MOVEMENT_ANTICHEAT_ALARM_LOG
                     sLog->outCheater("IAC-%s disconnected due to mistiming exceptions limit.", plMover->GetName());
@@ -578,7 +579,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             const bool hasTimedImmunity = immunityTime >= cServerTime;
 
             //AntiGravitation
-            if (plMover->m_anti_JumpBaseZ != 0)
+            if (!sWardenMgr->IsEnabled() && (plMover->m_anti_JumpBaseZ != 0))
             {
                 float JumpHeight = plMover->m_anti_JumpBaseZ - movementInfo.pos.m_positionZ;
                 if ( !(movementInfo.flags & (MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_FLYING)) && (JumpHeight < plMover->m_anti_Last_VSpeed))
@@ -612,7 +613,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             else if (plMover->IsInWater()) plMover->m_anti_JustJumped = 0;
 
             //speed hack checks
-            if ( (real_delta > allowed_delta && real_delta < 4900.0f) && (delta_z < (plMover->m_anti_Last_VSpeed * time_delta) || delta_z < 1) )
+            if (!sWardenMgr->IsEnabled() && ((real_delta > allowed_delta && real_delta < 4900.0f) && (delta_z < (plMover->m_anti_Last_VSpeed * time_delta) || delta_z < 1)) )
             {
                 if (!hasTimedImmunity)
                 {
@@ -635,7 +636,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             }
 
             //climb mountain hack checks // 1.56f (delta_z < GetPlayer()->m_anti_Last_VSpeed))
-            if ((delta_z < plMover->m_anti_Last_VSpeed) && (plMover->m_anti_JustJumped == 0) && (tg_z > 2.37f) && ((movementInfo.flags & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING)) == 0) )
+            if (!sWardenMgr->IsEnabled() && ((delta_z < plMover->m_anti_Last_VSpeed) && (plMover->m_anti_JustJumped == 0) && (tg_z > 2.37f) && ((movementInfo.flags & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING)) == 0)) )
             {
                 if (!hasTimedImmunity)
                 {
@@ -647,7 +648,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             }
 
             //Fly hack checks
-            if (((movementInfo.flags & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING)) != 0)
+            if (!sWardenMgr->IsEnabled() && (((movementInfo.flags & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING)) != 0))
                   && !plMover->isGameMaster()
                   && !(movementInfo.flags & (MOVEMENTFLAG_SWIMMING)) // allow X button in water
                   && !flying_allowed)
@@ -705,10 +706,10 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                 if (plMover->m_anti_TeleToPlane_Count != 0) plMover->m_anti_TeleToPlane_Count = 0;
             }
         } 
-        else if (movementInfo.flags & MOVEMENTFLAG_ONTRANSPORT)
+        else if (!sWardenMgr->IsEnabled() && (movementInfo.flags & MOVEMENTFLAG_ONTRANSPORT))
         {
             //antiwrap checks
-            if ( plMover->GetTransport() || plMover->GetVehicle() )
+            if (!sWardenMgr->IsEnabled() && (plMover->GetTransport() || plMover->GetVehicle()) )
             {
                 float trans_rad = movementInfo.t_pos.m_positionX*movementInfo.t_pos.m_positionX + movementInfo.t_pos.m_positionY*movementInfo.t_pos.m_positionY + movementInfo.t_pos.m_positionZ*movementInfo.pos.m_positionZ;
                 if (trans_rad > 3600.0f)
