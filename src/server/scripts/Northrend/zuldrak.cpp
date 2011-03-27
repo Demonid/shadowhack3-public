@@ -102,7 +102,6 @@ public:
         }
     };
 
-
     CreatureAI *GetAI(Creature *creature) const
     {
         return new npc_drakuru_shacklesAI(creature);
@@ -876,7 +875,6 @@ public:
                 std::string sText = (std::string(pKiller->GetName()) + " has defeated Yg.. Yggg-really big worm!");
                 pSummoner->MonsterYell(sText.c_str(),LANG_UNIVERSAL,0);
             }
-
 
             if (Player* pPlayer = pKiller->GetCharmerOrOwnerPlayerOrPlayerItself())
             {

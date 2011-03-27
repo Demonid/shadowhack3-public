@@ -336,7 +336,6 @@ public:
 
 };
 
-
 void AddSC_boss_netherspite()
 {
     new boss_netherspite();

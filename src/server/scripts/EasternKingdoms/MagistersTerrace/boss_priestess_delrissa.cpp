@@ -335,7 +335,6 @@ public:
 
 };
 
-
 enum eHealingPotion
 {
     SPELL_HEALING_POTION    = 15503
@@ -578,7 +577,6 @@ public:
     };
 
 };
-
 
 enum eWarlockSpells
 {

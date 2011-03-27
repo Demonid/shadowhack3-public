@@ -28,7 +28,6 @@ void AddSC_strand_of_the_ancients();
 void AddSC_spectator();
 void AddSC_prof_master();
 void AddSC_renamer();
-
 //examples
 void AddSC_example_creature();
 void AddSC_example_escort();

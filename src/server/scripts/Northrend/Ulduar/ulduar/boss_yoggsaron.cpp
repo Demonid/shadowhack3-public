@@ -1006,7 +1006,7 @@ public:
                     events.ScheduleEvent(EVENT_LUNATIC_GAZE, 15000, 0, PHASE_3);
                     events.ScheduleEvent(EVENT_IMMORTAL_GUARDIAN, 8000, 0, PHASE_3);
                     events.ScheduleEvent(EVENT_SHADOW_BEACON, 45000, 0, PHASE_3);
-                    if (getDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL)
+                    if (GetDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL)
                         events.ScheduleEvent(EVENT_DEAFENING_ROAR, urand(5000, 7000), 0, PHASE_3);
                     break;
             } 

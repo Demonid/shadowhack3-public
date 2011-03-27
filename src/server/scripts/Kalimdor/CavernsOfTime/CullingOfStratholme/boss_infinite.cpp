@@ -25,7 +25,6 @@ enum Spells
 	SPELL_STRIKE      = 60590
 };
 
-
 class boss_infinite_corruptor : public CreatureScript
 {
 public:
@@ -111,7 +110,6 @@ public:
     };
 
 };
-
 
 void AddSC_boss_infinite_corruptor()
 {

@@ -301,7 +301,6 @@ public:
 
 };
 
-
 void AddSC_boss_skeram()
 {
     new boss_skeram();

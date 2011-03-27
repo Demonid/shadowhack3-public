@@ -126,7 +126,6 @@ public:
 
 };
 
-
 void AddSC_loch_modan()
 {
     new npc_mountaineer_pebblebitty();

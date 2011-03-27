@@ -346,7 +346,6 @@ public:
 
 };
 
-
 void AddSC_instance_dark_portal()
 {
     new instance_dark_portal();

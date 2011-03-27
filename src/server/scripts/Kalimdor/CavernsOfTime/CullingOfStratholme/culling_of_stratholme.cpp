@@ -1611,7 +1611,7 @@ public:
                 me->SetInCombatWith(pWho);
                 pWho->SetInCombatWith(me);
 
-                if (IsCombatMovement())
+                if (IsCombatMovementAllowed())
                     me->GetMotionMaster()->MoveChase(pWho);
             }
         }

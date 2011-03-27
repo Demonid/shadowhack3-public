@@ -280,7 +280,6 @@ public:
     };
 };
 
-
 class npc_unworthy_initiate_anchor : public CreatureScript
 {
 public:
@@ -307,9 +306,6 @@ public:
     };
 
 };
-
-
-
 
 class go_acherus_soul_prison : public GameObjectScript
 {
@@ -514,9 +510,6 @@ public:
 
 };
 
-
-
-
 /*######
 ## npc_dark_rider_of_acherus
 ######*/
@@ -603,7 +596,6 @@ public:
 
 };
 
-
 /*######
 ## npc_salanar_the_horseman
 ######*/
@@ -679,7 +671,6 @@ public:
 
 };
 
-
 /*######
 ## npc_ros_dark_rider
 ######*/
@@ -729,7 +720,6 @@ public:
 
 };
 
-
 // correct way: 52312 52314 52555 ...
 enum SG
 {
@@ -777,7 +767,6 @@ public:
     };
 
 };
-
 
 class npc_scarlet_ghoul : public CreatureScript
 {
@@ -863,7 +852,6 @@ public:
 
 };
 
-
 /*####
 ## npc_scarlet_miner_cart
 ####*/
@@ -919,7 +907,6 @@ public:
     };
 
 };
-
 
 /*####
 ## npc_scarlet_miner
@@ -1044,7 +1031,7 @@ public:
                     else
                     {
                         if (Creature *car = Unit::GetCreature(*me, carGUID))
-                            if (car->AI()) car->AI()->DoAction();
+                            car->AI()->DoAction(0);
                         IntroPhase = 0;
                     }
                 } else IntroTimer-=diff;
@@ -1054,7 +1041,6 @@ public:
     };
 
 };
-
 
 /*######
 ## go_inconspicuous_mine_car

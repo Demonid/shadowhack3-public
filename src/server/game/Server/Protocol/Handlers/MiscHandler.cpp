@@ -1662,7 +1662,6 @@ void WorldSession::HandleMoveSetCanFlyAckOpcode(WorldPacket & recv_data)
     uint64 guid;                                            // guid - unused
     recv_data.readPackGUID(guid);
 
-
     recv_data.read_skip<uint32>();                          // unk
 
     MovementInfo movementInfo;

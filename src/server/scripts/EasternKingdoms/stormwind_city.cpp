@@ -75,7 +75,6 @@ public:
 
 };
 
-
 /*######
 ## npc_bartleby
 ######*/
@@ -147,8 +146,6 @@ public:
     };
 
 };
-
-
 
 /*######
 ## npc_dashel_stonefist     //Q: the same as npc_bartleby above, unite?
@@ -222,8 +219,6 @@ public:
 
 };
 
-
-
 /*######
 ## npc_lady_katrana_prestor     //Q: move to DB entirely?
 ######*/
@@ -277,7 +272,6 @@ public:
     }
 
 };
-
 
 /*######
 ## npc_lord_gregor_lescovar
@@ -453,7 +447,6 @@ public:
 
 };
 
-
 /*######
 ## npc_marzon_silent_blade
 ######*/
@@ -503,7 +496,7 @@ public:
                 if (Unit* pSummoner = CAST_SUM(me)->GetSummoner())
                 {
                     if (pSummoner && pSummoner->isAlive())
-                        CAST_CRE(pSummoner)->DisappearAndDie();
+                        pSummoner->ToCreature()->DespawnOrUnsummon();
                 }
             }
         }
@@ -515,10 +508,10 @@ public:
 
             if (me->isSummon())
             {
-                if (Unit* pSummoner = CAST_SUM(me)->GetSummoner())
+                if (Unit* pSummoner = me->ToTempSummon()->GetSummoner())
                 {
-                    CAST_AI(npc_lord_gregor_lescovar::npc_lord_gregor_lescovarAI, CAST_CRE(pSummoner)->AI())->uiTimer = 2000;
-                    CAST_AI(npc_lord_gregor_lescovar::npc_lord_gregor_lescovarAI, CAST_CRE(pSummoner)->AI())->uiPhase = 5;
+                    CAST_AI(npc_lord_gregor_lescovar::npc_lord_gregor_lescovarAI, pSummoner->ToCreature()->AI())->uiTimer = 2000;
+                    CAST_AI(npc_lord_gregor_lescovar::npc_lord_gregor_lescovarAI, pSummoner->ToCreature()->AI())->uiPhase = 5;
                     //me->ChangeOrient(0.0f, pSummoner);
                 }
             }
@@ -534,7 +527,6 @@ public:
     };
 
 };
-
 
 /*######
 ## npc_tyrion_spybot
@@ -687,7 +679,6 @@ public:
     };
 
 };
-
 
 /*######
 ## npc_tyrion

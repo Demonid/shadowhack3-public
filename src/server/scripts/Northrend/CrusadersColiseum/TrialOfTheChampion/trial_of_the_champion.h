@@ -20,7 +20,6 @@
 #ifndef DEF_TOC_H
 #define DEF_TOC_H
 
-
 enum eData
 {
     BOSS_GRAND_CHAMPIONS,

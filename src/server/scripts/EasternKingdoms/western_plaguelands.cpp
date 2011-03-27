@@ -103,7 +103,6 @@ public:
 
 };
 
-
 /*######
 ## npc_myranda_the_hag      //Q: move to DB entirely?
 ######*/
@@ -152,7 +151,6 @@ public:
     }
 
 };
-
 
 /*######
 ## npc_the_scourge_cauldron
@@ -268,7 +266,6 @@ public:
     };
 
 };
-
 
 /*######
 ##  npc_anchorite_truuen
@@ -398,8 +395,6 @@ public:
     };
 
 };
-
-
 
 /*######
 ##
