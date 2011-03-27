@@ -43,3 +43,6 @@ CREATE TABLE IF NOT EXISTS `item_requirements` (
 	
 UPDATE `spell_bonus_data` SET `direct_bonus`='0' WHERE (`entry`='45297');
 UPDATE `spell_bonus_data` SET `direct_bonus`='0' WHERE (`entry`='45284');
+
+-- shadowmeld combat
+INSERT INTO `spell_linked_spell` VALUES ('58984', '54661', '0', 'Shadowmeld - Sanctuary');
