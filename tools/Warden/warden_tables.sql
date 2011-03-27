@@ -118,27 +118,7 @@ CREATE TABLE `warden_check_memory` (
 -- ----------------------------
 -- Records of warden_check_memory
 -- ----------------------------
-INSERT INTO `warden_check_memory` VALUES ('', '7390436', '9', '75 07 C7 45 14 00 00 00 00');
-INSERT INTO `warden_check_memory` VALUES ('', '6110428', '7', '75 18 68 3B 01 00 00');
-INSERT INTO `warden_check_memory` VALUES ('', '7389248', '12', '55 8B EC B8 C4 4D 00 00 E8 53 FA CF');
-INSERT INTO `warden_check_memory` VALUES ('', '7402327', '7', '75 16 68 24 02 00 00');
-INSERT INTO `warden_check_memory` VALUES ('', '4606533', '5', '89 86 10 0F 00');
-INSERT INTO `warden_check_memory` VALUES ('', '7371421', '5', '72 12 8B 45 18');
-INSERT INTO `warden_check_memory` VALUES ('', '8426238', '5', '8B F0 8D 46 08');
-INSERT INTO `warden_check_memory` VALUES ('', '4928206', '5', 'EC FF 3F 6A EC');
-INSERT INTO `warden_check_memory` VALUES ('', '10675240', '8', '60 C4 71 00 69 EA 18 00');
-INSERT INTO `warden_check_memory` VALUES ('', '5226936', '5', '74 2D F6 40 7C');
-INSERT INTO `warden_check_memory` VALUES ('', '4198410', '6', '90 FF 5D 00 CC EA');
-INSERT INTO `warden_check_memory` VALUES ('', '8384742', '8', '28 7C E8 02 EC EA 18 00');
-INSERT INTO `warden_check_memory` VALUES ('', '7444914', '7', '90 FF DA 5D F6 00 18');
-INSERT INTO `warden_check_memory` VALUES ('', '6045840', '10', '8B 81 CC 07 00 00 25 00 00 00');
-INSERT INTO `warden_check_memory` VALUES ('', '11126220', '8', '04 00 00 00 58 EB A2 00');
-INSERT INTO `warden_check_memory` VALUES ('', '8293461', '9', '8B 87 80 00 00 00 89 46 3C');
-INSERT INTO `warden_check_memory` VALUES ('', '8313356', '12', '81 66 44 3F FF 1F FF D9 56 5C D9 5E');
-INSERT INTO `warden_check_memory` VALUES ('', '8302742', '6', '89 46 44 89 4E 54');
-INSERT INTO `warden_check_memory` VALUES ('', '4606539', '5', '5E 5D C2 08 00');
-INSERT INTO `warden_check_memory` VALUES ('', '7402000', '12', '55 8B EC 81 EC E8 0D 00 00 6A 0A E8');
-INSERT INTO `warden_check_memory` VALUES ('', '7167117', '8', '85 C0 89 45 FC DB 45 FC');
+INSERT INTO `warden_check_memory` VALUES ('', '7452688', '10', '8B 81 CC 07 00 00 25 00 00 00');
 
 -- ----------------------------
 -- Table structure for `warden_check_page`
