@@ -120,7 +120,7 @@ public:
             me->HandleEmoteCommand(uiTextEmote);
 
             if (uiTextEmote == TEXTEMOTE_RUDE)
-			    DoScriptText(MP_RUDESAY, me, pPlayer);
+                DoScriptText(MP_RUDESAY, me, pPlayer);
         }
     };
 
