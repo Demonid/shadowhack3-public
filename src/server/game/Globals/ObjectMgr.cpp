@@ -9609,6 +9609,8 @@ void ObjectMgr::FreeGroupStorageId(Group* group)
 
 void ObjectMgr::LoadItemRequirements()
 {
+    uint32 oldMSTime = getMSTime();
+
     QueryResult result = WorldDatabase.Query("SELECT * FROM item_requirements");
 
     if (!result)
