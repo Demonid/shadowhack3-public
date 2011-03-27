@@ -327,6 +327,9 @@ public:
 
         void Activate(uint64 summonerguid)
         {
+            if (!this)
+                return;
+
             questPhase = 1;
             summonerGuid = summonerguid;
         }
