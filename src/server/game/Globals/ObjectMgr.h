@@ -42,6 +42,7 @@
 #include <map>
 #include <limits>
 #include "ConditionMgr.h"
+#include "ArenaTeam.h"
 
 extern SQLStorage sCreatureStorage;
 extern SQLStorage sCreatureDataAddonStorage;
@@ -406,22 +407,24 @@ struct PetLevelInfo
     uint16 health;
     uint16 mana;
     uint16 armor;
+    uint16 min_dmg;
+    uint16 max_dmg;
 };
 
 struct MailLevelReward
 {
     MailLevelReward() : raceMask(0), mailTemplateId(0), senderEntry(0),  subject(""), message(""), money(0), ItemID(0), ItemCount(0){}
     MailLevelReward(uint32 _raceMask, uint32 _mailTemplateId, uint32 _senderEntry, std::string _subject, std::string _message, uint32 _money, uint32 _ItemID, uint32 _ItemCount) :
-	raceMask(_raceMask), mailTemplateId(_mailTemplateId), senderEntry(_senderEntry), subject(_subject), message(_message), money(_money), ItemID(_ItemID), ItemCount(_ItemCount) {}
+    raceMask(_raceMask), mailTemplateId(_mailTemplateId), senderEntry(_senderEntry), subject(_subject), message(_message), money(_money), ItemID(_ItemID), ItemCount(_ItemCount) {}
 
     uint32 raceMask;
     uint32 mailTemplateId;
     uint32 senderEntry;
-	std::string subject;
-	std::string message;
-	uint32 money;
-	uint32 ItemID;
-	uint32 ItemCount;
+    std::string subject;
+    std::string message;
+    uint32 money;
+    uint32 ItemID;
+    uint32 ItemCount;
 };
 
 typedef std::list<MailLevelReward> MailLevelRewardList;
@@ -582,9 +585,17 @@ struct DungeonEncounter
     uint32 lastEncounterDungeon;
 };
 
+struct ItemRequirements
+{
+    uint32 id;
+    uint32 rating;
+    uint32 ratingbracket;
+    uint32 requitem;
+};
+
 typedef std::list<DungeonEncounter const*> DungeonEncounterList;
 typedef UNORDERED_MAP<uint32,DungeonEncounterList> DungeonEncounterMap;
-
+typedef UNORDERED_MAP<uint32, ItemRequirements> ItemRequirementsMap;
 class PlayerDumpReader;
 
 class ObjectMgr
@@ -848,6 +859,33 @@ class ObjectMgr
 
         void LoadGuilds();
         void LoadArenaTeams();
+        void ReloadArenaTeamRanks()
+        {
+            for (uint8 i=2; i<6; ++i)
+            {
+                if (i == 4) 
+                    continue;
+
+                QueryResult result = CharacterDatabase.PQuery("Select * from arena_team_stats where arenateamid in"
+                    "(select arenateamid from arena_team where type = '%u') ORDER BY rating DESC", i);
+                if(!result)
+                    continue;
+                uint32 rank=1;
+                do
+                {
+                    Field *fields = result->Fetch();
+                    if(ArenaTeam* team=GetArenaTeamById(fields[0].GetUInt32()))
+                    {
+                        team->m_stats.rank=rank;
+                        for(ArenaTeam::MemberList::iterator itr = team->m_membersBegin(); itr!=team->m_membersEnd(); ++itr)
+                            if(Player * pl = GetPlayer(itr->guid))
+                                team->Stats(pl->GetSession());
+                    }
+                    CharacterDatabase.PExecute("Update arena_team_stats set rank='%u' where arenateamid ='%u'", rank++, fields[0].GetUInt32());
+                }while (result->NextRow());
+            }
+
+        }
         void LoadGroups();
         void LoadQuests();
         void LoadQuestRelations()
@@ -989,8 +1027,8 @@ class ObjectMgr
 
         void ReturnOrDeleteOldMails(bool serverUp);
 
-		// External Mail
-		void SendExternalMails();
+        // External Mail
+        void SendExternalMails();
 
         CreatureBaseStats const* GetCreatureBaseStats(uint8 level, uint8 unitClass);
 
@@ -1259,11 +1297,13 @@ class ObjectMgr
         CharacterConversionMap factionchange_items;
         CharacterConversionMap factionchange_spells;
         CharacterConversionMap factionchange_reputations;
+        ItemRequirementsMap item_req;
 
         void LoadFactionChangeAchievements();
         void LoadFactionChangeItems();
         void LoadFactionChangeSpells();
         void LoadFactionChangeReputations();
+        void LoadItemRequirements();
 
     protected:
 

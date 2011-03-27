@@ -1,6 +1,6 @@
 # output generic information about the core and buildtype chosen
 
-message("* Izb00shkaCore revision   : ${rev_id_str}")
+message("* Shadowhack 3 revision  : ${rev_id_str}")
 if( UNIX )
   message("* Build binaries in      : ${CMAKE_BUILD_TYPE} mode")
 endif()

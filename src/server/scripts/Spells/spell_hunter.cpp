@@ -92,7 +92,7 @@ public:
                            TickCount += 2;
 
                         spellId = HUNTER_SPELL_CHIMERA_SHOT_SERPENT;
-                        basePoint = caster->SpellDamageBonus(unitTarget, aura->GetSpellProto(), aurEff->GetAmount(), DOT, aura->GetStackAmount());
+                        basePoint = caster->SpellDamageBonus(unitTarget, aura->GetSpellProto(), aurEff->GetAmount(), DOT, aura->GetStackAmount(), MOD_TARGET);
                         ApplyPctN(basePoint, TickCount * 40);
                     }
                     // Viper Sting - Instantly restores mana to you equal to 60% of the total amount drained by your Viper Sting.
@@ -235,16 +235,14 @@ public:
         {
             if (Unit * target = GetHitUnit())
             {
-                target->CastSpell(target, GetEffectValue(), true);
+                //target->CastSpell(target, GetEffectValue(), true);
                 target->CastSpell(target, HUNTER_SPELL_MASTERS_CALL_TRIGGERED, true);
                 // there is a possibility that this effect should access effect 0 (dummy) target, but i dubt that
                 // it's more likely that on on retail it's possible to call target selector based on dbc values
                 // anyways, we're using GetTargetUnit() here and it's ok
                 if (Unit * ally = GetTargetUnit())
-                {
-                    target->CastSpell(ally, GetEffectValue(), true);
+//                    target->CastSpell(ally, GetEffectValue(), true);
                     target->CastSpell(ally, SpellMgr::CalculateSpellEffectAmount(GetSpellInfo(), EFFECT_0), true);
-                }
             }
         }
 

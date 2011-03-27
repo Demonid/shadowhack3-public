@@ -75,7 +75,7 @@ FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float &z)
     y = owner.GetPositionY();
     z = owner.GetPositionZ();
 
-    float temp_x, temp_y, angle = 0;
+    float angle = 0;
     const Map * _map = owner.GetBaseMap();
     //primitive path-finding
     for (uint8 i = 0; i < 18; ++i)
@@ -155,43 +155,48 @@ FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float &z)
                 distance /= 2;
                 break;
         }
-        temp_x = x + distance * cos(angle);
-        temp_y = y + distance * sin(angle);
+        float temp_z=z;
+        float temp_x=x;
+        float temp_y=y;
+        int iter=int(distance);
+        l:
         Trinity::NormalizeMapCoord(temp_x);
         Trinity::NormalizeMapCoord(temp_y);
-        if (owner.IsWithinLOS(temp_x,temp_y,z))
+        if(!owner.IsWithinLOS(temp_x,temp_y,z))
+            continue;
+        bool is_water_now = _map->IsInWater(x,y,z);
+        if (is_water_now && _map->IsInWater(temp_x,temp_y,z))
         {
-            bool is_water_now = _map->IsInWater(x,y,z);
+            x = temp_x;
+            y = temp_y;
+            return true;
+        }
+        float new_z = _map->GetHeight(temp_x,temp_y,z,true);
 
-            if (is_water_now && _map->IsInWater(temp_x,temp_y,z))
+        if (new_z <= INVALID_HEIGHT || abs(temp_z-new_z)>=1.0f)
+            continue;
+        temp_z=new_z;
+        bool is_water_next = _map->IsInWater(temp_x,temp_y,new_z);
+
+        if ((is_water_now && !is_water_next && !is_land_ok) || (!is_water_now && is_water_next && !is_water_ok))
+            continue;
+
+        if (!(new_z - z) || distance / fabs(new_z - z) > 1.0f)
+        {
+            float new_z_left = _map->GetHeight(temp_x + 1.0f*cos(angle+M_PI/2),temp_y + 1.0f*sin(angle+M_PI/2),z,true);
+            float new_z_right = _map->GetHeight(temp_x + 1.0f*cos(angle-M_PI/2),temp_y + 1.0f*sin(angle-M_PI/2),z,true);
+            if (fabs(new_z_left - new_z) < 1.2f && fabs(new_z_right - new_z) < 1.2f)
             {
-                x = temp_x;
-                y = temp_y;
+                if(iter>0)
+                {
+                    temp_x+=cos(angle);temp_y+=sin(angle); --iter;
+                    goto l;
+                }
+                x=temp_x;y=temp_y;z = new_z;
                 return true;
             }
-            float new_z = _map->GetHeight(temp_x,temp_y,z,true);
-
-            if (new_z <= INVALID_HEIGHT)
-                continue;
-
-            bool is_water_next = _map->IsInWater(temp_x,temp_y,new_z);
-
-            if ((is_water_now && !is_water_next && !is_land_ok) || (!is_water_now && is_water_next && !is_water_ok))
-                continue;
-
-            if (!(new_z - z) || distance / fabs(new_z - z) > 1.0f)
-            {
-                float new_z_left = _map->GetHeight(temp_x + (float)(cos(angle+M_PI/2)),temp_y + (float)(sin(angle+M_PI/2)),z,true);
-                float new_z_right = _map->GetHeight(temp_x + (float)(cos(angle-M_PI/2)),temp_y + (float)(sin(angle-M_PI/2)),z,true);
-                if (fabs(new_z_left - new_z) < 1.2f && fabs(new_z_right - new_z) < 1.2f)
-                {
-                    x = temp_x;
-                    y = temp_y;
-                    z = new_z;
-                    return true;
-                }
-            }
         }
+
     }
     i_to_distance_from_caster = 0.0f;
     i_nextCheckTime.Reset(urand(500,1000));

@@ -206,7 +206,7 @@ void SocialMgr::GetFriendInfo(Player *player, uint32 friendGUID, FriendInfo &fri
             friendInfo.Status = FRIEND_STATUS_AFK;
         if (pFriend->isDND())
             friendInfo.Status = FRIEND_STATUS_DND;
-        friendInfo.Area = pFriend->GetZoneId();
+        friendInfo.Area = (sWorld->getBoolConfig(CONFIG_ANTIDODGE) && pFriend->GetMap()->IsBattleArena()) ? pFriend->Oldzone : pFriend->GetZoneId();
         friendInfo.Level = pFriend->getLevel();
         friendInfo.Class = pFriend->getClass();
     }
