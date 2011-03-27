@@ -9631,15 +9631,14 @@ void ObjectMgr::LoadItemRequirements()
             continue;
         }
         uint32 rating = fields[1].GetUInt32();
-        uint32 requitem = fields[2].GetUInt32();
-        if (!sItemStorage.LookupEntry<ItemPrototype>(requitem))
-        {
-            sLog->outErrorDb("Item with id %u listed by requitem in item_requirements!", requitem);
-            continue;
-        }
-        ItemRequirements req = {id, rating, requitem};
+        uint32 ratingbracket = fields[2].GetUInt32();
+        uint32 requitem = fields[3].GetUInt32();
+        ItemRequirements req = {id, rating, ratingbracket, requitem};
         item_req[id] = req;
         ++count;
     }
     while (result->NextRow());
+    
+    sLog->outString(">> Loaded %u items with a requirements in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    sLog->outString();
 }

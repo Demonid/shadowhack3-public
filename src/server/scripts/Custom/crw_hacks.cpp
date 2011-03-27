@@ -860,7 +860,7 @@ class npc_customizer : public CreatureScript
     bool OnGossipHello(Player* pPlayer, Creature* pCreature)
     {
         pPlayer->PlayerTalkClass->GetGossipMenu().ClearMenu();
-        if((pPlayer->GetMoney()>=50000000) || (pPlayer->HasItemCount(75556, 50)))
+        if ((pPlayer->GetMoney()>=50000000) || (pPlayer->HasItemCount(75556, 50)))
         {
             pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Хочу изменить внешность своего персонажа!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
             pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Хочу изменить расу своего персонажа!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 9);
@@ -1047,7 +1047,7 @@ class npc_customizer : public CreatureScript
             }
             case GOSSIP_ACTION_INFO_DEF + 14:
             {
-                if(player)
+                if (player->GetMoney()>=50000000)
                 {
                     player->SetAtLoginFlag(AT_LOGIN_CUSTOMIZE);
                     result = CharacterDatabase.PQuery("UPDATE characters SET at_login = at_login | '8' WHERE guid = '%u'",player->GetGUIDLow());
@@ -1055,6 +1055,12 @@ class npc_customizer : public CreatureScript
                     creature->MonsterSay("Операция выполнена успешно, следует перезайти!", LANG_UNIVERSAL, NULL); 
                     player->CLOSE_GOSSIP_MENU(); break;
                 }
+                else
+                {
+                    player->ModifyMoney(-50000000);
+                    player->ModifyHonorPoints(-55000);
+                }
+    
             }
             break;
         }
@@ -1337,122 +1343,123 @@ class arena_vendor : public CreatureScript
         {
             case 100600:
             {
-                if(pPlayer->GetArenaPersonalRating(1)>2499 || pPlayer->isGameMaster())
+                if((pPlayer->GetArenaPersonalRating(1)>2599 && pPlayer->GetMaxPersonalArenaRatingRequirement(1)>2599) || pPlayer->isGameMaster())
                     pPlayer->SEND_VENDORLIST(pCreature->GetGUID());
                 else 
-                    pCreature->MonsterWhisper("У вас нет 2500 рейтинга в 3х3 или 5х5", pPlayer->GetGUID(), true);
+                    pCreature->MonsterWhisper("У вас нет 2600 рейтинга в 3х3 или 5х5", pPlayer->GetGUID(), true);
                 break;
             }
             case 100601:
             {
-                if(pPlayer->GetArenaPersonalRating(1)>2549 || pPlayer->isGameMaster())
+                if((pPlayer->GetArenaPersonalRating(1)>2699 && pPlayer->GetMaxPersonalArenaRatingRequirement(1)>2699) || pPlayer->isGameMaster())
                     pPlayer->SEND_VENDORLIST(pCreature->GetGUID());
                 else 
-                    pCreature->MonsterWhisper("У вас нет 2550 рейтинга в 3х3 или 5х5", pPlayer->GetGUID(), true);
+                    pCreature->MonsterWhisper("У вас нет 2700 рейтинга в 3х3 или 5х5", pPlayer->GetGUID(), true);
                 break;
             }
             case 33936:
             {
-                if(pPlayer->GetArenaPersonalRating(1)>1849 || pPlayer->isGameMaster())
+                if((pPlayer->GetArenaPersonalRating(1)>2249 && pPlayer->GetMaxPersonalArenaRatingRequirement(1)>2249) || pPlayer->isGameMaster())
                     pPlayer->SEND_VENDORLIST(pCreature->GetGUID());
                 else 
-                    pCreature->MonsterWhisper("You have not ehough 1850 rating in 3x3 bracket", pPlayer->GetGUID(), true);
+                    pCreature->MonsterWhisper("You have not ehough 2250 rating in 3x3 bracket", pPlayer->GetGUID(), true);
                 break;
             }
-            case 33937:
+            case 34093:
             {
-                if(pPlayer->GetArenaPersonalRating(0)>1649 || pPlayer->isGameMaster() || pPlayer->GetArenaPersonalRating(1)>1649)
+                if((pPlayer->GetArenaPersonalRating(1)>2349 && pPlayer->GetMaxPersonalArenaRatingRequirement(1)>2349) || pPlayer->isGameMaster())
                     pPlayer->SEND_VENDORLIST(pCreature->GetGUID());
-                else
-                    pCreature->MonsterWhisper("You have not ehough 1650 rating in 2x2 or 3x3 bracket", pPlayer->GetGUID(), true);
+                else 
+                    pCreature->MonsterWhisper("You have not ehough 2350 rating in 3x3 bracket", pPlayer->GetGUID(), true);
                 break;
             }
             case 33927:
             {
-                if(pPlayer->GetArenaPersonalRating(1)>1649 || pPlayer->isGameMaster())
+                if((pPlayer->GetArenaPersonalRating(1)>1849 && pPlayer->GetMaxPersonalArenaRatingRequirement(1)>1849) || pPlayer->isGameMaster())
                     pPlayer->SEND_VENDORLIST(pCreature->GetGUID());
                 else
-                    pCreature->MonsterWhisper("You have not ehough 1650 rating in 3x3 bracket", pPlayer->GetGUID(), true);
+                    pCreature->MonsterWhisper("You have not ehough 1850 rating in 3x3 bracket", pPlayer->GetGUID(), true);
                 break;
             }
             case 100587:
             {
-                if (pPlayer->GetArenaPersonalRating(0)>1609 || pPlayer->isGameMaster() || pPlayer->GetArenaPersonalRating(1)>1609)
+                if ((pPlayer->GetArenaPersonalRating(0)>1709 && pPlayer->GetMaxPersonalArenaRatingRequirement(0)>1709) || pPlayer->isGameMaster() || (pPlayer->GetArenaPersonalRating(1)>1709 && pPlayer->GetMaxPersonalArenaRatingRequirement(1)>1709))
                     pPlayer->SEND_VENDORLIST(pCreature->GetGUID());
                 else
-                    pCreature->MonsterWhisper("You have not ehough 1610 rating in 2x2/3x3/5x5 brackets", pPlayer->GetGUID(), true);
+                    pCreature->MonsterWhisper("You have not ehough 1710 rating in 2x2/3x3/5x5 brackets", pPlayer->GetGUID(), true);
                 break;
             }
             case 100508:
+            case 33937:
             {
-                if (pPlayer->GetArenaPersonalRating(0)>1724 || pPlayer->isGameMaster() || pPlayer->GetArenaPersonalRating(1)>1724)
+                if ((pPlayer->GetArenaPersonalRating(0)>1984 && pPlayer->GetMaxPersonalArenaRatingRequirement(0)>1984) || pPlayer->isGameMaster() || (pPlayer->GetArenaPersonalRating(1)>1824 && pPlayer->GetMaxPersonalArenaRatingRequirement(1)>1824))
                     pPlayer->SEND_VENDORLIST(pCreature->GetGUID());
                 else
-                    pCreature->MonsterWhisper("You have not ehough 1725 rating in 2x2/3x3/5x5 brackets", pPlayer->GetGUID(), true);
+                    pCreature->MonsterWhisper("You have not ehough (1985) rating in 2x2 or (1824) rating 3x3 brackets", pPlayer->GetGUID(), true);
                 break;
             }
             case 33938:
             {
-                if (pPlayer->GetArenaPersonalRating(0)>1609 || pPlayer->isGameMaster() || pPlayer->GetArenaPersonalRating(1)>1609)
+                if ((pPlayer->GetArenaPersonalRating(0)>1709 && pPlayer->GetMaxPersonalArenaRatingRequirement(0)>1709) || pPlayer->isGameMaster() || (pPlayer->GetArenaPersonalRating(1)>1709 && pPlayer->GetMaxPersonalArenaRatingRequirement(1)>1709))
                     pPlayer->SEND_VENDORLIST(pCreature->GetGUID());
                 else
-                    pCreature->MonsterWhisper("You have not ehough 1610 rating in 2x2/3x3/5x5 brackets", pPlayer->GetGUID(), true);
+                    pCreature->MonsterWhisper("You have not ehough 1710 rating in 2x2/3x3/5x5 brackets", pPlayer->GetGUID(), true);
                 break;
             }
             case 34038:
             {
-                if(pPlayer->GetArenaPersonalRating(1)>1649 || pPlayer->isGameMaster())
+                if((pPlayer->GetArenaPersonalRating(1)>1849 && pPlayer->GetMaxPersonalArenaRatingRequirement(1)>1849) || pPlayer->isGameMaster())
                     pPlayer->SEND_VENDORLIST(pCreature->GetGUID());
                 else
-                    pCreature->MonsterWhisper("You have not ehough 1650 rating in 3x3 bracket", pPlayer->GetGUID(), true);
+                    pCreature->MonsterWhisper("You have not ehough 1850 rating in 3x3 bracket", pPlayer->GetGUID(), true);
                 break;
             }
             case 34063:
             {
-                if(pPlayer->GetArenaPersonalRating(1)>1619 || pPlayer->isGameMaster())
+                if((pPlayer->GetArenaPersonalRating(1)>1219 && pPlayer->GetMaxPersonalArenaRatingRequirement(1)>1219) || pPlayer->isGameMaster())
                     pPlayer->SEND_VENDORLIST(pCreature->GetGUID());
                 else
-                    pCreature->MonsterWhisper("You have not ehough 1620 rating in 3x3 bracket", pPlayer->GetGUID(), true);
+                    pCreature->MonsterWhisper("You have not ehough 1220 rating in 3x3 bracket", pPlayer->GetGUID(), true);
                 break;
             }
             case 34084:
             {
-                if(pPlayer->GetArenaPersonalRating(1)>1649 || pPlayer->isGameMaster())
+                if((pPlayer->GetArenaPersonalRating(1)>1749 && pPlayer->GetMaxPersonalArenaRatingRequirement(1)>1749) || pPlayer->isGameMaster())
                     pPlayer->SEND_VENDORLIST(pCreature->GetGUID());
                 else
-                    pCreature->MonsterWhisper("You have not ehough 1650 rating in 3x3 bracket", pPlayer->GetGUID(), true);
+                    pCreature->MonsterWhisper("You have not ehough 1750 rating in 3x3 bracket", pPlayer->GetGUID(), true);
                 break;
             }
             case 34060:
             {
-                if(pPlayer->GetArenaPersonalRating(1)>1799 || pPlayer->isGameMaster())
+                if((pPlayer->GetArenaPersonalRating(1)>1899 && pPlayer->GetMaxPersonalArenaRatingRequirement(1)>1749) || pPlayer->isGameMaster())
                     pPlayer->SEND_VENDORLIST(pCreature->GetGUID());
                 else
-                    pCreature->MonsterWhisper("You have not ehough 1800 rating in 3x3 bracket", pPlayer->GetGUID(), true);
+                    pCreature->MonsterWhisper("You have not ehough 1900 rating in 3x3 bracket", pPlayer->GetGUID(), true);
                 break;
             }
             case 34075:
             {
-                if(pPlayer->GetArenaPersonalRating(1)>1649 || pPlayer->isGameMaster())
+                if((pPlayer->GetArenaPersonalRating(1)>1949 && pPlayer->GetMaxPersonalArenaRatingRequirement(1)>1949) || pPlayer->isGameMaster())
                     pPlayer->SEND_VENDORLIST(pCreature->GetGUID());
                 else
-                    pCreature->MonsterWhisper("You have not ehough 1650 rating in 3x3 bracket", pPlayer->GetGUID(), true);
+                    pCreature->MonsterWhisper("You have not ehough 1950 rating in 3x3 bracket", pPlayer->GetGUID(), true);
                 break;
             }
             case 34078:
             {
-                if(pPlayer->GetArenaPersonalRating(1)>1799 || pPlayer->isGameMaster())
+                if((pPlayer->GetArenaPersonalRating(1)>1999 && pPlayer->GetMaxPersonalArenaRatingRequirement(1)>1999) || pPlayer->isGameMaster())
                     pPlayer->SEND_VENDORLIST(pCreature->GetGUID());
                 else
-                    pCreature->MonsterWhisper("You have not ehough 1800 rating in 3x3 bracket", pPlayer->GetGUID(), true);
+                    pCreature->MonsterWhisper("You have not ehough 2000 rating in 3x3 bracket", pPlayer->GetGUID(), true);
                 break;
             }
             case 34095:
             {
-                if(pPlayer->GetArenaPersonalRating(1)>1749 || pPlayer->isGameMaster())
+                if((pPlayer->GetArenaPersonalRating(1)>2349 && pPlayer->GetMaxPersonalArenaRatingRequirement(1)>2349) || pPlayer->isGameMaster())
                     pPlayer->SEND_VENDORLIST(pCreature->GetGUID());
                 else
-                    pCreature->MonsterWhisper("You have not ehough 1750 rating in 3x3 bracket", pPlayer->GetGUID(), true);
+                    pCreature->MonsterWhisper("You have not ehough 2350 rating in 3x3 bracket", pPlayer->GetGUID(), true);
                 break;
             }
             return false;
@@ -2875,7 +2882,7 @@ class scarab_vendor : public CreatureScript
                         player->TakeQuestSourceItem(quest, false);
                     }
                 }
-				player->CompleteQuest(entry);
+                player->CompleteQuest(entry);
                 Creature* scarab = NULL;
                 scarab = Creature::GetCreature((*creature), guid);
                 {
@@ -2954,7 +2961,7 @@ class gnome_event : public CreatureScript
             case 5:
                 count = 0;
                 playerslist.clear();
-                creature->MonsterWhisper("Лист отмеченных сброшен", guid, true);
+                creature->MonsterYell("Лист отмеченных сброшен", guid, true);
                 break;
             default:
                 break;

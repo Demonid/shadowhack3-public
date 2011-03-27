@@ -11508,7 +11508,7 @@ uint8 Player::CanEquipItem(uint8 slot, uint16 &dest, Item *pItem, bool swap, boo
                 return EQUIP_ERR_DONT_OWN_THAT_ITEM;
 
             ItemRequirementsMap::iterator req = sObjectMgr->item_req.find(pItem->GetProto()->ItemId);
-            if (req != sObjectMgr->item_req.end() && (GetArenaPersonalRating(0) < req->second.rating 
+            if (req != sObjectMgr->item_req.end() && (GetArenaPersonalRating(req->second.ratingbracket) < req->second.rating 
                 || (req->second.requitem && HasItemCount(req->second.requitem, 1, true))))
                 return EQUIP_ERR_PERSONAL_ARENA_RATING_TOO_LOW;
 
@@ -20049,7 +20049,7 @@ void Player::UpdateArenaItemEquiped()
         if (Item *pItem = GetItemByPos(INVENTORY_SLOT_BAG_0, i))
         {
             ItemRequirementsMap::iterator req = sObjectMgr->item_req.find(pItem->GetProto()->ItemId);
-                if (req != sObjectMgr->item_req.end() && (GetArenaPersonalRating(0) < req->second.rating || 
+                if (req != sObjectMgr->item_req.end() && (GetArenaPersonalRating(req->second.ratingbracket) < req->second.rating || 
                     (req->second.requitem && HasItemCount(req->second.requitem, 1, true))))
                 {
                     uint8 srcbag, srcslot, dstbag;

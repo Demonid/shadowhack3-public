@@ -31,14 +31,14 @@ public:
         uint64 m_uiExitPortalGUID;
      
         uint64 m_uiMalygosGUID;
-	    uint64 m_AlexstraszaGUID;
+        uint64 m_AlexstraszaGUID;
         uint64 m_uiPlayerCheckGUID;
         
         bool m_bVortex;    
      
         void Initialize()
         {
-		    m_auiEncounter = NOT_STARTED;           
+            m_auiEncounter = NOT_STARTED;           
             m_uiMalygosGUID = 0;
             m_uiOutroCheck = 0; 
             m_uiMalygosPlatformData = 0;
@@ -76,10 +76,10 @@ public:
      
         bool IsEncounterInProgress() const
         {
-		    if (m_auiEncounter == IN_PROGRESS)
-			    return true;
+            if (m_auiEncounter == IN_PROGRESS)
+                return true;
      
-		    return false;
+            return false;
         }
      
         void SetData(uint32 uiType, uint32 uiData)
@@ -100,8 +100,8 @@ public:
                         //Summon Platform
                         SetData(TYPE_DESTROY_PLATFORM, NOT_STARTED);
                         //Summon focusing iris
-					    if(GameObject* pGo = instance->GetGameObject(m_uiFocusingIrisGUID))
-						    pGo->SetPhaseMask(1, true);
+                        if(GameObject* pGo = instance->GetGameObject(m_uiFocusingIrisGUID))
+                            pGo->SetPhaseMask(1, true);
                         //Summon exit portal
                         if(GameObject* pGo = instance->GetGameObject(m_uiExitPortalGUID))
                             pGo->SetPhaseMask(1, true);
@@ -172,8 +172,8 @@ public:
             std::istringstream loadStream(chrIn);
             loadStream >> m_auiEncounter >> m_uiOutroCheck;
      
-		    if (m_auiEncounter == IN_PROGRESS)
-			    m_auiEncounter = NOT_STARTED;
+            if (m_auiEncounter == IN_PROGRESS)
+                m_auiEncounter = NOT_STARTED;
 
      
             OUT_LOAD_INST_DATA_COMPLETE;
@@ -201,10 +201,10 @@ public:
             {
                 case NPC_MALYGOS:
                     return m_uiMalygosGUID;
-			    case DATA_PLATFORM:
-				    return m_uiMalygosPlatformGUID;
-			    case DATA_EXIT_PORTAL:
-				    return m_uiExitPortalGUID;
+                case DATA_PLATFORM:
+                    return m_uiMalygosPlatformGUID;
+                case DATA_EXIT_PORTAL:
+                    return m_uiExitPortalGUID;
                 default:
                     return 0;
             }
@@ -236,13 +236,13 @@ public:
                     pPlayer->EnterVehicle(pTemp, 0);
                 }
             }
-		    if (GetData(TYPE_MALYGOS) == IN_PROGRESS)
-		    {
-			    pPlayer->MonsterTextEmote(DISABLED_ENTER_MESSAGE, pPlayer->GetGUID(), true);
-			    pPlayer->TeleportTo(EXIT_MAP, EXIT_X, EXIT_Y, EXIT_Z, 0);
-			    return;
-		    }
-    		
+            if (GetData(TYPE_MALYGOS) == IN_PROGRESS)
+            {
+                pPlayer->MonsterTextEmote(DISABLED_ENTER_MESSAGE, pPlayer->GetGUID(), true);
+                pPlayer->TeleportTo(EXIT_MAP, EXIT_X, EXIT_Y, EXIT_Z, 0);
+                return;
+            }
+            
         }*/
     };
 };
