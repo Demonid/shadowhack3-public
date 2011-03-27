@@ -29,6 +29,7 @@
 #include "AddonMgr.h"
 #include "DatabaseEnv.h"
 #include "World.h"
+#include "Timer.h"
 
 struct ItemPrototype;
 struct AuctionEntry;
@@ -44,6 +45,7 @@ class GameObject;
 class Quest;
 class WorldPacket;
 class WorldSocket;
+class BigNumber;
 class LoginQueryHolder;
 class CharacterHandler;
 class SpellCastTargets;
@@ -344,6 +346,14 @@ class WorldSession
         uint32 GetLatency() const { return m_latency; }
         void SetLatency(uint32 latency) { m_latency = latency; }
         uint32 getDialogStatus(Player *pPlayer, Object* questgiver, uint32 defstatus);
+
+        BigNumber &GetSessionKey() const;
+        uint8 *GetWardenClientKey() { return m_rc4ClientKey; }
+        uint8 *GetWardenServerKey() { return m_rc4ServerKey; }
+        uint8 GetWardenStatus() { return m_wardenStatus; }
+        void SetWardenStatus(uint8 status) { m_wardenStatus = status; }
+        IntervalTimer &GetWardenTimer() { return m_cheatCheck; }
+        uint8 *GetWardenCheckTable() { return m_chkTable; }
 
         time_t m_timeOutTime;
         void UpdateTimeOutTime(uint32 diff)
@@ -749,7 +759,11 @@ class WorldSession
         void HandleBattlemasterJoinArena(WorldPacket &recv_data);
         void HandleReportPvPAFK(WorldPacket &recv_data);
 
+        //Warden
         void HandleWardenDataOpcode(WorldPacket& recv_data);
+        void HandleWardenRegister();                        // for internal call
+        void HandleWardenUnregister();                      // for internal call
+
         void HandleWorldTeleportOpcode(WorldPacket& recv_data);
         void HandleMinimapPingOpcode(WorldPacket& recv_data);
         void HandleRandomRollOpcode(WorldPacket& recv_data);
@@ -919,6 +933,12 @@ class WorldSession
         AddonsList m_addonsList;
         uint32 recruiterId;
         ACE_Based::LockedQueue<WorldPacket*, ACE_Thread_Mutex> _recvQueue;
+
+        uint8 m_wardenStatus;
+        uint8 m_rc4ServerKey[0x102];
+        uint8 m_rc4ClientKey[0x102];
+        IntervalTimer m_cheatCheck;
+        uint8 m_chkTable[10];
 };
 #endif
 /// @}

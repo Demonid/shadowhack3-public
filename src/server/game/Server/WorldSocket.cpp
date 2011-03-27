@@ -38,7 +38,6 @@
 #include "ByteBuffer.h"
 #include "Opcodes.h"
 #include "DatabaseEnv.h"
-#include "BigNumber.h"
 #include "SHA1.h"
 #include "WorldSession.h"
 #include "WorldSocketMgr.h"
@@ -889,6 +888,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
         */
 
     K.SetHexStr (fields[1].GetCString());
+    m_s = K;
 
     time_t mutetime = time_t (fields[7].GetUInt64());
 
