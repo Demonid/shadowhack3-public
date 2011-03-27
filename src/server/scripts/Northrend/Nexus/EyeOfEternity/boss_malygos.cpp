@@ -125,7 +125,7 @@ enum EyeOfEternityIDs
     NPC_SCION_OF_ETERNITY          = 30249, // same, but unknow count
     NPC_ARCANE_OVERLOAD            = 30282, // Bubles
     GO_PLATFORM                    = 193070,
-	MOUNT_HOVER_DISC               = 26876,
+    MOUNT_HOVER_DISC               = 26876,
  
     //////////////// PHASE 3 ////////////////
     NPC_SURGE_OF_POWER             = 30334, // Because its on three targets, malygos cant cast it by hymself
@@ -297,7 +297,7 @@ public:
      
         InstanceScript* m_pInstance;
 
-	    Creature *pAlexstrasza;
+        Creature *pAlexstrasza;
         
         uint8 m_uiPhase; //Fight Phase
         uint8 m_uiSubPhase; //Subphase if needed
@@ -331,11 +331,11 @@ public:
         void Reset()
         {
             if(m_pInstance)
-		    {
-			    m_pInstance->SetData(TYPE_MALYGOS, NOT_STARTED);
-		    }
+            {
+                m_pInstance->SetData(TYPE_MALYGOS, NOT_STARTED);
+            }
             else
-                me->DespawnOrUnsummon();		
+                me->DespawnOrUnsummon();        
 
             me->SetFlying(true);
             me->setActive(true);
@@ -371,7 +371,7 @@ public:
             m_uiCheckDisksTimer = 2500;
             m_uiWipeCheckTimer = 2500;
             m_uiSurgeVisual = 0;
-		    pAlexstrasza = NULL;
+            pAlexstrasza = NULL;
 
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             me->SetUInt32Value(UNIT_FIELD_BYTES_0, 50331648);
@@ -464,8 +464,8 @@ public:
 
         void KilledUnit(Unit* pVictim)
         {
-		    if (!pVictim)
-			    return;
+            if (!pVictim)
+                return;
 
             uint8 text = 0;
 
@@ -484,23 +484,23 @@ public:
                     return;
             }
 
-		    if (!urand(0, 1))
-		    {
-			    switch(text)
-			    {
-			    case 0: DoScriptText(SAY_KILL1_1, me); break;
-			    case 1: DoScriptText(SAY_KILL1_2, me); break;
-			    case 2: DoScriptText(SAY_KILL1_3, me); break;
+            if (!urand(0, 1))
+            {
+                switch(text)
+                {
+                case 0: DoScriptText(SAY_KILL1_1, me); break;
+                case 1: DoScriptText(SAY_KILL1_2, me); break;
+                case 2: DoScriptText(SAY_KILL1_3, me); break;
 
-			    case 3: DoScriptText(SAY_KILL2_1, me); break;
-			    case 4: DoScriptText(SAY_KILL2_2, me); break;
-			    case 5: DoScriptText(SAY_KILL2_3, me); break;
+                case 3: DoScriptText(SAY_KILL2_1, me); break;
+                case 4: DoScriptText(SAY_KILL2_2, me); break;
+                case 5: DoScriptText(SAY_KILL2_3, me); break;
 
-			    case 6: DoScriptText(SAY_KILL3_1, me); break;
-			    case 7: DoScriptText(SAY_KILL3_2, me); break;
-			    case 8: DoScriptText(SAY_KILL3_3, me); break;
-			    }
-		    }
+                case 6: DoScriptText(SAY_KILL3_1, me); break;
+                case 7: DoScriptText(SAY_KILL3_2, me); break;
+                case 8: DoScriptText(SAY_KILL3_3, me); break;
+                }
+            }
 
 
             if(m_uiPhase == PHASE_DRAGONS)
@@ -573,14 +573,14 @@ public:
         {      
             if(Creature *pTrigger = me->SummonCreature(NPC_VORTEX, OtherLoc[2].x, OtherLoc[2].y, OtherLoc[2].z, 0, TEMPSUMMON_TIMED_DESPAWN, 10000))
             { //TODO: Wrong trigger entry (it's used only for example)
-			    pTrigger->SetVisible(false);
+                pTrigger->SetVisible(false);
                if(!triggerCast)
                {
                  pTrigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_DISABLE_MOVE);
                  pTrigger->setFaction(me->getFaction());
                  pTrigger->CastSpell(pTrigger, uiSpellId, triggered);
                }
-		       else 
+               else 
                {
                    pTrigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
                    DoCast(pTrigger, uiSpellId, triggered);
@@ -608,7 +608,7 @@ public:
                     if(!itr->getSource()->isAlive())
                         continue;
 
-				    itr->getSource()->CastSpell(itr->getSource(), SPELL_VORTEX, true, NULL, NULL, me->GetGUID());
+                    itr->getSource()->CastSpell(itr->getSource(), SPELL_VORTEX, true, NULL, NULL, me->GetGUID());
                     itr->getSource()->NearTeleportTo(VortexLoc[0].x, VortexLoc[0].y, FALL_FROM_Z, 0);                 
                     if(Creature *pVortex = me->SummonCreature(NPC_VORTEX, OtherLoc[1].x, OtherLoc[1].y, OtherLoc[1].z, OtherLoc[1].o, TEMPSUMMON_TIMED_DESPAWN, 11000))
                     {                    
@@ -640,7 +640,7 @@ public:
                     }
                 }
             }
-		    else if (phase == 30 || phase == 31)
+            else if (phase == 30 || phase == 31)
             {    
                 if(phase == 31)
                 {
@@ -672,7 +672,7 @@ public:
                 MoveFly(false);
             }
         }
-    	
+        
         void PowerSpark(uint8 action)
         {
             if (m_pInstance && m_pInstance->instance)
@@ -699,10 +699,10 @@ public:
             for(int i=0; i < max_lords;i++)
             {
                 if(Creature *pLord = DoSummon(NPC_NEXUS_LORD, me->getVictim(), 5.0f, 0, TEMPSUMMON_CORPSE_DESPAWN))
-			    {
-				    //pLord->Mount(MOUNT_HOVER_DISC);
-				    if (pLord->AI()) pLord->AI()->AttackStart(me->getVictim());
-			    }
+                {
+                    //pLord->Mount(MOUNT_HOVER_DISC);
+                    if (pLord->AI()) pLord->AI()->AttackStart(me->getVictim());
+                }
             }
             //Scions of eternity
             uint8 max_scions = m_uiIs10Man ? SCION_OF_ETERNITY_COUNT : SCION_OF_ETERNITY_COUNT_H;
@@ -711,10 +711,10 @@ public:
                 uint8 tmp = urand(1, 10);
                 if(Creature *pScion = me->SummonCreature(NPC_SCION_OF_ETERNITY, VortexLoc[tmp].x, VortexLoc[tmp].y, FLOOR_Z + 10.0f, 0.0f, TEMPSUMMON_CORPSE_DESPAWN, 0))
                 {
-				    //pScion->Mount(MOUNT_HOVER_DISC);
+                    //pScion->Mount(MOUNT_HOVER_DISC);
                     if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         if (pScion->AI()) pScion->AI()->AttackStart(pTarget);
-    					
+                        
                 }
             }       
         }
@@ -731,7 +731,7 @@ public:
      
             return false;
         }
-    	
+        
         void DoSpawnShell()
         {
             uint32 x = urand(SHELL_MIN_X, SHELL_MAX_X);
@@ -869,7 +869,7 @@ public:
             SurgeOfPower->SetHealth(100000);
             SurgeOfPower->setFaction(14);
             SurgeOfPower->SetDisplayId(11686);
-		    SurgeOfPower->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+            SurgeOfPower->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
 
             me->CastSpell(SurgeOfPower, SPELL_SURGE_OF_POWER_BREATH, false);
         }
@@ -941,100 +941,100 @@ public:
                         me->GetMotionMaster()->MovePoint(0, SparkLoc[tmp].x, SparkLoc[tmp].y, AIR_Z);
                         m_uiTimer = 25000;
                     }
-				    else m_uiTimer -= uiDiff;
+                    else m_uiTimer -= uiDiff;
                 }
             }
 
-		    if(m_uiPhase == PHASE_OUTRO)
-		    {
-			    if(m_uiSubPhase == SUBPHASE_STOP_COMBAT)
-			    {
-				    m_pInstance->SetData(TYPE_OUTRO_CHECK, 1);
+            if(m_uiPhase == PHASE_OUTRO)
+            {
+                if(m_uiSubPhase == SUBPHASE_STOP_COMBAT)
+                {
+                    m_pInstance->SetData(TYPE_OUTRO_CHECK, 1);
 
-				    if (me->IsNonMeleeSpellCasted(false))
-					    me->InterruptNonMeleeSpells(false);
+                    if (me->IsNonMeleeSpellCasted(false))
+                        me->InterruptNonMeleeSpells(false);
 
-				    me->RemoveAllAuras();
-				    SetCombatMovement(false);
+                    me->RemoveAllAuras();
+                    SetCombatMovement(false);
 
-				    if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE)
-					    me->GetMotionMaster()->MovementExpired();
+                    if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE)
+                        me->GetMotionMaster()->MovementExpired();
 
-				    DespawnCreatures(NPC_STATIC_FIELD, 120.0f);
+                    DespawnCreatures(NPC_STATIC_FIELD, 120.0f);
 
-				    me->SetHealth(1);
-				    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-				    me->GetMotionMaster()->Clear(false);        // No moving!
-				    me->GetMotionMaster()->MoveIdle();
-				    m_uiSpeechCount = 0;
-				    m_uiSpeechTimer[0] = 2000;
-				    m_uiSpeechTimer[1] = 8500;
-				    m_uiSpeechTimer[2] = 5000;
-				    m_uiSpeechTimer[3] = 3000;
-				    m_uiSpeechTimer[4] = 22000;
+                    me->SetHealth(1);
+                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    me->GetMotionMaster()->Clear(false);        // No moving!
+                    me->GetMotionMaster()->MoveIdle();
+                    m_uiSpeechCount = 0;
+                    m_uiSpeechTimer[0] = 2000;
+                    m_uiSpeechTimer[1] = 8500;
+                    m_uiSpeechTimer[2] = 5000;
+                    m_uiSpeechTimer[3] = 3000;
+                    m_uiSpeechTimer[4] = 22000;
 
-				    if(pAlexstrasza = me->SummonCreature(NPC_ALEXSTRASZA, OtherLoc[3].x, OtherLoc[3].y, OtherLoc[3].z+10, 0.0f, TEMPSUMMON_CORPSE_DESPAWN, 0))
-				    {
-					    pAlexstrasza->SetUInt32Value(UNIT_FIELD_BYTES_0, 50331648);
-					    pAlexstrasza->SetUInt32Value(UNIT_FIELD_BYTES_1, 50331648);
-					    pAlexstrasza->SetFlying(true);
-					    pAlexstrasza->SetFacingToObject(me);
-					    pAlexstrasza->SetVisible(false);
-				    }
-				    m_uiSubPhase = 0;
-				    return;
-			    }
+                    if(pAlexstrasza = me->SummonCreature(NPC_ALEXSTRASZA, OtherLoc[3].x, OtherLoc[3].y, OtherLoc[3].z+10, 0.0f, TEMPSUMMON_CORPSE_DESPAWN, 0))
+                    {
+                        pAlexstrasza->SetUInt32Value(UNIT_FIELD_BYTES_0, 50331648);
+                        pAlexstrasza->SetUInt32Value(UNIT_FIELD_BYTES_1, 50331648);
+                        pAlexstrasza->SetFlying(true);
+                        pAlexstrasza->SetFacingToObject(me);
+                        pAlexstrasza->SetVisible(false);
+                    }
+                    m_uiSubPhase = 0;
+                    return;
+                }
 
-			    if(m_uiSpeechCount >= 5 || m_uiSubPhase == SUBPHASE_DIE)
-				    return;
+                if(m_uiSpeechCount >= 5 || m_uiSubPhase == SUBPHASE_DIE)
+                    return;
 
-			    if(m_uiSpeechTimer[m_uiSpeechCount] <= uiDiff)
-			    { 
-				    if(m_uiSpeechCount || pAlexstrasza)
-					    DoScriptText(SAY_OUTRO1-m_uiSpeechCount, ( m_uiSpeechCount == 0 ) ? me : pAlexstrasza); //Q: this relies on sequential textids
+                if(m_uiSpeechTimer[m_uiSpeechCount] <= uiDiff)
+                { 
+                    if(m_uiSpeechCount || pAlexstrasza)
+                        DoScriptText(SAY_OUTRO1-m_uiSpeechCount, ( m_uiSpeechCount == 0 ) ? me : pAlexstrasza); //Q: this relies on sequential textids
 
-				    if (!pAlexstrasza)
-					    return;				
+                    if (!pAlexstrasza)
+                        return;                
 
-				    switch(m_uiSpeechCount)
-				    {
-				    case 1:
-					    //me->SetVisibility(VISIBILITY_OFF);
-					    pAlexstrasza->SetVisible(true);
-					    pAlexstrasza->SetFacingToObject(me->getVictim());
-					    break;
-				    case 4:
-					    m_uiSubPhase = SUBPHASE_DIE;
+                    switch(m_uiSpeechCount)
+                    {
+                    case 1:
+                        //me->SetVisibility(VISIBILITY_OFF);
+                        pAlexstrasza->SetVisible(true);
+                        pAlexstrasza->SetFacingToObject(me->getVictim());
+                        break;
+                    case 4:
+                        m_uiSubPhase = SUBPHASE_DIE;
 
-					    if(GameObject* m_uiMalygosPlatform = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(GO_PLATFORM)))
-					    {
-						    m_uiMalygosPlatform->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_DESTROYED);
-						    m_uiMalygosPlatform->Respawn();
-					    }
+                        if(GameObject* m_uiMalygosPlatform = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(GO_PLATFORM)))
+                        {
+                            m_uiMalygosPlatform->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_DESTROYED);
+                            m_uiMalygosPlatform->Respawn();
+                        }
 
-					    if(GameObject* m_uiExitPortal = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(DATA_EXIT_PORTAL)))
-					    {
-						    m_uiExitPortal->SetPhaseMask(1, true);
-					    }
+                        if(GameObject* m_uiExitPortal = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(DATA_EXIT_PORTAL)))
+                        {
+                            m_uiExitPortal->SetPhaseMask(1, true);
+                        }
 
-					    if(GameObject *pGift = pAlexstrasza->SummonGameObject( m_uiIs10Man ? GO_ALEXSTRASZAS_GIFT : GO_ALEXSTRASZAS_GIFT_H, GOPositions[1].x, GOPositions[1].y, GOPositions[1].z+4, GOPositions[2].o, 0.0f, 0.0f, 0.0f, 0.0f, 0))
-						    pAlexstrasza->SetFacingToObject(pGift);
+                        if(GameObject *pGift = pAlexstrasza->SummonGameObject( m_uiIs10Man ? GO_ALEXSTRASZAS_GIFT : GO_ALEXSTRASZAS_GIFT_H, GOPositions[1].x, GOPositions[1].y, GOPositions[1].z+4, GOPositions[2].o, 0.0f, 0.0f, 0.0f, 0.0f, 0))
+                            pAlexstrasza->SetFacingToObject(pGift);
 
-					    //Summon platform for the looters to stay on...
-					    //me->SummonGameObject( 190023 , 757.001, 1297.4, 267.09, 2.26684, 0, 0, 0.905866, 0.423563, 600000);
+                        //Summon platform for the looters to stay on...
+                        //me->SummonGameObject( 190023 , 757.001, 1297.4, 267.09, 2.26684, 0, 0, 0.905866, 0.423563, 600000);
 
-					    Player* pPlayer = GetPlayerAtMinimumRange(1.0f);
-					    if(pPlayer)
-						    pPlayer->DealDamage(me, me->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-					    else
-						    me->DealDamage(me, me->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-					    break;
-				    }
-				    m_uiSpeechCount++;
-			    }
-			    else m_uiSpeechTimer[m_uiSpeechCount] -= uiDiff;
+                        Player* pPlayer = GetPlayerAtMinimumRange(1.0f);
+                        if(pPlayer)
+                            pPlayer->DealDamage(me, me->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                        else
+                            me->DealDamage(me, me->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                        break;
+                    }
+                    m_uiSpeechCount++;
+                }
+                else m_uiSpeechTimer[m_uiSpeechCount] -= uiDiff;
 
-		    }
+            }
 
             if (!UpdateVictim())
                 return;
@@ -1073,20 +1073,20 @@ public:
                 else m_uiWipeCheckTimer -= uiDiff;
             }
      
-		    if (m_uiPhase != PHASE_OUTRO)
-		    {
-			    //Enrage timer.....
-			    if(m_uiEnrageTimer <= uiDiff)
-			    {
-				    DoCast(me, SPELL_BERSERK);
-				    m_uiEnrageTimer = 600000;
-				    me->SetSpeed(MOVE_FLIGHT, 3.5f, true);
-				    me->SetSpeed(MOVE_RUN, 3.5f, true);
-				    me->SetSpeed(MOVE_WALK, 3.5f, true);
-				    me->GetMotionMaster()->MoveChase(me->getVictim());
-			    }
-			    else m_uiEnrageTimer -= uiDiff;
-		    }
+            if (m_uiPhase != PHASE_OUTRO)
+            {
+                //Enrage timer.....
+                if(m_uiEnrageTimer <= uiDiff)
+                {
+                    DoCast(me, SPELL_BERSERK);
+                    m_uiEnrageTimer = 600000;
+                    me->SetSpeed(MOVE_FLIGHT, 3.5f, true);
+                    me->SetSpeed(MOVE_RUN, 3.5f, true);
+                    me->SetSpeed(MOVE_WALK, 3.5f, true);
+                    me->GetMotionMaster()->MoveChase(me->getVictim());
+                }
+                else m_uiEnrageTimer -= uiDiff;
+            }
      
             if(m_uiPhase == PHASE_FLOOR)
             {
@@ -1102,7 +1102,7 @@ public:
                                 DoCast(me, SPELL_VORTEX_DUMMY);
                             m_uiTimer = 300;
                         }
-					    else
+                        else
                             m_uiTimer = 500;
      
                         if(m_uiVortexPhase >= MAX_VORTEX && m_uiVortexPhase < 29)
@@ -1119,7 +1119,7 @@ public:
                         }
                         m_uiVortexPhase++;
                     }
-				    else m_uiTimer -= uiDiff;
+                    else m_uiTimer -= uiDiff;
                     return;
                 }
      
@@ -1139,7 +1139,7 @@ public:
                     DoScriptText(SAY_VORTEX, me);
                     return;
                 }
-			    else m_uiVortexTimer -= uiDiff;
+                else m_uiVortexTimer -= uiDiff;
      
                 //Arcane Breath
                 if(m_uiArcaneBreathTimer <= uiDiff)
@@ -1155,7 +1155,7 @@ public:
                     PowerSpark(1);
                     m_uiPowerSparkTimer = 30000;
                 }
-			    else m_uiPowerSparkTimer -= uiDiff;
+                else m_uiPowerSparkTimer -= uiDiff;
      
                 //Health check
                 if(m_uiTimer<= uiDiff)
@@ -1164,7 +1164,7 @@ public:
                     {
                         me->InterruptNonMeleeSpells(true);
                         MoveFly(true);
-    					
+                        
                         DoScriptText(SAY_END_PHASE1, me);
                         me->GetMotionMaster()->MovePoint(0, OtherLoc[2].x, OtherLoc[2].y, OtherLoc[2].z + 40.0f);
                         //Despawn power sparks
@@ -1176,7 +1176,7 @@ public:
                     }
                     m_uiTimer = 1500;
                 }
-			    else m_uiTimer -= uiDiff;  
+                else m_uiTimer -= uiDiff;  
      
                 DoMeleeAttackIfReady();
             }
@@ -1194,7 +1194,7 @@ public:
                         m_uiSubPhase = 0;
                         m_uiTimer = 15000;
                     }
-				    else m_uiTimer -= uiDiff;
+                    else m_uiTimer -= uiDiff;
                     return;
                 }
                 
@@ -1205,7 +1205,7 @@ public:
                     DoScriptText(SAY_ARCANE_OVERLOAD, me);
                     m_uiShellTimer = 20000;
                 }
-			    else m_uiShellTimer -= uiDiff;
+                else m_uiShellTimer -= uiDiff;
      
                 // Deep breath
                 if(m_uiDeepBreathTimer <= uiDiff)
@@ -1213,13 +1213,13 @@ public:
                     DoScriptText(SAY_ARCANE_PULSE, me);
                     DoScriptText(SAY_ARCANE_PULSE_WARN, me);
                     SendDeepBreathCast();
-				    CastSpellToTrigger(SPELL_SURGE_OF_POWER_BREATH, true, true);
+                    CastSpellToTrigger(SPELL_SURGE_OF_POWER_BREATH, true, true);
                     CastSurgeOfPower();
                     m_uiSurgeVisual = 3200;
                     m_uiDeepBreathTimer = 60000;
                 }
-			    else m_uiDeepBreathTimer -= uiDiff;
-    			
+                else m_uiDeepBreathTimer -= uiDiff;
+                
                 if(m_uiSurgeVisual)
                 {
                     if(m_uiSurgeVisual <= uiDiff)
@@ -1234,7 +1234,7 @@ public:
                         }
                         m_uiSurgeVisual = 0;
                     }
-				    else m_uiSurgeVisual -= uiDiff;
+                    else m_uiSurgeVisual -= uiDiff;
                 }
      
                 // Arcane Storm
@@ -1243,7 +1243,7 @@ public:
                     DoCast(me, m_uiIs10Man ? SPELL_ARCANE_STORM : SPELL_ARCANE_STORM_H);
                     m_uiArcaneStormTimer = 20000;
                 }
-			    else m_uiArcaneStormTimer -= uiDiff;
+                else m_uiArcaneStormTimer -= uiDiff;
      
                 if(m_uiTimer <= uiDiff)
                 {
@@ -1261,7 +1261,7 @@ public:
                     }
                     m_uiTimer = 5000;
                 }
-			    else m_uiTimer -= uiDiff;  
+                else m_uiTimer -= uiDiff;  
      
                 if(me->HasAura(SPELL_BERSERK))
                     DoMeleeAttackIfReady(); // this is there just for case of enrage
@@ -1281,7 +1281,7 @@ public:
                         m_uiTimer = 2000;
                         m_uiSubPhase = SUBPHASE_DESTROY_PLATFORM2;
                     }
-				    else m_uiTimer -= uiDiff;
+                    else m_uiTimer -= uiDiff;
                     return;
                 }
                 else if(m_uiSubPhase == SUBPHASE_DESTROY_PLATFORM2)
@@ -1302,7 +1302,7 @@ public:
                         m_uiTimer = 14900;
                         m_uiFallToMountTimer = 1000;
                     }
-				    else 
+                    else 
                         m_uiTimer -= uiDiff;
 
                     if(!m_uiIsMounted && m_uiFallToMountTimer <= uiDiff)
@@ -1311,12 +1311,12 @@ public:
                         m_uiSubPhase = SUBPHASE_DESTROY_PLATFORM3;
                         m_uiIsMounted = true;
                     }
-				    else 
+                    else 
                         m_uiFallToMountTimer -= uiDiff;
                     return;
 
                 }
-			    else if(m_uiSubPhase == SUBPHASE_DESTROY_PLATFORM3)
+                else if(m_uiSubPhase == SUBPHASE_DESTROY_PLATFORM3)
                 {
                     if(m_uiTimer<= uiDiff)
                     {
@@ -1335,7 +1335,7 @@ public:
                         }
                         DoScriptText(SAY_AGGRO3, me);
                     }
-				    else m_uiTimer -= uiDiff;
+                    else m_uiTimer -= uiDiff;
                     return;
                 }
                 //Arcane Pulse
@@ -1344,7 +1344,7 @@ public:
                     DoCast(me, SPELL_ARCANE_PULSE);
                     m_uiArcanePulseTimer = 1000;
                 }
-			    else m_uiArcanePulseTimer -= uiDiff;
+                else m_uiArcanePulseTimer -= uiDiff;
      
                 //Static field
                 if(m_uiStaticFieldTimer <= uiDiff)
@@ -1363,7 +1363,7 @@ public:
                     DoScriptText(RAND(SAY_CAST_SPELL1, SAY_CAST_SPELL2, SAY_CAST_SPELL1), me);
                     m_uiStaticFieldTimer = 10000+urand(1, 10000);
                 }
-			    else m_uiStaticFieldTimer -= uiDiff;
+                else m_uiStaticFieldTimer -= uiDiff;
      
                 //Surge of power
                 if(m_uiSurgeOfPowerTimer <= uiDiff)
@@ -1373,7 +1373,7 @@ public:
                         // Use previously stored list of mount GUIDs
                         if(m_uiMounts.empty())
                             continue;
-    					
+                        
                         std::list<std::pair<uint64, uint64> >::iterator itr = m_uiMounts.begin();
                         int random = rand() % m_uiMounts.size();
 
@@ -1409,7 +1409,7 @@ public:
 
                     m_uiSurgeOfPowerTimer = 9000 + urand(1, 6000);
                 }
-			    else m_uiSurgeOfPowerTimer -= uiDiff;      
+                else m_uiSurgeOfPowerTimer -= uiDiff;      
      
                 if(me->HasAura(SPELL_BERSERK))
                     DoMeleeAttackIfReady();
@@ -1421,16 +1421,16 @@ public:
             summons.Summon(pSummon);
         }
 
-	    void EnterEvadeMode()
-	    {
-		    if(m_pInstance)
-		    {
-			    if (m_pInstance->GetData(TYPE_OUTRO_CHECK) == 1 || m_uiPhase == PHASE_OUTRO || m_uiSubPhase == SUBPHASE_DIE)
-				    return;
-		    }
+        void EnterEvadeMode()
+        {
+            if(m_pInstance)
+            {
+                if (m_pInstance->GetData(TYPE_OUTRO_CHECK) == 1 || m_uiPhase == PHASE_OUTRO || m_uiSubPhase == SUBPHASE_DIE)
+                    return;
+            }
             summons.DespawnAll();
-		    return;
-	    }
+            return;
+        }
     };
 };
 
@@ -1567,14 +1567,14 @@ public:
                         pMalygos->AddAura(SPELL_POWER_SPARK, pMalygos);
                         me->DespawnOrUnsummon();
                     }
-				    else
+                    else
                     {
                         me->GetMotionMaster()->MoveChase(pMalygos, 1.0f, 0.0f);
                     }
                 }
                 m_uiCheckTimer = 2000;
             }
-		    else m_uiCheckTimer -= uiDiff;
+            else m_uiCheckTimer -= uiDiff;
         }
     };
 };
@@ -1665,7 +1665,7 @@ public:
                 m_uiArcaneBarrageTimer = 3000 + rand()%7000;
                 DoNextMovement();
             }
-		    else m_uiArcaneBarrageTimer -= uiDiff;
+            else m_uiArcaneBarrageTimer -= uiDiff;
              
             if (m_uiMoveTimer <= uiDiff)
             {
@@ -1720,7 +1720,7 @@ public:
 
           if(!pMap)
             return;
-    	  
+          
           // The range of the bubble is 12 yards, decreases to 0 yards, linearly, over time.
           float realRange = (range / 45.0f) * 12.0f;
           
@@ -1769,7 +1769,7 @@ public:
                 range -= 0.5f;
                 m_uiProtectTimer = 250;
             }
-		    else m_uiProtectTimer -= uiDiff;
+            else m_uiProtectTimer -= uiDiff;
 
         }  
     };
@@ -1831,14 +1831,14 @@ public:
 
                 m_uiArcaneShockTimer = 3000 + rand()%19000;
             }
-		    else m_uiArcaneShockTimer -= uiDiff;
+            else m_uiArcaneShockTimer -= uiDiff;
             
             if(m_uiHasteTimer <= uiDiff)
             {
                 DoCast(me, SPELL_HASTE);
                 m_uiHasteTimer = 10000 + rand()%10000;
             }
-		    else m_uiHasteTimer -= uiDiff;
+            else m_uiHasteTimer -= uiDiff;
 
             if(attackNow)
             {
