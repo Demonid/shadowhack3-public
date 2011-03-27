@@ -30,9 +30,13 @@ UPDATE `creature_template` SET `ScriptName`='npc_valkyr' WHERE (`entry`='38392')
 ALTER TABLE `item_template`
 DROP COLUMN `userating`;
 
+ALTER TABLE `item_requirements`
+ADD COLUMN `ratinbracket` tinyint(1) unsigned NOT NULL DEFAULT '0' AFTER `reqrating`;
+
 CREATE TABLE IF NOT EXISTS `item_requirements` (
   `entry` MEDIUMINT(8) UNSIGNED NOT NULL DEFAULT 0,
   `reqrating` MEDIUMINT(8) UNSIGNED NOT NULL DEFAULT 0,
+  `ratinbracket` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
   `reqitem` MEDIUMINT(8) NOT NULL DEFAULT 0,
   PRIMARY KEY (`entry`)
 ) ENGINE=MYISAM DEFAULT CHARSET=utf8 ROW_FORMAT=FIXED;

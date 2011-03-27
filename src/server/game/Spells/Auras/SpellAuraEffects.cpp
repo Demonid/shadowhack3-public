@@ -805,10 +805,13 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
             // Hymn of Hope
             if (GetId() == 64904)
             {
-                if (AuraEffect * aur = target->GetAuraEffect(64904, 1, caster->GetGUID()))
-                    amount = aur->GetAmount();
-                else
-                    amount = target->GetMaxPower(POWER_MANA) * amount / 100;
+                if (caster)
+                {
+                    if (AuraEffect * aur = target->GetAuraEffect(64904, 1, caster->GetGUID()))
+                        amount = aur->GetAmount();
+                    else
+                        amount = target->GetMaxPower(POWER_MANA) * amount / 100;
+                }
             }
             break;
         case SPELL_AURA_MOD_INCREASE_SPEED:

@@ -31,8 +31,8 @@ enum
     
     NPC_WYRMREST_SKYTALON        = 30161, // Dragon Vehicle in Third Phase
     NPC_MALYGOS                  = 28859,
-	DATA_PLATFORM				 = 193070,
-	DATA_EXIT_PORTAL			 = 193908
+    DATA_PLATFORM                 = 193070,
+    DATA_EXIT_PORTAL             = 193908
 };
 
 #endif

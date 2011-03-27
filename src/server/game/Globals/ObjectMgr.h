@@ -589,6 +589,7 @@ struct ItemRequirements
 {
     uint32 id;
     uint32 rating;
+    uint32 ratingbracket;
     uint32 requitem;
 };
 
