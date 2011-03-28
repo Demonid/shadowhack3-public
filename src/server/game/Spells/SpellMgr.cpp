@@ -3965,6 +3965,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
         switch (i)
         {
+        case 59630: // Black Magic enchantment
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_DEATH_PERSISTENT;
+            breal;
         case 54643: // SOTA teleport
             spellInfo->Effect[1] = 0;
             break;
