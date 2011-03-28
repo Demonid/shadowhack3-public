@@ -40,6 +40,11 @@ ConfusedMovementGenerator<T>::Initialize(T &unit)
 
     Map const* map = unit.GetBaseMap();
 
+    // wtf air bug
+    float tmpz = map->GetHeight(x, y, z, true);
+    if ((z - tmpz) > 4)
+        z = tmpz;
+
     i_nextMove = 1;
 
     bool is_water_ok, is_land_ok;
@@ -61,9 +66,9 @@ ConfusedMovementGenerator<T>::Initialize(T &unit)
             bool is_water_next = map->IsInWater(wanderX, wanderY, new_z);
             if ((is_water_now && !is_water_next && !is_land_ok) || (!is_water_now && is_water_next && !is_water_ok))
             {
-                i_waypoints[idx][0] = idx % 2 == 1 ? i_waypoints[idx-1][0] : x; // Back to previous location
-                i_waypoints[idx][1] = idx % 2 == 1 ? i_waypoints[idx-1][1] : y;
-                i_waypoints[idx][2] = idx % 2 == 1 ? i_waypoints[idx-1][2] : z;
+                i_waypoints[idx][0] = idx > 0 ? i_waypoints[idx-1][0] : x;
+                i_waypoints[idx][1] = idx > 0 ? i_waypoints[idx-1][1] : y;
+                i_waypoints[idx][2] = idx > 0 ? i_waypoints[idx-1][2] : z;
                 continue;
             }
 

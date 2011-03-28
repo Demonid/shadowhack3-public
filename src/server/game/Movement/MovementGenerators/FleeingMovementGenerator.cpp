@@ -77,6 +77,12 @@ FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float &z)
 
     float angle = 0;
     const Map * _map = owner.GetBaseMap();
+
+    // wtf air bug
+    float tmpz = _map->GetHeight(x, y, z, true);
+    if (abs(z - tmpz) > 5)
+        z = tmpz;
+
     //primitive path-finding
     for (uint8 i = 0; i < 18; ++i)
     {
