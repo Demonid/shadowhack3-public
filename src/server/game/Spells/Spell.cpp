@@ -5322,7 +5322,7 @@ SpellCastResult Spell::CheckCast(bool strict)
         m_caster->GetZoneAndAreaId(zone,area);
 
         SpellCastResult locRes= sSpellMgr->GetSpellAllowedInLocationError(m_spellInfo,m_caster->GetMapId(),zone,area,
-            m_caster->GetTypeId() == TYPEID_PLAYER ? m_caster->ToPlayer() : NULL);
+            m_caster->GetCharmerOrOwnerPlayerOrPlayerItself());
         if (locRes != SPELL_CAST_OK)
             return locRes;
     }

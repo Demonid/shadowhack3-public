@@ -2743,7 +2743,7 @@ void WorldObject::GetNearPoint(WorldObject const* searcher, float &x, float &y, 
         searcher->UpdateAllowedPositionZ(x, y, z);            // update to LOS height if available
     else
         UpdateGroundPositionZ(x, y, z);
-    z +=0.2;
+    z +=0.2f;
 }
 
 void WorldObject::MovePosition(Position &pos, float dist, float angle)
