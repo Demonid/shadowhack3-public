@@ -564,12 +564,15 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                 if (plMover->m_anti_LastSpeedChangeTime != 0) plMover->m_anti_LastSpeedChangeTime = 0;
             }
 
+            if (sWardenMgr->IsEnabled())
+                allowed_delta *= 1.3f;
+
             if ( plMover->GetVehicle() )
             {
                 allowed_delta *= (plMover->GetVehicle()->GetVehicleInfo()->m_ID == 349) ? 10.0f : 1.1f;    // hack for Argent mount charging
-            }
+            }           
 
-            const uint32 immunityTime = plMover->m_anti_temporaryImmunity + cServerTimeDelta + plMover->GetSession()->GetLatency();
+            const uint32 immunityTime = plMover->m_anti_temporaryImmunity + cServerTimeDelta + plMover->GetSession()->GetLatency() + sWardenMgr->IsEnabled() ? 500 : 0;
             // end calculating section ---------------------
 
             const bool flying_allowed = (plMover->HasAuraType(SPELL_AURA_FLY) || plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED)
@@ -613,7 +616,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             else if (plMover->IsInWater()) plMover->m_anti_JustJumped = 0;
 
             //speed hack checks
-            if (!sWardenMgr->IsEnabled() && ((real_delta > allowed_delta && real_delta < 4900.0f) && (delta_z < (plMover->m_anti_Last_VSpeed * time_delta) || delta_z < 1)) )
+            if ((real_delta > allowed_delta && real_delta < 4900.0f) && (delta_z < (plMover->m_anti_Last_VSpeed * time_delta) || delta_z < 1) )
             {
                 if (!hasTimedImmunity)
                 {
@@ -648,7 +651,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             }
 
             //Fly hack checks
-            if (!sWardenMgr->IsEnabled() && (((movementInfo.flags & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING)) != 0))
+            if (((movementInfo.flags & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING)) != 0)
                   && !plMover->isGameMaster()
                   && !(movementInfo.flags & (MOVEMENTFLAG_SWIMMING)) // allow X button in water
                   && !flying_allowed)
@@ -709,7 +712,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
         else if (!sWardenMgr->IsEnabled() && (movementInfo.flags & MOVEMENTFLAG_ONTRANSPORT))
         {
             //antiwrap checks
-            if (!sWardenMgr->IsEnabled() && (plMover->GetTransport() || plMover->GetVehicle()) )
+            if (plMover->GetTransport() || plMover->GetVehicle() )
             {
                 float trans_rad = movementInfo.t_pos.m_positionX*movementInfo.t_pos.m_positionX + movementInfo.t_pos.m_positionY*movementInfo.t_pos.m_positionY + movementInfo.t_pos.m_positionZ*movementInfo.pos.m_positionZ;
                 if (trans_rad > 3600.0f)

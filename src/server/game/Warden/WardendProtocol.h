@@ -26,7 +26,7 @@ enum eWardendOpcode
     WMSG_REGISTER_REPLY             = 0x02,
     //  uint32  accountId;
     //  uint32  moduleLen
-    //  if (moduleLen!=0)
+    //  if (moduleLen!=0 && !=0xFFFFFFFF)
     //      uint8 rc4[16];
     //      uint8 md5[16];
     MMSG_UNREGISTER                 = 0x03,
@@ -63,11 +63,17 @@ enum eWardendOpcode
     //  uint16  moduleLen;
     //  uint8   module[moduleLen];
     MMSG_TSEED_VALIDATION_REQUEST   = 0x0E,
-    // uint32  accountId;
-    // uint8   tSeed[20];
-    WMGS_TSEED_VALIDATION_REPLY     = 0x0F
+    // uint32   accountId;
+    // uint8    tSeed[20];
+    WMGS_TSEED_VALIDATION_REPLY     = 0x0F,
     // uint32   accountId;
     // uint8    result; // bool 0=failed, 1=success
+    // uint8    seedByte0;
+    MMSG_PING                       = 0x10,
+    WMSG_PONG                       = 0x11,
+    MMSG_RESYNC                     = 0x12,
+    // uint32   accountId;
+    // uint8    seedByte0;
 };
 
 enum eWardenServerCmd
@@ -87,17 +93,6 @@ enum eWardenClientCmd
     WARDC_CHEAT_CHECK_RESULT        = 0x2,
 
     WARDC_TRANSFORMED_SEED          = 0x4
-};
-
-enum eWardenClientStatus
-{
-    WARD_STATUS_UNREGISTERED,
-    WARD_STATUS_REGISTERED,
-    WARD_STATUS_INIT,
-    WARD_STATUS_LOAD_FAILED,
-    WARD_STATUS_CHEAT_CHECK_IN,
-    WARD_STATUS_CHEAT_CHECK_PENDING,
-    WARD_STATUS_CHEAT_CHECK_OUT,
 };
 
 enum eWardenCheckType

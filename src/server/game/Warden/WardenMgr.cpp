@@ -31,28 +31,38 @@ Useful information:
 - The client is kicked if one test failed.
 */
 
-WardenMgr::WardenMgr() : m_IsWardenInit(false), m_Enabled(true)
+WardenMgr::WardenMgr() : m_IsWardenInit(false), m_Enabled(true), m_Disconnected(false)
+{
+    sLog->outStaticDebug("WardenMgr: Create Warden");
+}
+
+WardenMgr::~WardenMgr()
 {
 }
 
 bool WardenMgr::Initialize(const char *addr, u_short port)
 {
-    if (!m_IsWardenInit && InitializeCommunication(addr, port))
+    // Save the adress and port
+    m_WardendAddress = addr;
+    m_WardendPort = port;
+
+    if (!m_IsWardenInit && InitializeCommunication())
         m_IsWardenInit = true;
+
+    m_PingTimer.SetInterval(1000); // 5 secs, strange
+    m_PingTimer.SetCurrent(0);
+
     return m_IsWardenInit;
 }
 
-bool WardenMgr::InitializeCommunication(const char *host, u_short port)
+bool WardenMgr::InitializeCommunication()
 {
-    sLog->outStaticDebug("WardenMgr::InitializeCommunication");
     // Establish connection.
-    typedef ACE_Connector<WardenSvcHandler, ACE_SOCK_CONNECTOR> MyConnector;
     WardenSvcHandler* handler = new WardenSvcHandler;
-    MyConnector connector;
-    ACE_INET_Addr remoteAddr(port, host);
-    if(connector.connect(handler, remoteAddr) == -1)
+
+    ACE_INET_Addr remoteAddr(m_WardendPort, m_WardendAddress.c_str());
+    if(m_connector.connect(handler, remoteAddr)==-1)
     {
-        sLog->outBasic("Connection to Warden Daemon failed");
         return false;
     }
 
@@ -61,7 +71,9 @@ bool WardenMgr::InitializeCommunication(const char *host, u_short port)
     const char *sign = WARDEND_SIGN;
     pkt << sign;
     m_WardenProcessStream->send((char const*)pkt.contents(), pkt.size());
-    pkt.hexlike();
+    m_Enabled = true;
+
+    m_PingOut = false;
     return true;
 }
 
@@ -81,15 +93,63 @@ bool WardenMgr::Register(WorldSession* const session)
     pkt.hexlike();
     m_WardenProcessStream->send((char const*)pkt.contents(), pkt.size());
 
-    session->GetWardenTimer().SetInterval(5 * IN_MILLISECONDS); // to not resend Register in next 5 seconds
+    session->GetWardenTimer().SetInterval(10*IN_MILLISECONDS); // To not resend Register in next 10 seconds
     return true;
 }
 
-// Triggered by world every 300ms
-void WardenMgr::Update()
+void WardenMgr::Pong()
 {
+    sLog->outStaticDebug("Warden: Pong");
+    m_PingTimer.Reset();
+    m_PingOut = false;
+}
+
+void WardenMgr::SendPing()
+{
+    sLog->outStaticDebug("Warden: Ping");
+    ByteBuffer pkt;
+    pkt << uint8(MMSG_PING);
+    m_WardenProcessStream->send((char const*)pkt.contents(), pkt.size());
+    m_PingTimer.Reset();
+    m_PingOut = true;
+}
+
+void WardenMgr::Resync(WorldSession* const session)
+{
+    sLog->outStaticDebug("Warden: resync");
+    ByteBuffer pkt;
+    pkt << uint8(MMSG_RESYNC);
+    pkt << (uint32)session->GetAccountId();
+    pkt << uint8(session->GetWardenSeedByte0());
+    m_WardenProcessStream->send((char const*)pkt.contents(), pkt.size());
+}
+
+// Triggered by world every 300ms
+void WardenMgr::Update(uint32 diff)
+{
+    m_PingTimer.Update(diff);
     if (!m_IsWardenInit)
         return;
+
+    if (m_PingTimer.Passed())
+    {
+        if (m_PingOut && m_Disconnected)
+        {
+            m_Disconnected = !InitializeCommunication();
+            m_PingTimer.Reset();
+        }
+        else if (m_PingOut && !m_Disconnected)
+        {
+            sLog->outError("Connection to Warden Daemon lost");
+            m_connector.close();
+            m_PingTimer.Reset();
+            m_Disconnected = true;
+        }
+        else
+        {
+            SendPing();
+        }
+    }
 
     ACE_Time_Value t(0.001);
     int res = ACE_Reactor::instance()->run_reactor_event_loop(t);
@@ -99,30 +159,69 @@ void WardenMgr::Update()
 void WardenMgr::Update(WorldSession* const session, uint32 diff)
 {
     session->GetWardenTimer().Update(diff);
+
+    if (session->GetWardenTimer().Passed() && session->GetWardenStatus() == WARD_STATUS_CHEAT_CHECK_OUT)
+    {
+        // timeout waiting for a cheat check reply
+        sLog->outBasic("Warden Cheat-check: no reply received in the allowed time, kicking account %u", session->GetAccountId());
+        session->KickPlayer();
+        return;
+    }
+
+    if (m_Disconnected)
+    {
+        switch (session->GetWardenStatus())
+        {
+            case WARD_STATUS_UNREGISTERED:                          // if unregistered, keep it like this
+            case WARD_STATUS_USER_DISABLED:                         // if disabled, we don't care
+            case WARD_STATUS_UNSYNC:                                // Unsync already: no change
+                break;
+            case WARD_STATUS_CHEAT_CHECK_PENDING:                   // We are pending a cheat check
+            case WARD_STATUS_CHEAT_CHECK_IN:                        // We asked for a cheat check
+                session->SetWardenStatus(WARD_STATUS_UNSYNC);       // we will redo later after a sync
+                break;
+            case WARD_STATUS_REGISTERING:                           // We were registering
+                session->SetWardenStatus(WARD_STATUS_UNREGISTERED); // we will redo later
+                break;
+            case WARD_STATUS_PENDING_TSEED_VALIDATION:              // We were validating the transformed seed
+                session->SetWardenStatus(WARD_STATUS_UNSYNC);       // Assume it's valid and mark unsync
+            case WARD_STATUS_PENDING_KEYS_GENERATION:               // Missing Server + Client key
+            case WARD_STATUS_PENDING_CLIENT_KEY:                    // Missing Client Key
+                session->KickPlayer();                              // No other choice
+                break;
+            default:
+                // WARD_STATUS_INIT (client has loaded the module)
+                 break;
+        }
+        session->GetWardenTimer().SetInterval(15*IN_MILLISECONDS);
+        session->GetWardenTimer().Reset();
+        return;
+    }
+
     if (!session->GetWardenTimer().Passed())
         return;
 
     switch (session->GetWardenStatus())
     {
-        case WARD_STATUS_CHEAT_CHECK_OUT:
-            // timeout waiting for a cheat check reply
-            sLog->outBasic("Warden Cheat-check: no reply received in the allowed time, kicking account %u", session->GetAccountId());
-            session->KickPlayer();
+        case WARD_STATUS_UNSYNC:                        // just reconnected, let's resume this
+        case WARD_STATUS_CHEAT_CHECK_PENDING:           // reconnection was to fast, not seen
+            Resync(session);
+            session->SetWardenStatus(WARD_STATUS_CHEAT_CHECK_IN);
+            session->GetWardenTimer().SetInterval(10*IN_MILLISECONDS);
+            session->GetWardenTimer().Reset();
             break;
         case WARD_STATUS_CHEAT_CHECK_IN:
             // send cheat check
             SendCheatCheck(session);
             session->SetWardenStatus(WARD_STATUS_CHEAT_CHECK_PENDING);
-            session->GetWardenTimer().SetInterval(30 * IN_MILLISECONDS);
+            session->GetWardenTimer().SetInterval(15*IN_MILLISECONDS);
             session->GetWardenTimer().Reset();
             break;
         case WARD_STATUS_UNREGISTERED:
             // register a client that could not register earlier
             Register(session);
             break;
-        case WARD_STATUS_CHEAT_CHECK_PENDING:
-            sLog->outError("Warden Daemon does not reply anymore, disabling warden functions");
-            sWardenMgr->SetDisabled();
+        default:
             break;
     }
 }
@@ -220,18 +319,19 @@ void WardenMgr::GenerateAndSendSeed(WorldSession* const session)
     ByteBuffer pkt;
 
     pkt << uint8(MMSG_SERVER_KEY_REQUEST);
-    pkt << (uint32)session->GetAccountId();
+    pkt << uint32(session->GetAccountId());
     pkt.append(session->GetSessionKey().AsByteArray(40), 40);
     pkt.append(data.contents(), data.size());
 
     // We can now crypt and send the packet to the client
     data.hexlike();
-    //data.crypt(sWardenMgr, session->GetWardenServerKey(), &WardenMgr::rc4_crypt);
+
     data.crypt(session->GetWardenServerKey(), &rc4_crypt);
     session->SendPacket(&data);
 
     // And we send this packet to the warden daemon for it to make the new key pair
     m_WardenProcessStream->send((char const*)pkt.contents(), pkt.size());
+    session->SetWardenStatus(WARD_STATUS_PENDING_KEYS_GENERATION);
 }
 
 void WardenMgr::GetNewClientKey(WorldSession* const session)
@@ -289,7 +389,7 @@ void WardenMgr::SendWardenData(WorldSession* const session)
     }
 
     data.hexlike();
-    //data.crypt(sWardenMgr, session->GetWardenServerKey(), &WardenMgr::rc4_crypt);
+
     data.crypt(session->GetWardenServerKey(), &rc4_crypt);
     session->SendPacket(&data);
 }
@@ -316,6 +416,7 @@ void WardenMgr::AskValidateTransformedSeed(WorldSession* const session, WorldPac
     pkt << uint32(session->GetAccountId());
     pkt.append(tSeed, 20);
     m_WardenProcessStream->send((char const*)pkt.contents(), pkt.size());
+    session->SetWardenStatus(WARD_STATUS_PENDING_TSEED_VALIDATION);
 }
 
 void WardenMgr::SendCheatCheck(WorldSession* const session)
@@ -331,6 +432,12 @@ void WardenMgr::SendCheatCheck(WorldSession* const session)
 void WardenMgr::AskValidateCheatChecks(WorldSession* const session, WorldPacket& clientPacket)
 {
     sLog->outStaticDebug("WardenMgr::ValidateCheatChecks");
+    // Put the status in intermediate state
+    session->SetWardenStatus(WARD_STATUS_CHEAT_CHECK_PENDING);
+    // Then abort if connection was lost with Wardend
+    if (m_Disconnected)
+        return;
+
     // We first check the checksum, no need to go further if it is wrong
     uint16 len;
     uint32 checksum;
@@ -344,34 +451,38 @@ void WardenMgr::AskValidateCheatChecks(WorldSession* const session, WorldPacket&
     else
     {
         ByteBuffer pkt;
-        pkt << (uint8)MMSG_CHEATS_VALIDATION_REQUEST;
-        pkt << (uint32)session->GetAccountId();
+        pkt << uint8(MMSG_CHEATS_VALIDATION_REQUEST);
+        pkt << uint32(session->GetAccountId());
         pkt << uint32(clientPacket.size());
         pkt.append(clientPacket.contents(), clientPacket.size()); // full packet
         m_WardenProcessStream->send((char const*)pkt.contents(), pkt.size());
     }
     // Make the packet fully read
     clientPacket.read_skip(clientPacket.size() - clientPacket.rpos());
-    session->SetWardenStatus(WARD_STATUS_CHEAT_CHECK_PENDING); // so that we don't kick if daemon crashs
 }
 
 void WardenMgr::ReactToCheatCheckResult(WorldSession* const session, bool result, bool immediate)
 {
-    sLog->outStaticDebug("ReactToCheatCheckResult %s",result?"true":"false");
+    sLog->outStaticDebug("ReactToCheatCheckResult %s %s",result?"true":"false",immediate?"true":"false");
     if (result)
     {
         session->SetWardenStatus(WARD_STATUS_CHEAT_CHECK_IN);
-        uint32 shortTime;
-        if (immediate)
-            shortTime = 0;
-        else
-            shortTime = urand(15, 25); // from 15 to 25 seconds
+        const uint32 shortTime = immediate ? 0 : urand(15, 25); // from 15 to 25 seconds
+        session->GetWardenTimer().SetCurrent(0);                // so that we don't overload the timer
         session->GetWardenTimer().SetInterval(shortTime * IN_MILLISECONDS);
+        sLog->outStaticDebug("Timer set to %u seconds", shortTime);
         session->GetWardenTimer().Reset();
     }
     else
     {
-        session->KickPlayer(); // In this case, probably better to ban for 24H
+        if (World::WardenCanBan())
+        {
+            sWorld->BanAccount(BAN_CHARACTER, session->GetPlayerName(), World::GetWardenBanTime(), "cheater autoban", "Izb00shka Warden");
+        }
+        else
+        {
+            session->KickPlayer();
+        }
     }
 }
 
@@ -392,17 +503,26 @@ bool WardenSvcHandler::_HandleRegisterRep()
 
     WorldSession* session = sWorld->FindSession(accountId);
 
+    if (!session)
+        return false;
+
     if (moduleLen == 0)
     {
         session->GetWardenTimer().SetInterval(5 * IN_MILLISECONDS);
         session->GetWardenTimer().Reset(); // We will retry in 5 seconds
         return true;
     }
+    else if (moduleLen == 0xFFFFFFFF)
+    {
+        session->SetWardenStatus(WARD_STATUS_USER_DISABLED);
+        sLog->outStaticDebug("Disabling warden for account %u since not Windows platform", accountId);
+        return true;
+    }
 
     Peer->recv_n(rc4, 16);
     Peer->recv_n(md5, 16);
 
-    session->SetWardenStatus(WARD_STATUS_REGISTERED);
+    session->SetWardenStatus(WARD_STATUS_REGISTERING);
 
     WorldPacket data( SMSG_WARDEN_DATA, 1 + 16 + 16 + 4 );
     data << uint8(WARDS_MODULE_INFO);
@@ -415,7 +535,7 @@ bool WardenSvcHandler::_HandleRegisterRep()
 
     sWardenMgr->SetInitialKeys(&skey[0], &skey[20], session->GetWardenClientKey(), session->GetWardenServerKey());
     data.hexlike();
-    //data.crypt(sWardenMgr, session->GetWardenServerKey(), &WardenMgr::rc4_crypt);
+
     data.crypt(session->GetWardenServerKey(), &rc4_crypt);
 
     // Then send the first packet to client
@@ -429,11 +549,16 @@ bool WardenSvcHandler::_HandleServerKeyRep()
     uint32 accountId;
     Peer->recv_n(&accountId, 4);
     WorldSession* session = sWorld->FindSession(accountId);
+
+    if (!session)
+        return false;
+
     Peer->recv_n(session->GetWardenServerKey(), 0x102);
     sLog->outStaticDebug("Server key changed for account %u", accountId);
 
     // It's time to send warden client init data for functions offset then we can do cheat checks
     sWardenMgr->SendWardenData(session);
+    session->SetWardenStatus(WARD_STATUS_PENDING_CLIENT_KEY);
     return true;
 }
 
@@ -443,6 +568,10 @@ bool WardenSvcHandler::_HandleClientKeyRep()
     uint32 accountId;
     Peer->recv_n(&accountId, 4);
     WorldSession* session = sWorld->FindSession(accountId);
+
+    if (!session)
+        return false;
+
     Peer->recv_n(session->GetWardenClientKey(), 0x102);
     sLog->outStaticDebug("Client key changed for account %u", accountId);
     return true;
@@ -463,6 +592,10 @@ bool WardenSvcHandler::_HandleModuleRep()
     Peer->recv_n(module, modLength);
 
     WorldSession* session = sWorld->FindSession(accountId);
+
+    if (!session)
+        return false;
+
     while (modLength > 0)
     {
         uint16 len = modLength > 500 ? 500 : modLength;
@@ -471,7 +604,7 @@ bool WardenSvcHandler::_HandleModuleRep()
         data << uint16(len);
         data.append(module + offset, len);
         data.hexlike();
-        //data.crypt(sWardenMgr, session->GetWardenServerKey(), &WardenMgr::rc4_crypt);
+
         data.crypt(session->GetWardenServerKey(), &rc4_crypt);
 
         offset = offset + len;
@@ -495,12 +628,16 @@ bool WardenSvcHandler::_HandleCheatCheckRep()
     sLog->outStaticDebug("Received pkt len: %u", pktLen);
 
     WorldSession* session = sWorld->FindSession(accountId);
+
+    if (!session)
+        return false;
+
     WorldPacket data( SMSG_WARDEN_DATA, 1 + pktLen );
     data << uint8(WARDS_CHEAT_CHECK);
     data.append(packet, pktLen);
 
     data.hexlike();
-    //data.crypt(sWardenMgr, session->GetWardenServerKey(), &WardenMgr::rc4_crypt);
+
     data.crypt(session->GetWardenServerKey(), &rc4_crypt);
     session->SendPacket(&data);
     free(packet);
@@ -520,6 +657,10 @@ bool WardenSvcHandler::_HandleCheatCheckValidationRep()
     Peer->recv_n(&accountId, 4);
     Peer->recv_n(&result, 1);
     WorldSession* session = sWorld->FindSession(accountId);
+
+    if (!session)
+        return false;
+
     sWardenMgr->ReactToCheatCheckResult(session, result != 0 ? true : false);
     return true;
 }
@@ -528,11 +669,24 @@ bool WardenSvcHandler::_HandleTSeedValidationRep()
 {
     sLog->outStaticDebug("WardenSvcHandler::_HandleTSeedValidationRep()");
     uint32 accountId;
-    uint8 result;
+    uint8 result, seedByte0;
     Peer->recv_n(&accountId, 4);
     Peer->recv_n(&result, 1);
+    Peer->recv_n(&seedByte0, 1);
     WorldSession* session = sWorld->FindSession(accountId);
-    sWardenMgr->ReactToCheatCheckResult(session, result != 0 ? true : false, true);
+
+    if (!session)
+        return false;
+
+    // Save the Seed byte 0 in session is case we need to reconnect to a restarted Wardend that lost this information
+    session->SetWardenSeedByte0(seedByte0);
+    sWardenMgr->ReactToCheatCheckResult(session, result!=0?true:false, true);
+    return true;
+}
+
+bool WardenSvcHandler::_HandlePong()
+{
+    sWardenMgr->Pong();
     return true;
 }
 
@@ -616,7 +770,8 @@ const WardenSvcHandler::WardenMgrCmd table[] =
     { WMSG_CHEATS_REPLY,                &WardenSvcHandler::_HandleCheatCheckRep             },
     { WMSG_CHEATS_VALIDATION_REPLY,     &WardenSvcHandler::_HandleCheatCheckValidationRep   },
     { WMGS_TSEED_VALIDATION_REPLY,      &WardenSvcHandler::_HandleTSeedValidationRep        },
-    { WMSG_MODULEFILE_REPLY,            &WardenSvcHandler::_HandleModuleRep                 }
+    { WMSG_MODULEFILE_REPLY,            &WardenSvcHandler::_HandleModuleRep                 },
+    { WMSG_PONG,                        &WardenSvcHandler::_HandlePong                      }
 };
 
 #define WARDEN_REPLY_TOTAL_COMMANDS sizeof(table)/sizeof(WardenMgrCmd)
@@ -628,6 +783,7 @@ int WardenSvcHandler::open(void*)
     Peer=&peer();
     return 0;
 }
+
 
 int WardenSvcHandler::handle_input(ACE_HANDLE /*handle*/)
 {
