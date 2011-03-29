@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
@@ -23,6 +24,7 @@
 #include "DestinationHolder.h"
 #include "Traveller.h"
 #include "FollowerReference.h"
+#include "PathFinder.h"
 
 class TargetedMovementGeneratorBase
 {
@@ -38,8 +40,8 @@ class TargetedMovementGenerator
 : public MovementGeneratorMedium< T, TargetedMovementGenerator<T> >, public TargetedMovementGeneratorBase
 {
     public:
-        TargetedMovementGenerator(Unit &target, float offset = 0, float angle = 0);
-        ~TargetedMovementGenerator() {}
+        TargetedMovementGenerator(Unit &target, float offset = 0, float angle = 0, bool _usePathfinding = true);
+        ~TargetedMovementGenerator() {delete i_path;}
 
         void Initialize(T &);
         void Finalize(T &);
@@ -58,7 +60,13 @@ class TargetedMovementGenerator
             return true;
         }
 
+        bool IsReachable() const
+        {
+            return (i_path) ? (i_path->getPathType() & PATHFIND_NORMAL) : true;
+        }
+
         void unitSpeedChanged() { i_recalculateTravel=true; }
+        void UpdateFinalDistance(float fDistance);
     private:
 
         bool _setTargetLocation(T &);
@@ -68,6 +76,8 @@ class TargetedMovementGenerator
         DestinationHolder< Traveller<T> > i_destinationHolder;
         bool i_recalculateTravel;
         float i_targetX, i_targetY, i_targetZ;
+        bool m_usePathfinding;
+        PathInfo *i_path;
+        uint32 m_pathPointsSent;
 };
 #endif
-

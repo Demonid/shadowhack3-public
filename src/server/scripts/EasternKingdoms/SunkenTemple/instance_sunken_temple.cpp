@@ -107,7 +107,7 @@ public:
             }
         }
 
-         virtual void Update(uint32 /*diff*/) // correct order goes form 1-6
+         virtual void Update(uint32 /*diff*/) // correct order goes form 1-6    //Q: WTF virtual?
          {
              switch(State)
              {
@@ -170,7 +170,7 @@ public:
 
         void UseStatue(GameObject* go)
         {
-            go->SummonGameObject(GO_ATALAI_LIGHT1,go->GetPositionX(),go->GetPositionY(),go->GetPositionZ(),0,0,0,0,0,0);
+            go->SummonGameObject(GO_ATALAI_LIGHT1,go->GetPositionX(),go->GetPositionY(),go->GetPositionZ(),0.0f,0.0f,0.0f,0.0f,0.0f,0);
             go->SetUInt32Value(GAMEOBJECT_FLAGS, 4);
         }
 

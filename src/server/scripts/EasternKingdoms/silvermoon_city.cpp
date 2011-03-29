@@ -34,7 +34,7 @@ EndContentData */
 #######*/
 enum eStillbladeData
 {
-    SAY_HEAL                    = -1000193,
+    SAY_HEAL                    = -1000193, //DB:check
 
     QUEST_REDEEMING_THE_DEAD    = 9685,
     SPELL_SHIMMERING_VESSEL     = 31225,
@@ -79,7 +79,7 @@ public:
             if (me->IsStandState())
             {
                 if (lifeTimer <= diff)
-                    me->AI()->EnterEvadeMode();
+                    EnterEvadeMode();
                 else
                     lifeTimer -= diff;
             }

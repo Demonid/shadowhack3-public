@@ -135,8 +135,7 @@ public:
                     DoScriptText(SAY_WP_1, me, Godfrey);
                     me->SetUInt64Value(UNIT_FIELD_TARGET, Godfrey->GetGUID());
                     me->HandleEmoteCommand(5);
-                    me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
-                    me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+                    me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER | UNIT_NPC_FLAG_GOSSIP);
                     break;
                 case 2:
                     Godfrey->HandleEmoteCommand(434);

@@ -1026,8 +1026,8 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                         if (target->GetTypeId() == TYPEID_PLAYER)
                             if (GameObject* obj = target->GetGameObject(48018))
                             {
-                                target->ToPlayer()->TeleportTo(obj->GetMapId(),obj->GetPositionX(),obj->GetPositionY(),obj->GetPositionZ(),obj->GetOrientation());
-                                target->ToPlayer()->RemoveMovementImpairingAuras();
+                              target->ToPlayer()->TeleportTo(obj->GetMapId(),obj->GetPositionX(),obj->GetPositionY(),obj->GetPositionZ(),obj->GetOrientation(), TELE_TO_NOT_LEAVE_COMBAT);
+                              target->ToPlayer()->RemoveMovementImpairingAuras();
                             }
                         break;
                 }
@@ -1200,8 +1200,8 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                 }
                 if (!caster)
                     break;
-                // Ice barrier - dispel/absorb remove
-                if (removeMode == AURA_REMOVE_BY_ENEMY_SPELL && GetSpellProto()->SpellFamilyFlags[1] & 0x1)
+                // Ice barrier - absorb remove
+                if (removeMode == AURA_REMOVE_BY_ENEMY_SPELL && GetSpellProto()->SpellFamilyFlags[1] & 0x1 && !GetEffect(0)->GetAmount())
                 {
                     // Shattered Barrier
                     if (caster->GetDummyAuraEffect(SPELLFAMILY_MAGE, 2945, 0))
@@ -1259,6 +1259,11 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                         if (spellId)
                             caster->CastSpell(target, spellId, true);
                     }
+                }
+                // Glyph of Shadowflame
+                else if (GetSpellProto()->SpellFamilyFlags[2] & 0x00000002 )
+                {
+                    target->RemoveAurasDueToSpell(63311, this->GetCasterGUID());
                 }
                 switch(GetId())
                 {
@@ -1483,6 +1488,20 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                         target->RemoveAurasDueToSpell(64364, GetCasterGUID());
                     break;
             }
+            if (GetSpellSpecific(GetSpellProto()) == SPELL_SPECIFIC_AURA)
+		{
+                // Improved devotion aura
+                if (caster->HasAura(20140) || caster->HasAura(20138) || caster->HasAura(20139))
+                    if (apply)
+                        target->CastSpell(target, 63514, true);
+                    else target->RemoveAura(63514);
+                // 63531 - linked aura for both Sanctified Retribution and Swift Retribution talents
+                // Not allow for Retribution Aura (prevent stacking)
+                if ((GetSpellProto()->SpellIconID != 555) && (caster->HasAura(53648) || caster->HasAura(53484) || caster->HasAura(53379) || caster->HasAura(31869)))
+                    if (apply)
+                        target->CastSpell(target, 63531, true);
+                    else target->RemoveAura(63531);
+            }
             break;
         case SPELLFAMILY_DEATHKNIGHT:
             if (GetSpellSpecific(GetSpellProto()) == SPELL_SPECIFIC_PRESENCE)
@@ -1595,6 +1614,16 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                     else
                         caster->RemoveAurasDueToSpell(200000);
                 }
+            }
+            //Improved Health Funnel
+            if(GetSpellProto()->AttributesEx2 & SPELL_ATTR2_HEALTH_FUNNEL && target != caster)
+            {
+                uint32 ihf=caster->HasAura(18703)?60955:
+                    (caster->HasAura(18704)?60956:0);
+                if(apply)
+                    target->CastSpell(target, ihf, true, 0, 0, caster->GetGUID());
+                else
+                    target->RemoveAurasDueToSpell(ihf, caster->GetGUID());
             }
             break;
     }
@@ -1879,8 +1908,10 @@ void UnitAura::_ApplyForTarget(Unit * target, Unit * caster, AuraApplication * a
     Aura::_ApplyForTarget(target, caster, aurApp);
 
     // register aura diminishing on apply
-    if (DiminishingGroup group = GetDiminishGroup())
-        target->ApplyDiminishingAura(group,true);
+    diminished = !GetDuration();
+    if(!diminished)
+        if (DiminishingGroup group = GetDiminishGroup())
+            target->ApplyDiminishingAura(group,true);
 }
 
 void UnitAura::_UnapplyForTarget(Unit * target, Unit * caster, AuraApplication * aurApp)
@@ -1888,8 +1919,9 @@ void UnitAura::_UnapplyForTarget(Unit * target, Unit * caster, AuraApplication *
     Aura::_UnapplyForTarget(target, caster, aurApp);
 
     // unregister aura diminishing (and store last time)
-    if (DiminishingGroup group = GetDiminishGroup())
-        target->ApplyDiminishingAura(group,false);
+    if(!diminished)
+        if (DiminishingGroup group = GetDiminishGroup())
+            target->ApplyDiminishingAura(group,false);
 }
 
 void UnitAura::Remove(AuraRemoveMode removeMode)

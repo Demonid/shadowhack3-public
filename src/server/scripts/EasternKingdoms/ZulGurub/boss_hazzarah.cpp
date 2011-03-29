@@ -88,8 +88,8 @@ class boss_hazzarah : public CreatureScript
                         if (!pTarget)
                             return;
 
-                        Creature *Illusion = me->SummonCreature(15163,pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(),0,TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN,30000);
-                        if (Illusion)
+                        Creature *Illusion = me->SummonCreature(15163,pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(),0.0f,TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN,30000);
+                        if (Illusion && Illusion->AI())
                             Illusion->AI()->AttackStart(pTarget);
                     }
 

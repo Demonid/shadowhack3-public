@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
@@ -45,6 +46,9 @@ class MovementGenerator
         virtual void unitSpeedChanged() { }
 
         virtual bool GetDestination(float& /*x*/, float& /*y*/, float& /*z*/) const { return false; }
+
+        // given destination unreachable? due to pathfinsing or other
+        virtual bool IsReachable() const { return true; }
 };
 
 template<class T, class D>

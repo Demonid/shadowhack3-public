@@ -110,7 +110,8 @@ struct boss_twin_baseAI : public ScriptedAI
 {
     boss_twin_baseAI(Creature* pCreature) : ScriptedAI(pCreature), Summons(me)
     {
-        m_pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+        m_pInstance = pCreature->GetInstanceScript();
+        pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
     }
 
     InstanceScript* m_pInstance;
@@ -446,9 +447,13 @@ public:
 
     struct boss_fjolaAI : public boss_twin_baseAI
     {
-        boss_fjolaAI(Creature* pCreature) : boss_twin_baseAI(pCreature) {}
+        boss_fjolaAI(Creature* pCreature) : boss_twin_baseAI(pCreature) 
+        {
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+        }
 
-        void Reset() {
+        void Reset() 
+        {
             boss_twin_baseAI::Reset();
             SetEquipmentSlots(false, EQUIP_MAIN_1, EQUIP_OFFHAND_1, EQUIP_RANGED_1);
             m_uiStage = 0;
@@ -505,9 +510,13 @@ public:
 
     struct boss_eydisAI : public boss_twin_baseAI
     {
-        boss_eydisAI(Creature* pCreature) : boss_twin_baseAI(pCreature) {}
+        boss_eydisAI(Creature* pCreature) : boss_twin_baseAI(pCreature) 
+        {
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+        }
 
-        void Reset() {
+        void Reset() 
+        {
             boss_twin_baseAI::Reset();
             SetEquipmentSlots(false, EQUIP_MAIN_2, EQUIP_OFFHAND_2, EQUIP_RANGED_2);
             m_uiStage = 1;
@@ -563,7 +572,8 @@ struct mob_unleashed_ballAI : public ScriptedAI
 {
     mob_unleashed_ballAI(Creature *pCreature) : ScriptedAI(pCreature)
     {
-        m_pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+        m_pInstance = pCreature->GetInstanceScript();
+        pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
     }
 
     InstanceScript* m_pInstance;
@@ -620,7 +630,10 @@ public:
 
     struct mob_unleashed_darkAI : public mob_unleashed_ballAI
     {
-        mob_unleashed_darkAI(Creature *pCreature) : mob_unleashed_ballAI(pCreature) {}
+        mob_unleashed_darkAI(Creature *pCreature) : mob_unleashed_ballAI(pCreature)
+        {
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+        }
 
         void UpdateAI(const uint32 uiDiff)
         {
@@ -653,7 +666,10 @@ public:
 
     struct mob_unleashed_lightAI : public mob_unleashed_ballAI
     {
-        mob_unleashed_lightAI(Creature *pCreature) : mob_unleashed_ballAI(pCreature) {}
+        mob_unleashed_lightAI(Creature *pCreature) : mob_unleashed_ballAI(pCreature)
+        {
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+        }
 
         void UpdateAI(const uint32 uiDiff)
         {

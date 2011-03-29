@@ -219,7 +219,7 @@ public:
             NefarianGUID = 0;
             NefCheckTime = 2000;
 
-            me->SetUInt32Value(UNIT_NPC_FLAGS,1);
+            me->SetUInt32Value(UNIT_NPC_FLAGS,1);   //UNIT_NPC_FLAG_GOSSIP
             me->setFaction(35);
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         }
@@ -269,7 +269,7 @@ public:
                 //ShadowBoltTimer
                 if (ShadowBoltTimer <= diff)
                 {
-                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.f, true))
                         DoCast(pTarget, SPELL_SHADOWBOLT);
 
                     ShadowBoltTimer = urand(3000,10000);
@@ -278,7 +278,7 @@ public:
                 //FearTimer
                 if (FearTimer <= diff)
                 {
-                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.f, true))
                         DoCast(pTarget, SPELL_FEAR);
 
                     FearTimer = 10000 + (rand()%10000);
@@ -302,7 +302,7 @@ public:
 
                     //Spawn Creature and force it to start attacking a random target
                     Spawned = me->SummonCreature(CreatureID,ADD_X1,ADD_Y1,ADD_Z1,5.000f,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,5000);
-                    pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true);
+                    pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.f, true);
                     if (pTarget && Spawned)
                     {
                         Spawned->AI()->AttackStart(pTarget);
@@ -318,7 +318,7 @@ public:
                     ++SpawnedAdds;
 
                     Spawned = me->SummonCreature(CreatureID,ADD_X2,ADD_Y2,ADD_Z2,5.000f,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,5000);
-                    pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true);
+                    pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.f, true);
                     if (pTarget && Spawned)
                     {
                         Spawned->AI()->AttackStart(pTarget);
@@ -345,11 +345,11 @@ public:
                         me->AddUnitState(UNIT_STAT_FLEEING);
 
                         //Spawn nef and have him attack a random target
-                        Creature* Nefarian = me->SummonCreature(CREATURE_NEFARIAN,NEF_X,NEF_Y,NEF_Z,0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,120000);
-                        pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true);
+                        Creature* Nefarian = me->SummonCreature(CREATURE_NEFARIAN,NEF_X,NEF_Y,NEF_Z,0.f,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,120000);
+                        pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.f, true);
                         if (pTarget && Nefarian)
                         {
-                            Nefarian->AI()->AttackStart(pTarget);
+                            if (Nefarian->AI()) Nefarian->AI()->AttackStart(pTarget);
                             Nefarian->setFaction(103);
                             NefarianGUID = Nefarian->GetGUID();
                         }

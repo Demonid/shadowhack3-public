@@ -330,6 +330,9 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
                 ShapeshiftForm form = GetShapeshiftForm();
                 // Check if Predatory Strikes is skilled
                 float mLevelMult = 0.0f;
+                float mFeralMult = 0.0f;
+                short applied = 0;
+
                 switch (form)
                 {
                     case FORM_CAT:
@@ -342,9 +345,17 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
                         {
                             // Predatory Strikes (effect 0)
                             if ((*itr)->GetEffIndex() == 0 && (*itr)->GetSpellProto()->SpellIconID == 1563)
-                            {
-                                mLevelMult = CalculatePctN(1.0f, (*itr)->GetAmount());
-                                break;
+                            {                                
+                                mLevelMult = (*itr)->GetAmount() / 100.0f; 
+                                if( applied ) break; 
+                                applied = 1; 
+                            } 
+                            // Predatory Strikes (effect 1) 
+                            if ((*itr)->GetEffIndex() == 1 && (*itr)->GetSpellProto()->SpellIconID == 1563) 
+                            { 
+                                mFeralMult = (*itr)->GetAmount() / 100.0f; 
+                                if( applied ) break; 
+                                applied = 1;
                             }
                         }
                         break;
@@ -355,10 +366,10 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
                 switch (form)
                 {
                     case FORM_CAT:
-                        val2 = getLevel() * (mLevelMult + 2.0f) + GetStat(STAT_STRENGTH) * 2.0f + GetStat(STAT_AGILITY) - 20.0f + m_baseFeralAP; break;
+                        val2 = getLevel() * (mLevelMult + 2.0f) + GetStat(STAT_STRENGTH) * 2.0f + GetStat(STAT_AGILITY) - 20.0f + (m_baseFeralAP * (mFeralMult + 1.0f)); break;
                     case FORM_BEAR:
                     case FORM_DIREBEAR:
-                        val2 = getLevel() * (mLevelMult + 3.0f) + GetStat(STAT_STRENGTH) * 2.0f - 20.0f + m_baseFeralAP; break;
+                        val2 = getLevel() * (mLevelMult + 3.0f) + GetStat(STAT_STRENGTH) * 2.0f - 20.0f + (m_baseFeralAP *(mFeralMult + 1.0f)); break;
                     case FORM_MOONKIN:
                         val2 = getLevel() * (mLevelMult + 1.5f) + GetStat(STAT_STRENGTH) * 2.0f - 20.0f + m_baseFeralAP; break;
                     default:
@@ -454,7 +465,7 @@ void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bo
     float base_value  = GetModifierValue(unitMod, BASE_VALUE) + GetTotalAttackPowerValue(attType)/ 14.0f * att_speed;
     float base_pct    = GetModifierValue(unitMod, BASE_PCT);
     float total_value = GetModifierValue(unitMod, TOTAL_VALUE);
-    float total_pct   = addTotalPct ? GetModifierValue(unitMod, TOTAL_PCT) : 1.0f;
+    float total_pct   = addTotalPct ? GetModifierValue(unitMod, TOTAL_PCT) * GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT) : 1.0f;
 
     float weapon_mindamage = GetWeaponDamageRange(attType, MINDAMAGE);
     float weapon_maxdamage = GetWeaponDamageRange(attType, MAXDAMAGE);
@@ -977,7 +988,8 @@ bool Guardian::UpdateStats(Stats stat)
         }
         else
         {
-            mod = 0.45f;
+            // Snake Trap serpents bug
+            mod = (GetEntry() == 19921 || GetEntry() == 19833) ? 0.0f : 0.45f;
             if (isPet())
             {
                 PetSpellMap::const_iterator itr = (ToPet()->m_spells.find(62758)); // Wild Hunt rank 1

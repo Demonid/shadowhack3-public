@@ -178,9 +178,9 @@ public:
             case PHASE_CHAINED:
                 if (!anchorGUID)
                 {
-                    if (Creature *anchor = me->FindNearestCreature(29521, 30))
+                    if (Creature *anchor = me->FindNearestCreature(29521, 30.0f))
                     {
-                        anchor->AI()->SetGUID(me->GetGUID());
+                        if (anchor->AI()) anchor->AI()->SetGUID(me->GetGUID());
                         anchor->CastSpell(me, SPELL_SOUL_PRISON_CHAIN, true);
                         anchorGUID = anchor->GetGUID();
                     }
@@ -192,7 +192,7 @@ public:
 
                     for (uint8 i = 0; i < 12; ++i)
                     {
-                        if (GameObject* temp_prison = me->FindNearestGameObject(acherus_soul_prison[i],30))
+                        if (GameObject* temp_prison = me->FindNearestGameObject(acherus_soul_prison[i],30.0f))
                         {
                             if (me->IsWithinDist(temp_prison, dist, false))
                             {
@@ -216,7 +216,6 @@ public:
                     else
                     {
                         me->GetMotionMaster()->MovePoint(1, anchorX, anchorY, me->GetPositionZ());
-                        //sLog->outDebug(LOG_FILTER_TSCR, "npc_unworthy_initiateAI: move to %f %f %f", anchorX, anchorY, me->GetPositionZ());
                         phase = PHASE_EQUIPING;
                         wait_timer = 0;
                     }
@@ -234,7 +233,7 @@ public:
                         phase = PHASE_ATTACKING;
 
                         if (Player *pTarget = Unit::GetPlayer(*me, playerGUID))
-                            me->AI()->AttackStart(pTarget);
+                            AttackStart(pTarget);
                         wait_timer = 0;
                     }
                 }
@@ -315,10 +314,12 @@ public:
 
     bool OnGossipHello(Player* pPlayer, GameObject* pGo)
     {
-        if (Creature *anchor = pGo->FindNearestCreature(29521, 15))
-            if (uint64 prisonerGUID = anchor->AI()->GetGUID())
-                if (Creature* prisoner = Creature::GetCreature(*pPlayer, prisonerGUID))
-                    CAST_AI(npc_unworthy_initiate::npc_unworthy_initiateAI, prisoner->AI())->EventStart(anchor, pPlayer);
+        if (Creature *anchor = pGo->FindNearestCreature(29521, 15.0f))
+            if (anchor->AI())
+                if (uint64 prisonerGUID = anchor->AI()->GetGUID())
+                    if (Creature* prisoner = Creature::GetCreature(*pPlayer, prisonerGUID))
+                        if (prisoner->AI())
+                            CAST_AI(npc_unworthy_initiate::npc_unworthy_initiateAI, prisoner->AI())->EventStart(anchor, pPlayer);
 
         return false;
     }
@@ -328,8 +329,6 @@ public:
 /*######
 ## npc_death_knight_initiate
 ######*/
-
-#define GOSSIP_ACCEPT_DUEL      "I challenge you, death knight!"
 
 enum eDuelEnums
 {
@@ -365,7 +364,7 @@ public:
     bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
     {
         pPlayer->PlayerTalkClass->ClearMenus();
-        if (uiAction == GOSSIP_ACTION_INFO_DEF)
+        if (uiAction == GOSSIP_OPTION_GOSSIP)
         {
             pPlayer->CLOSE_GOSSIP_MENU();
 
@@ -378,8 +377,7 @@ public:
                     return true;
             }
 
-            pCreature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
-            pCreature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_15);
+            pCreature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_UNK_15);
 
             int32 uiSayId = rand()% (sizeof(m_auiRandomSay)/sizeof(int32));
             DoScriptText(m_auiRandomSay[uiSayId], pCreature, pPlayer);
@@ -392,17 +390,17 @@ public:
 
     bool OnGossipHello(Player* pPlayer, Creature* pCreature)
     {
-        if (pPlayer->GetQuestStatus(QUEST_DEATH_CHALLENGE) == QUEST_STATUS_INCOMPLETE && pCreature->IsFullHealth())
-        {
-            if (pPlayer->HealthBelowPct(10))
-                return true;
+		if (pPlayer->GetQuestStatus(QUEST_DEATH_CHALLENGE) == QUEST_STATUS_INCOMPLETE && pCreature->IsFullHealth())
+		{
+			if (pPlayer->HealthBelowPct(10))
+				return true;
 
-            if (pPlayer->isInCombat() || pCreature->isInCombat())
-                return true;
+			if (pPlayer->isInCombat() || pCreature->isInCombat())
+				return true;
 
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ACCEPT_DUEL, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
-            pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature),pCreature->GetGUID());
-        }
+			pPlayer->PrepareGossipMenu(pCreature, pCreature->GetCreatureInfo()->GossipMenuId);
+			pPlayer->SendPreparedGossip(pCreature);
+		}
         return true;
     }
 
@@ -637,8 +635,8 @@ public:
                         caster->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
                         caster->setFaction(35);
                         DoCast(caster, CALL_DARK_RIDER, true);
-                        if (Creature* Dark_Rider = me->FindNearestCreature(28654, 15))
-                            CAST_AI(npc_dark_rider_of_acherus::npc_dark_rider_of_acherusAI, Dark_Rider->AI())->InitDespawnHorse(caster);
+                        if (Creature* Dark_Rider = me->FindNearestCreature(28654, 15.0f))
+                            if (Dark_Rider->AI()) CAST_AI(npc_dark_rider_of_acherus::npc_dark_rider_of_acherusAI, Dark_Rider->AI())->InitDespawnHorse(caster);
                     }
                 }
             }
@@ -698,7 +696,7 @@ public:
 
         void Reset()
         {
-            Creature* deathcharger = me->FindNearestCreature(28782, 30);
+            Creature* deathcharger = me->FindNearestCreature(28782, 30.0f);
             if (!deathcharger) return;
             deathcharger->RestoreFaction();
             deathcharger->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
@@ -709,7 +707,7 @@ public:
 
         void JustDied(Unit *killer)
         {
-            Creature* deathcharger = me->FindNearestCreature(28782, 30);
+            Creature* deathcharger = me->FindNearestCreature(28782, 30.0f);
             if (!deathcharger) return;
             if (killer->GetTypeId() == TYPEID_PLAYER && deathcharger->GetTypeId() == TYPEID_UNIT && deathcharger->IsVehicle())
             {
@@ -786,7 +784,7 @@ public:
         {
             // Ghouls should display their Birth Animation
             // Crawling out of the ground
-            //DoCast(me, 35177, true);
+            DoCast(me, 35177, true);
             //me->MonsterSay("Mommy?",LANG_UNIVERSAL,0);
             me->SetReactState(REACT_DEFENSIVE);
         }
@@ -809,6 +807,7 @@ public:
                     }
                 }
             }
+			MinionList.clear();
         }
 
         void UpdateAI(const uint32 /*diff*/)
@@ -895,7 +894,7 @@ public:
                 //than normal, this speed is fast enough to keep up at those times.
                 me->SetSpeed(MOVE_RUN, 1.25f);
 
-                me->GetMotionMaster()->MoveFollow(miner, 1.0f, 0);
+                me->GetMotionMaster()->MoveFollow(miner, 1.0f, 0.0f);
             }
         }
 
@@ -1066,8 +1065,8 @@ public:
                 {
                     if (car->GetEntry() == 28817)
                     {
-                        car->AI()->SetGUID(miner->GetGUID());
-                        CAST_AI(npc_scarlet_miner::npc_scarlet_minerAI, miner->AI())->InitCartQuest(pPlayer);
+                        if (car->AI()) car->AI()->SetGUID(miner->GetGUID());
+                        if (miner->AI()) CAST_AI(npc_scarlet_miner::npc_scarlet_minerAI, miner->AI())->InitCartQuest(pPlayer);
                     } else sLog->outError("TSCR: OnGossipHello vehicle entry is not correct.");
                 } else sLog->outError("TSCR: OnGossipHello player is not on the vehicle.");
             } else sLog->outError("TSCR: OnGossipHello Scarlet Miner cant be found by script.");

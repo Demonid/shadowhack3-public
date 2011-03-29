@@ -204,7 +204,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recv_data)
         return;
     }
 
-    if (GetSecurity() > SEC_PLAYER && sWorld->getBoolConfig(CONFIG_GM_LOG_TRADE))
+    if (GetSecurity() > SEC_MODERATOR && sWorld->getBoolConfig(CONFIG_GM_LOG_TRADE))
     {
         sLog->outCommand(GetAccountId(),"GM %s (Account: %u) create auction: %s (Entry: %u Count: %u)",
             GetPlayerName(),GetAccountId(),it->GetProto()->Name1,it->GetEntry(),count);

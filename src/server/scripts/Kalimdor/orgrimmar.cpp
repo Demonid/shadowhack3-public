@@ -24,11 +24,56 @@ SDCategory: Orgrimmar
 EndScriptData */
 
 /* ContentData
+npc_neeru_fireblade
 npc_shenthul
 npc_thrall_warchief
 EndContentData */
 
 #include "ScriptPCH.h"
+
+/*######
+## npc_neeru_fireblade      //Q: to DB entirely?
+######*/
+
+#define QUEST_5727  5727
+
+#define GOSSIP_HNF "You may speak frankly, Neeru..."
+#define GOSSIP_SNF "[PH] ..."
+class npc_neeru_fireblade : public CreatureScript
+{
+public:
+    npc_neeru_fireblade() : CreatureScript("npc_neeru_fireblade") {}
+
+    bool OnGossipHello(Player* pPlayer, Creature* pCreature)
+    {
+        if (pCreature->isQuestGiver())
+            pPlayer->PrepareQuestMenu(pCreature->GetGUID());
+
+        if (pPlayer->GetQuestStatus(QUEST_5727) == QUEST_STATUS_INCOMPLETE)
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HNF, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+
+        pPlayer->SEND_GOSSIP_MENU(4513, pCreature->GetGUID());
+        return true;
+    }
+
+    bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
+    {
+        pPlayer->PlayerTalkClass->ClearMenus();
+        switch (uiAction)
+        {
+            case GOSSIP_ACTION_INFO_DEF+1:
+                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_SNF, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+                pPlayer->SEND_GOSSIP_MENU(4513, pCreature->GetGUID());
+                break;
+            case GOSSIP_ACTION_INFO_DEF+2:
+                pPlayer->CLOSE_GOSSIP_MENU();
+                pPlayer->AreaExploredOrEventHappens(QUEST_5727);
+                break;
+        }
+        return true;
+    }
+};
+
 
 /*######
 ## npc_shenthul
@@ -243,6 +288,7 @@ public:
 
 void AddSC_orgrimmar()
 {
+    new npc_neeru_fireblade();
     new npc_shenthul();
     new npc_thrall_warchief();
 }

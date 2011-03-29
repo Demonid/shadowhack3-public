@@ -100,6 +100,7 @@ public:
         boss_jaraxxusAI(Creature* pCreature) : ScriptedAI(pCreature), Summons(me)
         {
             m_pInstance = pCreature->GetInstanceScript();
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
             Reset();
         }
 
@@ -294,6 +295,7 @@ public:
         mob_infernal_volcanoAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature), Summons(me)
         {
             m_pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
             Reset();
         }
 
@@ -369,7 +371,8 @@ public:
     {
         mob_fel_infernalAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
-            m_pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+            m_pInstance = pCreature->GetInstanceScript();
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
             Reset();
         }
 
@@ -423,7 +426,8 @@ public:
     {
         mob_nether_portalAI(Creature* pCreature) : ScriptedAI(pCreature), Summons(me)
         {
-            m_pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+            m_pInstance = pCreature->GetInstanceScript();
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
             Reset();
         }
 
@@ -493,9 +497,10 @@ public:
     {
         mob_mistress_of_painAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
-            m_pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+            m_pInstance = pCreature->GetInstanceScript();
             if (m_pInstance)
                 m_pInstance->SetData(DATA_MISTRESS_OF_PAIN_COUNT, INCREASE);
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
             Reset();
         }
 

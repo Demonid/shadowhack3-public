@@ -23,12 +23,15 @@
 ######*/
 
 #define SAY_AGGRO                  -1571003
-#define GOSSIP_AGNETTA             "Skip the warmup, sister... or are you too scared to face soemeone your own size?"
+#define GOSSIP_AGNETTA             "Skip the warmup, sister... or are you too scared to face someone your own size?"
+#define TEXTID_AGNETTA_DISREGARD    13691
+#define TEXTID_FIZZLESPARK_THANKS   10086
 
 enum eAgnetta
 {
-    QUEST_ITS_THAT_YOUR_GOBLIN      = 12969,
-    FACTION_HOSTILE_AT1             = 45
+    QUEST_IS_THAT_YOUR_GOBLIN      = 12969,
+    FACTION_HOSTILE_AT1             = 45,
+    NPC_ZEEV_FIZZLESPARK            = 29525
 };
 
 class npc_agnetta_tyrsdottar : public CreatureScript
@@ -40,10 +43,32 @@ public:
     {
         npc_agnetta_tyrsdottarAI(Creature* pCreature) : ScriptedAI(pCreature) { }
 
-        void Reset()
-        {
-            me->RestoreFaction();
-        }
+	    void DamageTaken(Unit *dealer, uint32 &dmg)
+	    {
+		    if (me->GetHealth() > dmg) return;
+            me->HandleEmoteCommand(EMOTE_ONESHOT_KNEEL);
+		    if (Creature *goblin = me->FindNearestCreature(NPC_ZEEV_FIZZLESPARK, 20.0f))
+		    {
+                if (dealer)
+                {
+			        goblin->Say(TEXTID_FIZZLESPARK_THANKS, LANG_UNIVERSAL, dealer->GetGUID());
+			        goblin->HandleEmoteCommand(EMOTE_ONESHOT_JUMPLANDRUN);
+			        if(dealer->ToPlayer()) goblin->DestroyForPlayer(dealer->ToPlayer());
+                }
+		    }
+            EnterEvadeMode();
+	    }
+
+	    void JustReachedHome() { Reset(); }
+
+	    void KilledUnit(Unit * /*whom*/) { Reset(); }
+
+	    void Reset()
+	    {
+		    me->RestoreFaction();
+            DoStopAttack();
+            me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+	    }
     };
 
     CreatureAI *GetAI(Creature *creature) const
@@ -53,10 +78,10 @@ public:
 
     bool OnGossipHello(Player* pPlayer, Creature* pCreature)
     {
-        if (pPlayer->GetQuestStatus(QUEST_ITS_THAT_YOUR_GOBLIN) == QUEST_STATUS_INCOMPLETE)
+        if (pPlayer->GetQuestStatus(QUEST_IS_THAT_YOUR_GOBLIN) == QUEST_STATUS_INCOMPLETE)
             pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_AGNETTA, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
-        pPlayer->SEND_GOSSIP_MENU(13691, pCreature->GetGUID());
+        pPlayer->SEND_GOSSIP_MENU(TEXTID_AGNETTA_DISREGARD, pCreature->GetGUID());
         return true;
     }
 
@@ -67,6 +92,7 @@ public:
         {
             DoScriptText(SAY_AGGRO, pCreature);
             pPlayer->CLOSE_GOSSIP_MENU();
+            pCreature->RemoveFlag(UNIT_NPC_FLAGS,UNIT_NPC_FLAG_GOSSIP);
             pCreature->setFaction(FACTION_HOSTILE_AT1);
             pCreature->AI()->AttackStart(pPlayer);
         }
@@ -284,9 +310,12 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(Unit* victim)
         {
-            me->RestoreFaction();
+            if (!victim)
+                return;
+
+            if (victim->GetTypeId() == TYPEID_PLAYER) EnterEvadeMode();
         }
 
     };
@@ -488,6 +517,53 @@ public:
 };
 
 /*######
+## npc_stormforged
+######*/
+
+class npc_stormforged : public CreatureScript
+{
+public:
+    npc_stormforged() : CreatureScript("npc_stormforged") {}
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_stormforgedAI(pCreature);
+    }
+
+    struct npc_stormforgedAI : public ScriptedAI
+    {
+        npc_stormforgedAI(Creature* pCreature) : ScriptedAI (pCreature){}
+
+        void JustDied(Unit* unit)
+        {
+            if (!unit)
+                return;
+
+		    if(unit->GetTypeId() == TYPEID_PLAYER)
+		    {
+		        Player* killer = unit->ToPlayer();
+		        if (killer->GetQuestStatus(12931) == QUEST_STATUS_INCOMPLETE)
+		        {
+			        /*Quest const* qInfo = sObjectMgr->GetQuestTemplate(12931);   //Q: optimize this?
+			        if ( killer->getQuestStatusMap()[12931].m_creatureOrGOcount[0] < qInfo->ReqCreatureOrGOCount[0] )
+			        {
+				        uint32 reqkillcount = qInfo->ReqCreatureOrGOCount[0];
+				        uint32 curkillcount = killer->getQuestStatusMap()[12931].m_creatureOrGOcount[0];
+				        if (curkillcount < reqkillcount)
+				        {
+					        killer->getQuestStatusMap()[12931].m_creatureOrGOcount[0] = curkillcount + 1;
+					        killer->SendQuestUpdateAddCreatureOrGo( qInfo, killer->GetGUID(), 0, curkillcount, 1);
+				         }                        
+				        if (killer->CanCompleteQuest(12931))
+					         killer->CompleteQuest(12931);
+			        }*/ //WTF IS THIS???????
+		        }
+		    }
+        }
+    };
+};
+
+/*######
 ## npc_roxi_ramrocket
 ######*/
 
@@ -581,6 +657,10 @@ public:
             if (enter_timer < diff)
             {
                 enter_timer = 0;
+
+                if (!drake || !drake->IsInWorld() || !drake->isAlive())
+                    return;
+
                 if (hasEmptySeats)
                     me->JumpTo(drake, 25.0f);
                 else
@@ -680,6 +760,9 @@ public:
 
         void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply)
         {
+            if (!who)
+                return;
+
             if (who->GetTypeId() == TYPEID_PLAYER)
             {
                 if (apply)
@@ -716,14 +799,15 @@ public:
 
 void AddSC_storm_peaks()
 {
-    new npc_agnetta_tyrsdottar;
-    new npc_frostborn_scout;
-    new npc_thorim;
-    new npc_goblin_prisoner;
-    new npc_victorious_challenger;
-    new npc_loklira_crone;
-    new npc_injured_goblin;
-    new npc_roxi_ramrocket;
-    new npc_brunnhildar_prisoner;
-    new npc_icefang;
+    new npc_agnetta_tyrsdottar();
+    new npc_frostborn_scout();
+    new npc_thorim();
+    new npc_goblin_prisoner();
+    new npc_victorious_challenger();
+    new npc_loklira_crone();
+    new npc_injured_goblin();
+    new npc_stormforged();
+    new npc_roxi_ramrocket();
+    new npc_brunnhildar_prisoner();
+    new npc_icefang();
 }

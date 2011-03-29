@@ -124,17 +124,17 @@ class boss_marli : public CreatureScript
 
                         Creature *Spider = NULL;
 
-                        Spider = me->SummonCreature(15041,pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(),0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
-                        if (Spider)
+                        Spider = me->SummonCreature(15041,pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(),0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
+                        if (Spider &&Spider->AI())
                             Spider->AI()->AttackStart(pTarget);
-                        Spider = me->SummonCreature(15041,pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(),0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
-                        if (Spider)
+                        Spider = me->SummonCreature(15041,pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(),0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
+                        if (Spider &&Spider->AI())
                             Spider->AI()->AttackStart(pTarget);
-                        Spider = me->SummonCreature(15041,pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(),0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
-                        if (Spider)
+                        Spider = me->SummonCreature(15041,pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(),0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
+                        if (Spider &&Spider->AI())
                             Spider->AI()->AttackStart(pTarget);
-                        Spider = me->SummonCreature(15041,pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(),0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
-                        if (Spider)
+                        Spider = me->SummonCreature(15041,pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(),0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
+                        if (Spider &&Spider->AI())
                             Spider->AI()->AttackStart(pTarget);
 
                         Spawned = true;
@@ -146,8 +146,8 @@ class boss_marli : public CreatureScript
                         if (!pTarget)
                             return;
 
-                        Creature *Spider = me->SummonCreature(15041,pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(),0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
-                        if (Spider)
+                        Creature *Spider = me->SummonCreature(15041,pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(),0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
+                        if (Spider &&Spider->AI())
                             Spider->AI()->AttackStart(pTarget);
                         SpawnSpider_Timer = 12000 + rand()%5000;
                     } else SpawnSpider_Timer -= diff;
@@ -178,7 +178,7 @@ class boss_marli : public CreatureScript
                             while (i < 3)                           // max 3 tries to get a random target with power_mana
                             {
                                 ++i;
-                                pTarget = SelectTarget(SELECT_TARGET_RANDOM,1, 100, true);  // not aggro leader
+                                pTarget = SelectTarget(SELECT_TARGET_RANDOM,1, 100.0f, true);  // not aggro leader
                                 if (pTarget && pTarget->getPowerType() == POWER_MANA)
                                         i = 3;
                             }

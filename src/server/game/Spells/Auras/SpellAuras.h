@@ -227,6 +227,7 @@ class UnitAura : public Aura
 
     private:
         DiminishingGroup m_AuraDRGroup:8;               // Diminishing
+        bool diminished;
 };
 
 class DynObjAura : public Aura

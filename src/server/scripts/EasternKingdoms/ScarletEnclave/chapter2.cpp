@@ -118,8 +118,6 @@ public:
                         case 5: DoScriptText(SAY_PERSUADED5, pPlayer); uiSpeech_timer = 8000; break;
                         case 6: DoScriptText(SAY_PERSUADED6, me);
                             pPlayer->Kill(me);
-                            //me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                            //me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                             uiSpeech_counter = 0;
                             pPlayer->GroupEventHappens(12720, me);
                             return;
@@ -203,6 +201,7 @@ public:
 
         uint32 m_uiWave;
         uint32 m_uiWave_Timer;
+        uint32 m_uiAntimagcZone_Timer;
         uint64 m_uiValrothGUID;
 
         void Reset()
@@ -211,6 +210,7 @@ public:
             {
                 m_uiWave = 0;
                 m_uiWave_Timer = 3000;
+                m_uiAntimagcZone_Timer = 3000;
                 m_uiValrothGUID = 0;
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 me->LoadEquipment(0, true);
@@ -231,7 +231,6 @@ public:
                     break;
                 case 2:
                     me->SetStandState(UNIT_STAND_STATE_STAND);
-                    //me->UpdateEntry(NPC_KOLTIRA_ALT); //unclear if we must update or not
                     DoCast(me, SPELL_KOLTIRA_TRANSFORM);
                     me->LoadEquipment(me->GetEquipmentId());
                     break;
@@ -279,6 +278,13 @@ public:
 
             if (HasEscortState(STATE_ESCORT_PAUSED))
             {
+                if (m_uiAntimagcZone_Timer <= uiDiff && m_uiWave <= 4)
+                {
+                    DoCast(me, SPELL_ANTI_MAGIC_ZONE);
+                    m_uiAntimagcZone_Timer = 3000;
+                }
+                else m_uiAntimagcZone_Timer -= uiDiff;
+
                 if (m_uiWave_Timer <= uiDiff)
                 {
                     switch(m_uiWave)

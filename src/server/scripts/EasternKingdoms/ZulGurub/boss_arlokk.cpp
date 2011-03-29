@@ -76,7 +76,7 @@ class boss_arlokk : public CreatureScript
             uint32 m_uiSummon_Timer;
             uint32 m_uiSummonCount;
 
-            Unit* m_pMarkedTarget;
+            Unit* m_pMarkedTarget;  //Q: should be avoided?
             uint64 MarkedTargetGUID;
 
             bool m_bIsPhaseTwo;
@@ -140,7 +140,7 @@ class boss_arlokk : public CreatureScript
             void JustSummoned(Creature* pSummoned)
             {
                 if (Unit *pMarkedTarget = Unit::GetUnit(*me, MarkedTargetGUID))
-                    pSummoned->AI()->AttackStart(pMarkedTarget);
+                    if (pSummoned->AI()) pSummoned->AI()->AttackStart(pMarkedTarget);
 
                 ++m_uiSummonCount;
             }

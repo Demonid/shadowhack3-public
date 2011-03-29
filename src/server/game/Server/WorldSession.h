@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
@@ -28,6 +29,7 @@
 #include "AddonMgr.h"
 #include "DatabaseEnv.h"
 #include "World.h"
+#include "Timer.h"
 
 struct ItemPrototype;
 struct AuctionEntry;
@@ -43,6 +45,7 @@ class GameObject;
 class Quest;
 class WorldPacket;
 class WorldSocket;
+class BigNumber;
 class LoginQueryHolder;
 class CharacterHandler;
 class SpellCastTargets;
@@ -138,6 +141,14 @@ enum CharterTypes
     ARENA_TEAM_CHARTER_5v5_TYPE                   = 5
 };
 
+enum PremiumTypes
+{
+	PREMIUM_TYPE_XP_KILL							= 0x1,
+	PREMIUM_TYPE_XP_QUEST							= 0x2,
+	PREMIUM_TYPE_XP_EXPLORE							= 0x4,
+	PREMIUM_TYPE_SKILLGAIN_CRAFTING_AND_GATHERING	= 0x8,
+};
+
 //class to deal with packet processing
 //allows to determine if next packet is safe to be processed
 class PacketFilter
@@ -180,7 +191,7 @@ class WorldSession
 {
     friend class CharacterHandler;
     public:
-        WorldSession(uint32 id, WorldSocket *sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter);
+        WorldSession(uint32 id, WorldSocket *sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint8 premiumType, uint32 recruiter);
         ~WorldSession();
 
         bool PlayerLoading() const { return m_playerLoading; }
@@ -297,6 +308,7 @@ class WorldSession
         }
         //used with item_page table
         bool SendItemInfo(uint32 itemid, WorldPacket data);
+        
         //auction
         void SendAuctionHello(uint64 guid, Creature * unit);
         void SendAuctionCommandResult(uint32 auctionId, uint32 Action, uint32 ErrorCode, uint32 bidError = 0);
@@ -335,6 +347,16 @@ class WorldSession
         void SetLatency(uint32 latency) { m_latency = latency; }
         uint32 getDialogStatus(Player *pPlayer, Object* questgiver, uint32 defstatus);
 
+        BigNumber &GetSessionKey() const;
+        uint8 *GetWardenClientKey() { return m_rc4ClientKey; }
+        uint8 *GetWardenServerKey() { return m_rc4ServerKey; }
+        uint8 GetWardenStatus() { return m_wardenStatus; }
+        void SetWardenStatus(uint8 status) { m_wardenStatus = status; }
+        uint8 GetWardenSeedByte0() { return m_seedByte0; }
+        void SetWardenSeedByte0(uint8 seedByte0) { m_seedByte0 = seedByte0; }
+        IntervalTimer &GetWardenTimer() { return m_WardenTimer; }
+
+
         time_t m_timeOutTime;
         void UpdateTimeOutTime(uint32 diff)
         {
@@ -356,6 +378,8 @@ class WorldSession
 
         // Recruit-A-Friend Handling
         uint32 GetRecruiterId() { return recruiterId; }
+
+		bool HasPremiumByType(uint8 premiumtype) const {return m_premiumtype & premiumtype;}
 
     public:                                                 // opcodes handlers
 
@@ -737,7 +761,11 @@ class WorldSession
         void HandleBattlemasterJoinArena(WorldPacket &recv_data);
         void HandleReportPvPAFK(WorldPacket &recv_data);
 
+        //Warden
         void HandleWardenDataOpcode(WorldPacket& recv_data);
+        void HandleWardenRegister();                        // for internal call
+        void HandleWardenUnregister();                      // for internal call
+
         void HandleWorldTeleportOpcode(WorldPacket& recv_data);
         void HandleMinimapPingOpcode(WorldPacket& recv_data);
         void HandleRandomRollOpcode(WorldPacket& recv_data);
@@ -890,6 +918,7 @@ class WorldSession
         AccountTypes _security;
         uint32 _accountId;
         uint8 m_expansion;
+		uint8 m_premiumtype;
 
         time_t _logoutTime;
         bool m_inQueue;                                     // session wait in auth.queue
@@ -906,6 +935,12 @@ class WorldSession
         AddonsList m_addonsList;
         uint32 recruiterId;
         ACE_Based::LockedQueue<WorldPacket*, ACE_Thread_Mutex> _recvQueue;
+
+        uint8 m_wardenStatus;
+        uint8 m_seedByte0;
+        uint8 m_rc4ServerKey[0x102];
+        uint8 m_rc4ClientKey[0x102];
+        IntervalTimer m_WardenTimer;
 };
 #endif
 /// @}

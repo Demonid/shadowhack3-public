@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
@@ -30,6 +31,7 @@
 #include "Player.h"
 #include "Vehicle.h"
 #include "ObjectMgr.h"
+#include "WardenMgr.h"
 #include "Group.h"
 #include "Guild.h"
 #include "World.h"
@@ -41,6 +43,7 @@
 #include "zlib.h"
 #include "ScriptMgr.h"
 #include "Transport.h"
+#include "BigNumber.h"
 
 bool MapSessionFilter::Process(WorldPacket *packet)
 {
@@ -85,14 +88,14 @@ bool WorldSessionFilter::Process(WorldPacket *packet)
 }
 
 /// WorldSession constructor
-WorldSession::WorldSession(uint32 id, WorldSocket *sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter):
+WorldSession::WorldSession(uint32 id, WorldSocket *sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint8 premiumType, uint32 recruiter):
 m_muteTime(mute_time), m_timeOutTime(0), _player(NULL), m_Socket(sock),
-_security(sec), _accountId(id), m_expansion(expansion), _logoutTime(0),
+_security(sec), _accountId(id), m_expansion(expansion), m_premiumtype(premiumType), _logoutTime(0),
 m_inQueue(false), m_playerLoading(false), m_playerLogout(false),
 m_playerRecentlyLogout(false), m_playerSave(false),
 m_sessionDbcLocale(sWorld->GetAvailableDbcLocale(locale)),
 m_sessionDbLocaleIndex(locale),
-m_latency(0), m_TutorialsChanged(false), recruiterId(recruiter)
+m_latency(0), m_TutorialsChanged(false), recruiterId(recruiter), m_wardenStatus(WARD_STATUS_UNREGISTERED), m_seedByte0(0)
 {
     if (sock)
     {
@@ -122,6 +125,9 @@ WorldSession::~WorldSession()
     WorldPacket *packet = NULL;
     while (_recvQueue.next(packet))
         delete packet;
+
+    ///- inform Warden Manager
+    sWardenMgr->Unregister(this);
 
     LoginDatabase.PExecute("UPDATE account SET online = 0 WHERE id = %u;", GetAccountId());
 }
@@ -340,6 +346,11 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
         if (!m_Socket)
             return false;                                       //Will remove this session from the world session map
     }
+
+    //Process Warden related update for this session
+    if (sWardenMgr->IsEnabled())
+        sWardenMgr->Update(this, uint32(diff/2));                //Called 2 times from Map::Update and World::UpdateSessions, so need to /2
+
     return true;
 }
 
@@ -1036,4 +1047,9 @@ void WorldSession::ProcessQueryCallbacks()
         HandleStableSwapPetCallback(result, param);
         m_stableSwapCallback.FreeResult();
     }
+}
+
+BigNumber &WorldSession::GetSessionKey() const
+{
+    return m_Socket->GetSessionKey();
 }

@@ -39,7 +39,9 @@ EndContentData */
 ######*/
 
 #define GOSSIP_HELLO    "I need a moment of your time, sir."
+#define GOSSIP_HELLO_RU    "Сэр, позвольте вас на минуточку отвлечь"
 #define GOSSIP_SELECT   "Why... yes, of course. I've something to show you right inside this building, Mr. Anvilward."
+#define GOSSIP_SELECT_RU   "Хм... да, конечно. Страж Наковальни, я хотел бы показать вам кое-что, находящееся прямо в этом здании."
 
 enum eProspectorAnvilward
 {
@@ -59,7 +61,7 @@ public:
         switch(uiAction)
         {
             case GOSSIP_ACTION_INFO_DEF+1:
-                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_SELECT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, (pPlayer->isRussianLocale()) ? GOSSIP_SELECT_RU:GOSSIP_SELECT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
                 pPlayer->SEND_GOSSIP_MENU(8240, pCreature->GetGUID());
                 break;
             case GOSSIP_ACTION_INFO_DEF+2:
@@ -74,7 +76,7 @@ public:
     bool OnGossipHello(Player* pPlayer, Creature* pCreature)
     {
         if (pPlayer->GetQuestStatus(QUEST_THE_DWARVEN_SPY) == QUEST_STATUS_INCOMPLETE)
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HELLO, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, (pPlayer->isRussianLocale()) ? GOSSIP_HELLO_RU:GOSSIP_HELLO, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
         pPlayer->SEND_GOSSIP_MENU(8239, pCreature->GetGUID());
         return true;
@@ -152,7 +154,7 @@ enum eFaction
     FACTION_FRIENDLY                  = 7,
 };
 
-enum eSays
+enum eSays  //DB: add these textes, not found in old db
 {
     TEXT_SECOND_TRIAL_1               = -1000637,
     TEXT_SECOND_TRIAL_2               = -1000638,
@@ -236,7 +238,7 @@ public:
                   spellJudLight   = false;  // Misses Script Effect // http://www.wowhead.com/?spell=20271
                   timerJudLight   = 500;
               break;
-              case CHAMPION_SUNSTRIKER:
+              case CHAMPION_SUNSTRIKER:     //Q: should be enabled all three spells?
                   spellFlashLight = true;
                   spellJudLight   = false;  // Misses Script Effect // http://www.wowhead.com/?spell=20271
                   spellCommand    = false;  // Misses Dummy // http://www.wowhead.com/?spell=20375
@@ -299,7 +301,7 @@ public:
             {
                 if (timerJudLight <= diff)
                 {
-                    DoCast(me, SPELL_JUDGEMENT_OF_LIGHT);
+                    DoCast(me, SPELL_JUDGEMENT_OF_LIGHT);   //Q: do cast upon enemy, but not itself?
                     timerJudLight = 10000 + rand()%10000;
                 }
                 else
@@ -490,10 +492,7 @@ void npc_second_trial_paladin::npc_secondTrialAI::JustDied(Unit* Killer)
 
         // last kill quest complete for group
         if (me->GetEntry() == CHAMPION_SUNSTRIKER)
-        {
-            if (Killer->GetTypeId() == TYPEID_PLAYER)
-                Killer->ToPlayer()->GroupEventHappens(QUEST_SECOND_TRIAL,Killer);
-        }
+            CAST_PLR(Killer)->GroupEventHappens(QUEST_SECOND_TRIAL,Killer);
     }
 }
 
@@ -551,7 +550,7 @@ public:
         uint32 KillCount;
         uint64 PlayerGUID;
         bool Summon;
-        SummonList Summons;
+        SummonList Summons; //Q: memory leak? should this be freed in destructor? or call Reset() from JustDied()?
 
         void Reset()
         {
@@ -582,7 +581,7 @@ public:
                     CAST_PLR(pPlayer)->FailQuest(QUEST_UNEXPECTED_RESULT);
         }
 
-        void UpdateAI(const uint32 /*diff*/)
+        void UpdateAI(const uint32 /*diff*/)    //Q:check if this is needed, maybe move code somewhere
         {
             if (KillCount >= 3 && PlayerGUID)
                 if (Player* pPlayer = Unit::GetPlayer(*me, PlayerGUID))

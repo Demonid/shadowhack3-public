@@ -36,7 +36,7 @@ EndContentData */
 // signed for 6172
 enum eNarmFaulkData
 {
-    SAY_HEAL = -1000187,
+    SAY_HEAL = -1000187,    //DB:check
 };
 
 class npc_narm_faulk : public CreatureScript

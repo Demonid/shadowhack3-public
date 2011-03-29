@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -26,32 +27,32 @@ Script Data End */
 #include "ScriptPCH.h"
 #include "culling_of_stratholme.h"
 
-enum Spells
-{
-    SPELL_CURSE_OF_TWISTED_FLESH                = 58845,
-    SPELL_EXPLODE_GHOUL                         = 52480,
-    H_SPELL_EXPLODE_GHOUL                       = 58825,
-    SPELL_SHADOW_BOLT                           = 57725,
-    H_SPELL_SHADOW_BOLT                         = 58828,
-    SPELL_STEAL_FLESH                           = 52708,
-    SPELL_SUMMON_GHOULS                         = 52451
-};
-
 enum Yells
 {
-    SAY_AGGRO                                   = -1595032,
-    SAY_SPAWN                                   = -1595033,
-    SAY_SLAY_1                                  = -1595034,
-    SAY_SLAY_2                                  = -1595035,
-    SAY_SLAY_3                                  = -1595036,
-    SAY_DEATH                                   = -1595037,
-    SAY_EXPLODE_GHOUL_1                         = -1595038,
-    SAY_EXPLODE_GHOUL_2                         = -1595039,
-    SAY_STEAL_FLESH_1                           = -1595040,
-    SAY_STEAL_FLESH_2                           = -1595041,
-    SAY_STEAL_FLESH_3                           = -1595042,
-    SAY_SUMMON_GHOULS_1                         = -1595043,
-    SAY_SUMMON_GHOULS_2                         = -1595044
+	SAY_SALRAMM_AGGRO       = -1594130,   
+	SAY_SALRAMM_DEATH       = -1594131,  
+	SAY_SALRAMM_SLAY01      = -1594132, 
+	SAY_SALRAMM_SLAY02      = -1594133, 
+	SAY_SALRAMM_SLAY03      = -1594134,
+	SAY_SALRAMM_STEAL01     = -1594135,
+	SAY_SALRAMM_STEAL02     = -1594136,
+	SAY_SALRAMM_STEAL03     = -1594137,
+	SAY_SUMMON01            = -1594138,
+	SAY_SUMMON02            = -1594139,
+	SAY_BOOM01              = -1594140,
+	SAY_BOOM02              = -1594141,
+
+	NPC_GNOUL               = 27733
+};
+
+enum SalrammSpells
+{
+	SPELL_SB_N              = 57725,
+	SPELL_SB_H              = 58827,
+	SPELL_FLESH             = 58845,
+	SPELL_STEAL             = 52708,
+	SPELL_GNOUL_BLOW        = 58825,
+	SPELL_SUMMON_GNOUL      = 52451,
 };
 
 class boss_salramm : public CreatureScript
@@ -66,98 +67,95 @@ public:
 
     struct boss_salrammAI : public ScriptedAI
     {
-        boss_salrammAI(Creature *c) : ScriptedAI(c)
-        {
-            pInstance = c->GetInstanceScript();
-            if (pInstance)
-                DoScriptText(SAY_SPAWN,me);
-        }
-
-        uint32 uiCurseFleshTimer;
-        uint32 uiExplodeGhoulTimer;
-        uint32 uiShadowBoltTimer;
-        uint32 uiStealFleshTimer;
-        uint32 uiSummonGhoulsTimer;
+		boss_salrammAI(Creature *c) : ScriptedAI(c)
+		{
+			pInstance = c->GetInstanceScript();
+			Reset();
+		}
 
         InstanceScript* pInstance;
 
-        void Reset()
-        {
-             uiCurseFleshTimer = 30000;  //30s DBM
-             uiExplodeGhoulTimer = urand(25000,28000); //approx 6 sec after summon ghouls
-             uiShadowBoltTimer = urand(8000,12000); // approx 10s
-             uiStealFleshTimer = 12345;
-             uiSummonGhoulsTimer = urand(19000,24000); //on a video approx 24s after aggro
+		uint32 ShadowBoltTimer;
+		uint32 FleshTimer;
+		uint32 StealTimer;
+		uint32 SummonTimer;
 
-             if (pInstance)
-                 pInstance->SetData(DATA_SALRAMM_EVENT, NOT_STARTED);
-        }
+		void Reset() 
+		{
+			ShadowBoltTimer = 5000;
+			FleshTimer = (urand(7000, 9000));
+			StealTimer = (urand(9000, 17000));
+			SummonTimer = (urand(12000, 17000));
+			if(pInstance)
+				pInstance->SetData64(NPC_SALRAMM, me->GetGUID());
+		}
 
-        void EnterCombat(Unit* /*who*/)
-        {
-            DoScriptText(SAY_AGGRO, me);
+		void EnterCombat(Unit* /*who*/)
+		{
+			DoScriptText(SAY_SALRAMM_AGGRO, me);
+		}
 
-            if (pInstance)
-                 pInstance->SetData(DATA_SALRAMM_EVENT, IN_PROGRESS);
-        }
+		void JustDied(Unit * /*killer*/)
+		{
+			DoScriptText(SAY_SALRAMM_DEATH, me);
+			if(pInstance)
+				pInstance->SetData(TYPE_ENCOUNTER, DONE);
+		}
 
-        void UpdateAI(const uint32 diff)
-        {
-            //Return since we have no target
-            if (!UpdateVictim())
-                return;
+		void KilledUnit(Unit* /*pVictim*/)
+		{
+            DoScriptText(RAND(SAY_SALRAMM_SLAY01, SAY_SALRAMM_SLAY02, SAY_SALRAMM_SLAY03), me);
+		}
 
-            //Curse of twisted flesh timer
-            if (uiCurseFleshTimer <= diff)
-            {
-                DoCast(me->getVictim(), SPELL_CURSE_OF_TWISTED_FLESH);
-                uiCurseFleshTimer = 37000;
-            } else uiCurseFleshTimer -= diff;
+		void SpellHitTarget(Unit *target, const SpellEntry *spell)
+		{
+			if(spell->Id == SPELL_GNOUL_BLOW)
+				if(target->GetTypeId() != TYPEID_PLAYER && target->GetEntry() == NPC_GNOUL)
+					target->SetDisplayId(11686);
+		}
 
-            //Shadow bolt timer
-            if (uiShadowBoltTimer <= diff)
-            {
-                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
-                    DoCast(pTarget, SPELL_SHADOW_BOLT);
-                uiShadowBoltTimer = urand(8000,12000);
-            } else uiShadowBoltTimer -= diff;
+		void UpdateAI(const uint32 diff)
+		{
+			if (!UpdateVictim())
+				return;
 
-            //Steal Flesh timer
-            if (uiStealFleshTimer <= diff)
-            {
-                DoScriptText(RAND(SAY_STEAL_FLESH_1,SAY_STEAL_FLESH_2,SAY_STEAL_FLESH_3), me);
-                if (Unit* random_pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
-                    DoCast(random_pTarget, SPELL_STEAL_FLESH);
-                uiStealFleshTimer = 10000;
-            } else uiStealFleshTimer -= diff;
+			if (ShadowBoltTimer < diff)
+			{
+				DoCast(me->getVictim(), DUNGEON_MODE(SPELL_SB_N, SPELL_SB_H));
 
-            //Summon ghouls timer
-            if (uiSummonGhoulsTimer <= diff)
-            {
-                DoScriptText(RAND(SAY_SUMMON_GHOULS_1,SAY_SUMMON_GHOULS_2), me);
-                if (Unit* random_pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
-                    DoCast(random_pTarget, SPELL_SUMMON_GHOULS);
-                uiSummonGhoulsTimer = 10000;
-            } else uiSummonGhoulsTimer -= diff;
+				ShadowBoltTimer = (urand(5000, 6000));
+			}else ShadowBoltTimer -= diff;
 
-            DoMeleeAttackIfReady();
-        }
+			if (FleshTimer < diff)
+			{
+				if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
+					DoCast(target, SPELL_FLESH);
 
-        void JustDied(Unit* /*killer*/)
-        {
-            DoScriptText(SAY_DEATH, me);
+				FleshTimer = 7300;
+			}else FleshTimer -= diff;
 
-            if (pInstance)
-                pInstance->SetData(DATA_SALRAMM_EVENT, DONE);
-        }
+			if (StealTimer < diff)
+			{
+				if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
+					DoCast(target, SPELL_STEAL);
 
-        void KilledUnit(Unit * victim)
-        {
-            if (victim == me)
-                return;
+				DoScriptText(RAND(SAY_SALRAMM_STEAL01, SAY_SALRAMM_STEAL02, SAY_SALRAMM_STEAL03), me);
 
-            DoScriptText(RAND(SAY_SLAY_1,SAY_SLAY_2,SAY_SLAY_3), me);
-        }
+				StealTimer = (urand(8000, 11000));
+			}else StealTimer -= diff;
+
+			if (SummonTimer < diff)
+			{
+				DoScriptText(RAND(SAY_SUMMON01, SAY_SUMMON02), me);
+
+				me->InterruptNonMeleeSpells(false);
+				DoCast(me, SPELL_SUMMON_GNOUL);
+
+				SummonTimer = (urand(12000, 17000));
+			}else SummonTimer -= diff;
+
+			DoMeleeAttackIfReady();
+		}
     };
 
 };

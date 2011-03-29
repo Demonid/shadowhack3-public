@@ -126,15 +126,14 @@ int Master::Run()
     sLog->outString("%s (core-daemon)", _FULLVERSION);
     sLog->outString("<Ctrl-C> to stop.\n");
 
-    sLog->outString(" ______                       __");
-    sLog->outString("/\\__  _\\       __          __/\\ \\__");
-    sLog->outString("\\/_/\\ \\/ _ __ /\\_\\    ___ /\\_\\ \\ ,_\\  __  __");
-    sLog->outString("   \\ \\ \\/\\`'__\\/\\ \\ /' _ `\\/\\ \\ \\ \\/ /\\ \\/\\ \\");
-    sLog->outString("    \\ \\ \\ \\ \\/ \\ \\ \\/\\ \\/\\ \\ \\ \\ \\ \\_\\ \\ \\_\\ \\");
-    sLog->outString("     \\ \\_\\ \\_\\  \\ \\_\\ \\_\\ \\_\\ \\_\\ \\__\\\\/`____ \\");
-    sLog->outString("      \\/_/\\/_/   \\/_/\\/_/\\/_/\\/_/\\/__/ `/___/> \\");
-    sLog->outString("                                 C O R E  /\\___/");
-    sLog->outString("http://TrinityCore.org                    \\/__/\n");
+    sLog->outString( "                                                                          \n");
+    sLog->outString( "      _____     _      ___   ___      _     _           ___               ");
+    sLog->outString( "      \\_   \\____ |__  / _ \\ / _ \\ ___| |__ | | ____ _  / __\\___  _ __ ___ ");
+    sLog->outString( "       / /\\/_  / '_ \\| | | | | | / __| '_ \\| |/ / _` |/ /  / _ \\| '__/ _ \\");
+    sLog->outString( "    /\\/ /_  / /| |_) | |_| | |_| \\__ \\ | | |   < (_| / /___ (_) | | |  __/");
+    sLog->outString( "    \\____/ /___|_.__/ \\___/ \\___/|___/_| |_|_|\\_\\__,_\\____/\\___/|_|  \\___|");
+    sLog->outString( "                                                                          ");
+    sLog->outString( "    http://izbooshka.net\n");
 
 #ifdef USE_SFMT_FOR_RNG
     sLog->outString("\n");
@@ -235,7 +234,7 @@ int Master::Run()
         if (Prio)
         {
             if (SetPriorityClass(hProcess, HIGH_PRIORITY_CLASS))
-                sLog->outString("TrinityCore process priority class set to HIGH");
+                sLog->outString("Izb00shkaCore process priority class set to HIGH");
             else
                 sLog->outError("Can't set Trinityd process priority class.");
             sLog->outString("");

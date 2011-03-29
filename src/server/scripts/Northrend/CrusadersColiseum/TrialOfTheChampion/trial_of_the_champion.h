@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
@@ -26,16 +27,20 @@ enum eData
     BOSS_ARGENT_CHALLENGE_P,
     BOSS_BLACK_KNIGHT,
     DATA_MOVEMENT_DONE,
+    DATA_AGGRO_DONE,
     DATA_LESSER_CHAMPIONS_DEFEATED,
     DATA_START,
     DATA_IN_POSITION,
-    DATA_ARGENT_SOLDIER_DEFEATED
+    DATA_ARGENT_SOLDIER_DEFEATED,
+	DATA_KNIGHT,
+    DATA_BLACK_KNIGHT
 };
 
 enum Data64
 {
     DATA_ANNOUNCER,
     DATA_MAIN_GATE,
+    DATA_MAIN_GATE1,
 
     DATA_GRAND_CHAMPION_VEHICLE_1,
     DATA_GRAND_CHAMPION_VEHICLE_2,
@@ -74,6 +79,34 @@ enum eNpcs
     NPC_RISEN_JAEREN            = 35545,
     NPC_RISEN_ARELAS            = 35564,
 
+    NPC_JAEREN_AN               = 35591,
+    NPC_ARELAS_AN               = 35592,
+
+    MEMORY_ALGALON				= 35052,
+    MEMORY_ARCHIMONDE			= 35041,
+    MEMORY_CHROMAGGUS			= 35033,
+    MEMORY_CYANIGOSA			= 35046,
+    MEMORY_DELRISSA				= 35043,
+    MEMORY_ECK			     	= 35047,
+    MEMORY_ENTROPIUS			= 35044,
+    MEMORY_GRUUL				= 35039,
+    MEMORY_HAKKAR				= 35034,
+    MEMORY_HEIGAN				= 35049,
+    MEMORY_HEROD				= 35030,
+    MEMORY_HOGGER				= 34942,
+    MEMORY_IGNIS				= 35050,
+    MEMORY_ILLIDAN				= 35042,
+    MEMORY_INGVAR				= 35045,
+    MEMORY_KALITHRESH			= 35037,
+    MEMORY_LUCIFRON				= 35031,
+    MEMORY_MALCHEZAAR			= 35038,
+    MEMORY_MUTANUS				= 35029,
+    MEMORY_ONYXIA				= 35048,
+    MEMORY_THUNDERAAN			= 35032,
+    MEMORY_VANCLEEF				= 35028,
+    MEMORY_VASHJ				= 35040,
+    MEMORY_VEKNILASH			= 35036,
+    MEMORY_VEZAX				= 35051,
     NPC_JAEREN                  = 35004,
     NPC_ARELAS                  = 35005
 };
@@ -81,15 +114,16 @@ enum eNpcs
 enum eGameObjects
 {
     GO_MAIN_GATE                = 195647,
+    GO_MAIN_GATE1               = 195650,
 
     GO_CHAMPIONS_LOOT           = 195709,
-    GO_CHAMPIONS_LOOT_H            = 195710,
+    GO_CHAMPIONS_LOOT_H         = 195710,
 
     GO_EADRIC_LOOT              = 195374,
     GO_EADRIC_LOOT_H            = 195375,
 
     GO_PALETRESS_LOOT           = 195323,
-    GO_PALETRESS_LOOT_H            = 195324
+    GO_PALETRESS_LOOT_H         = 195324
 };
 
 enum eVehicles
@@ -121,6 +155,7 @@ enum eVehicles
 
     VEHICLE_ARGENT_WARHORSE                         = 35644,
     VEHICLE_ARGENT_BATTLEWORG                       = 36558,
+    VEHICLE_GR                                      = 35492, 
 
     VEHICLE_BLACK_KNIGHT                            = 35491
 };

@@ -157,7 +157,7 @@ public:
                 if (Creature* pAttumen = me->SummonCreature(SUMMON_ATTUMEN, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 30000))
                 {
                     Attumen = pAttumen->GetGUID();
-                    pAttumen->AI()->AttackStart(me->getVictim());
+                    if (pAttumen->AI()) pAttumen->AI()->AttackStart(me->getVictim());
                     SetMidnight(pAttumen, me->GetGUID());
                     DoScriptText(RAND(SAY_APPEAR1,SAY_APPEAR2,SAY_APPEAR3), pAttumen);
                 }

@@ -100,7 +100,7 @@ public:
 
         void JustSummoned(Creature* pSummoned)
         {
-            pSummoned->AI()->AttackStart(me);
+            if (pSummoned->AI()) pSummoned->AI()->AttackStart(me);
         }
     };
 
@@ -206,7 +206,7 @@ public:
 
 enum ePacka
 {
-    SAY_START           = -1000362,
+    SAY_START           = -1000362,     //DB: old were at -1000147
     SAY_WYVERN          = -1000363,
     SAY_COMPLETE        = -1000364,
 
@@ -413,11 +413,11 @@ public:
 
         if (pPlayer->GetQuestStatus(5151) == QUEST_STATUS_INCOMPLETE)
         {
-            if (Creature* panther = pGo->FindNearestCreature(ENRAGED_PANTHER, 5, true))
+            if (Creature* panther = pGo->FindNearestCreature(ENRAGED_PANTHER, INTERACTION_DISTANCE, true))
             {
                 panther->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
                 panther->SetReactState(REACT_AGGRESSIVE);
-                panther->AI()->AttackStart(pPlayer);
+                if (panther->AI()) panther->AI()->AttackStart(pPlayer);
             }
         }
 

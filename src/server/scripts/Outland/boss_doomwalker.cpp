@@ -25,7 +25,7 @@ EndScriptData */
 
 #include "ScriptPCH.h"
 
-#define SAY_AGGRO                   -1000159
+#define SAY_AGGRO                   -1000159    //DB: old were at -1000387
 #define SAY_EARTHQUAKE_1            -1000160
 #define SAY_EARTHQUAKE_2            -1000161
 #define SAY_OVERRUN_1               -1000162

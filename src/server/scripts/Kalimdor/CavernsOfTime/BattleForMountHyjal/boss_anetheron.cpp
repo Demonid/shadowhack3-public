@@ -287,7 +287,7 @@ public:
 
         void MoveInLineOfSight(Unit *who)
         {
-            if (me->IsWithinDist(who, 50) && !me->isInCombat() && me->IsHostileTo(who))
+            if (me->IsWithinDist(who, 50.0f) && !me->isInCombat() && me->IsHostileTo(who))
                 AttackStart(who);
         }
 

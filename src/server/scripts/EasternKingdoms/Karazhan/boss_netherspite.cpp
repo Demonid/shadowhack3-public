@@ -80,6 +80,7 @@ public:
                 BeamTarget[i] = 0;
                 BeamerGUID[i] = 0;
             }
+            //Q: check working, here protos of PlayerBuff[*] were marked by SPELL_ATTR_EX_NEGATIVE
         }
 
         InstanceScript* pInstance;
@@ -101,7 +102,7 @@ public:
             if (!u1 || !u2 || !pTarget)
                 return false;
 
-            float xn, yn, xp, yp, xh, yh;
+            float xn, yn, xp, yp, xh, yh;   //Q: rewrite this at least eliminating sqrt()!
             xn = u1->GetPositionX();
             yn = u1->GetPositionY();
             xp = u2->GetPositionX();
@@ -141,7 +142,7 @@ public:
             pos[BLUE_PORTAL] = (r>1 ? 1: 2); // Blue Portal not on the left side (0)
 
             for (int i=0; i<3; ++i)
-                if (Creature *portal = me->SummonCreature(PortalID[i],PortalCoord[pos[i]][0],PortalCoord[pos[i]][1],PortalCoord[pos[i]][2],0,TEMPSUMMON_TIMED_DESPAWN,60000))
+                if (Creature *portal = me->SummonCreature(PortalID[i],PortalCoord[pos[i]][0],PortalCoord[pos[i]][1],PortalCoord[pos[i]][2],0.f,TEMPSUMMON_TIMED_DESPAWN,60000))
                 {
                     PortalGUID[i] = portal->GetGUID();
                     portal->AddAura(PortalVisual[i], portal);
@@ -271,7 +272,7 @@ public:
             // Void Zone
             if (VoidZoneTimer <= diff)
             {
-                DoCast(SelectTarget(SELECT_TARGET_RANDOM,1,45,true),SPELL_VOIDZONE,true);
+                DoCast(SelectTarget(SELECT_TARGET_RANDOM,1,45.f,true),SPELL_VOIDZONE,true);
                 VoidZoneTimer = 15000;
             } else VoidZoneTimer -= diff;
 
@@ -314,7 +315,7 @@ public:
                 // Netherbreath
                 if (NetherbreathTimer <= diff)
                 {
-                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0,40,true))
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0,40.f,true))
                         DoCast(pTarget, SPELL_NETHERBREATH);
                     NetherbreathTimer = urand(5000,7000);
                 } else NetherbreathTimer -= diff;

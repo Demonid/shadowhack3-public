@@ -75,7 +75,7 @@ class boss_akilzon : public CreatureScript
         {
             boss_akilzonAI(Creature *c) : ScriptedAI(c)
             {
-                SpellEntry *TempSpell = GET_SPELL(SPELL_ELECTRICAL_DAMAGE);
+                SpellEntry *TempSpell = GET_SPELL(SPELL_ELECTRICAL_DAMAGE);     //Q: check WTF
                 if (TempSpell)
                     TempSpell->EffectBasePoints[1] = 49;//disable bugged lightning until fixed in core
                 pInstance = c->GetInstanceScript();
@@ -210,7 +210,7 @@ class boss_akilzon : public CreatureScript
                         cell.Visit(p, world_unit_searcher, *(me->GetMap()));
                         cell.Visit(p, grid_unit_searcher, *(me->GetMap()));
                     }
-                    //dealdamege
+                    //dealdamage
                     for (std::list<Unit*>::const_iterator i = tempUnitMap.begin(); i != tempUnitMap.end(); ++i)
                     {
                         if (!Cloud->IsWithinDist(*i, 6, false))
@@ -332,7 +332,7 @@ class boss_akilzon : public CreatureScript
                         pTarget->SetUnitMovementFlags(MOVEMENTFLAG_LEVITATING);
                         pTarget->SendMonsterMove(x,y,me->GetPositionZ()+15,0);
                     }
-                    Unit *Cloud = me->SummonTrigger(x, y, me->GetPositionZ()+16, 0, 15000);
+                    Unit *Cloud = me->SummonTrigger(x, y, me->GetPositionZ()+16, 0.0f, 15000);
                     if (Cloud)
                     {
                         CloudGUID = Cloud->GetGUID();
@@ -370,7 +370,7 @@ class boss_akilzon : public CreatureScript
                                 if (z > 95)
                                     z = 95.0f - urand(0,5);
                             }
-                            Creature *pCreature = me->SummonCreature(MOB_SOARING_EAGLE, x, y, z, 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
+                            Creature *pCreature = me->SummonCreature(MOB_SOARING_EAGLE, x, y, z, 0.0f, TEMPSUMMON_CORPSE_DESPAWN, 0);
                             if (pCreature)
                             {
                                 pCreature->AddThreat(me->getVictim(), 1.0f);

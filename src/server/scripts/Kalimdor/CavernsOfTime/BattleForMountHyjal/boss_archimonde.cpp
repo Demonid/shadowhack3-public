@@ -202,7 +202,7 @@ public:
                 else
                 {
                     Position pos;
-                    me->GetRandomNearPosition(pos, 40);
+                    me->GetRandomNearPosition(pos, 40.0f);
                     me->GetMotionMaster()->MovePoint(0, pos.m_positionX, pos.m_positionY, pos.m_positionZ);
                 }
 
@@ -555,7 +555,7 @@ public:
 
                 if (SummonWispTimer <= diff)
                 {
-                    DoSpawnCreature(CREATURE_ANCIENT_WISP, float(rand()%40), float(rand()%40), 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
+                    DoSpawnCreature(CREATURE_ANCIENT_WISP, float(rand()%40), float(rand()%40), 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
                     SummonWispTimer = 1500;
                     ++WispCount;
                 } else SummonWispTimer -= diff;

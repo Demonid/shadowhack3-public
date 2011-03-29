@@ -242,6 +242,10 @@ void BattlegroundWS::RespawnFlagAfterDrop(uint32 team)
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
 
+    BattlegroundMap *pMap = GetBgMap();
+    if (!pMap)
+        return;
+
     RespawnFlag(team,false);
     if (team == ALLIANCE)
     {
@@ -256,7 +260,7 @@ void BattlegroundWS::RespawnFlagAfterDrop(uint32 team)
 
     PlaySoundToAll(BG_WS_SOUND_FLAGS_RESPAWNED);
 
-    GameObject *obj = GetBgMap()->GetGameObject(GetDroppedFlagGUID(team));
+    GameObject *obj = pMap->GetGameObject(GetDroppedFlagGUID(team));
     if (obj)
         obj->Delete();
     else

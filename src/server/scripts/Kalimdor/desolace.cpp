@@ -33,7 +33,7 @@ EndContentData */
 enum eDyingKodo
 {
     // signed for 9999
-    SAY_SMEED_HOME_1                = -1000348,
+    SAY_SMEED_HOME_1                = -1000348, //D: at -1000428 ?
     SAY_SMEED_HOME_2                = -1000349,
     SAY_SMEED_HOME_3                = -1000350,
 
@@ -225,7 +225,7 @@ public:
             switch (i)
             {
                 case 1:
-                    me->IsStandState();
+                    me->IsStandState(); //Q: WTF?
                     break;
                 case 15:
                     if (pPlayer)

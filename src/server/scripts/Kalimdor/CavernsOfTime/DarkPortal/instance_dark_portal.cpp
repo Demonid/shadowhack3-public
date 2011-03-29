@@ -301,8 +301,7 @@ public:
                     TEMPSUMMON_CORPSE_DESPAWN,0);
                 if (pTemp)
                 {
-                    pTemp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                    pTemp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                    pTemp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
 
                     if (Creature* pBoss = SummonedPortalBoss(pTemp))
                     {

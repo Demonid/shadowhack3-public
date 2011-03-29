@@ -53,7 +53,7 @@ public:
             me->GetClosePoint(x, y, z, me->GetObjectSize() / 3, 0.1f);
 
             if (Unit* summon = me->SummonCreature(NPC_RAGECLAW, x, y, z,
-                0, TEMPSUMMON_DEAD_DESPAWN, 1000))
+                0.0f, TEMPSUMMON_DEAD_DESPAWN, 1000))
             {
                 RageclawGUID = summon->GetGUID();
                 LockRageclaw();
@@ -659,7 +659,7 @@ public:
                 DoScriptText(SAY_CALL_FOR_HELP ,me);
                 //DoCast(me->getVictim(), SPELL_SUMMON_WHISKER); petai is not working correctly???
 
-                if (Creature *pWhisker = me->SummonCreature(NPC_WHISKER, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 0))
+                if (Creature *pWhisker = me->SummonCreature(NPC_WHISKER, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 0))
                     uiWhisker = pWhisker->GetGUID();
                 bSummoned = true;
             }
@@ -669,6 +669,7 @@ public:
 
         void JustSummoned(Creature* pSummon)
         {
+            if (!pSummon->AI()) return;
             switch(pSummon->GetEntry())
             {
                 case NPC_WHISKER:
@@ -1012,7 +1013,7 @@ public:
         void JustDied(Unit* pKiller)
         {
             if (Player* pPlayer = pKiller->GetCharmerOrOwnerPlayerOrPlayerItself())
-                pPlayer->GetCharmerOrOwnerPlayerOrPlayerItself()->GroupEventHappens(QUEST_AMPHITHEATER_ANGUISH_MAGNATAUR, pKiller);
+                pPlayer->GroupEventHappens(QUEST_AMPHITHEATER_ANGUISH_MAGNATAUR, pKiller);
 
             std::string sText = ("And with AUTHORITY, " + std::string(pKiller->GetName()) + " dominates the magnataur lord! Stinkbeard's clan is gonna miss him back home in the Dragonblight!");
             me->MonsterYell(sText.c_str(),LANG_UNIVERSAL,0);
@@ -1076,7 +1077,7 @@ public:
             {
                 if (Creature* pSummon = me->SummonCreature(Boss[uiBossRandom].uiAdd,AddSpawnPosition[uiI]))
                 {
-                    pSummon->AI()->SetData(1,uiBossRandom);
+                    if (pSummon->AI()) pSummon->AI()->SetData(1,uiBossRandom);
                     SummonList.push_back(pSummon->GetGUID());
                 }
             }
@@ -1091,7 +1092,7 @@ public:
                     if (Creature* pTemp = Unit::GetCreature(*me, *itr))
                     {
                         pTemp->m_CombatDistance = 100.0f; // ugly hack? we are not in a instance sorry. :(
-                        pTemp->AI()->AttackStart(pUnit);
+                        if (pTemp->AI()) pTemp->AI()->AttackStart(pUnit);
                     }
                 }
         }
@@ -1155,7 +1156,7 @@ public:
                         pTemp->DespawnOrUnsummon();
 
             if (Player* pPlayer = pKiller->GetCharmerOrOwnerPlayerOrPlayerItself())
-                pPlayer->GetCharmerOrOwnerPlayerOrPlayerItself()->GroupEventHappens(QUEST_AMPHITHEATER_ANGUISH_FROM_BEYOND, pKiller);
+                pPlayer->GroupEventHappens(QUEST_AMPHITHEATER_ANGUISH_FROM_BEYOND, pKiller);
 
             std::string sText = (std::string(pKiller->GetName()) + " is victorious once more!");
 

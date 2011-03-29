@@ -286,7 +286,7 @@ public:
 # npc_kservant
 ######*/
 
-#define SAY1       -1000234
+#define SAY1       -1000234 //DB: old were at -1000306
 #define WHISP1     -1000235
 #define WHISP2     -1000236
 #define WHISP3     -1000237
@@ -388,7 +388,7 @@ public:
 
 #define GOSSIP_BOOK "Ezekiel said that you might have a certain book..."
 
-#define SAY_1       -1000274
+#define SAY_1       -1000274    //DB: old were at -1000328
 #define SAY_2       -1000275
 #define SAY_3       -1000276
 #define SAY_4       -1000277

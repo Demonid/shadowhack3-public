@@ -214,7 +214,7 @@ public:
                 while (i < 3)                                   // max 3 tries to get a random target with power_mana
                 {
                     ++i;
-                    pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 100, true); //not aggro leader
+                    pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 100.f, true); //not aggro leader
                     if (pTarget && pTarget->getPowerType() == POWER_MANA)
                             i = 3;
                 }
@@ -241,7 +241,7 @@ public:
                 FireNova_Timer = 5000;
             } else FireNova_Timer -= diff;
 
-            //TailSwipe_Timer
+            //TailSwipe_Timer   //Q: repair it
             if (TailSwipe_Timer <= diff)
             {
                 //Only cast if we are behind

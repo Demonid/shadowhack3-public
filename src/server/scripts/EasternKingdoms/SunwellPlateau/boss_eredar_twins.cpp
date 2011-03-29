@@ -154,7 +154,7 @@ public:
             {
                 Unit* Temp =  Unit::GetUnit((*me),pInstance->GetData64(DATA_ALYTHESS));
                 if (Temp && Temp->isAlive() && !(Temp->getVictim()))
-                    CAST_CRE(Temp)->AI()->AttackStart(who);
+                    if (CAST_CRE(Temp)->AI()) CAST_CRE(Temp)->AI()->AttackStart(who);
             }
 
             if (pInstance)
@@ -301,11 +301,11 @@ public:
                 for (uint8 i = 0; i<3; ++i)
                 {
                     pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
-                    temp = DoSpawnCreature(MOB_SHADOW_IMAGE,0,0,0,0,TEMPSUMMON_CORPSE_DESPAWN,10000);
+                    temp = DoSpawnCreature(MOB_SHADOW_IMAGE,0.0f,0.0f,0.0f,0.0f,TEMPSUMMON_CORPSE_DESPAWN,10000);
                     if (temp && pTarget)
                     {
                         temp->AddThreat(pTarget,1000000);//don't change target(healers)
-                        temp->AI()->AttackStart(pTarget);
+                        if (temp->AI()) temp->AI()->AttackStart(pTarget);
                     }
                 }
                 ShadowimageTimer = 20000;
@@ -417,7 +417,7 @@ public:
             {
                 Unit* Temp =  Unit::GetUnit((*me),pInstance->GetData64(DATA_SACROLASH));
                 if (Temp && Temp->isAlive() && !(Temp->getVictim()))
-                    CAST_CRE(Temp)->AI()->AttackStart(who);
+                    if (CAST_CRE(Temp)->AI()) CAST_CRE(Temp)->AI()->AttackStart(who);
             }
 
             if (pInstance)
@@ -449,7 +449,7 @@ public:
                     }
                 }
             }
-            else if (IntroStepCounter == 10 && me->IsWithinLOSInMap(who)&& me->IsWithinDistInMap(who, 30))
+            else if (IntroStepCounter == 10 && me->IsWithinLOSInMap(who)&& me->IsWithinDistInMap(who, 30.0f))
             {
                 IntroStepCounter = 0;
             }
@@ -693,7 +693,7 @@ public:
 
         void Reset()
         {
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);    //Q: where this flag removed? should it be in EnterCombat?
             ShadowfuryTimer = 5000 + (rand()%15000);
             DarkstrikeTimer = 3000;
             KillTimer = 15000;

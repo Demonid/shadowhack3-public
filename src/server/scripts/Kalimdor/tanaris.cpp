@@ -46,7 +46,7 @@ EndContentData */
 #define SPELL_AQUA_JET      13586
 #define SPELL_FROST_SHOCK   15089
 
-class mob_aquementas : public CreatureScript
+class mob_aquementas : public CreatureScript    //Q: maybe find the spell creating 11522
 {
 public:
     mob_aquementas() : CreatureScript("mob_aquementas") { }
@@ -143,7 +143,7 @@ public:
 ## npc_custodian_of_time
 ######*/
 
-#define WHISPER_CUSTODIAN_1     -1000217
+#define WHISPER_CUSTODIAN_1     -1000217    //DB: old were at -1000150
 #define WHISPER_CUSTODIAN_2     -1000218
 #define WHISPER_CUSTODIAN_3     -1000219
 #define WHISPER_CUSTODIAN_4     -1000220
@@ -215,11 +215,8 @@ public:
             {
                 if (who->HasAura(34877) && CAST_PLR(who)->GetQuestStatus(10277) == QUEST_STATUS_INCOMPLETE)
                 {
-                    float Radius = 10.0f;
-                    if (me->IsWithinDistInMap(who, Radius))
-                    {
+                    if (me->IsWithinDistInMap(who, 10.0f))
                         Start(false, false, who->GetGUID());
-                    }
                 }
             }
         }
@@ -227,7 +224,7 @@ public:
         void EnterCombat(Unit* /*who*/) {}
         void Reset() { }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(const uint32 diff)    //Q: do we really need such override?
         {
             npc_escortAI::UpdateAI(diff);
         }
@@ -453,11 +450,8 @@ public:
                     break;
 
                 case 86:
-                    if (pPlayer)
-                    {
-                        DoScriptText(SAY_OOX_END, me);
-                        pPlayer->GroupEventHappens(Q_OOX17, me);
-                    }
+                    DoScriptText(SAY_OOX_END, me);
+                    pPlayer->GroupEventHappens(Q_OOX17, me);
                     break;
             }
         }
@@ -471,7 +465,7 @@ public:
 
         void JustSummoned(Creature* summoned)
         {
-            summoned->AI()->AttackStart(me);
+            if (summoned->AI()) summoned->AI()->AttackStart(me);
         }
     };
 

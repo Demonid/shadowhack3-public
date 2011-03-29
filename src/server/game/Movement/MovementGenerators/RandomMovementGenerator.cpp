@@ -85,9 +85,8 @@ RandomMovementGenerator<Creature>::_setRandomLocation(Creature &creature)
         {
             const float distanceZ = (float)(rand_norm()) * sqrtf(dist)/2; // Limit height change
             nz = Z + distanceZ;
-            float tz = map->GetHeight(nx, ny, nz-2.0f, false); // Map check only, vmap needed here but need to alter vmaps checks for height.
-            float wz = map->GetWaterLevel(nx, ny);
-            if (tz >= nz || wz >= nz)
+            float levelZ = map->GetWaterOrGroundLevel(nx, ny, nz-2.0f);
+            if (levelZ >= nz)
                 continue; // Problem here, we must fly above the ground and water, not under. Let's try on next tick
         }
         //else if (is_water_ok) // 3D system under water and above ground (swimming mode)
