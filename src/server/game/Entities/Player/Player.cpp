@@ -918,7 +918,7 @@ void Player::CleanupsBeforeDelete(bool finalCleanup)
     // clean up player-instance binds, may unload some instance saves
     for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
     {
-        if (!m_boundInstances[i])
+        if (m_boundInstances[i].empty())
             continue;
 
         for (BoundInstancesMap::iterator itr = m_boundInstances[i].begin(); itr != m_boundInstances[i].end(); ++itr)
