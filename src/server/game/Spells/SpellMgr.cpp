@@ -3799,11 +3799,11 @@ void SpellMgr::LoadSpellCustomAttr()
             count++;
             break;
         // Bind
-        case 3286:
+        /*case 3286:
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
             spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_TARGET_ENEMY;
             count++;
-            break;
+            break;*/
         // Heroism
         case 32182:
             spellInfo->excludeCasterAuraSpell = 57723; // Exhaustion
