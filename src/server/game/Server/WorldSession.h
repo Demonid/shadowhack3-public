@@ -352,8 +352,10 @@ class WorldSession
         uint8 *GetWardenServerKey() { return m_rc4ServerKey; }
         uint8 GetWardenStatus() { return m_wardenStatus; }
         void SetWardenStatus(uint8 status) { m_wardenStatus = status; }
-        IntervalTimer &GetWardenTimer() { return m_cheatCheck; }
-        uint8 *GetWardenCheckTable() { return m_chkTable; }
+        uint8 GetWardenSeedByte0() { return m_seedByte0; }
+        void SetWardenSeedByte0(uint8 seedByte0) { m_seedByte0 = seedByte0; }
+        IntervalTimer &GetWardenTimer() { return m_WardenTimer; }
+
 
         time_t m_timeOutTime;
         void UpdateTimeOutTime(uint32 diff)
@@ -935,10 +937,10 @@ class WorldSession
         ACE_Based::LockedQueue<WorldPacket*, ACE_Thread_Mutex> _recvQueue;
 
         uint8 m_wardenStatus;
+        uint8 m_seedByte0;
         uint8 m_rc4ServerKey[0x102];
         uint8 m_rc4ClientKey[0x102];
-        IntervalTimer m_cheatCheck;
-        uint8 m_chkTable[10];
+        IntervalTimer m_WardenTimer;
 };
 #endif
 /// @}

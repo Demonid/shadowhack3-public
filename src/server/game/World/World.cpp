@@ -94,6 +94,9 @@ uint32 World::m_TeleportToPlaneAlarms = 50;
 uint32 World::m_MistimingAlarms = 20;
 uint32 World::m_MistimingDelta = 2000;
 
+bool World::m_WardenBan = false;
+std::string World::m_WardenBanTime = "20m";
+
 /// World constructor
 World::World()
 {
@@ -586,35 +589,47 @@ void World::LoadConfigSettings(bool reload)
         rate_values[RATE_DURABILITY_LOSS_BLOCK] = 0.0f;
     }
     // movement anticheat
-    m_EnableMvAnticheat = sConfig->GetBoolDefault("Anticheat.Movement.Enable",true);
+    m_EnableMvAnticheat = sConfig->GetBoolDefault("Anticheat.Movement.Enable", true);
+     
     m_TeleportToPlaneAlarms = sConfig->GetIntDefault("Anticheat.Movement.TeleportToPlaneAlarms", 50);
-    if (m_TeleportToPlaneAlarms<20){
-        sLog->outError("Anticheat.Movement.TeleportToPlaneAlarms (%d) must be >=20. Using 20 instead.",m_TeleportToPlaneAlarms);
+    if (m_TeleportToPlaneAlarms < 20)
+    {
+        sLog->outError("Anticheat.Movement.TeleportToPlaneAlarms (%d) must be >=20. Using 20 instead.", m_TeleportToPlaneAlarms);
         m_TeleportToPlaneAlarms = 20;
     }
-    if (m_TeleportToPlaneAlarms>100){
-        sLog->outError("Anticheat.Movement.TeleportToPlaneAlarms (%d) must be <=100. Using 100 instead.",m_TeleportToPlaneAlarms);
+    if (m_TeleportToPlaneAlarms > 100)
+    {
+        sLog->outError("Anticheat.Movement.TeleportToPlaneAlarms (%d) must be <=100. Using 100 instead.", m_TeleportToPlaneAlarms);
         m_TeleportToPlaneAlarms = 100;
     }
-    m_MistimingDelta = sConfig->GetIntDefault("Anticheat.Movement.MistimingDelta",10000);
-    if (m_MistimingDelta<1000){
-        sLog->outError("Anticheat.Movement.m_MistimingDelta (%d) must be >=1000ms. Using 1000 instead.",m_TeleportToPlaneAlarms);
+
+    m_MistimingDelta = sConfig->GetIntDefault("Anticheat.Movement.MistimingDelta", 10000);
+    if (m_MistimingDelta < 1000)
+    {
+        sLog->outError("Anticheat.Movement.m_MistimingDelta (%d) must be >=1000ms. Using 1000 instead.", m_TeleportToPlaneAlarms);
         m_MistimingDelta = 1000;
     }
-    if (m_MistimingDelta>15000){
+    if (m_MistimingDelta > 15000)
+    {
         sLog->outError("Anticheat.Movement.m_MistimingDelta (%d) must be <=15000ms. Using 15000 instead.",m_TeleportToPlaneAlarms);
-        m_MistimingDelta = 15000;
+        m_MistimingDelta = 15000; 
     }
-    m_MistimingAlarms = sConfig->GetIntDefault("Anticheat.Movement.MistimingAlarms",20);
-    if (m_MistimingAlarms<10) {
-        sLog->outError("Anticheat.Movement.MistimingAlarms (%d) must be >=20. Using 10 instead.",m_TeleportToPlaneAlarms);
+
+    m_MistimingAlarms = sConfig->GetIntDefault("Anticheat.Movement.MistimingAlarms", 20);
+    if (m_MistimingAlarms < 10) 
+    {
+        sLog->outError("Anticheat.Movement.MistimingAlarms (%d) must be >=20. Using 10 instead.", m_TeleportToPlaneAlarms);
         m_MistimingAlarms = 10;
     }
-    if (m_MistimingAlarms>50){
-        sLog->outError("Anticheat.Movement.m_MistimingAlarms (%d) must be <=50. Using 50 instead.",m_TeleportToPlaneAlarms);
+    if (m_MistimingAlarms > 50)
+    {
+        sLog->outError("Anticheat.Movement.m_MistimingAlarms (%d) must be <=50. Using 50 instead.", m_TeleportToPlaneAlarms);
         m_MistimingAlarms = 50;
     }
     ///- Read other configuration items from the config file
+
+    m_WardenBan = sConfig->GetBoolDefault("Wardend.CanBan", false);
+    m_WardenBanTime = sConfig->GetStringDefault("Wardend.BanTime", "20m");
 
     m_bool_configs[CONFIG_DURABILITY_LOSS_IN_PVP] = sConfig->GetBoolDefault("DurabilityLoss.InPvP", false);
 
@@ -1764,8 +1779,10 @@ void World::SetInitialWorldSettings()
 
     if (sConfig->GetBoolDefault("wardend.enable", false))
     {
+
+
         sLog->outString("Starting Warden system...");
-	    if (!sWardenMgr->Initialize(sConfig->GetStringDefault("wardend.address", "127.0.0.1").c_str(), sConfig->GetIntDefault("wardend.port", 4321)))
+        if (!sWardenMgr->Initialize(sConfig->GetStringDefault("wardend.address","127.0.0.1").c_str(), sConfig->GetIntDefault("wardend.port", 4321)))
         {
             sLog->outError("Warden Daemon is not reachable, disabling this function");
             sWardenMgr->SetDisabled();
@@ -1777,7 +1794,7 @@ void World::SetInitialWorldSettings()
     }
     else
     {
-	    sLog->outString("Warden system disabled, skipping");
+        sLog->outString("Warden system disabled, skipping");
         sWardenMgr->SetDisabled();
     }
 
@@ -2068,7 +2085,7 @@ void World::Update(uint32 diff)
     if (m_timers[WUPDATE_WARDEN].Passed())
     {
         m_timers[WUPDATE_WARDEN].Reset();
-        sWardenMgr->Update();
+        sWardenMgr->Update(diff);
     }
 
     ///- Delete all characters which have been deleted X days before
