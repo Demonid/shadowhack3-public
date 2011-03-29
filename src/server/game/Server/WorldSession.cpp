@@ -95,7 +95,7 @@ m_inQueue(false), m_playerLoading(false), m_playerLogout(false),
 m_playerRecentlyLogout(false), m_playerSave(false),
 m_sessionDbcLocale(sWorld->GetAvailableDbcLocale(locale)),
 m_sessionDbLocaleIndex(locale),
-m_latency(0), m_TutorialsChanged(false), recruiterId(recruiter), m_wardenStatus(WARD_STATUS_UNREGISTERED)
+m_latency(0), m_TutorialsChanged(false), recruiterId(recruiter), m_wardenStatus(WARD_STATUS_UNREGISTERED), m_seedByte0(0)
 {
     if (sock)
     {
@@ -349,7 +349,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 
     //Process Warden related update for this session
     if (sWardenMgr->IsEnabled())
-        sWardenMgr->Update(this, diff);
+        sWardenMgr->Update(this, uint32(diff/2));                //Called 2 times from Map::Update and World::UpdateSessions, so need to /2
 
     return true;
 }
