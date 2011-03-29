@@ -49,7 +49,7 @@ bool WardenMgr::Initialize(const char *addr, u_short port)
     if (!m_IsWardenInit && InitializeCommunication())
         m_IsWardenInit = true;
 
-    m_PingTimer.SetInterval(1000); // 5 secs, strange
+    m_PingTimer.SetInterval(3000); // 5 secs, strange
     m_PingTimer.SetCurrent(0);
 
     return m_IsWardenInit;
@@ -58,15 +58,16 @@ bool WardenMgr::Initialize(const char *addr, u_short port)
 bool WardenMgr::InitializeCommunication()
 {
     // Establish connection.
-    WardenSvcHandler* handler = new WardenSvcHandler;
+
+    WardenSvcHandler* conn_handler = new WardenSvcHandler;
 
     ACE_INET_Addr remoteAddr(m_WardendPort, m_WardendAddress.c_str());
-    if(m_connector.connect(handler, remoteAddr)==-1)
+    if(m_connector.connect(conn_handler, remoteAddr) == -1)
     {
         return false;
     }
 
-    m_WardenProcessStream = handler->Peer;
+    m_WardenProcessStream = conn_handler->Peer;
     ByteBuffer pkt;
     const char *sign = WARDEND_SIGN;
     pkt << sign;
@@ -141,7 +142,8 @@ void WardenMgr::Update(uint32 diff)
         else if (m_PingOut && !m_Disconnected)
         {
             sLog->outError("Connection to Warden Daemon lost");
-            m_connector.close();
+            m_WardenProcessStream->close();
+            m_connector.close();            
             m_PingTimer.Reset();
             m_Disconnected = true;
         }
@@ -504,7 +506,7 @@ bool WardenSvcHandler::_HandleRegisterRep()
     WorldSession* session = sWorld->FindSession(accountId);
 
     if (!session)
-        return false;
+        return true;
 
     if (moduleLen == 0)
     {
@@ -551,7 +553,7 @@ bool WardenSvcHandler::_HandleServerKeyRep()
     WorldSession* session = sWorld->FindSession(accountId);
 
     if (!session)
-        return false;
+        return true;
 
     Peer->recv_n(session->GetWardenServerKey(), 0x102);
     sLog->outStaticDebug("Server key changed for account %u", accountId);
@@ -570,7 +572,7 @@ bool WardenSvcHandler::_HandleClientKeyRep()
     WorldSession* session = sWorld->FindSession(accountId);
 
     if (!session)
-        return false;
+        return true;
 
     Peer->recv_n(session->GetWardenClientKey(), 0x102);
     sLog->outStaticDebug("Client key changed for account %u", accountId);
@@ -594,7 +596,7 @@ bool WardenSvcHandler::_HandleModuleRep()
     WorldSession* session = sWorld->FindSession(accountId);
 
     if (!session)
-        return false;
+        return true;
 
     while (modLength > 0)
     {
@@ -630,7 +632,7 @@ bool WardenSvcHandler::_HandleCheatCheckRep()
     WorldSession* session = sWorld->FindSession(accountId);
 
     if (!session)
-        return false;
+        return true;
 
     WorldPacket data( SMSG_WARDEN_DATA, 1 + pktLen );
     data << uint8(WARDS_CHEAT_CHECK);
@@ -659,7 +661,7 @@ bool WardenSvcHandler::_HandleCheatCheckValidationRep()
     WorldSession* session = sWorld->FindSession(accountId);
 
     if (!session)
-        return false;
+        return true;
 
     sWardenMgr->ReactToCheatCheckResult(session, result != 0 ? true : false);
     return true;
@@ -676,7 +678,7 @@ bool WardenSvcHandler::_HandleTSeedValidationRep()
     WorldSession* session = sWorld->FindSession(accountId);
 
     if (!session)
-        return false;
+        return true;
 
     // Save the Seed byte 0 in session is case we need to reconnect to a restarted Wardend that lost this information
     session->SetWardenSeedByte0(seedByte0);
