@@ -760,6 +760,9 @@ class World
         static uint32 GetMistimingAlarms() {return m_MistimingAlarms;}
         //<<< end movement anticheat
 
+        static bool WardenCanBan()     {return m_WardenBan;}
+        static std::string GetWardenBanTime()  {return m_WardenBanTime;}
+
         void ProcessCliCommands();
         void QueueCliCommand(CliCommandHolder* commandHolder) { cliCmdQueue.add(commandHolder); }
 
@@ -875,6 +878,10 @@ class World
         static uint32 m_TeleportToPlaneAlarms;
         static uint32 m_MistimingDelta;
         static uint32 m_MistimingAlarms;
+
+        static bool m_WardenBan;
+        static std::string m_WardenBanTime;
+
         // CLI command holder to be thread safe
         ACE_Based::LockedQueue<CliCommandHolder*,ACE_Thread_Mutex> cliCmdQueue;
 

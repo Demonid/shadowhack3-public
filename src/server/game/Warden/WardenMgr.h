@@ -39,11 +39,56 @@
 
 #include <openssl/sha.h>
 
+enum eWardenClientStatus
+{
+    WARD_STATUS_UNREGISTERED,
+    WARD_STATUS_REGISTERING,
+    WARD_STATUS_INIT,
+    WARD_STATUS_LOAD_FAILED,
+    WARD_STATUS_PENDING_KEYS_GENERATION,
+    WARD_STATUS_PENDING_CLIENT_KEY,
+    WARD_STATUS_PENDING_TSEED_VALIDATION,
+    WARD_STATUS_CHEAT_CHECK_IN,
+    WARD_STATUS_CHEAT_CHECK_PENDING,
+    WARD_STATUS_CHEAT_CHECK_OUT,
+    WARD_STATUS_USER_DISABLED,
+    WARD_STATUS_UNSYNC,
+};
+
+class WardenSvcHandler: public ACE_Svc_Handler <ACE_SOCK_STREAM, ACE_NULL_SYNCH>
+{
+    public:
+        typedef struct WardenMgrCmd
+        {
+            eWardendOpcode cmd;
+            bool (WardenSvcHandler::*handler)(void);
+        }WardenHandler;
+
+        // Deamon replies related
+        bool _HandleRegisterRep();
+        bool _HandleServerKeyRep();
+        bool _HandleClientKeyRep();
+        bool _HandleModuleRep();
+        bool _HandleCheatCheckRep();
+        bool _HandleCheatCheckValidationRep();
+        bool _HandleTSeedValidationRep();
+        bool _HandlePong();
+
+        ACE_SOCK_Stream* Peer;
+        int open(void*);
+        int handle_input(ACE_HANDLE);
+
+    private:
+
+};
+
+typedef ACE_Connector<WardenSvcHandler, ACE_SOCK_CONNECTOR> WardendConnector;
+
 class WardenMgr
 {
     friend class ACE_Singleton<WardenMgr, ACE_Thread_Mutex>;
     WardenMgr();
-    ~WardenMgr() {};
+    ~WardenMgr();
 
     public:        
         bool Initialize(const char* addr, u_short port);
@@ -64,14 +109,18 @@ class WardenMgr
         void AskValidateTransformedSeed(WorldSession* const session, WorldPacket& clientPacket);
 
         // Update
-        void Update(); // Global Warden System update for packets send/receive
+        void Update(uint32 diff); // Global Warden System update for packets send/receive
         void Update(WorldSession* const session, uint32 diff); // Session specific update
 
         void SetInitialKeys(const uint8 *bSessionKey1, const uint8 *bSessionKey2, uint8* ClientKey, uint8 *ServerKey);
         void SendModule(WorldSession* const session);
 
+        // Connection Management
+        void SendPing();
+        void Pong();
     private:
-        bool InitializeCommunication(const char* host, u_short port);
+        bool InitializeCommunication();
+        void Resync(WorldSession* const session);
         uint32 BuildChecksum(const uint8* data, uint32 dataLen);
 
         ACE_SOCK_Stream *m_WardenProcessStream;
@@ -80,36 +129,14 @@ class WardenMgr
     protected:
         bool m_IsWardenInit;
         bool m_Enabled;
-};
-
-class WardenSvcHandler: public ACE_Svc_Handler <ACE_SOCK_STREAM, ACE_NULL_SYNCH>
-{
-    public:
-        typedef struct WardenMgrCmd
-        {
-            eWardendOpcode cmd;
-            bool (WardenSvcHandler::*handler)(void);
-        }WardenHandler;
-
-        // Deamon replies related
-        bool _HandleRegisterRep();
-        bool _HandleServerKeyRep();
-        bool _HandleClientKeyRep();
-        bool _HandleModuleRep();
-        bool _HandleCheatCheckRep();
-        bool _HandleCheatCheckValidationRep();
-        bool _HandleTSeedValidationRep();
-
-        ACE_SOCK_Stream* Peer;
-        int open(void*);
-        int handle_input(ACE_HANDLE);
-
-    private:
-
+        bool m_PingOut;
+        bool m_Disconnected;
+        std::string m_WardendAddress;
+        u_short m_WardendPort;
+        WardendConnector m_connector;
+        IntervalTimer m_PingTimer;
 };
 
 #define sWardenMgr ACE_Singleton<WardenMgr, ACE_Thread_Mutex>::instance()
-
-//void ByteBuffer::decrypt(&sWardenMgr, uint8* key, void(*sWardenMgr.rc4_crypt)(uint8 *useKey, uint8 *data, uint32 dataSize));
 
 #endif
