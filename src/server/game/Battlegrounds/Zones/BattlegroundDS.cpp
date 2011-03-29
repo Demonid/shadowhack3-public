@@ -74,7 +74,7 @@ void BattlegroundDS::Update(uint32 diff)
                         pet->KnockBackPlayerWithAngle(3.03f, 35, 6);
                 }
             }
-            setKnockBackTimer(3000);
+            setKnockBackTimer(30000);
         }
         else
             setKnockBackTimer(getKnockBackTimer() - diff);
@@ -115,7 +115,7 @@ void BattlegroundDS::StartingEventOpenDoors()
         SpawnBGObject(i, 60);
 
     setWaterFallTimer(urand(BG_DS_WATERFALL_TIMER_MIN, BG_DS_WATERFALL_TIMER_MAX));
-    setKnockBackTimer(3000);
+    setKnockBackTimer(30000);
     setWaterFallActive(false);
 
     for (uint32 i = BG_DS_OBJECT_WATER_1; i <= BG_DS_OBJECT_WATER_2; ++i)
@@ -192,7 +192,7 @@ void BattlegroundDS::Reset()
 {
     //call parent's class reset
     Battleground::Reset();
-    setKnockBackTimer(3000);
+    setKnockBackTimer(30000);
 }
 
 bool BattlegroundDS::SetupBattleground()
