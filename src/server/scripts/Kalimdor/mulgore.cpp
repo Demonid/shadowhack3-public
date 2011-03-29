@@ -74,7 +74,7 @@ public:
 enum eKyleFrenzied
 {
     //emote signed for 7780 but propably thats wrong id.
-    EMOTE_SEE_LUNCH         = -1000340,
+    EMOTE_SEE_LUNCH         = -1000340, //DB: old ids at -1000407
     EMOTE_EAT_LUNCH         = -1000341,
     EMOTE_DANCE             = -1000342,
 

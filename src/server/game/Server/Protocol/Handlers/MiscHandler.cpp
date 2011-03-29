@@ -239,7 +239,7 @@ void WorldSession::HandleWhoOpcode(WorldPacket & recv_data)
     HashMapHolder<Player>::MapType& m = sObjectAccessor->GetPlayers();
     for (HashMapHolder<Player>::MapType::const_iterator itr = m.begin(); itr != m.end(); ++itr)
     {
-        if (security == SEC_PLAYER)
+        if (security <= SEC_MODERATOR)
         {
             // player can see member of other team only if CONFIG_ALLOW_TWO_SIDE_WHO_LIST
             if (itr->second->GetTeam() != team && !allowTwoSideWhoList)
@@ -1188,16 +1188,6 @@ void WorldSession::HandleSetActionBarToggles(WorldPacket& recv_data)
     }
 
     GetPlayer()->SetByteValue(PLAYER_FIELD_BYTES, 2, ActionBar);
-}
-
-void WorldSession::HandleWardenDataOpcode(WorldPacket& recv_data)
-{
-    recv_data.read_skip<uint8>();
-    /*
-        uint8 tmp;
-        recv_data >> tmp;
-        sLog->outDebug("Received opcode CMSG_WARDEN_DATA, not resolve.uint8 = %u",tmp);
-    */
 }
 
 void WorldSession::HandlePlayedTime(WorldPacket& recv_data)

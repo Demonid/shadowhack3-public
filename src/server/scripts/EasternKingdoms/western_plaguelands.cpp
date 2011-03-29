@@ -104,7 +104,7 @@ public:
 };
 
 /*######
-## npc_myranda_the_hag
+## npc_myranda_the_hag      //Q: move to DB entirely?
 ######*/
 
 enum eMyranda
@@ -261,7 +261,7 @@ public:
                 return;
 
             if (me->FindNearestGameObject(GO_BEACON_TORCH, 10.0f))
-                CAST_PLR(pWho)->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
+                CAST_PLR(pWho)->GroupKillHappens(me->GetEntry(), me, me->GetGUID());
         }
     };
 
@@ -278,7 +278,7 @@ enum eTruuen
     NPC_GHOUL                   = 1791,      //ambush
 
     QUEST_TOMB_LIGHTBRINGER     = 9446,
-
+//DB:check
     SAY_WP_0                    = -1800064,  //Beware! We are attacked!
     SAY_WP_1                    = -1800065,  //It must be the purity of the Mark of the Lightbringer that is drawing forth the Scourge to attack us. We must proceed with caution lest we be overwhelmed!
     SAY_WP_2                    = -1800066,  //This land truly needs to be cleansed by the Light! Let us continue on to the tomb. It isn't far now...
@@ -316,7 +316,7 @@ public:
         uint64 UghostGUID;
         uint64 TheldanisGUID;
 
-        Creature* Ughost;
+        Creature* Ughost;   //Q: try to avoid keeping Creature* ?
         Creature* Theldanis;
 
         void Reset()
@@ -326,7 +326,7 @@ public:
 
         void JustSummoned(Creature* pSummoned)
         {
-            if (pSummoned->GetEntry() == NPC_GHOUL)
+            if (pSummoned->GetEntry() == NPC_GHOUL && pSummoned->AI())
                 pSummoned->AI()->AttackStart(me);
         }
 
@@ -352,10 +352,8 @@ public:
                 case 15:
                     DoScriptText(SAY_WP_2, me);
                 case 21:
-                    Theldanis = GetClosestCreatureWithEntry(me, NPC_THEL_DANIS, 150);
+                    Theldanis = GetClosestCreatureWithEntry(me, NPC_THEL_DANIS, 150.f);
                     DoScriptText(SAY_WP_3, Theldanis);
-                    break;
-                case 22:
                     break;
                 case 23:
                     Ughost = me->SummonCreature(NPC_GHOST_UTHER, 971.86f,-1825.42f ,81.99f , 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);

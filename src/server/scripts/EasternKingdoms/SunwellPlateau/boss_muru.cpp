@@ -157,7 +157,7 @@ public:
                     me->SummonCreature(CREATURE_DARK_FIENDS, x,y,z,o, TEMPSUMMON_CORPSE_DESPAWN, 0);
                     break;
             }
-            summoned->AI()->AttackStart(SelectTarget(SELECT_TARGET_RANDOM,0, 50, true));
+            if (summoned->AI()) summoned->AI()->AttackStart(SelectTarget(SELECT_TARGET_RANDOM,0, 50.0f, true));
             Summons.Summon(summoned);
         }
 
@@ -181,13 +181,13 @@ public:
 
             if (BlackHoleSummonTimer <= diff)
             {
-                Unit* random = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true);
+                Unit* random = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true);
                 if (!random)
                     return;
 
                 DoCast(random, SPELL_DARKNESS_E, false);
 
-                random = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true);
+                random = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true);
                 if (!random)
                     return;
 
@@ -279,7 +279,7 @@ public:
                     summoned->CastSpell(summoned,SPELL_DARKFIEND_VISUAL,false);
                     break;
             }
-            summoned->AI()->AttackStart(SelectTarget(SELECT_TARGET_RANDOM,0, 50, true));
+            if (summoned->AI()) summoned->AI()->AttackStart(SelectTarget(SELECT_TARGET_RANDOM,0, 50.0f, true));
             Summons.Summon(summoned);
         }
 
@@ -408,7 +408,7 @@ public:
         {
             if (pInstance)
                 if (Player* Target = Unit::GetPlayer(*me, pInstance->GetData64(DATA_PLAYER_GUID)))
-                    summoned->AI()->AttackStart(Target);
+                    if (summoned->AI()) summoned->AI()->AttackStart(Target);
 
             Summons.Summon(summoned);
         }
@@ -493,14 +493,14 @@ public:
                 {
                     me->ClearUnitState(UNIT_STAT_STUNNED);
                     DoCastAOE(SPELL_DARKFIEND_SKIN, false);
-                    AttackStart(SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true));
+                    AttackStart(SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true));
                     InAction = true;
                     WaitTimer = 500;
                 }
                 else
                 {
 
-                    if (me->IsWithinDist(me->getVictim(), 5))
+                    if (me->IsWithinDist(me->getVictim(), 5.0f))
                     {
                         DoCastAOE(SPELL_DARKFIEND_AOE, false);
                         me->DisappearAndDie();
@@ -537,7 +537,7 @@ public:
 
             float x,y,z,o;
             me->GetHomePosition(x,y,z,o);
-            DoTeleportTo(x,y,71);
+            DoTeleportTo(x,y,71.0f);
         }
 
         void JustDied(Unit* /*killer*/)

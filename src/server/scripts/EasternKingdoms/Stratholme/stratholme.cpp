@@ -142,7 +142,7 @@ public:
         void Reset()
         {
             Tagger = 0;
-            Die_Timer = 5000;
+            Die_Timer = 5*IN_MILLISECONDS;
             Tagged = false;
         }
 
@@ -177,11 +177,8 @@ public:
             {
                 if (Die_Timer <= diff)
                 {
-                    if (Unit* pTemp = Unit::GetUnit(*me,Tagger))
-                    {
-                        CAST_PLR(pTemp)->KilledMonsterCredit(ENTRY_RESTLESS, me->GetGUID());
-                        me->Kill(me);
-                    }
+                    if (Player* pPlr = Unit::GetPlayer(*me,Tagger)) pPlr->KilledMonsterCredit(ENTRY_RESTLESS, me->GetGUID());
+                    me->Kill(me);
                 } else Die_Timer -= diff;
             }
         }
@@ -266,7 +263,7 @@ public:
                     EnterEvadeMode();
                     break;
                 case TEXTEMOTE_RUDE:
-                    if (me->IsWithinDistInMap(pPlayer, 5))
+                    if (me->IsWithinDistInMap(pPlayer, INTERACTION_DISTANCE))
                         DoCast(pPlayer, SPELL_SLAP, false);
                     else
                         me->HandleEmoteCommand(EMOTE_ONESHOT_RUDE);

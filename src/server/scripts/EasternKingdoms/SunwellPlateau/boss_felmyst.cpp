@@ -149,8 +149,8 @@ public:
             uiFlightCount = 0;
 
             me->AddUnitMovementFlag(MOVEMENTFLAG_LEVITATING);
-            me->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 10);
-            me->SetFloatValue(UNIT_FIELD_COMBATREACH, 10);
+            me->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 10.0f);
+            me->SetFloatValue(UNIT_FIELD_COMBATREACH, 10.0f);
 
             DespawnSummons(MOB_VAPOR_TRAIL);
             me->setActive(false);
@@ -215,7 +215,7 @@ public:
             {
                 float x, y, z;
                 caster->GetPosition(x, y, z);
-                if (Unit* summon = me->SummonCreature(MOB_DEAD, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000))
+                if (Unit* summon = me->SummonCreature(MOB_DEAD, x, y, z, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000))
                 {
                     summon->SetMaxHealth(caster->GetMaxHealth());
                     summon->SetHealth(caster->GetMaxHealth());
@@ -230,7 +230,7 @@ public:
         {
             if (summon->GetEntry() == MOB_DEAD)
             {
-                summon->AI()->AttackStart(SelectTarget(SELECT_TARGET_RANDOM));
+                if (summon->AI()) summon->AI()->AttackStart(SelectTarget(SELECT_TARGET_RANDOM));
                 DoZoneInCombat(summon);
                 summon->CastSpell(summon, SPELL_DEAD_PASSIVE, true);
             }
@@ -293,7 +293,7 @@ public:
                 break;
             case 2:
             {
-                Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 150, true);
+                Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true);
                 if (!pTarget)
                     pTarget = Unit::GetUnit(*me, pInstance ? pInstance->GetData64(DATA_PLAYER_GUID) : 0);
 
@@ -303,10 +303,10 @@ public:
                     return;
                 }
 
-                Creature* Vapor = me->SummonCreature(MOB_VAPOR, pTarget->GetPositionX()-5+rand()%10, pTarget->GetPositionY()-5+rand()%10, pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 9000);
+                Creature* Vapor = me->SummonCreature(MOB_VAPOR, pTarget->GetPositionX()-5+rand()%10, pTarget->GetPositionY()-5+rand()%10, pTarget->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 9000);
                 if (Vapor)
                 {
-                    Vapor->AI()->AttackStart(pTarget);
+                    if (Vapor->AI()) Vapor->AI()->AttackStart(pTarget);
                     me->InterruptNonMeleeSpells(false);
                     DoCast(Vapor, SPELL_VAPOR_CHANNEL, false); // core bug
                     Vapor->CastSpell(Vapor, SPELL_VAPOR_TRIGGER, true);
@@ -350,7 +350,7 @@ public:
                 break;
             case 5:
             {
-                Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 150, true);
+                Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true);
                 if (!pTarget)
                     pTarget = Unit::GetUnit(*me, pInstance ? pInstance->GetData64(DATA_PLAYER_GUID) : 0);
 
@@ -363,7 +363,7 @@ public:
                 breathX = pTarget->GetPositionX();
                 breathY = pTarget->GetPositionY();
                 float x, y, z;
-                pTarget->GetContactPoint(me, x, y, z, 70);
+                pTarget->GetContactPoint(me, x, y, z, 70.0f);
                 me->GetMotionMaster()->MovePoint(0, x, y, z+10);
                 break;
             }
@@ -476,7 +476,7 @@ public:
                             float x, y, z;
                             me->GetPosition(x, y, z);
                             me->UpdateGroundPositionZ(x, y, z);
-                            if (Creature *Fog = me->SummonCreature(MOB_VAPOR_TRAIL, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN, 10000))
+                            if (Creature *Fog = me->SummonCreature(MOB_VAPOR_TRAIL, x, y, z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 10000))
                             {
                                 Fog->RemoveAurasDueToSpell(SPELL_TRAIL_TRIGGER);
                                 Fog->CastSpell(Fog, SPELL_FOG_TRIGGER, true);
@@ -489,7 +489,7 @@ public:
             }
         }
 
-        void DespawnSummons(uint32 entry)
+        void DespawnSummons(uint32 entry)   //Q: should we keep summon GUIDs in instance script instead?
         {
             std::list<Creature*> templist;
             float x, y, z;
@@ -500,7 +500,7 @@ public:
             cell.data.Part.reserved = ALL_DISTRICT;
             cell.SetNoCreate();
 
-            Trinity::AllCreaturesOfEntryInRange check(me, entry, 100);
+            Trinity::AllCreaturesOfEntryInRange check(me, entry, 100.0f);
             Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(me, templist, check);
             TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> cSearcher(searcher);
             cell.Visit(pair, cSearcher, *(me->GetMap()));
@@ -517,7 +517,7 @@ public:
                 if ((*i)->getDeathState() == CORPSE)
                     (*i)->RemoveCorpse();
             }
-        }
+        }   //Q: templist.clear() ?
     };
 
 };
@@ -548,7 +548,7 @@ public:
         void UpdateAI(const uint32 /*diff*/)
         {
             if (!me->getVictim())
-                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))
                     AttackStart(pTarget);
         }
     };

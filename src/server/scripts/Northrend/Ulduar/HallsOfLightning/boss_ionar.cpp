@@ -289,7 +289,6 @@ public:
             DoMeleeAttackIfReady();
         }
     };
-
 };
 
 /*######

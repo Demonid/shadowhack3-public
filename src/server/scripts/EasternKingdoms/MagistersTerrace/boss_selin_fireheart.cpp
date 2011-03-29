@@ -83,7 +83,7 @@ public:
 
         InstanceScript* pInstance;
 
-        std::list<uint64> Crystals;
+        std::list<uint64> Crystals;     //Q: is destructor needed for clearing this? it inits once in constructor only
 
         uint32 DrainLifeTimer;
         uint32 DrainManaTimer;
@@ -169,7 +169,7 @@ public:
                 CrystalChosen->CastSpell(CrystalChosen, SPELL_FEL_CRYSTAL_COSMETIC, true);
 
                 float x, y, z;                                  // coords that we move to, close to the crystal.
-                CrystalChosen->GetClosePoint(x, y, z, me->GetObjectSize(), CONTACT_DISTANCE);
+                CrystalChosen->GetClosePoint(x, y, z, me->GetObjectSize(), CONTACT_DISTANCE, 0.0f, me);
 
                 me->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
                 me->GetMotionMaster()->MovePoint(1, x, y, z);
@@ -346,7 +346,7 @@ public:
             if (InstanceScript* pInstance = me->GetInstanceScript())
             {
                 Creature* Selin = (Unit::GetCreature(*me, pInstance->GetData64(DATA_SELIN)));
-                if (Selin && Selin->isAlive())
+                if (Selin && Selin->isAlive() && Selin->AI())
                 {
                     if (CAST_AI(boss_selin_fireheart::boss_selin_fireheartAI, Selin->AI())->CrystalGUID == me->GetGUID())
                     {

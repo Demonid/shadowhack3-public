@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
@@ -21,17 +22,61 @@
 #include "Creature.h"
 #include "CreatureAI.h"
 #include "DestinationHolderImp.h"
+#include "TemporarySummon.h"
 #include "World.h"
 
 //----- Point Movement Generator
+
+template<class T>
+void PointMovementGenerator<T>::_setTargetPosition(T &unit)
+{
+    float x, y, z;
+    GetDestination(x, y, z);
+
+    // get the path to the destination
+    PathInfo path(&unit, x, y, z, m_straightPath);
+    i_path = path.getFullPath();
+
+    // start movement
+    Traveller<T> traveller(unit);
+    MoveToNextNode(traveller);
+
+    // send path to client
+    float speed = traveller.Speed() * 0.001f; // in ms
+    uint32 transitTime = uint32(i_path.GetTotalLength() / speed);
+
+    if (unit.GetTypeId() == TYPEID_PLAYER)
+        unit.ToPlayer()->addAnticheatTemporaryImmunity(transitTime + 250);
+
+    unit.SendMonsterMoveByPath(i_path, 1, i_path.size(), transitTime);    
+}
+
+template<class T>
+void PointMovementGenerator<T>::MoveToNextNode(T &unit)
+{
+    Traveller<T> traveller(unit);
+    PathNode &node = i_path[i_currentNode];
+    i_destinationHolder.SetDestination(traveller, node.x, node.y, node.z, false);
+}
+
 template<class T>
 void PointMovementGenerator<T>::Initialize(T &unit)
 {
-    unit.StopMoving();
+    if (!unit.IsStopped())
+        unit.StopMoving();
+
     Traveller<T> traveller(unit);
-    // knockback effect has UNIT_STAT_JUMPING set,so if here we disable sentmonstermove there will be creature position sync problem between client and server
-    i_destinationHolder.SetDestination(traveller,i_x,i_y,i_z, true /* !unit.HasUnitState(UNIT_STAT_JUMPING)*/);
+
+    if(m_usePathfinding)
+    {
+        _setTargetPosition(unit);
+    }
+    else
+    {
+         i_destinationHolder.SetDestination(traveller, i_x, i_y, i_z, true);
+    }
 }
+
 
 template<class T>
 bool PointMovementGenerator<T>::Update(T &unit, const uint32 &diff)
@@ -47,27 +92,52 @@ bool PointMovementGenerator<T>::Update(T &unit, const uint32 &diff)
             return true;
     }
 
+    if (i_path.empty() && m_usePathfinding)
+        return false;
+
     Traveller<T> traveller(unit);
 
-    i_destinationHolder.UpdateTraveller(traveller, diff);
+    i_destinationHolder.UpdateTraveller(traveller, diff, !m_usePathfinding);
 
-    if (i_destinationHolder.HasArrived())
+    if (m_usePathfinding)
     {
-        unit.ClearUnitState(UNIT_STAT_MOVE);
-        arrived = true;
-        return false;
-    }
+        if (i_destinationHolder.HasArrived())
+        {
+            ++i_currentNode;
 
+            // if we are at the last node, stop charge
+            if (i_currentNode >= i_path.size())
+            {
+                unit.ClearUnitState(UNIT_STAT_MOVE);
+                arrived = true;
+                return false;
+            }
+
+            MoveToNextNode(traveller);
+        }
+    }
+    else
+    {
+        if (i_destinationHolder.HasArrived())
+        {
+            unit.ClearUnitState(UNIT_STAT_MOVE);
+            arrived = true;
+            return false;
+        }
+    }
     return true;
 }
 
 template<class T>
-void PointMovementGenerator<T>:: Finalize(T &unit)
+void PointMovementGenerator<T>::Finalize(T &unit)
 {
     if (unit.HasUnitState(UNIT_STAT_CHARGING))
         unit.ClearUnitState(UNIT_STAT_CHARGING | UNIT_STAT_JUMPING);
+
     if (arrived) // without this crash!
+    {
         MovementInform(unit);
+    }
 }
 
 template<class T>
@@ -89,10 +159,12 @@ template void PointMovementGenerator<Player>::Initialize(Player&);
 template bool PointMovementGenerator<Player>::Update(Player &, const uint32 &diff);
 template void PointMovementGenerator<Player>::MovementInform(Player&);
 template void PointMovementGenerator<Player>::Finalize(Player&);
+template void PointMovementGenerator<Player>::MoveToNextNode(Player&);
 
 template void PointMovementGenerator<Creature>::Initialize(Creature&);
 template bool PointMovementGenerator<Creature>::Update(Creature&, const uint32 &diff);
 template void PointMovementGenerator<Creature>::Finalize(Creature&);
+template void PointMovementGenerator<Creature>::MoveToNextNode(Creature&);
 
 void AssistanceMovementGenerator::Finalize(Unit &unit)
 {

@@ -64,7 +64,8 @@ public:
     {
         boss_toc_champion_controllerAI(Creature* pCreature) : ScriptedAI(pCreature), Summons(me)
         {
-            m_pInstance = (InstanceScript *) pCreature->GetInstanceScript();
+            m_pInstance = pCreature->GetInstanceScript();
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
         }
 
         InstanceScript* m_pInstance;
@@ -253,7 +254,8 @@ struct boss_faction_championsAI : public ScriptedAI
 {
     boss_faction_championsAI(Creature* pCreature, uint32 aitype) : ScriptedAI(pCreature)
     {
-        m_pInstance = (InstanceScript *) pCreature->GetInstanceScript();
+        m_pInstance = pCreature->GetInstanceScript();
+        pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
         mAIType = aitype;
     }
 
@@ -475,7 +477,10 @@ public:
 
     struct mob_toc_druidAI : public boss_faction_championsAI
     {
-        mob_toc_druidAI(Creature* pCreature) : boss_faction_championsAI(pCreature, AI_HEALER) {}
+        mob_toc_druidAI(Creature* pCreature) : boss_faction_championsAI(pCreature, AI_HEALER)
+        {
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+        }
 
         uint32 m_uiNatureGraspTimer;
         uint32 m_uiTranquilityTimer;
@@ -571,7 +576,10 @@ public:
 
     struct mob_toc_shamanAI : public boss_faction_championsAI
     {
-        mob_toc_shamanAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_HEALER) {}
+        mob_toc_shamanAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_HEALER)
+        {
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+        }
 
         uint32 m_uiHeroismOrBloodlustTimer;
         uint32 m_uiHexTimer;
@@ -664,7 +672,10 @@ public:
 
     struct mob_toc_paladinAI : public boss_faction_championsAI
     {
-        mob_toc_paladinAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_HEALER) {}
+        mob_toc_paladinAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_HEALER) 
+        {
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+        }
 
         uint32 m_uiBubbleTimer;
         uint32 m_uiHandOfProtectionTimer;
@@ -771,7 +782,10 @@ public:
 
     struct mob_toc_priestAI : public boss_faction_championsAI
     {
-        mob_toc_priestAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_HEALER) {}
+        mob_toc_priestAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_HEALER)
+        {
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+        }
 
         uint32 m_uiPsychicScreamTimer;
         uint32 m_uiCommonTimer;
@@ -852,7 +866,10 @@ public:
 
     struct mob_toc_shadow_priestAI : public boss_faction_championsAI
     {
-        mob_toc_shadow_priestAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_RANGED) {}
+        mob_toc_shadow_priestAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_RANGED)
+        {
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+        }
 
         uint32 m_uiPsychicScreamTimer;
         uint32 m_uiDispersionTimer;
@@ -965,7 +982,10 @@ public:
 
     struct mob_toc_warlockAI : public boss_faction_championsAI
     {
-        mob_toc_warlockAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_RANGED), Summons(me) {}
+        mob_toc_warlockAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_RANGED), Summons(me)
+        {
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+        }
 
         SummonList Summons;
 
@@ -1072,7 +1092,10 @@ public:
 
     struct mob_toc_mageAI : public boss_faction_championsAI
     {
-        mob_toc_mageAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_RANGED) {}
+        mob_toc_mageAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_RANGED)
+        {
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+        }
 
         uint32 m_uiCounterspellTimer;
         uint32 m_uiBlinkTimer;
@@ -1175,7 +1198,10 @@ public:
 
     struct mob_toc_hunterAI : public boss_faction_championsAI
     {
-        mob_toc_hunterAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_RANGED), Summons(me) {}
+        mob_toc_hunterAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_RANGED), Summons(me)
+        {
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+        }
 
         SummonList Summons;
 
@@ -1291,7 +1317,10 @@ public:
 
     struct mob_toc_boomkinAI : public boss_faction_championsAI
     {
-        mob_toc_boomkinAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_RANGED) {}
+        mob_toc_boomkinAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_RANGED)
+        {
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+        }
 
         uint32 m_uiBarkskinTimer;
         uint32 m_uiCycloneTimer;
@@ -1395,7 +1424,10 @@ public:
 
     struct mob_toc_warriorAI : public boss_faction_championsAI
     {
-        mob_toc_warriorAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_MELEE) {}
+        mob_toc_warriorAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_MELEE)
+        {
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+        }
 
         uint32 m_uiBladestormTimer;
         uint32 m_uiIntimidatingShoutTimer;
@@ -1509,7 +1541,10 @@ public:
 
     struct mob_toc_dkAI : public boss_faction_championsAI
     {
-        mob_toc_dkAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_MELEE) {}
+        mob_toc_dkAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_MELEE)
+        {
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+        }
 
         uint32 m_uiIceboundFortitudeTimer;
         uint32 m_uiChainsOfIceTimer;
@@ -1611,7 +1646,10 @@ public:
 
     struct mob_toc_rogueAI : public boss_faction_championsAI
     {
-        mob_toc_rogueAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_MELEE) {}
+        mob_toc_rogueAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_MELEE)
+        {
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+        }
 
         uint32 m_uiFanOfKnivesTimer;
         uint32 m_uiHemorrhageTimer;
@@ -1710,7 +1748,10 @@ public:
 
     struct mob_toc_enh_shamanAI : public boss_faction_championsAI
     {
-        mob_toc_enh_shamanAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_MELEE), Summons(me) {}
+        mob_toc_enh_shamanAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_MELEE), Summons(me)
+        {
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+        }
 
         SummonList Summons;
 
@@ -1844,7 +1885,10 @@ public:
 
     struct mob_toc_retro_paladinAI : public boss_faction_championsAI
     {
-        mob_toc_retro_paladinAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_MELEE) {}
+        mob_toc_retro_paladinAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_MELEE)
+        {
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+        }
 
         uint32 m_uiRepeteanceTimer;
         uint32 m_uiCrusaderStrikeTimer;
@@ -1937,7 +1981,10 @@ public:
 
     struct mob_toc_pet_warlockAI : public boss_faction_championsAI
     {
-        mob_toc_pet_warlockAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_PET) {}
+        mob_toc_pet_warlockAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_PET)
+        {
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+        }
 
         uint32 m_uiDevourMagicTimer;
         uint32 m_uiSpellLockTimer;
@@ -1988,7 +2035,10 @@ public:
 
     struct mob_toc_pet_hunterAI : public boss_faction_championsAI
     {
-        mob_toc_pet_hunterAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_PET) {}
+        mob_toc_pet_hunterAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_PET)
+        {
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+        }
 
         uint32 m_uiClawTimer;
 

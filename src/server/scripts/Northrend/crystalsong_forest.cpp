@@ -82,7 +82,7 @@ public:
                                 }
                             }
                         }
-                    }
+                    }   //Q: orbList.clear() ?
                 }
             }else
             {

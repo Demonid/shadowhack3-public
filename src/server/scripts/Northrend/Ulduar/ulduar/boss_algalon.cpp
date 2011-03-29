@@ -15,41 +15,76 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* ScriptData
+SDName: Algalon
+Author:
+SD%Complete: 33%
+SDComment: TODO: Boss Phases 2 (melee) and 3 (final speech); trash scripts and whole encounter mechanic; check if all spells supported by core
+EndScriptData */
+
 #include "ScriptPCH.h"
 #include "ulduar.h"
 
 #define GAMEOBJECT_GIVE_OF_THE_OBSERVER 194821
 
-enum Spells
+enum SpellsAlgalon
 {
-    SPELL_ASCEND                    = 64487,
-    SPELL_BERSERK                   = 47008,
-    SPELL_BIG_BANG                  = 64443,
+    SPELL_ASCEND                    = 64487,    // can not be shielded of by anything (bubble etc.) - except maybe phaseout
+    SPELL_BERSERK                   = 47008,    // check also 60670, 65126, 62535, 62555
+    SPELL_BIG_BANG                  = 64443,    // may be bubbled out
     H_SPELL_BIG_BANG                = 64584,
-    SPELL_COSMIC_SMASH              = 62301,
-    H_SPELL_COSMIC_SMASH            = 64598,
-    SPELL_PHASE_PUNCH               = 64412,
+    SPELL_COSMIC_SMASH_VISUAL_STATE = 62300,
+    SPELL_COSMIC_SMASH_SPELLTRIGGER = 62301,    // triggers 62293 and 62295 from SRC_NEARBY_ENTRY with entry supplied elsewhere; casted by boss
+    //SPELL_COSMIC_SMASH_SUMMON_AST1  = 62293,
+    //SPELL_COSMIC_SMASH_SUMMON_AST2  = 62295,
+    SPELL_COSMIC_SMASH_MISSILE      = 62304,    // triggers 62311 upon DST_NEARBY_ENTRY with entry supplied elsewhere; RAID25=64597
+//    SPELL_COSMIC_SMASH_DAMAGE       = 62311,    // triggered by 62304; RAID25=64596
+    H_SPELL_COSMIC_SMASH_SPELLTRIGGER = 64598,
+// to check: 64421, 64428, 64434, 64435
+    SPELL_PHASE_PUNCH_DAMAGE        = 64412,
+//    SPELL_PHASE_PUNCH_PHASEOUT      = 64417,    // target outs-of-phase when got 5x 64412, 10 sec; to trigger by core!
     SPELL_QUANTUM_STRIKE            = 64395,
     H_SPELL_QUANTUM_STRIKE          = 64592,
-    SPELL_BLACK_HOLE_EXPLOSION      = 64122,
-    SPELL_ARCANE_BARAGE             = 64599,
-    H_SPELL_ARCANE_BARAGE           = 64607
+    SPELL_TRIGGER_3_ADDS            = 62266,    // to wake Living Constellations? unit entry to be supplied elsewhere
+    SPELL_BLACK_HOLE_TARGET_VISUAL  = 62348,    // ? visual aura
+    SPELL_ALGALON_EVENT_BEAM        = 64367,    // ? on aggro
+    SPELL_ALGALON_EVENT_BEAM_CLIMAX = 64580,    // ???
+//    SPELL_REMOVE_PLAYER_FROM_PHASE  = 64445,    // ? triggered by Big Bang. Aura dispels 62168?
+};
+enum SpellsOthers
+{
+    SPELL_BLACK_HOLE_EXPLOSION      = 64122,    // Collapsing Star on death; RAID25=65108
+    SPELL_SUMMON_BLACK_HOLE         = 62189,    // Collapsing Star on death
+// to check: 62003, 64135
+    SPELL_BLACK_HOLE_TRIGGER        = 62185,    // Black Hole on self (in creature_addon?)
+//    SPELL_BLACK_HOLE_PHASEOUT       = 62168,    // Black Hole protects near players 10 sec; IS TRIGGERED by 62185!
+    SPELL_BLACK_HOLE_DAMAGE         = 62169,    // Black Hole itself damages them 10 sec
+    SPELL_BLACK_HOLE_CREDIT         = 65312,    // criteria of timed ach:3002,3003
+    SPELL_DESPAWN_BLACK_HOLE        = 64391,    // ? when collided with Living Constellation or hit by SPELL_BIG_BANG
+    SPELL_ARCANE_BARAGE             = 64599,    // Living Constellation attack
+    H_SPELL_ARCANE_BARAGE           = 64607,
+    //SPELL_CONSTELLATION_PHASE_TRIGGER = 65508,    // ???
+    //SPELL_CONSTELLATION_PHASE_EFFECT  = 65509,
+    SPELL_SUMMON_UNLEASHED_DARK_MATTER = 64450,    // summon 34097 (Phase 2)
 };
 
 enum Creatures
 {
-    CREATURE_COLLAPSING_STAR        = 32955,
+    CREATURE_COLLAPSING_STAR        = 32955,    // 176.4k HP on 25; 88.2k HP on 10.
     CREATURE_BLACK_HOLE             = 32953,
     CREATURE_LIVING_CONSTELLATION   = 33052,
-    CREATURE_DARK_MATTER            = 33089
+    CREATURE_DARK_MATTER            = 33089,
+    CREATURE_UNLEASHED_DARK_MATTER  = 34097,
+    CREATURE_ALGALON_STALKER_ASTEROID_TARGET01 = 33104,
+    CREATURE_ALGALON_STALKER_ASTEROID_TARGET02 = 33105,
 };
 
 enum Yells
 {
-    SAY_AGGRO                                   = -1603000,
+    SAY_AGGRO                                   = -1603000, //DB: old were at -1620000
     SAY_SLAY_1                                  = -1603001,
     SAY_SLAY_2                                  = -1603002,
-    SAY_ENGADED_FOR_FIRTS_TIME                  = -1603003,
+    SAY_ENGADED_FOR_FIRST_TIME                  = -1603003,
     SAY_PHASE_2                                 = -1603004,
     SAY_SUMMON_COLLAPSING_STAR                  = -1603005,
     SAY_DEATH_1                                 = -1603006,
@@ -68,6 +103,17 @@ enum Yells
     SAY_SUMMON_3                                = -1603019,
 };
 
+enum Events
+{
+    EVENT_QUANTUM_STRIKE    = 1,
+    EVENT_ASCEND,
+    EVENT_COLLAPSING_STAR,
+    EVENT_BIG_BANG,
+    EVENT_COSMIC_SMASH,
+    EVENT_PHASE_PUNCH,
+    EVENT_BERSERK,
+};
+
 class boss_algalon : public CreatureScript
 {
 public:
@@ -78,26 +124,14 @@ public:
         return new boss_algalonAI(pCreature);
     }
 
-    struct boss_algalonAI : public ScriptedAI
+    struct boss_algalonAI : public BossAI
     {
-        boss_algalonAI(Creature *c) : ScriptedAI(c)
+        boss_algalonAI(Creature *c) : BossAI(c, BOSS_ALGALON)
         {
-            pInstance = c->GetInstanceScript();
             Summon = false; // not in reset. intro speech done only once.
         }
 
-        InstanceScript* pInstance;
-
-        std::list<uint64> m_lCollapsingStarGUIDList;
-
         uint32 Phase;
-        uint32 Ascend_Timer;
-        uint32 Berserk_Timer;
-        uint32 BigBang_Timer;
-        uint32 CosmicSmash_Timer;
-        uint32 PhasePunch_Timer;
-        uint32 QuantumStrike_Timer;
-        uint32 CollapsingStar_Timer;
         uint32 uiPhase_timer;
         uint32 uiStep;
 
@@ -110,19 +144,24 @@ public:
         {
             if (Summon)
             {
+                _EnterCombat();
                 DoScriptText(SAY_AGGRO, me);
                 me->InterruptSpell(CURRENT_CHANNELED_SPELL);
-                DoZoneInCombat(who->ToCreature());
+                events.ScheduleEvent(EVENT_QUANTUM_STRIKE, urand(4*IN_MILLISECONDS, 14*IN_MILLISECONDS));
+                events.ScheduleEvent(EVENT_PHASE_PUNCH, 9*IN_MILLISECONDS);
+                events.ScheduleEvent(EVENT_COLLAPSING_STAR, urand(15*IN_MILLISECONDS, 20*IN_MILLISECONDS));
+                events.ScheduleEvent(EVENT_COSMIC_SMASH, urand(30*IN_MILLISECONDS, 60*IN_MILLISECONDS));
+                events.ScheduleEvent(EVENT_BIG_BANG, 90*IN_MILLISECONDS);
+                events.ScheduleEvent(EVENT_BERSERK, 360*IN_MILLISECONDS);
+                events.ScheduleEvent(EVENT_ASCEND, 480*IN_MILLISECONDS);
             }
             else
             {
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 me->SetReactState(REACT_PASSIVE);
                 uiStep = 1;
+                instance->SetBossState(BOSS_ALGALON, IN_PROGRESS);
             }
-
-            if (pInstance)
-                pInstance->SetData(TYPE_ALGALON, IN_PROGRESS);
         }
 
         void KilledUnit(Unit * /*victim*/)
@@ -132,22 +171,14 @@ public:
 
         void Reset()
         {
+            _Reset();
             Phase = 1;
 
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-            if (pInstance)
-                pInstance->SetData(TYPE_ALGALON, NOT_STARTED);
 
             BlackHoleGUID = 0;
 
             uiPhase_timer = 0;
-            Ascend_Timer = 480000; //8 minutes
-            QuantumStrike_Timer = 4000 + rand()%10000;
-            Berserk_Timer = 360000; //6 minutes
-            CollapsingStar_Timer = urand(15000, 20000); //Spawns between 15 to 20 seconds
-            BigBang_Timer = 90000;
-            PhasePunch_Timer = 8000;
-            CosmicSmash_Timer = urand(30000, 60000);
             Enrage = false;
         }
 
@@ -159,18 +190,7 @@ public:
 
         void DespawnCollapsingStar()
         {
-            if (m_lCollapsingStarGUIDList.empty())
-                return;
-
-            for (std::list<uint64>::const_iterator itr = m_lCollapsingStarGUIDList.begin(); itr != m_lCollapsingStarGUIDList.end(); ++itr)
-            {
-                if (Creature* pTemp = Unit::GetCreature(*me, *itr))
-                {
-                    if (pTemp->isAlive())
-                        pTemp->DespawnOrUnsummon();
-                }
-            }
-            m_lCollapsingStarGUIDList.clear();
+            summons.DespawnAll();
         }
 
         void JustSummoned(Creature* pSummoned)
@@ -178,9 +198,9 @@ public:
             if (pSummoned->GetEntry() == CREATURE_COLLAPSING_STAR)
             {
                 Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
-                if (me->getVictim())
+                if (me->getVictim() && pSummoned->AI())
                     pSummoned->AI()->AttackStart(pTarget ? pTarget : me->getVictim());
-                m_lCollapsingStarGUIDList.push_back(pSummoned->GetGUID());
+                summons.Summon(pSummoned);
             }
         }
 
@@ -188,6 +208,7 @@ public:
         {
             DoScriptText(SAY_SUMMON_COLLAPSING_STAR, me);
             me->SummonCreature(CREATURE_COLLAPSING_STAR,target->GetPositionX()+15.0f,target->GetPositionY()+15.0f,target->GetPositionZ(),0, TEMPSUMMON_TIMED_DESPAWN, 100000);
+            // DoScriptText(SAY_BLACK_HOLE, me);    //Q: define SAY_BLACK_HOLE in DB then uncomment
             me->SummonCreature(CREATURE_BLACK_HOLE,target->GetPositionX()+15.0f,target->GetPositionY()+15.0f,target->GetPositionZ(),0, TEMPSUMMON_TIMED_DESPAWN, 27000);
         }
 
@@ -197,17 +218,14 @@ public:
             if (!UpdateVictim())
                 return;
 
-            if (Phase == 1 && HealthBelowPct(20))
-            {
-                Phase = 2;
-                DoScriptText(SAY_PHASE_2, me);
-            }
+            if (Phase == 1 && HealthBelowPct(20)) EnterPhaseTwo();
 
             if (HealthBelowPct(2))
             {
-                me->SummonGameObject(GAMEOBJECT_GIVE_OF_THE_OBSERVER, 1634.258667f, -295.101166f,417.321381f,0,0,0,0,0,0);
+                me->SummonGameObject(GAMEOBJECT_GIVE_OF_THE_OBSERVER, 1634.258667f, -295.101166f, 417.321381f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0);
 
-                // All of them. or random?
+                // ToDo: all textes sequentially with intervals, the speech Algalon gives when beaten down to 2% and before spawning the loot chest
+                // Algalon itself becomes passive and unattackable but not dead
                 DoScriptText(SAY_DEATH_1, me);
                 DoScriptText(SAY_DEATH_2, me);
                 DoScriptText(SAY_DEATH_3, me);
@@ -216,8 +234,7 @@ public:
 
                 me->DisappearAndDie();
 
-                if (pInstance)
-                    pInstance->SetData(TYPE_ALGALON, DONE);
+                instance->SetBossState(BOSS_ALGALON, DONE);
 
                 return;
             }
@@ -243,7 +260,7 @@ public:
                                 JumpToNextStep(3000);
                                 break;
                             case 4:
-                                DoScriptText(SAY_ENGADED_FOR_FIRTS_TIME, me);
+                                DoScriptText(SAY_ENGADED_FOR_FIRST_TIME, me);
                                 JumpToNextStep(3000);
                                 break;
                             case 5:
@@ -257,51 +274,45 @@ public:
                     return;
                 }
 
-                if (QuantumStrike_Timer <= diff)
+                events.Update(diff);
+                if (me->HasUnitState(UNIT_STAT_CASTING)) return;
+                while(uint32 eventId = events.ExecuteEvent())
                 {
-                    DoCast(me->getVictim(), RAID_MODE(SPELL_QUANTUM_STRIKE,H_SPELL_QUANTUM_STRIKE), true);
-
-                    QuantumStrike_Timer = urand(4000, 14000);
-                } else QuantumStrike_Timer -= diff;
-
-                if (BigBang_Timer <= diff)
-                {
-                    DoScriptText(RAND(SAY_BIG_BANG_1,SAY_BIG_BANG_2), me);
-                    DoCast(me->getVictim(), RAID_MODE(SPELL_BIG_BANG,H_SPELL_BIG_BANG), true);
-
-                    BigBang_Timer = 90000;
-                } else BigBang_Timer -= diff;
-
-                if (Ascend_Timer <= diff)
-                {
-                    DoCast(me->getVictim(),SPELL_ASCEND, true);
-
-                    Ascend_Timer = 480000;
-                } else Ascend_Timer -= diff;
-
-                if (PhasePunch_Timer <= diff)
-                {
-                    DoCast(me->getVictim(),SPELL_PHASE_PUNCH, true);
-
-                    PhasePunch_Timer = 8000;
-                } else PhasePunch_Timer -= diff;
-
-                if (CosmicSmash_Timer <= diff)
-                {
-                    DoCast(SelectTarget(SELECT_TARGET_RANDOM, 0), RAID_MODE(SPELL_COSMIC_SMASH,H_SPELL_COSMIC_SMASH), true);
-
-                    CosmicSmash_Timer = urand(30000, 60000);
-                } else CosmicSmash_Timer -= diff;
-
-                if (Berserk_Timer <= diff)
-                {
-                    DoScriptText(SAY_BERSERK, me);
-                    DoCast(me->getVictim(),SPELL_BERSERK, true);
-
-                    Berserk_Timer = 360000;
-                } else Berserk_Timer -= diff;
-
-                DoMeleeAttackIfReady();
+                    switch(eventId)
+                    {
+                    case EVENT_QUANTUM_STRIKE:
+                        DoCastVictim(RAID_MODE(SPELL_QUANTUM_STRIKE,H_SPELL_QUANTUM_STRIKE), true);
+                        events.ScheduleEvent(EVENT_QUANTUM_STRIKE, urand(4*IN_MILLISECONDS,14*IN_MILLISECONDS));
+                        break;
+                    case EVENT_PHASE_PUNCH:
+                        DoCastVictim(SPELL_PHASE_PUNCH_DAMAGE, true);
+                        events.ScheduleEvent(EVENT_PHASE_PUNCH, 9*IN_MILLISECONDS); // maybe 8 in the Phase 2
+                        break;
+                    case EVENT_COSMIC_SMASH:
+                        DoCast(SelectTarget(SELECT_TARGET_RANDOM, 0), RAID_MODE(SPELL_COSMIC_SMASH_SPELLTRIGGER,H_SPELL_COSMIC_SMASH_SPELLTRIGGER), true);
+                        events.ScheduleEvent(EVENT_COSMIC_SMASH, urand(30*IN_MILLISECONDS, 60*IN_MILLISECONDS));
+                        break;
+                    case EVENT_COLLAPSING_STAR:
+                        DoScriptText(SAY_SUMMON_COLLAPSING_STAR, me);
+                        //ToDo: summon 3 Collapsing Stars OR 3 Living Constellations
+                        events.ScheduleEvent(EVENT_COLLAPSING_STAR, urand(15*IN_MILLISECONDS, 20*IN_MILLISECONDS));
+                        break;
+                    case EVENT_BIG_BANG:
+                        DoScriptText(RAND(SAY_BIG_BANG_1,SAY_BIG_BANG_2), me);
+                        DoCastVictim(RAID_MODE(SPELL_BIG_BANG,H_SPELL_BIG_BANG), true);
+                        events.ScheduleEvent(EVENT_BIG_BANG, 90*IN_MILLISECONDS);
+                        break;
+                    case EVENT_BERSERK:
+                        DoScriptText(SAY_BERSERK, me);
+                        DoCast(SPELL_BERSERK);
+                        events.ScheduleEvent(EVENT_BERSERK, 30*60*IN_MILLISECONDS);
+                        break;
+                    case EVENT_ASCEND:
+                        DoCastVictim(SPELL_ASCEND,true);
+                        events.ScheduleEvent(EVENT_ASCEND, 480*IN_MILLISECONDS);
+                        break;
+                    }
+                }
 
                 EnterEvadeIfOutOfCombatArea(diff);
             }
@@ -310,23 +321,34 @@ public:
             {
                 if (Enrage)
                 {
-                    if (Ascend_Timer <= diff)
-                    {
-                        DoCast(me, SPELL_ASCEND);
-                        DoScriptText(SAY_BERSERK, me);
-                        Ascend_Timer = urand(360000,365000);
-                        Enrage = false;
-                    } else Ascend_Timer -= diff;
+                    //if (Ascend_Timer <= diff)
+                    //{
+                    //    DoCast(me, SPELL_ASCEND);
+                    //    DoScriptText(SAY_BERSERK, me);
+                    //    Ascend_Timer = urand(360000,365000);
+                    //    Enrage = false;
+                    //} else Ascend_Timer -= diff;
                 }
             }
 
             DoMeleeAttackIfReady();
         }
+        
+        void EnterPhaseTwo()
+        {
+            //ToDo: summon 4 Black Holes with long lifetime
+            events.CancelEvent(EVENT_COLLAPSING_STAR);
+            Phase = 2;
+            DoScriptText(SAY_PHASE_2, me);
+        }
     };
 
 };
 
-//Collapsing Star
+// Collapsing Star
+// Spawn in three. Loses 1% health every 1 sec. When dies (no matter of what), SPELL_BLACK_HOLE_EXPLOSION and spawns CREATURE_BLACK_HOLE
+// All raid members are damaged with explosion.
+// Does not attack at all?
 class mob_collapsing_star : public CreatureScript
 {
 public:
@@ -342,33 +364,58 @@ public:
         mob_collapsing_starAI(Creature *pCreature) : ScriptedAI(pCreature)
         {
             pInstance = pCreature->GetInstanceScript();
+            HealthLeech = pCreature->CountPctFromMaxHealth(3);
+            LifeTimer = 3000;
         }
 
         InstanceScript* pInstance;
 
-        uint32 BlackHoleExplosion_Timer;
-
-        void Reset()
-        {
-            BlackHoleExplosion_Timer = 0;
-        }
+        uint32 LifeTimer;   // this may be set higher like 4-6k, then HealthLeech is to be corrected (in this case to 4-6%)
+        uint32 HealthLeech;
 
         void UpdateAI(const uint32 diff)
         {
-            if (!UpdateVictim())
-                return;
-
-            if (BlackHoleExplosion_Timer <= diff)
+            if (LifeTimer <= diff)
             {
-                me->CastSpell(me, SPELL_BLACK_HOLE_EXPLOSION, false);
-                BlackHoleExplosion_Timer = 0;
-            } else BlackHoleExplosion_Timer -= diff;
+                me->DealDamage(me, HealthLeech); // ModifyHealth(HealthLeech);
+                LifeTimer = 3000;
+            }
+            else LifeTimer -= diff;
+        }
+
+        void DamageTaken(Unit* who, uint32 &dmg)    //Q: can this be moved to JustDied()?
+        {
+            if (dmg < me->GetHealth()) return;
+            dmg=0;
+            DoCast(SPELL_BLACK_HOLE_EXPLOSION);
+            if (Creature* bh = DoSummon(CREATURE_BLACK_HOLE, me, 0.0f, 180*IN_MILLISECONDS, TEMPSUMMON_TIMED_DESPAWN))    //Q: check BH life time
+            {
+                // any notifies for Black Hole if needed
+                // should it be added to Algalon summon list?
+            }
+            me->DespawnOrUnsummon();    // DisappearAndDie() ?
         }
     };
 
 };
 
-void AddSC_boss_Algalon()
+// Living Constellation
+// Living Constellations spawn in threes, and wander around, following normal threat table.
+// They attack with Arcane damage, which although not negligible, can be healed through.
+// If a Living Constellation "walks" into a Black Hole spawned by a Collapsing Star, both despawn.
+
+// Black Hole
+// Collapsing Stars spawn Black Holes on the location where they died.
+// While inside, raid members will take ~2,000 arcane damage every 1 second and will be attacked by Dark Matters.
+// If the entire raid enters a Black Hole, Algalon will go Berserk.
+
+// Dark Matter
+// 1st phase: While inside of a Black Hole, raid members will take ~2,000 arcane damage every 1 second
+/// and will be attacked by Dark Matters. Try not to enter the Black Holes too early (but certainly not too late!),
+//  and avoid the Dark Matters. (So for 1st Boss phase, these are in PHASE=16 to attack players under SPELL_BLACK_HOLE_PHASEOUT).
+// 2nd phase: Four Black Holes will appear and they will periodically spawn Dark Matters. (So PHASE=0 now.)
+
+void AddSC_boss_algalon()
 {
     new boss_algalon();
     new mob_collapsing_star();

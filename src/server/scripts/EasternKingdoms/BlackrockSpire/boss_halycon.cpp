@@ -83,7 +83,7 @@ public:
             } else MightyBlow_Timer -= diff;
 
             //Summon Gizrul
-            if (!Summoned && HealthBelowPct(25))
+            if (!Summoned && HealthBelowPct(25))    //Q: move to DamageTaken()? for CPU economy
             {
                 me->SummonCreature(10268,ADD_1X,ADD_1Y,ADD_1Z,ADD_1O,TEMPSUMMON_TIMED_DESPAWN,300000);
                 Summoned = true;

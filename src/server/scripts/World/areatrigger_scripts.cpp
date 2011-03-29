@@ -33,6 +33,8 @@ at_warsong_grainery
 at_torp_farm
 at_warsong_farms                q11686
 at_stormwright_shelf            q12741
+at_blending_in                  q11633
+at_end_of_line                  q12107/q12110
 EndContentData */
 
 #include "ScriptPCH.h"
@@ -325,6 +327,85 @@ class AreaTrigger_at_last_rites : public AreaTriggerScript
         }
 };
 
+/*######
+## AreaTrigger_at_blending_in
+######*/
+
+class AreaTrigger_at_blending_in : public AreaTriggerScript
+{
+public:
+    AreaTrigger_at_blending_in() : AreaTriggerScript("at_blending_in") {}
+
+    bool OnTrigger(Player* pPlayer, AreaTriggerEntry const* pAt)
+    {
+	    if (pPlayer->GetQuestStatus(QUEST_BLENDING_IN) != QUEST_STATUS_INCOMPLETE) return false;
+	    if (! pPlayer->HasAura(SPELL_SHROUD_OF_THE_SCOURGE)) return false;
+	    uint32 cid;
+	    switch(pAt->id)
+	    {
+	    case AT_SPIRE_OF_DECAY:
+		    cid = NPC_CREDIT_TEMPLE_A; break;
+	    case AT_SPIRE_OF_BLOOD:
+		    cid = NPC_CREDIT_TEMPLE_B; break;
+	    case AT_SPIRE_OF_PAIN:
+		    cid = NPC_CREDIT_TEMPLE_C; break;
+	    default:
+		    sLog->outError("Areatrigger script at_blending_in: incorrect trigger number %i, check your DB.", pAt->id); return false;
+	    }
+	    pPlayer->KilledMonsterCredit(cid, 0);
+	    return true;
+    }
+    enum eBlendingIn
+    {
+        QUEST_BLENDING_IN   =   11633,
+
+        NPC_CREDIT_TEMPLE_A =   25471,
+        NPC_CREDIT_TEMPLE_B =   25472,
+        NPC_CREDIT_TEMPLE_C =   25473,
+
+        AT_SPIRE_OF_DECAY   =   4857,
+        AT_SPIRE_OF_BLOOD   =   4858,
+        AT_SPIRE_OF_PAIN    =   4860,
+
+        SPELL_SHROUD_OF_THE_SCOURGE =   45614
+    };
+};
+
+/*######
+## AreaTrigger_at_end_of_line
+######*/
+
+class AreaTrigger_at_end_of_line : public AreaTriggerScript
+{
+public:
+    AreaTrigger_at_end_of_line() : AreaTriggerScript("at_end_of_line") {}
+
+    bool OnTrigger(Player* pPlayer, AreaTriggerEntry const* pAt)
+    {
+	    uint32 myQuest;
+	    myQuest = (pPlayer->GetTeam() == ALLIANCE) ? QUEST_A_END_OF_THE_LINE : QUEST_H_END_OF_THE_LINE;
+	    if (pPlayer->GetQuestStatus(myQuest) != QUEST_STATUS_INCOMPLETE) return false;
+	    if (pAt->id != AT_AZURE_DRAGONSHRINE)
+        {
+            sLog->outError("Areatrigger script at_end_of_line: incorrect trigger number %i, check your DB.", pAt->id);
+            return false;
+        }
+	    int slot = pPlayer->FindQuestSlot(myQuest);
+	    if (pPlayer->GetQuestSlotCounter(slot, 0) == 0) return false; // one have to gain Ley Line information BEFORE exploration!
+	    pPlayer->KilledMonsterCredit(NPC_ENDOFLINE_AT_KC_BUNNY, 0);
+	    return true;
+    }
+    enum eEndOfLine
+    {
+        QUEST_A_END_OF_THE_LINE	=   12107,
+        QUEST_H_END_OF_THE_LINE	=   12110,
+
+        NPC_ENDOFLINE_AT_KC_BUNNY   =   26889,
+
+        AT_AZURE_DRAGONSHRINE   =   4956
+    };
+};
+
 void AddSC_areatrigger_scripts()
 {
     new AreaTrigger_at_aldurthar_gate();
@@ -335,4 +416,6 @@ void AddSC_areatrigger_scripts()
     new AreaTrigger_at_stormwright_shelf();
     new AreaTrigger_at_scent_larkorwi();
     new AreaTrigger_at_last_rites();
+    new AreaTrigger_at_blending_in();
+    new AreaTrigger_at_end_of_line();
 }

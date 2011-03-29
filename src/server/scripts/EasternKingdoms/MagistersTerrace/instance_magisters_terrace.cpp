@@ -52,7 +52,7 @@ public:
         uint32 m_auiEncounter[MAX_ENCOUNTER];
         uint32 DelrissaDeathCount;
 
-        std::list<uint64> FelCrystals;
+        std::list<uint64> FelCrystals;      //Q: is destructor needed?
         std::list<uint64>::const_iterator CrystalItr;
 
         uint64 SelinGUID;

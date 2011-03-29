@@ -208,7 +208,7 @@ public:
             float y = KaelLocations[0][1];
             me->GetMap()->CreatureRelocation(me, x, y, LOCATION_Z, 0.0f);
             //me->SendMonsterMove(x, y, LOCATION_Z, 0, 0, 0); // causes some issues...
-            std::list<HostileReference*>::const_iterator i = me->getThreatManager().getThreatList().begin();
+            std::list<HostileReference*>::const_iterator i;
             for (i = me->getThreatManager().getThreatList().begin(); i!= me->getThreatManager().getThreatList().end(); ++i)
             {
                 Unit* pUnit = Unit::GetUnit((*me), (*i)->getUnitGuid());
@@ -220,7 +220,7 @@ public:
 
         void CastGravityLapseKnockUp()
         {
-            std::list<HostileReference*>::const_iterator i = me->getThreatManager().getThreatList().begin();
+            std::list<HostileReference*>::const_iterator i;
             for (i = me->getThreatManager().getThreatList().begin(); i!= me->getThreatManager().getThreatList().end(); ++i)
             {
                 Unit* pUnit = Unit::GetUnit((*me), (*i)->getUnitGuid());
@@ -232,7 +232,7 @@ public:
 
         void CastGravityLapseFly()                              // Use Fly Packet hack for now as players can't cast "fly" spells unless in map 530. Has to be done a while after they get knocked into the air...
         {
-            std::list<HostileReference*>::const_iterator i = me->getThreatManager().getThreatList().begin();
+            std::list<HostileReference*>::const_iterator i;
             for (i = me->getThreatManager().getThreatList().begin(); i!= me->getThreatManager().getThreatList().end(); ++i)
             {
                 Unit* pUnit = Unit::GetUnit((*me), (*i)->getUnitGuid());
@@ -252,7 +252,7 @@ public:
 
         void RemoveGravityLapse()
         {
-            std::list<HostileReference*>::const_iterator i = me->getThreatManager().getThreatList().begin();
+            std::list<HostileReference*>::const_iterator i;
             for (i = me->getThreatManager().getThreatList().begin(); i!= me->getThreatManager().getThreatList().end(); ++i)
             {
                 Unit* pUnit = Unit::GetUnit((*me), (*i)->getUnitGuid());
@@ -308,12 +308,12 @@ public:
                         float x = KaelLocations[random][0];
                         float y = KaelLocations[random][1];
 
-                        Creature* Phoenix = me->SummonCreature(CREATURE_PHOENIX, x, y, LOCATION_Z, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 60000);
+                        Creature* Phoenix = me->SummonCreature(CREATURE_PHOENIX, x, y, LOCATION_Z, 0.0f, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 60000);
                         if (Phoenix)
                         {
-                            Phoenix->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE + UNIT_FLAG_NON_ATTACKABLE);
+                            Phoenix->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                             SetThreatList(Phoenix);
-                            Phoenix->AI()->AttackStart(pTarget);
+                            if (Phoenix->AI()) Phoenix->AI()->AttackStart(pTarget);
                         }
 
                         DoScriptText(SAY_PHOENIX, me);
@@ -323,7 +323,7 @@ public:
 
                     if (FlameStrikeTimer <= diff)
                     {
-                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))
                         {
                             me->InterruptSpell(CURRENT_CHANNELED_SPELL);
                             me->InterruptSpell(CURRENT_GENERIC_SPELL);
@@ -366,10 +366,8 @@ public:
                                         pInstance->HandleGameObject(pInstance->GetData64(DATA_KAEL_STATUE_LEFT), true);
                                         pInstance->HandleGameObject(pInstance->GetData64(DATA_KAEL_STATUE_RIGHT), true);
                                     }
-                                }else
-                                {
-                                    DoScriptText(SAY_RECAST_GRAVITY, me);
                                 }
+                                else DoScriptText(SAY_RECAST_GRAVITY, me);
 
                                 DoCast(me, SPELL_GRAVITY_LAPSE_INITIAL);
                                 GravityLapseTimer = 2000 + diff;// Don't interrupt the visual spell
@@ -398,12 +396,12 @@ public:
                                     Unit *pTarget = NULL;
                                     pTarget = SelectTarget(SELECT_TARGET_RANDOM,0);
 
-                                    Creature* Orb = DoSpawnCreature(CREATURE_ARCANE_SPHERE, 5, 5, 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 30000);
+                                    Creature* Orb = DoSpawnCreature(CREATURE_ARCANE_SPHERE, 5.0f, 5.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 30000);
                                     if (Orb && pTarget)
                                     {
                                         Orb->SetSpeed(MOVE_RUN, 0.5f);
                                         Orb->AddThreat(pTarget, 1000000.0f);
-                                        Orb->AI()->AttackStart(pTarget);
+                                        if (Orb->AI()) Orb->AI()->AttackStart(pTarget);
                                     }
 
                                 }
@@ -496,7 +494,7 @@ public:
 
         void Reset()
         {
-            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE + UNIT_FLAG_NON_ATTACKABLE);
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
             me->AddUnitMovementFlag(MOVEMENTFLAG_LEVITATING);
             DoCast(me, SPELL_PHOENIX_BURN, true);
             BurnTimer = 2000;
@@ -671,7 +669,7 @@ public:
 
             if (ChangeTargetTimer <= diff)
             {
-                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))
                 {
                     me->AddThreat(pTarget, 1.0f);
                     me->TauntApply(pTarget);

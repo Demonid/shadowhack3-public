@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
@@ -30,6 +31,7 @@
 #include "WaypointManager.h"
 #include "Path.h"
 #include "Traveller.h"
+#include "PathFinder.h"
 
 #include "Player.h"
 
@@ -80,6 +82,7 @@ class WaypointMovementGenerator
         bool Update(T &, const uint32 &);
         bool GetDestination(float &x, float &y, float &z) const;
         MovementGeneratorType GetMovementGeneratorType() { return WAYPOINT_MOTION_TYPE; }
+        void MoveToNextNode(CreatureTraveller &traveller);
 
     private:
         WaypointData *node;

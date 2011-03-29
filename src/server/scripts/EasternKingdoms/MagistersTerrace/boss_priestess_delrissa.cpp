@@ -299,11 +299,14 @@ public:
             if (DispelTimer <= diff)
             {
                 Unit *pTarget = NULL;
+//                bool friendly = false;
 
                 if (urand(0,1))
-                    pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true);
+                    pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true);
                 else
                 {
+//                    friendly = true;
+
                     if (urand(0,1))
                         pTarget = me;
                     else
@@ -320,7 +323,7 @@ public:
 
             if (SWPainTimer <= diff)
             {
-                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))
                     DoCast(pTarget, SPELL_SW_PAIN_NORMAL);
 
                 SWPainTimer = 10000;

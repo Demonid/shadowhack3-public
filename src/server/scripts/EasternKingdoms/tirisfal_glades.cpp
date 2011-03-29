@@ -106,7 +106,7 @@ public:
 
                 m_uiPhase = 1;
 
-                if (pDoneBy->GetTypeId() == TYPEID_PLAYER)
+                if (pDoneBy->GetTypeId() == TYPEID_PLAYER)  //Q: pet?
                     m_uiPlayerGUID = pDoneBy->GetGUID();
             }
         }

@@ -99,7 +99,7 @@ float Spawns[6][2]=
 #define SPELL_TUXEDO        32616
 
 #define SPAWN_Z             90.5f
-#define SPAWN_Y             -1758
+#define SPAWN_Y             -1758.f
 #define SPAWN_O             4.738f
 
 class npc_barnes : public CreatureScript
@@ -254,7 +254,7 @@ public:
 
                 if (Creature* pCreature = me->SummonCreature(entry, PosX, SPAWN_Y, SPAWN_Z, SPAWN_O, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, HOUR*2*IN_MILLISECONDS))
                 {
-                    // In case database has bad flags
+                    // In case database has bad flags   //Q: remove it?
                     pCreature->SetUInt32Value(UNIT_FIELD_FLAGS, 0);
                     pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 }
@@ -523,7 +523,7 @@ public:
         {
             Step = 1;
             EventStarted = true;
-            Creature* Arcanagos = me->SummonCreature(MOB_ARCANAGOS,ArcanagosPos[0],ArcanagosPos[1],ArcanagosPos[2],0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,20000);
+            Creature* Arcanagos = me->SummonCreature(MOB_ARCANAGOS,ArcanagosPos[0],ArcanagosPos[1],ArcanagosPos[2],0.f,TEMPSUMMON_CORPSE_TIMED_DESPAWN,20000);
             if (!Arcanagos)
                 return;
             ArcanagosGUID = Arcanagos->GetGUID();

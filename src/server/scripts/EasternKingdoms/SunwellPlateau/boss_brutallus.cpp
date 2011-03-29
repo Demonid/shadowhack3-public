@@ -324,14 +324,14 @@ public:
             if (BurnTimer <= diff)
             {
                 std::list<Unit*> pTargets;
-                SelectTargetList(pTargets, 10, SELECT_TARGET_RANDOM, 100, true);
+                SelectTargetList(pTargets, 10, SELECT_TARGET_RANDOM, 100.0f, true);
                 for (std::list<Unit*>::const_iterator i = pTargets.begin(); i != pTargets.end(); ++i)
                     if (!(*i)->HasAura(SPELL_BURN))
                     {
                         (*i)->CastSpell((*i), SPELL_BURN, true);
                         break;
                     }
-                BurnTimer = urand(60000,180000);
+                BurnTimer = urand(60000,180000);    //Q: pTargets.clear() ?
             } else BurnTimer -= diff;
 
             if (BerserkTimer < diff && !Enraged)

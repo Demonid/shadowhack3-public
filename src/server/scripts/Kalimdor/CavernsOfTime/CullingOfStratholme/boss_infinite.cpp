@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
  * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -20,15 +21,8 @@
 
 enum Spells
 {
-    SPELL_CORRUPTING_BLIGHT                     = 60588,
-    SPELL_VOID_STRIKE                           = 60590
-};
-
-enum Yells
-{
-    SAY_AGGRO                                   = -1595045,
-    SAY_FAIL                                    = -1595046,
-    SAY_DEATH                                   = -1595047
+	SPELL_COURSE      = 60588,
+	SPELL_STRIKE      = 60590
 };
 
 class boss_infinite_corruptor : public CreatureScript
@@ -45,39 +39,74 @@ public:
     {
         boss_infinite_corruptorAI(Creature *c) : ScriptedAI(c)
         {
-            pInstance = c->GetInstanceScript();
+            m_pInstance = c->GetInstanceScript();
+            Reset();
         }
 
-        InstanceScript* pInstance;
+        InstanceScript* m_pInstance;
 
-        void Reset()
-        {
-            if (pInstance)
-                pInstance->SetData(DATA_INFINITE_EVENT, NOT_STARTED);
-        }
+		uint32 m_uiStrikeTimer;
+		uint32 m_uiCourseTimer;
 
-        void EnterCombat(Unit* /*who*/)
-        {
-            if (pInstance)
-                pInstance->SetData(DATA_INFINITE_EVENT, IN_PROGRESS);
-        }
+		void Reset() 
+		{
+			m_uiCourseTimer = 7000;
+			m_uiStrikeTimer = 5000;
+		}
 
-        void AttackStart(Unit* /*who*/) {}
-        void MoveInLineOfSight(Unit* /*who*/) {}
-        void UpdateAI(const uint32 /*diff*/)
-        {
-            //Return since we have no target
-            if (!UpdateVictim())
-                return;
+		void EnterCombat(Unit* who)
+		{
+			if(m_pInstance)
+				m_pInstance->SetData(TYPE_BONUS, SPECIAL);
+		}
 
-            DoMeleeAttackIfReady();
-        }
+		void JustDied(Unit *killer)
+		{
+			if(m_pInstance)
+				m_pInstance->SetData(TYPE_BONUS, DONE);
+		}
 
-        void JustDied(Unit* /*killer*/)
-        {
-            if (pInstance)
-                pInstance->SetData(DATA_INFINITE_EVENT, DONE);
-        }
+		void EnterEvadeMode()
+		{
+			if(!m_pInstance) return;
+
+			me->RemoveAllAuras();
+			me->DeleteThreatList();
+			me->CombatStop(true);
+			me->LoadCreaturesAddon();
+			if(m_pInstance)
+				m_pInstance->SetData(TYPE_BONUS, IN_PROGRESS);
+
+			if(me->isAlive())
+				me->GetMotionMaster()->MoveTargetedHome();  //Q: should we avoid it? simply ScriptedAI::EnterEvadeMode
+
+			me->SetLootRecipient(NULL);
+
+			Reset();
+		}
+
+		void UpdateAI(const uint32 diff)
+		{
+			if (!UpdateVictim())
+				return;
+
+			DoMeleeAttackIfReady();
+
+			if (m_uiCourseTimer < diff)
+			{
+				if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 60.0f, true))
+					DoCast(target, SPELL_COURSE);
+
+				m_uiCourseTimer = 17000;
+			}else m_uiCourseTimer -= diff;
+
+			if (m_uiStrikeTimer < diff)
+			{
+				DoCastVictim(SPELL_STRIKE);
+
+				m_uiStrikeTimer = 5000;
+			}else m_uiStrikeTimer -= diff;
+		}
     };
 
 };

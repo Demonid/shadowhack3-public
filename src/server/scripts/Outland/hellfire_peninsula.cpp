@@ -460,13 +460,188 @@ public:
 };
 
 /*######
+## npc_incandescent_fel_spark
+######*/
+
+enum eIncandescentFelSpark
+{
+    NPC_INCANDESCENT_FEL_SPARK	= 22323,
+    NPC_LIVING_FLARE			= 24916
+};
+class npc_incandescent_fel_spark : public CreatureScript
+{
+public:
+    npc_incandescent_fel_spark() : CreatureScript("npc_incandescent_fel_spark") {}
+
+    struct npc_incandescent_fel_sparkAI : public ScriptedAI
+    {
+        npc_incandescent_fel_sparkAI(Creature *pCreature) : ScriptedAI(pCreature)
+        {
+            if (pCreature->GetEntry() != NPC_INCANDESCENT_FEL_SPARK)
+            {
+                sLog->outError("npc_incandescent_fel_spark: wrong script assignment to entry %u. Check your DB!",pCreature->GetEntry());
+                pCreature->DespawnOrUnsummon();
+            }
+        }
+
+        void JustDied(Unit *killer)
+        {
+            Player *quester = killer->isPet() ? killer->GetCharmerOrOwnerPlayerOrPlayerItself() : killer->ToPlayer();
+            if (!quester) return;
+            Creature *flare = me->FindNearestCreature(NPC_LIVING_FLARE, 10.0f, true);
+            if (!flare) return;
+            flare->AI()->DoAction(NPC_INCANDESCENT_FEL_SPARK);
+        }
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_incandescent_fel_sparkAI(pCreature);
+    }
+};
+
+/*######
+## npc_living_flare
+######*/
+
+enum eLivingFlare
+{
+    NPC_UNSTABLE_LIVING_FLARE	= 24958,
+    TEXTID_ABSORBING_FEL_ENERGY	= -1999955,
+    TEXTID_BECOMING_UNSTABLE	= -1999956
+};
+
+class npc_living_flare : public CreatureScript
+{
+public:
+    npc_living_flare() : CreatureScript("npc_living_flare") {}
+
+    struct npc_living_flareAI : public ScriptedAI
+    {
+        npc_living_flareAI(Creature *pCreature): ScriptedAI(pCreature)
+        {
+            if (pCreature->GetEntry() != NPC_LIVING_FLARE)
+            {
+                sLog->outError("npc_living_flare: wrong script assignment to entry %u. Check your DB!",pCreature->GetEntry());
+                pCreature->DespawnOrUnsummon();
+                return;
+            }
+            if (! (ownerGUID = pCreature->GetCharmerOrOwnerGUID()))
+            {
+                sLog->outError("npc_living_flare: wrong script use, no owner GUID!");
+                pCreature->DespawnOrUnsummon();
+                return;
+            }
+            Reset();
+        }
+
+        uint64 ownerGUID;
+        uint32 uiTimer;	// only to check if owning player is alive, each 30 sec
+        int8 numCharges, maxCharges;
+
+        void UpdateAI(const uint32 uiDiff)
+        {
+            if (uiTimer < uiDiff)
+            {
+                if (Player *pPlayer = Player::GetPlayer(*me, ownerGUID))
+                    if (pPlayer->isDead())
+                        me->DespawnOrUnsummon();
+
+                uiTimer = 30000;
+            }
+            else uiTimer -= uiDiff;
+        }
+
+        void DoAction(const int32 param)
+        {
+            if (param != NPC_INCANDESCENT_FEL_SPARK) return;
+            Player *q = Player::GetPlayer(*me, ownerGUID);
+            if (++numCharges < maxCharges)
+            {
+                DoScriptText(TEXTID_ABSORBING_FEL_ENERGY, me, q);
+                return;
+            }
+            TempSummon *ulf = q->SummonCreature(NPC_UNSTABLE_LIVING_FLARE,q->GetPositionX(),q->GetPositionY(),q->GetPositionZ(),0.0f,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,300000);
+            ulf->SetCharmerGUID(q->GetGUID());
+            ulf->GetMotionMaster()->MoveFollow(q, 5.0f, 0.0f);
+            DoScriptText(TEXTID_BECOMING_UNSTABLE, me, q);
+            me->DespawnOrUnsummon();
+	    }
+
+	    void Reset() { numCharges = 0; maxCharges = urand(6,10); uiTimer = 30000; }
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_living_flareAI(pCreature);
+    }
+};
+
+/*######
+## npc_unstable_living_flare
+######*/
+
+enum eUnstableLivingFlare
+{
+    SPELL_UNSTABLE_LIVING_FLARE_COSMETIC	= 46196,
+    SPELL_QUEST_LIVING_FLARE_UNSTABLE		= 44943,
+    AREAID_THRONE_OF_KILJAEDEN				= 3547,
+    QUEST_BLAST_THE_GATEWAY					= 11516,
+};
+
+#define LEGION_PORTAL_X	837.831299f
+#define LEGION_PORTAL_Y	2514.727783f
+
+class npc_unstable_living_flare : public CreatureScript
+{
+public:
+    npc_unstable_living_flare() : CreatureScript("npc_unstable_living_flare") {}
+    struct npc_unstable_living_flareAI : public ScriptedAI
+    {
+        npc_unstable_living_flareAI(Creature *pCreature): ScriptedAI(pCreature)
+        {
+            if (pCreature->GetEntry() != NPC_UNSTABLE_LIVING_FLARE)
+            {
+                sLog->outError("npc_unstable_living_flare: wrong script assignment to entry %u. Check your DB!",pCreature->GetEntry());
+                pCreature->DespawnOrUnsummon();
+            }
+            uiTimer = 5000;
+	    }
+
+        uint32 uiTimer;	// check every 5 sec, only to spare CPU time
+
+        void UpdateAI(const uint32 uiDiff)
+        {
+            if (uiTimer < uiDiff)
+            {
+                if (me->GetAreaId() != AREAID_THRONE_OF_KILJAEDEN || me->GetDistanceSqr(LEGION_PORTAL_X,LEGION_PORTAL_Y,me->GetPositionZ()) > 25.)
+                {
+                    uiTimer = 5000;
+                    return;
+                }
+                DoCast(SPELL_QUEST_LIVING_FLARE_UNSTABLE);
+                Player *owner = Player::GetPlayer(*me, me->GetCharmerGUID());
+                me->SetCharmerGUID(0);
+                me->DespawnOrUnsummon();
+                if (! owner) return;
+                if (owner->GetQuestStatus(QUEST_BLAST_THE_GATEWAY) == QUEST_STATUS_INCOMPLETE) owner->AreaExploredOrEventHappens(QUEST_BLAST_THE_GATEWAY);
+            }
+            else uiTimer -= uiDiff;
+        }
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_unstable_living_flareAI(pCreature);
+    }
+};
+/*######
 ## npc_fel_guard_hound
 ######*/
 
 enum eFelGuard
 {
     SPELL_SUMMON_POO                              = 37688,
-
     NPC_DERANGED_HELBOAR                          = 16863
 };
 
@@ -541,5 +716,8 @@ void AddSC_hellfire_peninsula()
     new npc_tracy_proudwell();
     new npc_trollbane();
     new npc_wounded_blood_elf();
+    new npc_incandescent_fel_spark();
+    new npc_living_flare();
+    new npc_unstable_living_flare();
     new npc_fel_guard_hound();
 }

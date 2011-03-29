@@ -73,6 +73,7 @@ enum eEnums
 #define GOSSIP_ID_START_1       698  //Naralex sleeps again!
 #define GOSSIP_ID_START_2       699  //The fanglords are dead!
 #define GOSSIP_ITEM_NARALEX     "Let the event begin!"
+#define GOSSIP_ITEM_NARALEX_RU  "Ну, поехали!"
 #define ACHIEVEMENT_WAILING_CAVERNS 630
 
 class npc_disciple_of_naralex : public CreatureScript
@@ -117,7 +118,7 @@ public:
             if ((pInstance->GetData(TYPE_LORD_COBRAHN) == DONE) && (pInstance->GetData(TYPE_LORD_PYTHAS) == DONE) &&
                 (pInstance->GetData(TYPE_LADY_ANACONDRA) == DONE) && (pInstance->GetData(TYPE_LORD_SERPENTIS) == DONE))
             {
-                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_NARALEX, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, (pPlayer->isRussianLocale()) ? GOSSIP_ITEM_NARALEX_RU:GOSSIP_ITEM_NARALEX, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
                 pPlayer->SEND_GOSSIP_MENU(GOSSIP_ID_START_2, pCreature->GetGUID());
 
                 if (!pInstance->GetData(TYPE_NARALEX_YELLED))
@@ -228,8 +229,8 @@ public:
                             {
                                 ++eventProgress;
                                 DoScriptText(SAY_TEMPLE_OF_PROMISE, me);
-                                me->SummonCreature(NPC_DEVIATE_RAVAGER, -82.1763f, 227.874f, -93.3233f, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
-                                me->SummonCreature(NPC_DEVIATE_RAVAGER, -72.9506f, 216.645f, -93.6756f, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
+                                me->SummonCreature(NPC_DEVIATE_RAVAGER, -82.1763f, 227.874f, -93.3233f, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
+                                me->SummonCreature(NPC_DEVIATE_RAVAGER, -72.9506f, 216.645f, -93.6756f, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
                             }
                         break;
                         case TYPE_NARALEX_PART2:
@@ -240,9 +241,9 @@ public:
                                 DoCast(me, SPELL_SERPENTINE_CLEANSING);
                                 //CAST_AI(npc_escort::npc_escortAI, me->AI())->SetCanDefend(false);
                                 eventTimer = 30000;
-                                me->SummonCreature(NPC_DEVIATE_VIPER, -61.5261f, 273.676f, -92.8442f, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
-                                me->SummonCreature(NPC_DEVIATE_VIPER, -58.4658f, 280.799f, -92.8393f, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
-                                me->SummonCreature(NPC_DEVIATE_VIPER, -50.002f,  278.578f, -92.8442f, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
+                                me->SummonCreature(NPC_DEVIATE_VIPER, -61.5261f, 273.676f, -92.8442f, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
+                                me->SummonCreature(NPC_DEVIATE_VIPER, -58.4658f, 280.799f, -92.8393f, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
+                                me->SummonCreature(NPC_DEVIATE_VIPER, -50.002f,  278.578f, -92.8442f, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
                             }
                             else
                             if (eventProgress == 2)
@@ -279,9 +280,9 @@ public:
                                 eventTimer = 15000;
                                 if (Creature* naralex = pInstance->instance->GetCreature(pInstance->GetData64(DATA_NARALEX)))
                                     DoScriptText(EMOTE_TROUBLED_SLEEP, naralex);
-                                me->SummonCreature(NPC_DEVIATE_MOCCASIN, 135.943f, 199.701f, -103.529f, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
-                                me->SummonCreature(NPC_DEVIATE_MOCCASIN, 151.08f,  221.13f,  -103.609f, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
-                                me->SummonCreature(NPC_DEVIATE_MOCCASIN, 128.007f, 227.428f, -97.421f, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
+                                me->SummonCreature(NPC_DEVIATE_MOCCASIN, 135.943f, 199.701f, -103.529f, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
+                                me->SummonCreature(NPC_DEVIATE_MOCCASIN, 151.08f,  221.13f,  -103.609f, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
+                                me->SummonCreature(NPC_DEVIATE_MOCCASIN, 128.007f, 227.428f, -97.421f, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
                             }
                             else
                             if (eventProgress == 4)
@@ -290,13 +291,13 @@ public:
                                 eventTimer = 30000;
                                 if (Creature* naralex = pInstance->instance->GetCreature(pInstance->GetData64(DATA_NARALEX)))
                                     DoScriptText(EMOTE_WRITHE_IN_AGONY, naralex);
-                                me->SummonCreature(NPC_NIGHTMARE_ECTOPLASM, 133.413f, 207.188f, -102.469f, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
-                                me->SummonCreature(NPC_NIGHTMARE_ECTOPLASM, 142.857f, 218.645f, -102.905f, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
-                                me->SummonCreature(NPC_NIGHTMARE_ECTOPLASM, 105.102f, 227.211f, -102.752f, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
-                                me->SummonCreature(NPC_NIGHTMARE_ECTOPLASM, 153.372f, 235.149f, -102.826f, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
-                                me->SummonCreature(NPC_NIGHTMARE_ECTOPLASM, 149.524f, 251.113f, -102.558f, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
-                                me->SummonCreature(NPC_NIGHTMARE_ECTOPLASM, 136.208f, 266.466f, -102.977f, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
-                                me->SummonCreature(NPC_NIGHTMARE_ECTOPLASM, 126.167f, 274.759f, -102.962f, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
+                                me->SummonCreature(NPC_NIGHTMARE_ECTOPLASM, 133.413f, 207.188f, -102.469f, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
+                                me->SummonCreature(NPC_NIGHTMARE_ECTOPLASM, 142.857f, 218.645f, -102.905f, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
+                                me->SummonCreature(NPC_NIGHTMARE_ECTOPLASM, 105.102f, 227.211f, -102.752f, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
+                                me->SummonCreature(NPC_NIGHTMARE_ECTOPLASM, 153.372f, 235.149f, -102.826f, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
+                                me->SummonCreature(NPC_NIGHTMARE_ECTOPLASM, 149.524f, 251.113f, -102.558f, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
+                                me->SummonCreature(NPC_NIGHTMARE_ECTOPLASM, 136.208f, 266.466f, -102.977f, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
+                                me->SummonCreature(NPC_NIGHTMARE_ECTOPLASM, 126.167f, 274.759f, -102.962f, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
                             }
                             else
                             if (eventProgress == 5)
@@ -304,7 +305,7 @@ public:
                                 ++eventProgress;
                                 if (Creature* naralex = pInstance->instance->GetCreature(pInstance->GetData64(DATA_NARALEX)))
                                     DoScriptText(EMOTE_HORRENDOUS_VISION, naralex);
-                                me->SummonCreature(NPC_MUTANUS_THE_DEVOURER, 150.872f, 262.905f, -103.503f, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 300000);
+                                me->SummonCreature(NPC_MUTANUS_THE_DEVOURER, 150.872f, 262.905f, -103.503f, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 300000);
                                 DoScriptText(SAY_MUTANUS_THE_DEVOURER, me);
                                 pInstance->SetData(TYPE_MUTANUS_THE_DEVOURER, IN_PROGRESS);
                             }

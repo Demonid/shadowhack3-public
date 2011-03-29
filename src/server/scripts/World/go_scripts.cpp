@@ -432,7 +432,7 @@ public:
         uint32 BirdEntry = 0;
 
         float fX, fY, fZ;
-        pGO->GetClosePoint(fX, fY, fZ, pGO->GetObjectSize(), INTERACTION_DISTANCE);
+        pGO->GetClosePoint(fX, fY, fZ, pGO->GetObjectSize(), INTERACTION_DISTANCE, 0.0f);
 
         switch(pGO->GetEntry())
         {

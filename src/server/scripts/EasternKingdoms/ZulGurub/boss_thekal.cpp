@@ -188,7 +188,7 @@ class boss_thekal : public CreatureScript
                         if (m_pInstance)
                             m_pInstance->SetData(TYPE_THEKAL, SPECIAL);
 
-                        WasDead=true;
+                        WasDead = true;
                     }
 
                     //Thekal will transform to Tiger if he died and was not resurrected after 10 seconds.

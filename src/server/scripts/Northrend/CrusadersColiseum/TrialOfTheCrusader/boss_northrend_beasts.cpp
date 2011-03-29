@@ -123,7 +123,8 @@ public:
     {
         boss_gormokAI(Creature* pCreature) : ScriptedAI(pCreature), Summons(me)
         {
-            m_pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+            m_pInstance = pCreature->GetInstanceScript();
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
         }
 
         InstanceScript* m_pInstance;
@@ -238,9 +239,10 @@ public:
     {
         mob_snobold_vassalAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
-            m_pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+            m_pInstance = pCreature->GetInstanceScript();
             if (m_pInstance)
                 m_pInstance->SetData(DATA_SNOBOLD_COUNT, INCREASE);
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
         }
 
         InstanceScript* m_pInstance;
@@ -362,6 +364,7 @@ struct boss_jormungarAI : public ScriptedAI
     boss_jormungarAI(Creature* creature) : ScriptedAI(creature)
     {
         instanceScript = creature->GetInstanceScript();
+        creature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
     }
 
     void Reset()
@@ -477,7 +480,7 @@ struct boss_jormungarAI : public ScriptedAI
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 DoCast(me, SPELL_SUBMERGE_0);
                 DoScriptText(SAY_SUBMERGE, me);
-                me->GetMotionMaster()->MovePoint(0, ToCCommonLoc[1].GetPositionX()+urand(0, 80)-40, ToCCommonLoc[1].GetPositionY()+urand(0, 80)-40, ToCCommonLoc[1].GetPositionZ());
+                me->GetMotionMaster()->MovePoint(0, ToCCommonLoc[1].GetPositionX()+urand(0, 80)-40, ToCCommonLoc[1].GetPositionY()+urand(0, 80)-40, ToCCommonLoc[1].GetPositionZ(), false);
                 stage = 2;
             case 2: // Wait til emerge
                 if (submergeTimer <= uiDiff)
@@ -523,7 +526,7 @@ struct boss_jormungarAI : public ScriptedAI
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 DoCast(me, SPELL_SUBMERGE_0);
                 DoScriptText(SAY_SUBMERGE, me);
-                me->GetMotionMaster()->MovePoint(0, ToCCommonLoc[1].GetPositionX()+urand(0, 80)-40, ToCCommonLoc[1].GetPositionY()+urand(0, 80)-40, ToCCommonLoc[1].GetPositionZ());
+                me->GetMotionMaster()->MovePoint(0, ToCCommonLoc[1].GetPositionX()+urand(0, 80)-40, ToCCommonLoc[1].GetPositionY()+urand(0, 80)-40, ToCCommonLoc[1].GetPositionZ(), false);
                 stage = 6;
             case 6: // Wait til emerge
                 if (submergeTimer <= uiDiff)
@@ -576,7 +579,10 @@ class boss_acidmaw : public CreatureScript
 
     struct boss_acidmawAI : public boss_jormungarAI
     {
-        boss_acidmawAI(Creature* pCreature) : boss_jormungarAI(pCreature) { }
+        boss_acidmawAI(Creature* pCreature) : boss_jormungarAI(pCreature)
+        {
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+        }
 
         void Reset()
         {
@@ -608,7 +614,10 @@ public:
 
     struct boss_dreadscaleAI : public boss_jormungarAI
     {
-        boss_dreadscaleAI(Creature* pCreature) : boss_jormungarAI(pCreature) { }
+        boss_dreadscaleAI(Creature* pCreature) : boss_jormungarAI(pCreature)
+        {
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+        }
 
         void Reset()
         {
@@ -646,6 +655,7 @@ public:
     {
         mob_slime_poolAI(Creature *pCreature) : ScriptedAI(pCreature)
         {
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
         }
 
         bool casted;
@@ -681,7 +691,8 @@ public:
     {
         boss_icehowlAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
-            m_pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+            m_pInstance = pCreature->GetInstanceScript();
+            pCreature->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
         }
 
         InstanceScript* m_pInstance;
@@ -822,6 +833,7 @@ public:
                     break;
                 case 1:
                     DoCastAOE(SPELL_MASSIVE_CRASH);
+                    me->GetMotionMaster()->MovementExpired();
                     m_uiStage = 2;
                     break;
                 case 2:
@@ -858,7 +870,7 @@ public:
                     break;
                 case 4:
                     DoScriptText(SAY_TRAMPLE_START, me);
-                    me->GetMotionMaster()->MoveCharge(m_fTrampleTargetX, m_fTrampleTargetY, m_fTrampleTargetZ+2, 42, 1);
+                    me->GetMotionMaster()->MoveCharge(m_fTrampleTargetX, m_fTrampleTargetY, m_fTrampleTargetZ+2.0f, 42.0f, 1);
                     me->SetUInt64Value(UNIT_FIELD_TARGET, 0);
                     m_uiStage = 5;
                     break;

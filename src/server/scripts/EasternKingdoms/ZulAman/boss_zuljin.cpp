@@ -368,7 +368,7 @@ class boss_zuljin : public CreatureScript
                         DoCast(me, SPELL_ENERGY_STORM, true); // enemy aura
                         for (uint8 i = 0; i < 4; ++i)
                         {
-                            Creature* Vortex = DoSpawnCreature(CREATURE_FEATHER_VORTEX, 0, 0, 0, 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
+                            Creature* Vortex = DoSpawnCreature(CREATURE_FEATHER_VORTEX, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_CORPSE_DESPAWN, 0);
                             if (Vortex)
                             {
                                 Vortex->CastSpell(Vortex, SPELL_CYCLONE_PASSIVE, true);
@@ -381,7 +381,7 @@ class boss_zuljin : public CreatureScript
                         }
                     }
                     else
-                        me->AI()->AttackStart(me->getVictim());
+                        AttackStart(me->getVictim());
                     if (NextPhase == 3)
                     {
                         me->RemoveAurasDueToSpell(SPELL_ENERGY_STORM);
@@ -435,7 +435,7 @@ class boss_zuljin : public CreatureScript
 
                     if (Grievous_Throw_Timer <= diff)
                     {
-                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))
                             DoCast(pTarget, SPELL_GRIEVOUS_THROW, false);
                         Grievous_Throw_Timer = 10000;
                     } else Grievous_Throw_Timer -= diff;

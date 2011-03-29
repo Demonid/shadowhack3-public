@@ -36,7 +36,7 @@ EndContentData */
 
 enum eMist
 {
-    SAY_AT_HOME             = -1000323,
+    SAY_AT_HOME             = -1000323, //DB: old were at -1000411
     EMOTE_AT_HOME           = -1000324,
     QUEST_MIST              = 938,
     NPC_ARYNIA              = 3519,

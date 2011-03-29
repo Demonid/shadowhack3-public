@@ -67,8 +67,8 @@ public:
             {
                 case 0:
                     spawnCreatureID = 17681;
-                    if (Killer->GetTypeId() == TYPEID_PLAYER)
-                        CAST_PLR(Killer)->KilledMonsterCredit(spawnCreatureID, 0);
+                    if (Player* pPlayer = Killer->GetCharmerOrOwnerPlayerOrPlayerItself())
+                        pPlayer->GroupKillHappens(spawnCreatureID, me);
                     break;
                 case 1:
                 case 2:
@@ -78,7 +78,7 @@ public:
 
             if (spawnCreatureID)
                 me->SummonCreature(spawnCreatureID, 0.0f, 0.0f, 0.0f, me->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000);
-        }
+        }   //Q: if freed 17681, should it say smth and DisappearAndDie?
     };
 
 };
@@ -89,7 +89,7 @@ public:
 
 #define C_SUNHAWK_TRIGGER 17974
 
-#define GOSSIP_HELLO_CSA     "[PH] "
+#define GOSSIP_HELLO_CSA     "[PH] "    //Q: find and move to DB?
 #define GOSSIP_SELECT_CSA1   "[PH] "
 #define GOSSIP_SELECT_CSA2   "[PH] "
 #define GOSSIP_SELECT_CSA3   "[PH] "

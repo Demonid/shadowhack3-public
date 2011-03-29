@@ -116,7 +116,7 @@ class boss_janalai : public CreatureScript
             {
                 pInstance =c->GetInstanceScript();
 
-                SpellEntry *TempSpell = GET_SPELL(SPELL_HATCH_EGG);
+                SpellEntry *TempSpell = GET_SPELL(SPELL_HATCH_EGG);     //Q: WTF? core bug?
                 if (TempSpell && TempSpell->EffectImplicitTargetA[0] != 1)
                 {
                     TempSpell->EffectImplicitTargetA[0] = 1;
@@ -154,7 +154,7 @@ class boss_janalai : public CreatureScript
                 EnrageTimer = MINUTE*5*IN_MILLISECONDS;
 
                 noeggs = false;
-                isBombing =false;
+                isBombing = false;
                 enraged = false;
 
                 isFlameBreathing = false;
@@ -226,7 +226,7 @@ class boss_janalai : public CreatureScript
                     dx = float(irand(-area_dx/2, area_dx/2));
                     dy = float(irand(-area_dy/2, area_dy/2));
 
-                    Creature* bomb = DoSpawnCreature(MOB_FIRE_BOMB, dx, dy, 0, 0, TEMPSUMMON_TIMED_DESPAWN, 15000);
+                    Creature* bomb = DoSpawnCreature(MOB_FIRE_BOMB, dx, dy, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 15000);
                     if (bomb) FireBombGUIDs[i] = bomb->GetGUID();
                 }
                 BombCount = 0;
@@ -244,7 +244,7 @@ class boss_janalai : public CreatureScript
                     cell.data.Part.reserved = ALL_DISTRICT;
                     cell.SetNoCreate();
 
-                    Trinity::AllCreaturesOfEntryInRange check(me, MOB_EGG, 100);
+                    Trinity::AllCreaturesOfEntryInRange check(me, MOB_EGG, 100.0f);
                     Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(me, templist, check);
 
                     TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> cSearcher(searcher);
@@ -278,7 +278,7 @@ class boss_janalai : public CreatureScript
                     cell.data.Part.reserved = ALL_DISTRICT;
                     cell.SetNoCreate();
 
-                    Trinity::AllCreaturesOfEntryInRange check(me, MOB_FIRE_BOMB, 100);
+                    Trinity::AllCreaturesOfEntryInRange check(me, MOB_FIRE_BOMB, 100.0f);
                     Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(me, templist, check);
 
                     TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> cSearcher(searcher);
@@ -387,7 +387,7 @@ class boss_janalai : public CreatureScript
                     for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                         if (Player* i_pl = i->getSource())
                             if (i_pl->isAlive())
-                                DoTeleportPlayer(i_pl, JanalainPos[0][0]-5+rand()%10, JanalainPos[0][1]-5+rand()%10, JanalainPos[0][2], 0);
+                                DoTeleportPlayer(i_pl, JanalainPos[0][0]-5+rand()%10, JanalainPos[0][1]-5+rand()%10, JanalainPos[0][2], 0.0f);
                     //DoCast(Temp, SPELL_SUMMON_PLAYERS, true) // core bug, spell does not work if too far
                     return;
                 } else BombTimer -= diff;
@@ -411,8 +411,8 @@ class boss_janalai : public CreatureScript
                         if (HatchAllEggs(0))
                         {
                             DoScriptText(SAY_SUMMON_HATCHER, me);
-                            me->SummonCreature(MOB_AMANI_HATCHER,hatcherway[0][0][0],hatcherway[0][0][1],hatcherway[0][0][2],0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,10000);
-                            me->SummonCreature(MOB_AMANI_HATCHER,hatcherway[1][0][0],hatcherway[1][0][1],hatcherway[1][0][2],0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,10000);
+                            me->SummonCreature(MOB_AMANI_HATCHER,hatcherway[0][0][0],hatcherway[0][0][1],hatcherway[0][0][2],0.0f,TEMPSUMMON_CORPSE_TIMED_DESPAWN,10000);
+                            me->SummonCreature(MOB_AMANI_HATCHER,hatcherway[1][0][0],hatcherway[1][0][1],hatcherway[1][0][2],0.0f,TEMPSUMMON_CORPSE_TIMED_DESPAWN,10000);
                             HatcherTimer = 90000;
                         }
                         else
@@ -445,7 +445,7 @@ class boss_janalai : public CreatureScript
         }
 };
 
-class mob_janalai_firebomb : public CreatureScript
+class mob_janalai_firebomb : public CreatureScript  //Q: to EAI entirely?
 {
     public:
 
@@ -530,7 +530,7 @@ class mob_janalai_hatcher : public CreatureScript
                     cell.data.Part.reserved = ALL_DISTRICT;
                     cell.SetNoCreate();
 
-                    Trinity::AllCreaturesOfEntryInRange check(me, 23817, 50);
+                    Trinity::AllCreaturesOfEntryInRange check(me, 23817, 50.0f);
                     Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(me, templist, check);
 
                     TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> cSearcher(searcher);
@@ -673,7 +673,7 @@ class mob_janalai_hatchling : public CreatureScript
         }
 };
 
-class mob_janalai_egg : public CreatureScript
+class mob_janalai_egg : public CreatureScript   //Q: to EAI entirely?
 {
 public:
 
@@ -700,7 +700,7 @@ public:
         {
             if (spell->Id == SPELL_HATCH_EGG)
             {
-                DoSpawnCreature(MOB_HATCHLING, 0, 0, 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 60000);
+                DoSpawnCreature(MOB_HATCHLING, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 60000);
                 me->SetDisplayId(11686);
             }
         }

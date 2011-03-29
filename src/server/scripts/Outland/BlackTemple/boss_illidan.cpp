@@ -471,6 +471,7 @@ public:
         {
             pInstance = c->GetInstanceScript();
             DoCast(me, SPELL_DUAL_WIELD, true);
+            c->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
 
             SpellEntry *TempSpell = GET_SPELL(SPELL_SHADOWFIEND_PASSIVE);
             if (TempSpell)
@@ -797,7 +798,7 @@ public:
             switch(FlightCount)
             {
             case 1://lift off
-                me->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
+                me->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);                
                 me->SetUnitMovementFlags(MOVEMENTFLAG_LEVITATING);
                 me->StopMoving();
                 me->MonsterYell(SAY_TAKEOFF, LANG_UNIVERSAL, 0);
