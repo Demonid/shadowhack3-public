@@ -18,7 +18,7 @@
 #ifndef DEF_EYE_OF_ETERNITY_H
 #define DEF_EYE_OF_ETERNITY_H
 
-enum InstanceData
+enum InstanceDatas
 {
     DATA_MALYGOS_EVENT,
     MAX_ENCOUNTER,
