@@ -1530,20 +1530,21 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
                 bool positive = m_originalCaster->IsFriendlyTo(unit);
                 //AuraApplication * aurApp = m_spellAura->GetApplicationOfTarget(m_originalCaster->GetGUID());
 
-                 // Mind Control
-                 if (m_spellInfo->Id == 605)
-                 {
-                     Unit * unit2 = ObjectAccessor::GetUnit(*m_caster, m_UniqueTargetInfo.begin()->targetGUID);
-                     if (Aura * aur = unit2->GetAura(605))
-                     {
-                         if (aur != m_spellAura)
-                         duration = aur->GetDuration();
-                     }
-                     // no aura, returning
-                     else if (const_cast<Unit*>(m_caster) == unit)
-                         duration = 0;
-                } 
-                else duration = m_originalCaster->ModSpellDuration(aurSpellInfo, unit, duration, positive);
+                // Mind Control
+                if (m_spellInfo->Id == 605)
+                {
+                    Unit * unit2 = ObjectAccessor::GetUnit(*m_caster, m_UniqueTargetInfo.begin()->targetGUID);
+                    if (Aura * aur = unit2->GetAura(605))
+                    {
+                        if (aur != m_spellAura)
+                        duration = aur->GetDuration();
+                    }
+                    // no aura, returning
+                    else if (const_cast<Unit*>(m_caster) == unit)
+                        duration = 0;
+                }
+                else if (m_spellInfo->Id != 1515) // Tame Beast
+                    duration = m_originalCaster->ModSpellDuration(aurSpellInfo, unit, duration, positive);
 
                 if (!duration && !damage)
                 {
@@ -5712,7 +5713,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                 bool AllowMount = !m_caster->GetMap()->IsDungeon() || m_caster->GetMap()->IsBattlegroundOrArena();
                 InstanceTemplate const *it = ObjectMgr::GetInstanceTemplate(m_caster->GetMapId());
                 if (it)
-                    AllowMount = it->allowMount;
+                    AllowMount = it->allowMount || m_caster->GetMap()->IsBattlegroundOrArena();
                 if (m_caster->GetTypeId() == TYPEID_PLAYER && !AllowMount && !m_IsTriggeredSpell && !m_spellInfo->AreaGroupId)
                     return SPELL_FAILED_NO_MOUNTS_ALLOWED;
 
@@ -6679,7 +6680,7 @@ void Spell::Delayed() // only called in DealDamage()
 
 void Spell::DelayedChannel()
 {
-    if (!m_caster || m_caster->GetTypeId() != TYPEID_PLAYER || getState() != SPELL_STATE_CASTING)
+    if (!m_caster || getState() != SPELL_STATE_CASTING)
         return;
 
     if (isDelayableNoMore())                                    // Spells may only be delayed twice
@@ -6688,7 +6689,8 @@ void Spell::DelayedChannel()
     //check pushback reduce
     int32 delaytime = CalculatePctN(GetSpellDuration(m_spellInfo), 25); // channeling delay is normally 25% of its time per hit
     int32 delayReduce = 100;                                    // must be initialized to 100 for percent modifiers
-    m_caster->ToPlayer()->ApplySpellMod(m_spellInfo->Id, SPELLMOD_NOT_LOSE_CASTING_TIME, delayReduce, this);
+    if(m_caster->GetTypeId() == TYPEID_PLAYER)
+        m_caster->ToPlayer()->ApplySpellMod(m_spellInfo->Id, SPELLMOD_NOT_LOSE_CASTING_TIME, delayReduce, this);
     delayReduce += m_caster->GetTotalAuraModifier(SPELL_AURA_REDUCE_PUSHBACK) - 100;
     if (delayReduce >= 100)
         return;

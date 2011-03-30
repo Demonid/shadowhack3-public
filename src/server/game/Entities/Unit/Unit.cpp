@@ -2115,7 +2115,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
     // parry & block chances
 
     // check if attack comes from behind, nobody can parry or block if attacker is behind
-    if (!pVictim->HasInArc(M_PI, this) && !pVictim->HasAuraType(SPELL_AURA_IGNORE_HIT_DIRECTION))
+    if ((!pVictim->HasInArc(M_PI,this) && !pVictim->HasAuraType(SPELL_AURA_IGNORE_HIT_DIRECTION)) || pVictim->HasUnitState(UNIT_STAT_STUNNED))
         sLog->outStaticDebug ("RollMeleeOutcomeAgainst: attack came from behind.");
     else
     {
@@ -2865,7 +2865,7 @@ void Unit::_UpdateSpells(uint32 time)
     // remove finished spells from current pointers
     for (uint32 i = 0; i < CURRENT_MAX_SPELL; ++i)
     {
-        if (m_currentSpells[i] && m_currentSpells[i]->getState() == SPELL_STATE_FINISHED)
+        if (m_currentSpells[i] && m_currentSpells[i]->getState() == SPELL_STATE_FINISHED && !IsChanneledSpell(m_currentSpells[i]->m_spellInfo))
         {
             m_currentSpells[i]->SetReferencedFromCurrent(false);
             m_currentSpells[i] = NULL;                      // remove pointer
@@ -13028,8 +13028,9 @@ void Unit::ModSpellCastTime(SpellEntry const* spellProto, int32 & castTime, Spel
     if (!spellProto || castTime < 0)
         return;
     //called from caster
-    if (Player* modOwner = GetSpellModOwner())
-        modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_CASTING_TIME, castTime, spell);
+    if (!IsChanneledSpell(spellProto))
+        if (Player* modOwner = GetSpellModOwner())
+            modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_CASTING_TIME, castTime, spell);
 
     if (!(spellProto->Attributes & (SPELL_ATTR0_UNK4|SPELL_ATTR0_TRADESPELL)) && spellProto->SpellFamilyName)
         castTime = int32(float(castTime) * GetFloatValue(UNIT_MOD_CAST_SPEED));

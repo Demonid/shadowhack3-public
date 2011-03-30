@@ -453,7 +453,7 @@ void GameObject::Update(uint32 diff)
 
                         m_cooldownTime = time(NULL) + goInfo->trap.cooldown ? goInfo->trap.cooldown :  uint32(4);   // template or 4 seconds
 
-                        if (owner)  // || goInfo->trap.charges == 1)
+                        if (owner || (goInfo->trap.spellId == 34709)) // Shadow Sight
                             SetLootState(GO_JUST_DEACTIVATED);
 
                         if (IsBattlegroundTrap && ok->GetTypeId() == TYPEID_PLAYER)

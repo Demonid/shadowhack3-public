@@ -55,6 +55,27 @@ void BattlegroundDS::Update(uint32 diff)
             UpdateArenaWorldState();
             CheckArenaAfterTimerConditions();
         }
+        // knockback
+        if(m_uiKnockback < diff)
+        {
+            for(BattlegroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
+            {
+                Player * plr = sObjectMgr->GetPlayer(itr->first);
+                
+                if(plr->getClass() == CLASS_WARLOCK)
+                    if(GameObject* obj = plr->GetGameObject(48018))
+                        if(obj->GetPositionZ()>12)
+                            plr->RemoveAurasDueToSpell(48018);
+                        
+                if (plr && plr->GetDistance2d(1214, 765) <= 50 && plr->IsWithinLOS(1214,765,14))
+                    plr->KnockBackWithAngle(6.40f,55,7);
+                if (plr && plr->GetDistance2d(1369, 817) <= 50 && plr->IsWithinLOS(1369,817,14))
+                    plr->KnockBackWithAngle(3.03f,55,7);
+            }
+            m_uiKnockback = 1000;
+        }
+        else
+            m_uiKnockback -= diff;
     }
 
     if (getWaterFallTimer() < diff)
@@ -116,7 +137,7 @@ void BattlegroundDS::StartingEventOpenDoors()
         DoorOpen(i);
 
     for (uint32 i = BG_DS_OBJECT_BUFF_1; i <= BG_DS_OBJECT_BUFF_2; ++i)
-        SpawnBGObject(i, 60);
+        SpawnBGObject(i, 90);
 
     setWaterFallTimer(urand(BG_DS_WATERFALL_TIMER_MIN, BG_DS_WATERFALL_TIMER_MAX));
     setKnockBackTimer(3000);
@@ -199,8 +220,10 @@ void BattlegroundDS::Reset()
     setKnockBackTimer(3000);
 }
 
+
 bool BattlegroundDS::SetupBattleground()
 {
+    m_uiKnockback=10000;
     // gates
     if (!AddObject(BG_DS_OBJECT_DOOR_1, BG_DS_OBJECT_TYPE_DOOR_1, 1350.95f, 817.2f, 20.8096f, 3.15f, 0, 0, 0.99627f, 0.0862864f, RESPAWN_IMMEDIATELY)
         || !AddObject(BG_DS_OBJECT_DOOR_2, BG_DS_OBJECT_TYPE_DOOR_2, 1232.65f, 764.913f, 20.0729f, 6.3f, 0, 0, 0.0310211f, -0.999519f, RESPAWN_IMMEDIATELY)
