@@ -465,7 +465,7 @@ void WardenMgr::AskValidateCheatChecks(WorldSession* const session, WorldPacket&
 
 void WardenMgr::ReactToCheatCheckResult(WorldSession* const session, bool result, bool immediate)
 {
-    sLog->outStaticDebug("ReactToCheatCheckResult %s %s",result?"true":"false",immediate?"true":"false");
+    sLog->outStaticDebug("ReactToCheatCheckResult %s %s", result ? "true":"false", immediate ? "true":"false");
     if (result)
     {
         session->SetWardenStatus(WARD_STATUS_CHEAT_CHECK_IN);
@@ -479,6 +479,7 @@ void WardenMgr::ReactToCheatCheckResult(WorldSession* const session, bool result
     {
         if (World::WardenCanBan())
         {
+            sLog->outCheater("Warden: cheat check failed for player %s", session->GetPlayerName());
             sWorld->BanAccount(BAN_CHARACTER, session->GetPlayerName(), World::GetWardenBanTime(), "cheater autoban", "Izb00shka Warden");
         }
         else
