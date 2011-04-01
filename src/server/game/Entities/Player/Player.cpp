@@ -1443,7 +1443,7 @@ void Player::HandleDrowning(uint32 time_diff)
                     EnvironmentalDamage(DAMAGE_LAVA, damage);
                 // need to skip Slime damage in Undercity,
                 // maybe someone can find better way to handle environmental damage
-                else if (m_zoneUpdateId != 1497)
+                else /*if (m_zoneUpdateId != 1497)*/
                     EnvironmentalDamage(DAMAGE_SLIME, damage);
             }
         }
@@ -7172,8 +7172,17 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, int32 honor, bool pvpt
 
     
     // Don't gain honor if Antipereliv on at all except bgs, orgrimar and stormwind
-    if (sWorld->getBoolConfig(CONFIG_ANTIPERELIV) && !InBattleground() && GetZoneId() !=41 && GetZoneId() != 8 && GetZoneId() != 10 && uVictim)
-        return false;
+    if (sWorld->getBoolConfig(CONFIG_ANTIPERELIV) && !InBattleground() && uVictim)
+        switch (GetZoneId())
+        {
+            case 41:    // Deadwin pass
+            case 8:     // Swamp of Sorrows
+            case 10:    // Duskwood
+            case 1497:  // 
+            case 85:    // Undercity
+                break;
+            default: return false;
+        }
     // 'Inactive' this aura prevents the player from gaining honor points and battleground tokens
     if (HasAura(SPELL_AURA_PLAYER_INACTIVE))
         return false;
@@ -7338,8 +7347,18 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, int32 honor, bool pvpt
                 || (MapType == 2 && !HasByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP))
                 || (MapType == 3 && !InBattleground()))
                 return true;
-            if (MapType == 5 && GetZoneId() !=41 && GetZoneId() != 8 && GetZoneId() != 10)
-                return true;
+            if (MapType == 5)
+                switch (GetZoneId())
+                {
+                    case 41:    // Deadwin pass
+                    case 8:     // Swamp of Sorrows
+                    case 10:    // Duskwood
+                    case 1497:  // 
+                    case 85:    // Undercity
+                        break;
+                    default: return true;
+                }
+                
             uint32 itemId = sWorld->getIntConfig(CONFIG_PVP_TOKEN_ID);
             int32 count = sWorld->getIntConfig(CONFIG_PVP_TOKEN_COUNT);
 
@@ -7588,7 +7607,12 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
 
     // group update
     if (GetGroup())
+    {
+        // Group is full
+        if ((newZone == 1497 || newZone == 85) && GetGroup()->IsFull(3))
+            GetGroup()->RemoveMember(this->GetGUID());
         SetGroupUpdateFlag(GROUP_UPDATE_FULL);
+    }
 
     UpdateZoneDependentAuras(newZone);
 }
@@ -23676,7 +23700,10 @@ void Player::HandleFall(MovementInfo const& movementInfo)
             {
                 //Prevent fall damage from being more than the player maximum health
                 if (damage > GetMaxHealth())
+                {
                     damage = GetMaxHealth();
+                    Relocate(movementInfo.pos);
+                }
 
                 // Gust of Wind
                 if (HasAura(43621))
