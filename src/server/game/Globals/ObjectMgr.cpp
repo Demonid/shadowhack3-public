@@ -6342,11 +6342,16 @@ WorldSafeLocsEntry const *ObjectMgr::GetClosestGraveYard(float x, float y, float
     //     then check faction
     GraveYardMap::const_iterator graveLow  = mGraveYardMap.lower_bound(zoneId);
     GraveYardMap::const_iterator graveUp   = mGraveYardMap.upper_bound(zoneId);
+
     MapEntry const* map = sMapStore.LookupEntry(MapId);
     // not need to check validity of map object; MapId _MUST_ be valid here
 
     if (graveLow == graveUp && !map->IsBattleArena())
     {
+        if (zoneId == 1497 || zoneId == 85)
+        {
+            return sWorldSafeLocsStore.LookupEntry(urand(1725, 1729));
+        }
         sLog->outErrorDb("Table `game_graveyard_zone` incomplete: Zone %u Team %u does not have a linked graveyard.",zoneId,team);
         return NULL;
     }

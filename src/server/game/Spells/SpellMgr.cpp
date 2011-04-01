@@ -882,6 +882,7 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
                 case 40477: // Forceful Strike
                 case 2479:
                     return false;
+                case 31719: // Suspension
                 case 30877: // Tag Murloc
                     return true;
                 default:
@@ -3965,6 +3966,23 @@ void SpellMgr::LoadSpellCustomAttr()
 
         switch (i)
         {
+        case 25841:
+            spellInfo->EffectImplicitTargetA[0] = TARGET_DST_CASTER;
+            spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_AREA_ALLY_DST;
+            spellInfo->EffectRadiusIndex[0] = 9;
+            spellInfo->rangeIndex = 1;
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_REQUIRE_DEAD_TARGET;
+            break;
+        case 31719: // Suspension for Undercity Deathmatch
+            mSpellCustomAttr[i] = 0;
+            spellInfo->Effect[2] = 0;
+            spellInfo->Effect[1] = SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED;
+            spellInfo->EffectBasePoints[1] = 100;
+            spellInfo->Mechanic = 0;
+            spellInfo->Dispel = DISPEL_NONE;
+            spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_TAKE_DAMAGE 
+                | AURA_INTERRUPT_FLAG_CAST;
+            break;
         case 59630: // Black Magic enchantment
             spellInfo->AttributesEx3 |= SPELL_ATTR3_DEATH_PERSISTENT;
             break;

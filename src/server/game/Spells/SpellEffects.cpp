@@ -833,6 +833,50 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
         {
             switch (m_spellInfo->Id)
             {
+                case 2950: // Teleport Self(Undercity Deathmatch)
+                {
+                    const WorldSafeLocsEntry *loc = sWorldSafeLocsStore.LookupEntry(urand(1725, 1729));
+                    unitTarget->ToPlayer()->TeleportTo(loc->map_id, loc->x, loc->y, loc->z, 0);
+                    return;
+                }
+
+                case 100000: // Respawner
+                {
+                    uint32 entry = 0;
+                    switch(urand(0, 3))
+                    {
+                        case 0:
+                            entry = 179899;
+                            break;
+                        case 1:
+                            entry = 179906;
+                            break;
+                        case 2:
+                            entry = 179907;
+                            break;
+                        case 3:
+                            entry = 350001;
+                            break;
+                        default: break;
+                    }
+                    if (entry > 0)
+                    {
+                        if (GameObject * obj = m_caster->GetMap()->GetGameObject(m_caster->GetOwnerGUID()))
+                        {
+                            obj->SetRespawnTime(0);                                 // not save respawn time
+                            obj->Delete();
+                            obj->DeleteFromDB();
+                        }
+                        GameObject* obj = m_caster->SummonGameObject(entry, m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), 0, 0, 0, 0, 0, 0);
+                        if (entry != 350001)
+                        {
+                            obj->SetUInt32Value(GAMEOBJECT_FACTION, 0);
+                            obj->SetOwnerGUID(0);
+                            m_caster->SetUInt64Value(ITEM_FIELD_OWNER, obj->GetGUID());
+                        }
+                    }
+                    return;
+                }
                 case 8593:                                  // Symbol of life (restore creature to life)
                 case 31225:                                 // Shimmering Vessel (restore creature to life)
                 {
@@ -6103,6 +6147,13 @@ void Spell::EffectResurrect(SpellEffIndex effIndex)
 
     switch (m_spellInfo->Id)
     {
+        case 25841:
+        {
+            WorldPacket data(SMSG_CORPSE_RECLAIM_DELAY, 4);
+            data << uint32(0);
+            unitTarget->ToPlayer()->GetSession()->SendPacket(&data);
+            break;
+        }
         // Defibrillate (Goblin Jumper Cables) have 33% chance on success
         case 8342:
             if (roll_chance_i(67))
