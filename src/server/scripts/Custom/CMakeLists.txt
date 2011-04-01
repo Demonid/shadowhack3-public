@@ -9,6 +9,7 @@ set(scripts_STAT_SRCS
   Custom/strand_of_the_ancients.cpp
   Custom/teleguy.cpp
   Custom/titlevendor.cpp
+  Custom/flyer.cpp
 )
 
 message("  -> Prepared: Custom")
