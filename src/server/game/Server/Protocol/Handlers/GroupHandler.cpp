@@ -226,7 +226,7 @@ void WorldSession::HandleGroupAcceptOpcode(WorldPacket& recv_data)
     // Group is full
     if (group->IsFull( ((leader && (leader->GetZoneId() == 1497 || leader->GetZoneId() == 85)) ||
         (GetPlayer() && (GetPlayer()->GetZoneId() == 1497 || GetPlayer()->GetZoneId() == 85)))
-        ? 3: 0))
+        ? 4: 0))
     {
         SendPartyResult(PARTY_OP_INVITE, "", ERR_GROUP_FULL);
         return;
