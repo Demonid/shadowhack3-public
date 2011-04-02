@@ -872,7 +872,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                         {
                             obj->SetUInt32Value(GAMEOBJECT_FACTION, 0);
                             obj->SetOwnerGUID(0);
-                            m_caster->SetUInt64Value(ITEM_FIELD_OWNER, obj->GetGUID());
+                            m_caster->SetUInt64Value(UNIT_FIELD_SUMMONEDBY, obj->GetGUID());
                         }
                     }
                     return;
