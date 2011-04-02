@@ -1371,6 +1371,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
             newdamage/=(tmp/100.0f);
             aurEff->SetAmount(uint32(newdamage));
         }
+        m_damage = damageInfo.damage;
     }
     // Passive spell hits/misses or active spells only misses (only triggers)
     else
