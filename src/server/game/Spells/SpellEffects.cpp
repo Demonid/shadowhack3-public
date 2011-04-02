@@ -3426,6 +3426,7 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
         }
         else
         {
+            success |= count != 0;
             if (success && !failCount)
             {
                 success_list.push_back(std::make_pair(itr->first->GetId(), itr->first->GetCasterGUID()));
