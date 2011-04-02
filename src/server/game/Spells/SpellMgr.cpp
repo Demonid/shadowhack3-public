@@ -2926,6 +2926,12 @@ SpellCastResult SpellMgr::GetSpellAllowedInLocationError(SpellEntry const *spell
             Battleground *bg = player->GetBattleground();
             return bg && bg->GetStatus() == STATUS_WAIT_JOIN ? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA;
         }
+        case 7266: // Duel on undercity deathmatch
+        {
+            if (zone_id == 1497 || zone_id == 85)
+                return SPELL_FAILED_INCORRECT_AREA;
+            break;
+        }
     }
 
     // aura limitations
