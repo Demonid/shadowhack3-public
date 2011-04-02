@@ -3972,6 +3972,12 @@ void SpellMgr::LoadSpellCustomAttr()
 
         switch (i)
         {
+        case 58683: // Savage Combat 
+        case 58684:
+        case 30069: // Blood Frenzy
+        case 30070:
+            spellInfo->DurationIndex = 18;
+            break;
         case 25841:
             spellInfo->EffectImplicitTargetA[0] = TARGET_DST_CASTER;
             spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_AREA_ALLY_DST;

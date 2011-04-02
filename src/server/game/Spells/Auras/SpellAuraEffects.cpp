@@ -4569,7 +4569,7 @@ void AuraEffect::HandleModStateImmunityMask(AuraApplication const * aurApp, uint
         return;
 
     Unit * target = aurApp->GetTarget();
-    if (GetId()==46924)
+    if (GetId()==46924 || GetId() == 61851)
     {
         target->ApplyUberImmune(GetId(), apply);
         return;
