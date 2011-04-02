@@ -62,7 +62,7 @@ void BattlegroundDS::Update(uint32 diff)
             {
                 Player * plr = sObjectMgr->GetPlayer(itr->first);
                 
-                if(plr->getClass() == CLASS_WARLOCK)
+                if(plr && plr->getClass() == CLASS_WARLOCK)
                     if(GameObject* obj = plr->GetGameObject(48018))
                         if(obj->GetPositionZ()>12)
                             plr->RemoveAurasDueToSpell(48018);
