@@ -46,3 +46,5 @@ UPDATE `spell_bonus_data` SET `direct_bonus`='0' WHERE (`entry`='45284');
 
 -- shadowmeld combat
 INSERT INTO `spell_linked_spell` VALUES ('58984', '54661', '0', 'Shadowmeld - Sanctuary');
+
+REPLACE INTO `spell_bonus_data` VALUES ('9007', '0', '0', '0', '0.03', 'Pounce - Bleed');

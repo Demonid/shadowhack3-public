@@ -7609,7 +7609,7 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
     if (GetGroup())
     {
         // Group is full
-        if ((newZone == 1497 || newZone == 85) && GetGroup()->IsFull(3))
+        if ((newZone == 1497 || newZone == 85) && GetGroup()->IsFull(4))
             GetGroup()->RemoveMember(this->GetGUID());
         SetGroupUpdateFlag(GROUP_UPDATE_FULL);
     }
