@@ -861,18 +861,24 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     }
                     if (entry > 0)
                     {
-                        if (GameObject * obj = m_caster->GetMap()->GetGameObject(m_caster->m_ObjectSlot[0]))
+                        if (m_caster->m_gameObj.size())
                         {
-                            obj->SetRespawnTime(0);                                 // not save respawn time
-                            obj->Delete();
-                            obj->DeleteFromDB();
+                            GameObjectList::iterator itr;
+                            for (itr = m_caster->m_gameObj.begin(); itr != m_caster->m_gameObj.end();)
+                            {
+                                (*itr)->SetOwnerGUID(0);
+                                (*itr)->SetRespawnTime(0);
+                                (*itr)->Delete();
+                                m_gameObj.erase(itr++);
+                            }
+                            else
+                                ++itr;
                         }
                         GameObject* obj = m_caster->SummonGameObject(entry, m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), 0, 0, 0, 0, 0, 0);
                         if (entry != 350001)
                         {
                             obj->SetUInt32Value(GAMEOBJECT_FACTION, 0);
                             obj->SetOwnerGUID(0);
-                            m_caster->m_ObjectSlot[0] = obj->GetGUID();
                         }
                     }
                     return;
