@@ -2120,6 +2120,8 @@ class Unit : public WorldObject
         TempSummon* ToTempSummon() { if (isSummon()) return reinterpret_cast<TempSummon*>(this); else return NULL; }
         const TempSummon* ToTempSummon() const { if (isSummon()) return reinterpret_cast<const TempSummon*>(this); else return NULL; }
         virtual SpellSchoolMask GetMeleeDamageSchoolMask() const;
+        typedef std::list<GameObject*> GameObjectList;
+        GameObjectList m_gameObj;
 
     protected:
         explicit Unit ();
@@ -2147,8 +2149,6 @@ class Unit : public WorldObject
         typedef std::list<DynamicObject*> DynObjectList;
         DynObjectList m_dynObj;
 
-        typedef std::list<GameObject*> GameObjectList;
-        GameObjectList m_gameObj;
         bool m_isSorted;
         uint32 m_transform;
 
