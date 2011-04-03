@@ -8,19 +8,6 @@ ConfVersion=2010111901
 ###################################################################################################################
 # WARDEND SETTINGS
 #
-#    LoginDatabaseInfo
-#        Database connection settings for the warden server. We use the Login database.
-#        Default: hostname;port;username;password;database
-#                 .;somenumber;username;password;database - use named pipes at Windows
-#                       Named pipes: mySQL required adding "enable-named-pipe" to [mysqld] section my.ini
-#                 .;/path/to/unix_socket;username;password;database - use Unix sockets at Unix/Linux
-#                       Unix sockets: experimental, not tested
-#
-#    DataDir
-#        Data directory setting.
-#        Important: DataDir needs to be quoted, as it is a string which may contain space characters.
-#        Example: "@prefix@/share/mangos"
-#
 #    LogsDir
 #         Logs directory setting.
 #         Important: Logs dir must exists, or all logs be disable
@@ -92,8 +79,6 @@ ConfVersion=2010111901
 #
 ###################################################################################################################
 
-LoginDatabaseInfo = "127.0.0.1;3306;username;password;realmd"
-DataDir = "."
 LogsDir = ""
 WardenServerPort = 4321
 BindIP = "0.0.0.0"
