@@ -1809,7 +1809,7 @@ void World::SetInitialWorldSettings()
     if (sConfig->GetBoolDefault("wardend.enable", false))
     {
         sLog->outString("Starting Warden system...");
-        sWardenMgr->Initialize(sConfig->GetStringDefault("wardend.address", "127.0.0.1").c_str(), sConfig->GetIntDefault("wardend.port", 4321), sConfig->GetBoolDefault("wardend.ban", true));
+        sWardenMgr->Initialize(sConfig->GetStringDefault("wardend.address", "127.0.0.1").c_str(), sConfig->GetIntDefault("wardend.port", 4321), sConfig->GetBoolDefault("wardend.CanBan", true));
         m_timers[WUPDATE_WARDEN].SetInterval(500); // 500ms
     }
     else
