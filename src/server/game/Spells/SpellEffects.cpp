@@ -863,6 +863,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     {
                         if (m_caster->m_gameObj.size())
                         {
+                            typedef std::list<GameObject*> GameObjectList;
                             GameObjectList::iterator itr;
                             for (itr = m_caster->m_gameObj.begin(); itr != m_caster->m_gameObj.end();)
                             {
