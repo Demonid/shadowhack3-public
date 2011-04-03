@@ -871,8 +871,6 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                                 (*itr)->Delete();
                                 m_caster->m_gameObj.erase(itr++);
                             }
-                            else
-                                ++itr;
                         }
                         GameObject* obj = m_caster->SummonGameObject(entry, m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), 0, 0, 0, 0, 0, 0);
                         if (entry != 350001)
