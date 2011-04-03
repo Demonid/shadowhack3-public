@@ -861,7 +861,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     }
                     if (entry > 0)
                     {
-                        if (GameObject * obj = m_caster->GetMap()->GetGameObject(m_caster->GetOwnerGUID()))
+                        if (GameObject * obj = m_caster->GetMap()->GetGameObject(m_caster->m_ObjectSlot[0]))
                         {
                             obj->SetRespawnTime(0);                                 // not save respawn time
                             obj->Delete();
@@ -872,7 +872,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                         {
                             obj->SetUInt32Value(GAMEOBJECT_FACTION, 0);
                             obj->SetOwnerGUID(0);
-                            m_caster->SetUInt64Value(UNIT_FIELD_SUMMONEDBY, obj->GetGUID());
+                            m_caster->m_ObjectSlot[0] = obj->GetGUID();
                         }
                     }
                     return;
