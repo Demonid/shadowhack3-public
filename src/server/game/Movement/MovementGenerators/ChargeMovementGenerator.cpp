@@ -16,6 +16,7 @@
  */
 
 #include "ChargeMovementGenerator.h"
+#include "DestinationHolderImp.h"
 #include "Creature.h"
 #include "CreatureAI.h"
 #include "World.h"
