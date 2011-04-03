@@ -869,7 +869,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                                 (*itr)->SetOwnerGUID(0);
                                 (*itr)->SetRespawnTime(0);
                                 (*itr)->Delete();
-                                m_gameObj.erase(itr++);
+                                m_caster->m_gameObj.erase(itr++);
                             }
                             else
                                 ++itr;
