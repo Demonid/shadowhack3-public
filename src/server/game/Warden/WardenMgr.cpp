@@ -978,28 +978,28 @@ bool WardenMgr::ValidateCheatCheckResult(WorldSession* const session, WorldPacke
                 else
                 {
                     uint8 memContent[20];
+                    bool memcheck_failed = false;
+
                     for (uint8 pos=0; pos<(*checkList)[i].mem->Length; ++pos)
                     {
-                        clientPacket >> memContent[pos];
-
-                        bool memcheck_failed = false;
+                        clientPacket >> memContent[pos];                        
 
                         if (memContent[pos]!=(*checkList)[i].mem->Result[pos])
                         {
                             valid = false;
                             memcheck_failed = true;
                         }
-
-                        if (memcheck_failed)
-                        {
-                            std::string strContent, strContent2;
-                            hexEncodeByteArray(memContent, (*checkList)[i].mem->Length, strContent);
-                            hexEncodeByteArray((*checkList)[i].mem->Result, (*checkList)[i].mem->Length, strContent2);    
-                            sLog->outCheater("Warden: player %s failed check, MEM Offset 0x%04X length %u has content '%s' instead of '%s'",
-                                session->GetPlayerName(), (*checkList)[i].mem->Offset, (*checkList)[i].mem->Length, strContent.c_str(), strContent2.c_str());
-                        }
                     }
                     pktLen = pktLen - (1 + (*checkList)[i].mem->Length);
+
+                    if (memcheck_failed)
+                    {
+                        std::string strContent, strContent2;
+                        hexEncodeByteArray(memContent, (*checkList)[i].mem->Length, strContent);
+                        hexEncodeByteArray((*checkList)[i].mem->Result, (*checkList)[i].mem->Length, strContent2);    
+                        sLog->outCheater("Warden: player %s failed check, MEM Offset 0x%04X length %u has content '%s' instead of '%s'",
+                            session->GetPlayerName(), (*checkList)[i].mem->Offset, (*checkList)[i].mem->Length, strContent.c_str(), strContent2.c_str());
+                    }
                 }
                 sLog->outStaticDebug("Warden: Mem %s", valid ? "Ok" : "Failed");
                 break;
