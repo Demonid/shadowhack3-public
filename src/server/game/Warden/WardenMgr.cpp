@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2005-2010 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
+ * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,109 +29,68 @@ Useful information:
 - We ask the client to run between 5 and 9 cheat checks and we sent this request 12 to 15
   seconds after his last reply.
 - The client is kicked if it did not reply 2 minutes after the cheat checks packet is sent
-- The client is kicked if one test failed.
+- The client is kicked/banned if one test failed.
 */
 
-WardenMgr::WardenMgr() : m_IsWardenInit(false), m_Enabled(true), m_Disconnected(false)
+WardenMgr::WardenMgr() : m_Disconnected(false), m_Banning(false)
 {
-    sLog->outStaticDebug("WardenMgr: Create Warden");
 }
 
 WardenMgr::~WardenMgr()
 {
 }
 
-bool WardenMgr::Initialize(const char *addr, u_short port)
+void WardenMgr::Initialize(const char *addr, u_short port, bool IsBanning)
 {
-    // Save the adress and port
+    // Save the address and port
     m_WardendAddress = addr;
     m_WardendPort = port;
+    m_Banning = IsBanning;
+    if (!LoadFromDB())
+    {
+        sLog->outError("Warden Daemon has no modules, disabling it");
+        return;
+    }
 
-    if (!m_IsWardenInit && InitializeCommunication())
-        m_IsWardenInit = true;
+    if (m_Disconnected = !InitializeCommunication())
+    {
+        sLog->outError("Warden Daemon not reachable, trying to connect in the background");
+        m_PingOut = true;
+    }
 
-    m_PingTimer.SetInterval(3000); // 5 secs, strange
-    m_PingTimer.SetCurrent(0);
-
-    return m_IsWardenInit;
+    m_PingTimer.SetInterval(5 * IN_MILLISECONDS);
+    m_PingTimer.Reset();
 }
 
 bool WardenMgr::InitializeCommunication()
 {
     // Establish connection.
-
-    WardenSvcHandler* conn_handler = new WardenSvcHandler;
+    m_Enabled = true;
+    WardenSvcHandler* handler = new WardenSvcHandler;
 
     ACE_INET_Addr remoteAddr(m_WardendPort, m_WardendAddress.c_str());
-    if(m_connector.connect(conn_handler, remoteAddr) == -1)
+    if(m_connector.connect(handler, remoteAddr) == -1)
     {
         return false;
     }
 
-    m_WardenProcessStream = conn_handler->Peer;
+    m_WardenProcessStream = handler->Peer;
     ByteBuffer pkt;
     const char *sign = WARDEND_SIGN;
     pkt << sign;
     m_WardenProcessStream->send((char const*)pkt.contents(), pkt.size());
-    m_Enabled = true;
 
     m_PingOut = false;
     return true;
 }
 
-bool WardenMgr::Register(WorldSession* const session)
-{
-    sLog->outStaticDebug("WardenMgr::Register");
-    if (!m_IsWardenInit)
-        return false;
-
-    if (session->GetWardenStatus() != WARD_STATUS_UNREGISTERED)
-        return false;
-
-    // We send the session key and the account id
-    ByteBuffer pkt;
-    pkt << uint8(MMSG_REGISTER);
-    pkt << (uint32)session->GetAccountId();
-    pkt.hexlike();
-    m_WardenProcessStream->send((char const*)pkt.contents(), pkt.size());
-
-    session->GetWardenTimer().SetInterval(10*IN_MILLISECONDS); // To not resend Register in next 10 seconds
-    return true;
-}
-
-void WardenMgr::Pong()
-{
-    sLog->outStaticDebug("Warden: Pong");
-    m_PingTimer.Reset();
-    m_PingOut = false;
-}
-
-void WardenMgr::SendPing()
-{
-    sLog->outStaticDebug("Warden: Ping");
-    ByteBuffer pkt;
-    pkt << uint8(MMSG_PING);
-    m_WardenProcessStream->send((char const*)pkt.contents(), pkt.size());
-    m_PingTimer.Reset();
-    m_PingOut = true;
-}
-
-void WardenMgr::Resync(WorldSession* const session)
-{
-    sLog->outStaticDebug("Warden: resync");
-    ByteBuffer pkt;
-    pkt << uint8(MMSG_RESYNC);
-    pkt << (uint32)session->GetAccountId();
-    pkt << uint8(session->GetWardenSeedByte0());
-    m_WardenProcessStream->send((char const*)pkt.contents(), pkt.size());
-}
-
-// Triggered by world every 300ms
+// Triggered by world every 500ms
 void WardenMgr::Update(uint32 diff)
 {
-    m_PingTimer.Update(diff);
-    if (!m_IsWardenInit)
+    if (!m_Enabled)
         return;
+
+    m_PingTimer.Update(diff);
 
     if (m_PingTimer.Passed())
     {
@@ -141,15 +101,17 @@ void WardenMgr::Update(uint32 diff)
         }
         else if (m_PingOut && !m_Disconnected)
         {
-            sLog->outError("Connection to Warden Daemon lost");
+            sLog->outError("Connection to Warden Daemon lost, trying to reconnect in the background");
             m_WardenProcessStream->close();
-            m_connector.close();            
+            m_connector.close();
             m_PingTimer.Reset();
+            m_PingTimer.SetCurrent(m_PingTimer.GetInterval()); // expire it
             m_Disconnected = true;
         }
         else
         {
             SendPing();
+            m_PingTimer.Reset();
         }
     }
 
@@ -162,93 +124,658 @@ void WardenMgr::Update(WorldSession* const session, uint32 diff)
 {
     session->GetWardenTimer().Update(diff);
 
-    if (session->GetWardenTimer().Passed() && session->GetWardenStatus() == WARD_STATUS_CHEAT_CHECK_OUT)
+    if (session->GetWardenTimer().Passed())     // We don't care the connection to wardend state to do cheat-checks or register
     {
-        // timeout waiting for a cheat check reply
-        sLog->outBasic("Warden Cheat-check: no reply received in the allowed time, kicking account %u", session->GetAccountId());
-        session->KickPlayer();
-        return;
+        switch (session->GetWardenStatus())
+        {
+            case WARD_STATUS_UNREGISTERED:
+                // register a client that could not register earlier
+                StartForSession(session);
+                return;
+            case WARD_STATUS_LOAD_MODULE:       // no reply to load module request (20 secs)
+            case WARD_STATUS_LOAD_FAILED:       // no reply after we sent the module to client (20 secs)
+                sLog->outBasic("Warden Manager: no reply received for module load or 2 times load failed, kicking account %u", session->GetAccountId());
+                session->KickPlayer();
+                return;
+            case WARD_STATUS_TRANSFORM_SEED:    // no reply to transformed seed (20 secs)
+                sLog->outBasic("Warden Manager: no transformed seed received, kicking account %u", session->GetAccountId());
+                session->KickPlayer();
+                return;
+            case WARD_STATUS_CHEAT_CHECK_OUT:   // timeout waiting for a cheat check reply
+                sLog->outBasic("Warden Manager: no Cheat-check reply received, kicking account %u", session->GetAccountId());
+                session->KickPlayer();
+                return;
+            case WARD_STATUS_CHEAT_CHECK_IN:    // send cheat check
+                SendCheatCheck(session);
+                session->SetWardenStatus(WARD_STATUS_CHEAT_CHECK_OUT);
+                session->GetWardenTimer().SetInterval(2*MINUTE*IN_MILLISECONDS);
+                session->GetWardenTimer().Reset();
+                return;
+            default:
+                break;
+        }
     }
 
     if (m_Disconnected)
     {
-        switch (session->GetWardenStatus())
-        {
-            case WARD_STATUS_UNREGISTERED:                          // if unregistered, keep it like this
-            case WARD_STATUS_USER_DISABLED:                         // if disabled, we don't care
-            case WARD_STATUS_UNSYNC:                                // Unsync already: no change
-                break;
-            case WARD_STATUS_CHEAT_CHECK_PENDING:                   // We are pending a cheat check
-            case WARD_STATUS_CHEAT_CHECK_IN:                        // We asked for a cheat check
-                session->SetWardenStatus(WARD_STATUS_UNSYNC);       // we will redo later after a sync
-                break;
-            case WARD_STATUS_REGISTERING:                           // We were registering
-                session->SetWardenStatus(WARD_STATUS_UNREGISTERED); // we will redo later
-                break;
-            case WARD_STATUS_PENDING_TSEED_VALIDATION:              // We were validating the transformed seed
-                session->SetWardenStatus(WARD_STATUS_UNSYNC);       // Assume it's valid and mark unsync
-            case WARD_STATUS_PENDING_KEYS_GENERATION:               // Missing Server + Client key
-            case WARD_STATUS_PENDING_CLIENT_KEY:                    // Missing Client Key
-                session->KickPlayer();                              // No other choice
-                break;
-            default:
-                // WARD_STATUS_INIT (client has loaded the module)
-                 break;
-        }
-        session->GetWardenTimer().SetInterval(15*IN_MILLISECONDS);
+        session->GetWardenTimer().SetInterval(15*IN_MILLISECONDS);  // push back warden activity in session by 15 seconds
         session->GetWardenTimer().Reset();
+        if (session->GetWardenStatus() == WARD_STATUS_PENDING_WARDEND)
+            session->SetWardenStatus(WARD_STATUS_NEED_WARDEND);     // We needed data, so have to redo the request
         return;
     }
 
-    if (!session->GetWardenTimer().Passed())
+    // Connected to wardend, last time was disconnected, then resume and re-ask for module load and key generation
+    if (session->GetWardenTimer().Passed() && session->GetWardenStatus() == WARD_STATUS_NEED_WARDEND)
+    {
+        LoadModuleAndGetKeys(session);
+        session->GetWardenTimer().SetInterval(10*IN_MILLISECONDS);
+        session->GetWardenTimer().Reset();
+        session->SetWardenStatus(WARD_STATUS_PENDING_WARDEND);
+    }
+}
+
+bool WardenMgr::LoadFromDB()
+{
+    QueryResult result = WorldDatabase.Query("SELECT md5, chk0, chk1, chk2, chk3, chk4, chk5, chk6, chk7, chk8, end9 FROM warden_module");
+    if (!result)
+    {
+        m_WardenModuleChecks.clear();
+        sLog->outString(">> Table warden_module is empty!");
+        sLog->outString();
+        return false;
+    }
+
+    uint32 count = 0;
+    {
+        do
+        {
+            Field *fields = result->Fetch();
+
+            std::string md5 = fields[0].GetString();
+            if (CheckModuleExistOnDisk(md5))
+            {
+                WardenCheckMap& moduleCheck = m_WardenModuleChecks[md5];
+                moduleCheck.resize(10);
+
+                for (uint8 i=0; i<=9; ++i)
+                {
+                    moduleCheck[i] = fields[i+1].GetUInt8();
+                }
+
+                ++count;
+            }
+            else
+                sLog->outError("Module %s has a record in 'warden_module' but no binary on disk, skipping it", md5.c_str());
+
+        } 
+        while(result->NextRow());
+
+        sLog->outString();
+        sLog->outString(">> Loaded %u warden modules", count);
+
+    }
+    // Now load the checks
+    // 1) memory
+    result = WorldDatabase.Query("SELECT String, Offset, Length, Result FROM warden_check_memory");
+    if (!result)
+    {
+        sLog->outString(">> Table warden_check_memory is empty!");
+        sLog->outString();
+    }
+    else
+    {
+        uint32 count = 0;
+        {
+            m_WardenMemoryChecks.resize((int)result->GetRowCount());
+            do
+            {
+                Field *fields = result->Fetch();
+
+                MemoryCheckEntry& current = m_WardenMemoryChecks[count];
+                current.String  = fields[0].GetString();
+                current.Offset  = fields[1].GetUInt32();
+                current.Length  = fields[2].GetUInt8();
+                std::string res = fields[3].GetString();
+                hexDecodeString(res.c_str(), res.length(), current.Result);
+
+                ++count;
+            }
+            while(result->NextRow());
+            sLog->outString();
+            sLog->outString(">> Loaded %u memory checks", count);
+        }
+    }
+    // 2) Page
+    result = WorldDatabase.Query("SELECT Seed, SHA, Offset, Length FROM warden_check_page");
+    if (!result)
+    {
+        sLog->outString(">> Table warden_check_page is empty!");
+        sLog->outString();
+    }
+    else
+    {
+        uint32 count = 0;
+        {
+            m_WardenPageChecks.resize((int)result->GetRowCount());
+            do
+            {
+                Field *fields = result->Fetch();
+
+                PageCheckEntry& current = m_WardenPageChecks[count];
+                current.Seed  = fields[0].GetUInt32();
+                std::string res = fields[1].GetString();
+                hexDecodeString(res.c_str(), 40, current.SHA);
+                current.Offset  = fields[2].GetUInt32();
+                current.Length  = fields[3].GetUInt8();
+
+                ++count;
+            }
+            while(result->NextRow());
+
+            sLog->outString();
+            sLog->outString(">> Loaded %u page checks", count);
+        }
+    }
+    // 3) File
+    result = WorldDatabase.Query("SELECT String, SHA FROM warden_check_file");
+    if (!result)
+    {
+        sLog->outString(">> Table warden_check_file is empty!");
+        sLog->outString();
+    }
+    else
+    {
+        uint32 count = 0;
+        {
+            m_WardenFileChecks.resize((int)result->GetRowCount());
+            do
+            {
+                Field *fields = result->Fetch();
+
+                FileCheckEntry& current = m_WardenFileChecks[count];
+                current.String  = fields[0].GetString();
+                std::string res = fields[1].GetString();
+                hexDecodeString(res.c_str(), 40, current.SHA);
+
+                ++count;
+            }
+            while(result->NextRow());
+
+            sLog->outString();
+            sLog->outString(">> Loaded %u file checks", count);
+        }
+    }
+    // 4) Lua
+    result = WorldDatabase.Query("SELECT String FROM warden_check_lua");
+    if (!result)
+    {
+        sLog->outString(">> Table warden_check_lua is empty!");
+        sLog->outString();
+    }
+    else
+    {
+        uint32 count = 0;
+        {
+            m_WardenLuaChecks.resize((int)result->GetRowCount());
+            do
+            {
+                Field *fields = result->Fetch();
+
+                LuaCheckEntry& current = m_WardenLuaChecks[count];
+                current.String = fields[0].GetString();
+
+                ++count;
+            }
+            while(result->NextRow());
+
+            sLog->outString();
+            sLog->outString(">> Loaded %u lua checks", count);
+        }
+    }
+    // 5) Driver
+    result = WorldDatabase.Query("SELECT Seed, SHA, String FROM warden_check_driver");
+    if (!result)
+    {
+        sLog->outString(">> Table warden_check_driver is empty!");
+        sLog->outString();
+    }
+    else
+    {
+        uint32 count = 0;
+        {
+            m_WardenDriverChecks.resize((int)result->GetRowCount());
+            do
+            {
+                Field *fields = result->Fetch();
+
+                DriverCheckEntry& current = m_WardenDriverChecks[count];
+                current.Seed    = fields[0].GetUInt32();
+                std::string res = fields[1].GetString();
+                hexDecodeString(res.c_str(), 40, current.SHA);
+                current.String  = fields[2].GetString();
+
+                ++count;
+            } 
+            while(result->NextRow());
+
+            sLog->outString();
+            sLog->outString(">> Loaded %u driver checks", count);
+        }
+    }
+    return true;
+}
+
+bool WardenMgr::CheckModuleExistOnDisk(const std::string &md5)
+{
+    std::string modulekey  = sWorld->GetDataPath()+ "warden/" + md5 + ".key";
+    std::string modulefile = sWorld->GetDataPath()+ "warden/" + md5 + ".bin";
+    FILE* mf = fopen(modulefile.c_str(), "rb");
+    if (mf)
+    {
+        fclose(mf);
+        mf = fopen(modulekey.c_str(), "rb");
+        if (mf)
+        {
+            fclose(mf);
+            return true;
+        }
+    }
+    return false;
+}
+
+void WardenMgr::Register(WorldSession* const session)
+{
+    session->GetWardenTimer().SetInterval(2*IN_MILLISECONDS);
+    session->GetWardenTimer().Reset();
+}
+
+void WardenMgr::StartForSession(WorldSession* const session)
+{
+    sLog->outStaticDebug("WardenMgr::Register");
+    if (!m_Enabled)
         return;
 
-    switch (session->GetWardenStatus())
+    if (session->GetWardenStatus() != WARD_STATUS_UNREGISTERED)
+        return;
+
+    std::string md5;
+    std::string lastModule = "";
+    // Check if the user already had the module same day
+    time_t currenttime = time(NULL);
+    tm* now = localtime(&currenttime);
+    QueryResult result = LoginDatabase.PQuery("SELECT module_day, last_module, os FROM account WHERE id = '%u'", session->GetAccountId());
+    if (result)
     {
-        case WARD_STATUS_UNSYNC:                        // just reconnected, let's resume this
-        case WARD_STATUS_CHEAT_CHECK_PENDING:           // reconnection was to fast, not seen
-            Resync(session);
-            session->SetWardenStatus(WARD_STATUS_CHEAT_CHECK_IN);
-            session->GetWardenTimer().SetInterval(10*IN_MILLISECONDS);
-            session->GetWardenTimer().Reset();
-            break;
-        case WARD_STATUS_CHEAT_CHECK_IN:
-            // send cheat check
-            SendCheatCheck(session);
-            session->SetWardenStatus(WARD_STATUS_CHEAT_CHECK_PENDING);
-            session->GetWardenTimer().SetInterval(15*IN_MILLISECONDS);
-            session->GetWardenTimer().Reset();
-            break;
-        case WARD_STATUS_UNREGISTERED:
-            // register a client that could not register earlier
-            Register(session);
-            break;
-        default:
-            break;
+        Field* fields = result->Fetch();
+        uint16 modDay = fields[0].GetUInt16();
+        uint32 os = fields[2].GetUInt32();
+        if (os != 0x0057696E)       // 0x0057696E = \0niW => 'Win' so not windows, not coded yet for macho modules sending
+        {
+            session->SetWardenStatus(WARD_STATUS_USER_DISABLED);
+            return;                 // OS not supported
+        }
+
+        if (modDay == now->tm_yday) // no need to change the module
+        {
+            lastModule = fields[1].GetString();
+            if (lastModule.length() != 32)
+            {
+                sLog->outStaticDebug("Login same day, tried to get last used module failed, maybe never used warden");
+                RandAModuleMd5(&md5);
+            }
+            else
+            {
+                md5 = lastModule;
+            }
+        }
+        else
+        {
+            sLog->outStaticDebug("Login different day, so new warden module");
+            RandAModuleMd5(&md5);
+        }
+
+        session->SetWardenModule(md5);
+        if (md5 != lastModule)
+            LoginDatabase.PExecute("UPDATE account SET last_module='%s', module_day=%u WHERE id = '%u'", md5.c_str(), now->tm_yday, session->GetAccountId());
+        SendLoadModuleRequest(session);
+        session->SetWardenStatus(WARD_STATUS_LOAD_MODULE);
+        session->GetWardenTimer().SetInterval(20*IN_MILLISECONDS);
+        session->GetWardenTimer().Reset();
     }
 }
 
 void WardenMgr::Unregister(WorldSession* const session)
 {
-    sLog->outStaticDebug("WardenMgr::Unregister");
-    if (!m_IsWardenInit)
-        return;
+    WardenClientCheckList* pcheckList = (WardenClientCheckList*)session->GetWardenCheckList();
+    if (pcheckList)
+        delete (WardenClientCheckList*)pcheckList;
+}
 
-    ByteBuffer pkt;
-    pkt << uint8(MMSG_UNREGISTER);
-    pkt << (uint32)session->GetAccountId();
-    pkt.hexlike();
+void WardenMgr::RandAModuleMd5(std::string *result)
+{
+    std::vector<std::string> iList;
+    for (WardenModuleCheckMap::const_iterator itr = m_WardenModuleChecks.begin(); itr != m_WardenModuleChecks.end(); ++itr)
+    {
+        iList.push_back(itr->first);
+    }
+    uint8 choice = urand(0, iList.size()-1);
+    *result = iList[choice];
+}
 
-    m_WardenProcessStream->send((char const*)pkt.contents(), pkt.size());
+void WardenMgr::SendLoadModuleRequest(WorldSession* const session)
+{
+    std::string modulekeyfile = sWorld->GetDataPath()+ "warden/" + session->GetWardenModule() + ".key";
+
+    // Load .key file to get module length and module key
+    FILE* mf = fopen(modulekeyfile.c_str(), "rb");
+    if (!mf)
+        return; // If this happens, this mean the user deleted the file after startup
+
+    uint32 mod_length;
+    uint8 rc4[16];
+    uint8 binMd5[16];
+    hexDecodeString(session->GetWardenModule().c_str(), 32, binMd5);
+
+    fread(&mod_length, 1, 4, mf);
+    fread(rc4, sizeof(uint8)*16, 1, mf);
+    fclose(mf);
+
+    WorldPacket data( SMSG_WARDEN_DATA, 1+16+16+4 );
+    data << uint8(WARDS_MODULE_INFO);
+    data.append(binMd5, 16);
+    data.append(rc4, 16);
+    data << uint32(mod_length);
+
+    uint8 *skey = session->GetSessionKey().AsByteArray(40);
+    sWardenMgr->SetInitialKeys(&skey[0], &skey[20], session->GetWardenClientKey(), session->GetWardenServerKey());
+
+    // Then send the first packet to client
+    data.crypt(session->GetWardenServerKey(), &rc4_crypt);
+    session->SendPacket(&data);
 }
 
 void WardenMgr::SendModule(WorldSession* const session)
 {
-    sLog->outStaticDebug("WardenMgr::SendModule");
+    std::string modulekeyfile = sWorld->GetDataPath()+ "warden/" + session->GetWardenModule() + ".key";
+    std::string modulefile = sWorld->GetDataPath()+ "warden/" + session->GetWardenModule() + ".bin";
+
+    // Load .key file to get module length and module key
+    FILE* mf = fopen(modulekeyfile.c_str(), "rb");
+    if (!mf)
+        return; // Should not happen
+
+    uint32 modLength, remainLen;
+    uint8 rc4[16];
+    fread(&modLength, 1, 4, mf);
+    fread(rc4, sizeof(uint8)*16, 1, mf);
+    fclose(mf);
+
+    // Load the module encrypted binary
+    mf = fopen(modulefile.c_str(), "rb");
+    if (!mf)
+        return; // Should not happen
+
+    uint8* m_tmpModule;
+    uint16 offset = 0;
+    m_tmpModule = (uint8*)malloc(sizeof(uint8)*modLength);
+    fread(m_tmpModule, sizeof(uint8)*modLength, 1, mf);
+    fclose(mf);
+    remainLen = modLength;
+    while (remainLen > 0)
+    {
+        uint16 len = remainLen>500?500:remainLen;
+        WorldPacket data( SMSG_WARDEN_DATA, 1+2+len );
+        data << uint8(WARDS_MODULE_CHUNK);
+        data << uint16(len);
+        data.append(m_tmpModule + offset, len);
+        offset = offset + len;
+        remainLen = remainLen - len;
+
+        data.hexlike();
+        data.crypt(session->GetWardenServerKey(), &rc4_crypt);
+        session->SendPacket(&data);
+    }
+    free(m_tmpModule);
+}
+
+void WardenMgr::SendSeedTransformRequest(WorldSession* const session)
+{
+    sLog->outStaticDebug("WardenMgr::SendSeedTransformRequest: Client packet");
+    WorldPacket data( SMSG_WARDEN_DATA, 1+16 );
+    data << uint8(WARDS_SEED);
+    data.append(session->GetWardenSeed(), 16);
+    data.hexlike();
+    data.crypt(session->GetWardenServerKey(), &rc4_crypt);
+    session->SendPacket(&data);
+    session->SetWardenStatus(WARD_STATUS_TRANSFORM_SEED);
+    session->GetWardenTimer().SetInterval(20*IN_MILLISECONDS);
+    session->GetWardenTimer().Reset();
+}
+
+void WardenMgr::SendSeedAndComputeKeys(WorldSession* const session)
+{
+    sLog->outStaticDebug("WardenMgr::SendSeedAndComputeKeys: building wardend packet");
+    BigNumber s;
+    s.SetRand(16 * 8);
+    // save this seed for client send later when we have the new keys from wardend
+    memcpy(session->GetWardenSeed(), s.AsByteArray(16), 16);
+    // build the packet for wardend only
+    LoadModuleAndGetKeys(session);
+
+    // And we send this packet to the warden daemon for it to make the new key pair
+    session->SetWardenStatus(WARD_STATUS_PENDING_WARDEND);
+}
+
+void WardenMgr::LoadModuleAndGetKeys(WorldSession* const session)
+{
+    if (!m_WardenProcessStream)
+        return;
+
+    std::string modulekeyfile = sWorld->GetDataPath()+ "warden/" + session->GetWardenModule() + ".key";
+    std::string modulefile = sWorld->GetDataPath()+ "warden/" + session->GetWardenModule() + ".bin";
+
+    // Load .key file to get module length and module key
+    FILE* mf = fopen(modulekeyfile.c_str(), "rb");
+    if (!mf)
+        return; // Modules have been tested at WardenMgr init, so have been deleted while core was running !
+
+    uint32 modLength;
+    uint8 rc4[16];
+    fread(&modLength, 1, 4, mf);
+    fread(rc4, sizeof(uint8)*16, 1, mf);
+    fclose(mf);
+
+    // Load the module encrypted binary
+    mf = fopen(modulefile.c_str(), "rb");
+    if (!mf)
+        return; // Modules have been tested at WardenMgr init, so have been deleted while core was running !
+
+
+    uint8* m_tmpModule = (uint8*)malloc(sizeof(uint8)*modLength);
+    fread(m_tmpModule, sizeof(uint8)*modLength, 1, mf);
+    fclose(mf);
+
+    // Just decrypt it so that we don't even need to send the rc4
+    uint8 m_tmpKey[0x102];
+    rc4_init(m_tmpKey, rc4, 16);
+    rc4_crypt(m_tmpKey, m_tmpModule, modLength);
+
+    uint32 m_signature = *(uint32*)(m_tmpModule + modLength - 0x100 - 4); // - 256 bytes - sizeof(uint32)
+    if (m_signature != 0x5349474E) // NGIS->SIGN string
+    {
+        sLog->outBasic("Warden: Module damaged on disk");
+        return;
+    }
+
     ByteBuffer pkt;
-    pkt << uint8(MMSG_MODULEFILE_REQUEST);
+    pkt << (uint8)MMSG_LOAD_MODULE;
+    pkt << (uint32)modLength - 0x100; // - 256 bytes certificate
     pkt << (uint32)session->GetAccountId();
+    pkt.append(m_tmpModule, modLength - 0x100);
+
+    pkt.append(session->GetSessionKey().AsByteArray(40), 40);
+    // Same as when we send this transformed seed request to client
+    pkt << (uint8)WARDS_SEED;
+    pkt.append(session->GetWardenSeed(), 16);
+
     m_WardenProcessStream->send((char const*)pkt.contents(), pkt.size());
+}
+
+WardenMgr::MemoryCheckEntry *WardenMgr::GetRandMemCheck()
+{
+    return &m_WardenMemoryChecks[urand(0, m_WardenMemoryChecks.size()-1)];
+}
+WardenMgr::PageCheckEntry *WardenMgr::GetRandPageCheck()
+{
+    return &m_WardenPageChecks[urand(0, m_WardenPageChecks.size()-1)];
+}
+WardenMgr::FileCheckEntry *WardenMgr::GetRandFileCheck()
+{
+    return &m_WardenFileChecks[urand(0, m_WardenFileChecks.size()-1)];
+}
+WardenMgr::LuaCheckEntry *WardenMgr::GetRandLuaCheck()
+{
+    return &m_WardenLuaChecks[urand(0, m_WardenLuaChecks.size()-1)];
+}
+WardenMgr::DriverCheckEntry *WardenMgr::GetRandDriverCheck()
+{
+    return &m_WardenDriverChecks[urand(0, m_WardenDriverChecks.size()-1)];
+}
+
+void WardenMgr::SendCheatCheck(WorldSession* const session)
+{
+    sLog->outStaticDebug("Wardend::BuildCheatCheck(%u, *pkt)", session->GetAccountId());
+
+    std::string md5 = session->GetWardenModule();
+    WardenClientCheckList* checkList = (WardenClientCheckList*)session->GetWardenCheckList();
+    if (!checkList)
+    {
+        checkList = new WardenClientCheckList;
+        session->SetWardenCheckList(checkList);
+    }
+
+    checkList->clear();
+    // Get the Seed 1st byte for the xoring
+    uint8 m_seed1 = session->GetWardenSeed()[0];
+    sLog->outStaticDebug("Seed byte: 0x%02X, end byte: 0x%02X", m_seed1, m_WardenModuleChecks[md5][WARD_CHECK_END]);
+
+    WorldPacket data( SMSG_WARDEN_DATA, 300 ); // Guess size
+    data << uint8(WARDS_CHEAT_CHECK);
+
+    // Rand a number of checks between 4 and 8 checks + the first time check + end packet
+    uint8 nbChecks = urand(4, 8);
+    checkList->resize(nbChecks);
+
+    for (uint8 i=0; i<nbChecks; ++i)
+    {
+        // We select one based on the ratio
+        float mRand = (float)rand_chance();
+        if (mRand < WCHECK_PAGE2_RATIO)                 // size 29, no string both page1 and page2 tests
+        {
+            (*checkList)[i].check = urand(0,1)?WARD_CHECK_PAGE1:WARD_CHECK_PAGE2;
+            (*checkList)[i].page = GetRandPageCheck();
+        }
+        else if (mRand < WCHECK_MEMORY_RATIO)           // size 6, possible string
+        {
+            (*checkList)[i].check = WARD_CHECK_MEMORY;
+            (*checkList)[i].mem = GetRandMemCheck();
+            if ((*checkList)[i].mem->String.length())   // add 1 for the uint8 str length
+            {
+                data << uint8((*checkList)[i].mem->String.length());
+                data.append((*checkList)[i].mem->String.c_str() ,(*checkList)[i].mem->String.length());
+                sLog->outStaticDebug("Mem str %s, len %u", (*checkList)[i].mem->String.c_str(), (*checkList)[i].mem->String.length());
+            }
+        }
+        else if (mRand < WCHECK_DRIVER_RATIO)
+        {
+            (*checkList)[i].check = WARD_CHECK_DRIVER;  // size 25 + string
+            (*checkList)[i].driver = GetRandDriverCheck();
+            data << uint8((*checkList)[i].driver->String.length());
+            data.append((*checkList)[i].driver->String.c_str(), (*checkList)[i].driver->String.length());
+            sLog->outStaticDebug("Driver str %s, len %u", (*checkList)[i].driver->String.c_str(), (*checkList)[i].driver->String.length());
+        }
+        else if (mRand < WCHECK_FILE_RATIO)
+        {
+            (*checkList)[i].check = WARD_CHECK_FILE;    // size 1 + string
+            (*checkList)[i].file = GetRandFileCheck();
+            data << uint8((*checkList)[i].file->String.length());
+            data.append((*checkList)[i].file->String.c_str(), (*checkList)[i].file->String.length());
+            sLog->outStaticDebug("File str %s, len %u", (*checkList)[i].file->String.c_str(), (*checkList)[i].file->String.length());
+        }
+        else
+        {
+            (*checkList)[i].check = WARD_CHECK_LUA;     // size 1 + string
+            (*checkList)[i].lua = GetRandLuaCheck();
+            data << uint8((*checkList)[i].lua->String.length());
+            data.append((*checkList)[i].lua->String.c_str(), (*checkList)[i].lua->String.length());
+            sLog->outStaticDebug("Lua str %s, len %u", (*checkList)[i].lua->String.c_str(), (*checkList)[i].lua->String.length());
+        }
+    }
+    // strings terminator
+    data << uint8(0);
+    // We first add a timing check
+    data << uint8(m_WardenModuleChecks[md5][WARD_CHECK_TIMING] ^ m_seed1);
+    // Finaly put the other checks
+    uint8 m_strIndex = 1;
+    sLog->outStaticDebug("Preparing %u checks", nbChecks);
+    for (uint8 i=0; i<nbChecks; ++i)
+    {
+        data << uint8(m_WardenModuleChecks[md5][(*checkList)[i].check] ^ m_seed1);
+        switch ((*checkList)[i].check)
+        {
+            case WARD_CHECK_PAGE1:
+            case WARD_CHECK_PAGE2:
+                sLog->outStaticDebug("%u : %s", i, (*checkList)[i].check==WARD_CHECK_PAGE1?"WARD_CHECK_PAGE1":"WARD_CHECK_PAGE2");
+                data << uint32((*checkList)[i].page->Seed);
+                data.append(&(*checkList)[i].page->SHA[0], 20);
+                data << uint32((*checkList)[i].page->Offset);
+                data << uint8((*checkList)[i].page->Length);
+                break;
+            case WARD_CHECK_MEMORY:
+                sLog->outStaticDebug("%u : WARD_CHECK_MEMORY", i);
+                if ((*checkList)[i].mem->String.length())
+                    data << uint8(m_strIndex++);
+                else
+                    data << uint8(0);
+                data << uint32((*checkList)[i].mem->Offset);
+                data << uint8((*checkList)[i].mem->Length);
+                break;
+            case WARD_CHECK_DRIVER:
+                sLog->outStaticDebug("%u : WARD_CHECK_DRIVER", i);
+                data << uint32((*checkList)[i].driver->Seed);
+                data.append(&(*checkList)[i].driver->SHA[0], 20);
+                data << uint8(m_strIndex++);
+                break;
+            case WARD_CHECK_FILE:
+                sLog->outStaticDebug("%u : WARD_CHECK_FILE", i);
+                data << uint8(m_strIndex++);
+                break;
+            case WARD_CHECK_LUA:
+                sLog->outStaticDebug("%u : WARD_CHECK_LUA", i);
+                data << uint8(m_strIndex++);
+                break;
+        }
+    }
+    data << uint8(m_WardenModuleChecks[md5][WARD_CHECK_END] ^ m_seed1);
+
+    data.hexlike();
+    data.crypt(session->GetWardenServerKey(), &rc4_crypt);
+    session->SendPacket(&data);
+}
+
+void WardenMgr::Pong()
+{
+    m_PingTimer.Reset();
+    m_PingOut = false;
+}
+
+void WardenMgr::SendPing()
+{
+    ByteBuffer pkt;
+    pkt << uint8(MMSG_PING);
+    m_WardenProcessStream->send((char const*)pkt.contents(), pkt.size());
+    m_PingOut = true;
 }
 
 void WardenMgr::SetInitialKeys(const uint8 *bSessionKey1, const uint8 *bSessionKey2, uint8* ClientKey, uint8 *ServerKey)
@@ -273,7 +800,7 @@ void WardenMgr::SetInitialKeys(const uint8 *bSessionKey1, const uint8 *bSessionK
 
      uint8 position = 0;
      uint8 key[16] = {0};
-     for (uint8 i = 0; i < 16; ++i)
+     for (uint8 i=0; i<16; ++i)
      {
          if (position >= 20)
          {
@@ -289,10 +816,10 @@ void WardenMgr::SetInitialKeys(const uint8 *bSessionKey1, const uint8 *bSessionK
      }
      rc4_init(ClientKey, key, 16);
 
-     for (uint8 i = 0; i < 16; ++i)
-         key[i] = 0;
+     for (uint8 i=0; i<16; ++i)
+         key[i]=0;
 
-     for (uint8 i = 0; i < 16; ++i)
+     for (uint8 i=0; i<16; ++i)
      {
          if (position >= 20)
          {
@@ -309,47 +836,18 @@ void WardenMgr::SetInitialKeys(const uint8 *bSessionKey1, const uint8 *bSessionK
      rc4_init(ServerKey, key, 16);
 }
 
-void WardenMgr::GenerateAndSendSeed(WorldSession* const session)
+void WardenMgr::ChangeClientKey(WorldSession* const session)
 {
-    sLog->outStaticDebug("GenerateAndSendSeed: building wardend packet");
-    BigNumber s;
-    s.SetRand(16 * 8);
-    WorldPacket data( SMSG_WARDEN_DATA, 1 + 16 );
-    data << uint8(WARDS_SEED);
-    data.append(s.AsByteArray(16), 16);
-    // We build the packet for wardend before crypting the client one
-    ByteBuffer pkt;
-
-    pkt << uint8(MMSG_SERVER_KEY_REQUEST);
-    pkt << uint32(session->GetAccountId());
-    pkt.append(session->GetSessionKey().AsByteArray(40), 40);
-    pkt.append(data.contents(), data.size());
-
-    // We can now crypt and send the packet to the client
-    data.hexlike();
-
-    data.crypt(session->GetWardenServerKey(), &rc4_crypt);
-    session->SendPacket(&data);
-
-    // And we send this packet to the warden daemon for it to make the new key pair
-    m_WardenProcessStream->send((char const*)pkt.contents(), pkt.size());
-    session->SetWardenStatus(WARD_STATUS_PENDING_KEYS_GENERATION);
-}
-
-void WardenMgr::GetNewClientKey(WorldSession* const session)
-{
-    sLog->outStaticDebug("WardenMgr::GetNewClientKey");
-    ByteBuffer pkt;
-    pkt << uint8(MMSG_CLIENT_KEY_REQUEST);
-    pkt << uint32(session->GetAccountId());
-    m_WardenProcessStream->send((char const*)pkt.contents(), pkt.size());
+    sLog->outStaticDebug("WardenMgr::ChangeClientKey");
+    uint8* clientKey = session->GetWardenTempClientKey();
+    memcpy(session->GetWardenClientKey(), clientKey, 0x102);
 }
 
 // Sending this packet to initialize engine functions warden uses
 void WardenMgr::SendWardenData(WorldSession* const session)
 {
     sLog->outStaticDebug("WardenMgr::SendWardenData");
-    WorldPacket data( SMSG_WARDEN_DATA, 1 + 2 + 4 + 20 + 1 + 2 + 4 + 8 + 1 + 2 + 4 + 8); // 42 // 57 // 3.3.5a init packet
+    WorldPacket data( SMSG_WARDEN_DATA, 1 + 2+4+20 + 1 + 2+4+8 + 1 +2+4+8); // 42 // 57 // 3.3.5a init packet
     data << uint8(WARDS_DATA);
     {
         data << uint16(20);
@@ -391,7 +889,6 @@ void WardenMgr::SendWardenData(WorldSession* const session)
     }
 
     data.hexlike();
-
     data.crypt(session->GetWardenServerKey(), &rc4_crypt);
     session->SendPacket(&data);
 }
@@ -401,296 +898,216 @@ uint32 WardenMgr::BuildChecksum(const uint8* data, uint32 dataLen)
     uint8 hash[20];
     SHA1(data, dataLen, hash);
     uint32 checkSum = 0;
-    for (uint8 i = 0; i < 5; ++i)
+    for (uint8 i=0; i<5; ++i)
         checkSum = checkSum ^ *(uint32*)(&hash[0] + i*4);
     return checkSum;
 }
 
-void WardenMgr::AskValidateTransformedSeed(WorldSession* const session, WorldPacket& clientPacket)
+bool WardenMgr::ValidateTSeed(WorldSession* const session, const uint8 *codedClientTSeed)
+{
+    uint8 codedServerTSeed[20];
+    SHA1(session->GetWardenSeed(), 16, codedServerTSeed);
+    if (memcmp(codedServerTSeed, codedClientTSeed, 20))
+    {
+        ReactToCheatCheckResult(session, false);
+        return false;
+    }
+    return true;
+}
+
+bool WardenMgr::ValidateCheatCheckResult(WorldSession* const session, WorldPacket& clientPacket)
 {
     uint32 accountId = session->GetAccountId();
-    sLog->outStaticDebug("AskValidateTransformedSeed(%u)", accountId);
-    uint8 tSeed[20];
-    clientPacket.read(tSeed, 20);
+    sLog->outStaticDebug("Wardend::ValidateCheatCheckResult(%u, *pkt)", accountId);
+    bool valid = true;
 
-    ByteBuffer pkt;
-    pkt << uint8(MMSG_TSEED_VALIDATION_REQUEST);
-    pkt << uint32(session->GetAccountId());
-    pkt.append(tSeed, 20);
-    m_WardenProcessStream->send((char const*)pkt.contents(), pkt.size());
-    session->SetWardenStatus(WARD_STATUS_PENDING_TSEED_VALIDATION);
-}
-
-void WardenMgr::SendCheatCheck(WorldSession* const session)
-{
-    sLog->outStaticDebug("SendCheatCheck: building wardend packet request for a cheat check");
-    // We need to ask the wardend for the request, we don't know warden data from core
-    ByteBuffer pkt;
-    pkt << uint8(MMSG_CHEATS_REQUEST);
-    pkt << uint32(session->GetAccountId());
-    m_WardenProcessStream->send((char const*)pkt.contents(), pkt.size());
-}
-
-void WardenMgr::AskValidateCheatChecks(WorldSession* const session, WorldPacket& clientPacket)
-{
-    sLog->outStaticDebug("WardenMgr::ValidateCheatChecks");
-    // Put the status in intermediate state
-    session->SetWardenStatus(WARD_STATUS_CHEAT_CHECK_PENDING);
-    // Then abort if connection was lost with Wardend
-    if (m_Disconnected)
-        return;
-
-    // We first check the checksum, no need to go further if it is wrong
-    uint16 len;
+    uint16 pktLen;
     uint32 checksum;
-    clientPacket >> len;
+    clientPacket >> pktLen;
     clientPacket >> checksum;
     if (checksum != BuildChecksum(clientPacket.contents() + clientPacket.rpos(), clientPacket.size() - clientPacket.rpos()))
     {
-        sLog->outBasic("Warden Cheat-check: Kicking account %u for failed check, Packet Checksum 0x%08X is invalid!", session->GetAccountId(), checksum);
+        sLog->outCheater("Warden Cheat-check: Kicking player %s for failed check, Packet Checksum 0x%08X is invalid!", session->GetPlayerName(), checksum);
         ReactToCheatCheckResult(session, false);
+        return false;
     }
-    else
+
+    if (pktLen==0)
+        return false;
+
+    // parse the timing check always sent
+    sLog->outStaticDebug("TimeCheck");
+    uint8 res;
+    uint32 ticks;
+    clientPacket >> res; // should be 1
+    clientPacket >> ticks;
+    // Need to compare ticks based on last one using server ticks diff since
+    sLog->outStaticDebug("Warden: Time unk 0x%08X", ticks);
+    pktLen = pktLen - 5;
+
+    WardenClientCheckList* checkList = (WardenClientCheckList*)session->GetWardenCheckList();
+    if (!checkList)
+        return false;
+
+    for (uint8 i=0; i<checkList->size(); ++i)
     {
-        ByteBuffer pkt;
-        pkt << uint8(MMSG_CHEATS_VALIDATION_REQUEST);
-        pkt << uint32(session->GetAccountId());
-        pkt << uint32(clientPacket.size());
-        pkt.append(clientPacket.contents(), clientPacket.size()); // full packet
-        m_WardenProcessStream->send((char const*)pkt.contents(), pkt.size());
+        switch ((*checkList)[i].check)
+        {
+            case WARD_CHECK_TIMING:
+            {
+                sLog->outStaticDebug("Warden: TimeCheck");
+                uint8 res;
+                uint32 ticks;
+                clientPacket >> res; // should be 1
+                clientPacket >> ticks;
+                // Need to compare ticks based on last one using server ticks diff since
+                sLog->outStaticDebug("Warden: Time unk 0x%08X", ticks);
+                pktLen = pktLen - 5;
+                break;
+            }
+            case WARD_CHECK_MEMORY:
+            {
+                sLog->outStaticDebug("Warden: MemCheck");
+                uint8 res;
+                clientPacket >> res; // should be 0
+                if (res)
+                {
+                    valid = false;
+                    sLog->outCheater("Warden: player %s failed check, MEM at Offset 0x%04X, lentgh %u could not be read by client", session->GetPlayerName(), (*checkList)[i].mem->Offset, (*checkList)[i].mem->Length);
+                }
+                else
+                {
+                    uint8 memContent[20];
+                    for (uint8 pos=0; pos<(*checkList)[i].mem->Length; ++pos)
+                    {
+                        clientPacket >> memContent[pos];
+
+                        bool memcheck_failed = false;
+
+                        if (memContent[pos]!=(*checkList)[i].mem->Result[pos])
+                        {
+                            valid = false;
+                            memcheck_failed = true;
+                        }
+
+                        if (memcheck_failed)
+                        {
+                            std::string strContent, strContent2;
+                            hexEncodeByteArray(memContent, (*checkList)[i].mem->Length, strContent);
+                            hexEncodeByteArray((*checkList)[i].mem->Result, (*checkList)[i].mem->Length, strContent2);    
+                            sLog->outCheater("Warden: player %s failed check, MEM Offset 0x%04X length %u has content '%s' instead of '%s'",
+                                session->GetPlayerName(), (*checkList)[i].mem->Offset, (*checkList)[i].mem->Length, strContent.c_str(), strContent2.c_str());
+                        }
+                    }
+                    pktLen = pktLen - (1 + (*checkList)[i].mem->Length);
+                }
+                sLog->outStaticDebug("Warden: Mem %s", valid ? "Ok" : "Failed");
+                break;
+            }
+            case WARD_CHECK_FILE:
+            {
+                sLog->outStaticDebug("Warden: MPQCheck");
+                uint8 res;
+                uint8 resSHA1[20];
+                clientPacket >> res; // should be 0
+                if (res)
+                {
+                    valid = false;
+                    sLog->outCheater("Warden: player %s failed check, MPQ '%s' not found by client", session->GetPlayerName(), (*checkList)[i].file->String.c_str());
+                    pktLen = pktLen - 1;
+                }
+                else
+                {
+                    for (uint8 pos=0; pos<20; ++pos)
+                        clientPacket >> resSHA1[pos];
+                    if (res || memcmp(resSHA1, (*checkList)[i].file->SHA, 20))
+                    {
+                        valid = false;
+                        std::string strResSHA1, strReqSHA1;
+                        hexEncodeByteArray(resSHA1, 20, strResSHA1);
+                        hexEncodeByteArray((*checkList)[i].file->SHA, 20, strReqSHA1);
+                        sLog->outCheater("Warden: player %s failed check, MPQ '%s' SHA1 is '%s' instead of '%s'", session->GetPlayerName(), (*checkList)[i].file->String.c_str(), strResSHA1.c_str(), strReqSHA1.c_str());
+                    }
+                    pktLen = pktLen - 21;
+                }
+                sLog->outStaticDebug("Warden: MPQ %s", valid ? "Ok" : "Failed");
+                break;
+            }
+            case WARD_CHECK_LUA:
+            {
+                sLog->outStaticDebug("Warden: LUACheck");
+                uint8 res;
+                uint8 foundLuaLen;
+                clientPacket >> res; // should be 0
+                clientPacket >> foundLuaLen; // should be 0
+                uint8 *luaStr;
+                if (foundLuaLen > 0)
+                {
+                    luaStr = (uint8*)malloc(foundLuaLen+1);
+                    for (uint8 pos=0; pos<foundLuaLen; ++pos)
+                    {
+                        clientPacket >> luaStr[pos];
+                    }
+                    luaStr[foundLuaLen] = 0;
+                    sLog->outCheater("Warden: player %s failed lua check, Lua '%s' found as '%s'", session->GetPlayerName(), (*checkList)[i].lua->String.c_str(), (char*)luaStr);
+                    valid = false;
+                    free(luaStr);
+                }
+                sLog->outStaticDebug("Lua %s", valid ? "Ok" : "Failed");
+                pktLen = pktLen - 2;
+                break;
+            }
+            case WARD_CHECK_PAGE1:
+            case WARD_CHECK_PAGE2:
+            case WARD_CHECK_DRIVER:
+            {
+                sLog->outStaticDebug("PageCheck or DriverCheck");
+                uint8 res;
+                clientPacket >> res; // should be 0xE9
+                if (res != 0xE9)
+                {
+                    if ((*checkList)[i].check == WARD_CHECK_DRIVER)
+                        sLog->outCheater("Warden: player %s failed driver check '%s'", session->GetPlayerName(), (*checkList)[i].driver->String.c_str());
+                    else
+                        sLog->outCheater("Warden: player %s failed page check Offset 0x%08X, length %u", session->GetPlayerName(), (*checkList)[i].page->Offset, (*checkList)[i].page->Length);
+                    valid = false;
+                }
+                sLog->outStaticDebug("Page or Driver %s",valid?"Ok":"Failed");
+                pktLen = pktLen - 1;
+                break;
+            }
+            default:
+                sLog->outStaticDebug("Warden: Other!!");
+                // Finish skiping the rest of the packet and return failed checks
+                sLog->outCheater("Wrong packet for player %s or problem to parse it, I had to clean %u bytes", session->GetPlayerName(), clientPacket.size() - clientPacket.rpos());
+                clientPacket.read_skip(clientPacket.size() - clientPacket.rpos());
+                return false;
+        }
     }
-    // Make the packet fully read
-    clientPacket.read_skip(clientPacket.size() - clientPacket.rpos());
+    return valid;
 }
 
-void WardenMgr::ReactToCheatCheckResult(WorldSession* const session, bool result, bool immediate)
+void WardenMgr::ReactToCheatCheckResult(WorldSession* const session, bool result)
 {
-    sLog->outStaticDebug("ReactToCheatCheckResult %s %s", result ? "true":"false", immediate ? "true":"false");
+    sLog->outStaticDebug("ReactToCheatCheckResult %s", result ? "true" : "false");
     if (result)
     {
         session->SetWardenStatus(WARD_STATUS_CHEAT_CHECK_IN);
-        const uint32 shortTime = immediate ? 0 : urand(15, 25); // from 15 to 25 seconds
+        const uint32 shortTime = urand(15, 25);                 // from 15 to 25 seconds
         session->GetWardenTimer().SetCurrent(0);                // so that we don't overload the timer
-        session->GetWardenTimer().SetInterval(shortTime * IN_MILLISECONDS);
+        session->GetWardenTimer().SetInterval(shortTime*IN_MILLISECONDS);
         sLog->outStaticDebug("Timer set to %u seconds", shortTime);
         session->GetWardenTimer().Reset();
     }
     else
     {
-        if (World::WardenCanBan())
+        if (m_Banning)
         {
-            sLog->outCheater("Warden: cheat check failed for player %s", session->GetPlayerName());
             sWorld->BanAccount(BAN_CHARACTER, session->GetPlayerName(), World::GetWardenBanTime(), "cheater autoban", "Izb00shka Warden");
         }
         else
-        {
             session->KickPlayer();
-        }
     }
-}
-
-//****************************************************
-// Warden Demon replies handlers
-
-bool WardenSvcHandler::_HandleRegisterRep()
-{
-    sLog->outStaticDebug("WardenSvcHandler::_HandleRegisterRep()");
-
-    uint8 rc4[16];
-    uint8 md5[16];
-    uint32 moduleLen;
-    uint32 accountId;
-
-    Peer->recv_n(&accountId, 4);
-    Peer->recv_n(&moduleLen, 4);
-
-    WorldSession* session = sWorld->FindSession(accountId);
-
-    if (!session)
-        return true;
-
-    if (moduleLen == 0)
-    {
-        session->GetWardenTimer().SetInterval(5 * IN_MILLISECONDS);
-        session->GetWardenTimer().Reset(); // We will retry in 5 seconds
-        return true;
-    }
-    else if (moduleLen == 0xFFFFFFFF)
-    {
-        session->SetWardenStatus(WARD_STATUS_USER_DISABLED);
-        sLog->outStaticDebug("Disabling warden for account %u since not Windows platform", accountId);
-        return true;
-    }
-
-    Peer->recv_n(rc4, 16);
-    Peer->recv_n(md5, 16);
-
-    session->SetWardenStatus(WARD_STATUS_REGISTERING);
-
-    WorldPacket data( SMSG_WARDEN_DATA, 1 + 16 + 16 + 4 );
-    data << uint8(WARDS_MODULE_INFO);
-    data.append(md5, 16);
-    data.append(rc4, 16);
-    data << uint32(moduleLen);
-
-    // 1st crypt the packet
-    uint8 *skey = session->GetSessionKey().AsByteArray(40);
-
-    sWardenMgr->SetInitialKeys(&skey[0], &skey[20], session->GetWardenClientKey(), session->GetWardenServerKey());
-    data.hexlike();
-
-    data.crypt(session->GetWardenServerKey(), &rc4_crypt);
-
-    // Then send the first packet to client
-    session->SendPacket(&data);
-    return true;
-}
-
-bool WardenSvcHandler::_HandleServerKeyRep()
-{
-    sLog->outStaticDebug("WardenSvcHandler::_HandleServerKeyRep()");
-    uint32 accountId;
-    Peer->recv_n(&accountId, 4);
-    WorldSession* session = sWorld->FindSession(accountId);
-
-    if (!session)
-        return true;
-
-    Peer->recv_n(session->GetWardenServerKey(), 0x102);
-    sLog->outStaticDebug("Server key changed for account %u", accountId);
-
-    // It's time to send warden client init data for functions offset then we can do cheat checks
-    sWardenMgr->SendWardenData(session);
-    session->SetWardenStatus(WARD_STATUS_PENDING_CLIENT_KEY);
-    return true;
-}
-
-bool WardenSvcHandler::_HandleClientKeyRep()
-{
-    sLog->outStaticDebug("WardenSvcHandler::_HandleClientKeyRep()");
-    uint32 accountId;
-    Peer->recv_n(&accountId, 4);
-    WorldSession* session = sWorld->FindSession(accountId);
-
-    if (!session)
-        return true;
-
-    Peer->recv_n(session->GetWardenClientKey(), 0x102);
-    sLog->outStaticDebug("Client key changed for account %u", accountId);
-    return true;
-}
-
-bool WardenSvcHandler::_HandleModuleRep()
-{
-    sLog->outStaticDebug(" WardenSvcHandler::_HandleModuleRep()");
-    uint32 accountId;
-    uint16 modLength;
-    uint16 offset = 0;
-    uint8 *module;
-
-    Peer->recv_n(&accountId, 4);
-    Peer->recv_n(&modLength, 2);
-
-    module = (uint8*)malloc(modLength);
-    Peer->recv_n(module, modLength);
-
-    WorldSession* session = sWorld->FindSession(accountId);
-
-    if (!session)
-        return true;
-
-    while (modLength > 0)
-    {
-        uint16 len = modLength > 500 ? 500 : modLength;
-        WorldPacket data( SMSG_WARDEN_DATA, 1 + 2 + len );
-        data << uint8(WARDS_MODULE_CHUNK);
-        data << uint16(len);
-        data.append(module + offset, len);
-        data.hexlike();
-
-        data.crypt(session->GetWardenServerKey(), &rc4_crypt);
-
-        offset = offset + len;
-        modLength = modLength - len;
-        session->SendPacket(&data);
-    }
-    free(module);
-    return true;
-}
-
-bool WardenSvcHandler::_HandleCheatCheckRep()
-{
-    sLog->outStaticDebug("WardenSvcHandler::_HandleCheatCheckRep() - Sending cheat-check to client");
-    uint32 accountId;
-    uint32 pktLen;
-    uint8 *packet;
-    Peer->recv_n(&accountId, 4);
-    Peer->recv_n(&pktLen, 4);
-    packet = (uint8*)malloc(pktLen);
-    Peer->recv_n(packet, pktLen);
-    sLog->outStaticDebug("Received pkt len: %u", pktLen);
-
-    WorldSession* session = sWorld->FindSession(accountId);
-
-    if (!session)
-        return true;
-
-    WorldPacket data( SMSG_WARDEN_DATA, 1 + pktLen );
-    data << uint8(WARDS_CHEAT_CHECK);
-    data.append(packet, pktLen);
-
-    data.hexlike();
-
-    data.crypt(session->GetWardenServerKey(), &rc4_crypt);
-    session->SendPacket(&data);
-    free(packet);
-
-    // Cheat checks are sent, we have to ensure we got a reply
-    session->SetWardenStatus(WARD_STATUS_CHEAT_CHECK_OUT);
-    session->GetWardenTimer().SetInterval(2 * MINUTE * IN_MILLISECONDS);
-    session->GetWardenTimer().Reset();
-    return true;
-}
-
-bool WardenSvcHandler::_HandleCheatCheckValidationRep()
-{
-    sLog->outStaticDebug("WardenSvcHandler::_HandleCheatCheckValidationRep() - Processed client reply");
-    uint32 accountId;
-    uint8 result;
-    Peer->recv_n(&accountId, 4);
-    Peer->recv_n(&result, 1);
-    WorldSession* session = sWorld->FindSession(accountId);
-
-    if (!session)
-        return true;
-
-    sWardenMgr->ReactToCheatCheckResult(session, result != 0 ? true : false);
-    return true;
-}
-
-bool WardenSvcHandler::_HandleTSeedValidationRep()
-{
-    sLog->outStaticDebug("WardenSvcHandler::_HandleTSeedValidationRep()");
-    uint32 accountId;
-    uint8 result, seedByte0;
-    Peer->recv_n(&accountId, 4);
-    Peer->recv_n(&result, 1);
-    Peer->recv_n(&seedByte0, 1);
-    WorldSession* session = sWorld->FindSession(accountId);
-
-    if (!session)
-        return true;
-
-    // Save the Seed byte 0 in session is case we need to reconnect to a restarted Wardend that lost this information
-    session->SetWardenSeedByte0(seedByte0);
-    sWardenMgr->ReactToCheatCheckResult(session, result!=0?true:false, true);
-    return true;
-}
-
-bool WardenSvcHandler::_HandlePong()
-{
-    sWardenMgr->Pong();
-    return true;
 }
 
 /////////////////////////////
@@ -714,7 +1131,7 @@ void WorldSession::HandleWardenUnregister()
 
 void WorldSession::HandleWardenDataOpcode(WorldPacket& recv_data)
 {
-    if (sWardenMgr->IsReady())
+    if (sWardenMgr->IsEnabled())
     {
         recv_data.crypt(m_rc4ClientKey, &rc4_crypt);
         uint8 warden_opcode;
@@ -723,7 +1140,7 @@ void WorldSession::HandleWardenDataOpcode(WorldPacket& recv_data)
         switch(warden_opcode)
         {
             case WARDC_MODULE_LOAD_FAILED:
-                sLog->outStaticDebug("Received the reply load failed");
+                sLog->outStaticDebug("Warden: Received the reply load failed");
                 // We have to send the module
                 if (GetWardenStatus() == WARD_STATUS_LOAD_FAILED)
                 {
@@ -733,27 +1150,39 @@ void WorldSession::HandleWardenDataOpcode(WorldPacket& recv_data)
                 {
                     sWardenMgr->SendModule(this);
                     SetWardenStatus(WARD_STATUS_LOAD_FAILED);
+                    GetWardenTimer().SetInterval(20*IN_MILLISECONDS);
+                    GetWardenTimer().Reset();
                 }
                 break;
             case WARDC_MODULE_LOADED:
-                sLog->outStaticDebug("Received the reply module loaded");
-                SetWardenStatus(WARD_STATUS_INIT);
+                sLog->outStaticDebug("Warden: Received the reply module loaded");
                 // We go next step: Send a seed
-                sWardenMgr->GenerateAndSendSeed(this); // This will trigger the server key change
+                sWardenMgr->SendSeedAndComputeKeys(this);
+                GetWardenTimer().SetInterval(5*IN_MILLISECONDS);
+                GetWardenTimer().Reset();
                 break;
             case WARDC_CHEAT_CHECK_RESULT:
-                sLog->outStaticDebug("Received the cheat-check result");
-                sWardenMgr->AskValidateCheatChecks(this, recv_data);
+            {
+                sLog->outStaticDebug("Warden: Received the cheat-check result");
+                bool result = sWardenMgr->ValidateCheatCheckResult(this, recv_data);
+                sWardenMgr->ReactToCheatCheckResult(this, result); // This sets the timer if needed
                 break;
+            }
             case WARDC_TRANSFORMED_SEED:
-                sLog->outStaticDebug("Received the transformed seed");
+                sLog->outStaticDebug("Warden: Received the transformed seed");
                 // Let's validate this data
-                sWardenMgr->AskValidateTransformedSeed(this, recv_data);
-                // It's important to request new client key after validating this packet, because this trigger the module unload
-                sWardenMgr->GetNewClientKey(this);
+                if (sWardenMgr->ValidateTSeed(this, recv_data.contents()+recv_data.rpos()))
+                {
+                    sWardenMgr->ChangeClientKey(this);
+                    sWardenMgr->SendWardenData(this);
+                    SetWardenStatus(WARD_STATUS_CHEAT_CHECK_IN);
+                    GetWardenTimer().SetInterval(3*IN_MILLISECONDS); // 3 secs before the 1st cheat check
+                    GetWardenTimer().Reset();
+                }
+                recv_data.read_skip(20);
                 break;
             default:
-                sLog->outStaticDebug("Problem with packet");
+                sLog->outStaticDebug("Warden: Problem with packet");
         }
     }
     else
@@ -763,17 +1192,12 @@ void WorldSession::HandleWardenDataOpcode(WorldPacket& recv_data)
     }
 }
 
-// Connection event handling
+//****************************************************
+// Warden Demon replies handlers
 
 const WardenSvcHandler::WardenMgrCmd table[] =
 {
-    { WMSG_REGISTER_REPLY,              &WardenSvcHandler::_HandleRegisterRep               },
-    { WMSG_SERVER_KEY_REPLY,            &WardenSvcHandler::_HandleServerKeyRep              },
-    { WMSG_CLIENT_KEY_REPLY,            &WardenSvcHandler::_HandleClientKeyRep              },
-    { WMSG_CHEATS_REPLY,                &WardenSvcHandler::_HandleCheatCheckRep             },
-    { WMSG_CHEATS_VALIDATION_REPLY,     &WardenSvcHandler::_HandleCheatCheckValidationRep   },
-    { WMGS_TSEED_VALIDATION_REPLY,      &WardenSvcHandler::_HandleTSeedValidationRep        },
-    { WMSG_MODULEFILE_REPLY,            &WardenSvcHandler::_HandleModuleRep                 },
+    { WMSG_WARDEN_KEYS,                 &WardenSvcHandler::_HandleNewKeys                   },
     { WMSG_PONG,                        &WardenSvcHandler::_HandlePong                      }
 };
 
@@ -786,7 +1210,6 @@ int WardenSvcHandler::open(void*)
     Peer=&peer();
     return 0;
 }
-
 
 int WardenSvcHandler::handle_input(ACE_HANDLE /*handle*/)
 {
@@ -805,4 +1228,40 @@ int WardenSvcHandler::handle_input(ACE_HANDLE /*handle*/)
         }
     }
     return 0;
+}
+
+bool WardenSvcHandler::_HandleNewKeys()
+{
+    sLog->outStaticDebug("WardenSvcHandler::_HandleNewKeys()");
+    uint32 accountId;
+    Peer->recv_n(&accountId, 4);
+    WorldSession* session = sWorld->FindSession(accountId);
+    if (session) // in case client disconnected in between
+    {
+        // 1st, send the transformed seed request to client
+        sWardenMgr->SendSeedTransformRequest(session);
+        // now we can change the server key
+        Peer->recv_n(session->GetWardenServerKey(), 0x102);
+        // But we need a Transformed seed reply from client before changing the client key
+        // So saving it
+        Peer->recv_n(session->GetWardenTempClientKey(), 0x102);
+        // The seed can be overwritten since we did use the original one to build the client request
+        Peer->recv_n(session->GetWardenSeed(), 16);
+    }
+    else
+    {
+        // Trash the packet
+        uint8 trash;
+        for (uint32 i=0; i<(0x102+0x102+16); ++i)
+        {
+            Peer->recv_n(&trash, 1);
+        }
+    }
+    return true;
+}
+
+bool WardenSvcHandler::_HandlePong()
+{
+    sWardenMgr->Pong();
+    return true;
 }

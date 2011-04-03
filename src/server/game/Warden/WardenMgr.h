@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2005-2010 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2010-2011 Izb00shka <http://izbooshka.net/>
+ * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,20 +40,26 @@
 
 #include <openssl/sha.h>
 
+// Definition of ratio of check types (based on a long session of 1162 checks)
+// They are cumulative, meaning that I add the %age to the previous one
+#define WCHECK_PAGE1_RATIO  25.0f   // 36.5
+#define WCHECK_PAGE2_RATIO  50.0f   // 36.5
+#define WCHECK_MEMORY_RATIO 94.0f   // 21.0
+#define WCHECK_DRIVER_RATIO 97.4f   // 03.4
+#define WCHECK_FILE_RATIO   98.7f   // 01.3
+#define WCHECK_LUA_RATIO   100.0f   // 01.3
+
 enum eWardenClientStatus
 {
     WARD_STATUS_UNREGISTERED,
-    WARD_STATUS_REGISTERING,
-    WARD_STATUS_INIT,
+    WARD_STATUS_LOAD_MODULE,
     WARD_STATUS_LOAD_FAILED,
-    WARD_STATUS_PENDING_KEYS_GENERATION,
-    WARD_STATUS_PENDING_CLIENT_KEY,
-    WARD_STATUS_PENDING_TSEED_VALIDATION,
+    WARD_STATUS_TRANSFORM_SEED,
     WARD_STATUS_CHEAT_CHECK_IN,
-    WARD_STATUS_CHEAT_CHECK_PENDING,
     WARD_STATUS_CHEAT_CHECK_OUT,
     WARD_STATUS_USER_DISABLED,
-    WARD_STATUS_UNSYNC,
+    WARD_STATUS_PENDING_WARDEND,
+    WARD_STATUS_NEED_WARDEND,
 };
 
 class WardenSvcHandler: public ACE_Svc_Handler <ACE_SOCK_STREAM, ACE_NULL_SYNCH>
@@ -65,14 +72,8 @@ class WardenSvcHandler: public ACE_Svc_Handler <ACE_SOCK_STREAM, ACE_NULL_SYNCH>
         }WardenHandler;
 
         // Deamon replies related
-        bool _HandleRegisterRep();
-        bool _HandleServerKeyRep();
-        bool _HandleClientKeyRep();
-        bool _HandleModuleRep();
-        bool _HandleCheatCheckRep();
-        bool _HandleCheatCheckValidationRep();
-        bool _HandleTSeedValidationRep();
         bool _HandlePong();
+        bool _HandleNewKeys();
 
         ACE_SOCK_Stream* Peer;
         int open(void*);
@@ -91,50 +92,128 @@ class WardenMgr
     ~WardenMgr();
 
     public:        
-        bool Initialize(const char* addr, u_short port);
-        bool IsReady() { return m_IsWardenInit; }
+        void Initialize(const char* addr, u_short port, bool IsBanning);
         void SetDisabled() { m_Enabled = false; }
         bool IsEnabled() { return m_Enabled; }
-
-        // Session related
-        bool Register(WorldSession* const session);
-        void Unregister(WorldSession* const session);
-        void GenerateAndSendSeed(WorldSession* const session);
-        void GetNewClientKey(WorldSession* const session);
-        void SendWardenData(WorldSession* const session);
-        void GetCheatCheckTable(WorldSession* const session);
-        void SendCheatCheck(WorldSession* const session);
-        void AskValidateCheatChecks(WorldSession* const session, WorldPacket& clientPacket);
-        void ReactToCheatCheckResult(WorldSession* const session, bool result, bool immediate=false);
-        void AskValidateTransformedSeed(WorldSession* const session, WorldPacket& clientPacket);
 
         // Update
         void Update(uint32 diff); // Global Warden System update for packets send/receive
         void Update(WorldSession* const session, uint32 diff); // Session specific update
 
-        void SetInitialKeys(const uint8 *bSessionKey1, const uint8 *bSessionKey2, uint8* ClientKey, uint8 *ServerKey);
-        void SendModule(WorldSession* const session);
-
         // Connection Management
+    private:
         void SendPing();
+    public:
         void Pong();
     private:
+        // Structure to store checks
+        struct MemoryCheckEntry
+        {
+            std::string String;
+            uint32 Offset;
+            uint8 Length;
+            uint8 Result[20];
+        };
+        struct PageCheckEntry
+        {
+            uint32 Seed;
+            uint8 SHA[20];
+            uint32 Offset;
+            uint8 Length;
+        };
+        struct FileCheckEntry
+        {
+            std::string String;
+            uint8 SHA[20];
+        };
+        struct LuaCheckEntry
+        {
+            std::string String;
+        };
+        struct DriverCheckEntry
+        {
+            uint32 Seed;
+            uint8 SHA[20];
+            std::string String;
+        };
+        struct GenericCheck
+        {
+            uint8 check;
+            union
+            {
+                MemoryCheckEntry* mem;
+                PageCheckEntry* page;
+                FileCheckEntry* file;
+                LuaCheckEntry* lua;
+                DriverCheckEntry* driver;
+            };
+        };
+
+        typedef std::vector<uint8> WardenCheckMap; // store the check ids
+        typedef std::map<std::string, WardenCheckMap> WardenModuleCheckMap; // module md5/check ids
+        typedef std::vector<MemoryCheckEntry> WardenMemoryChecks;
+        typedef std::vector<PageCheckEntry> WardenPageChecks;
+        typedef std::vector<FileCheckEntry> WardenFileChecks;
+        typedef std::vector<LuaCheckEntry> WardenLuaChecks;
+        typedef std::vector<DriverCheckEntry> WardenDriverChecks;
+
+        typedef std::vector<GenericCheck> WardenClientCheckList;
+
+    private:
         bool InitializeCommunication();
-        void Resync(WorldSession* const session);
+        bool LoadFromDB();
+        bool CheckModuleExistOnDisk(const std::string &md5);
+        void RandAModuleMd5(std::string *result);
+    public:
+        void Register(WorldSession* const session);
+    private:
+        void StartForSession(WorldSession* const session);
+        void SetInitialKeys(const uint8 *bSessionKey1, const uint8 *bSessionKey2, uint8* ClientKey, uint8 *ServerKey);
+    public:
+        void SendLoadModuleRequest(WorldSession* const session);
+        void SendModule(WorldSession* const session);
+        void SendSeedAndComputeKeys(WorldSession* const session);
+        void SendSeedTransformRequest(WorldSession* const session);
+    private:
+        void LoadModuleAndGetKeys(WorldSession* const session);
+    public:
+        bool ValidateTSeed(WorldSession* const session, const uint8 *codedClientTSeed);
+        void ChangeClientKey(WorldSession* const session);
+        void SendWardenData(WorldSession* const session);
+    private:
+        void SendCheatCheck(WorldSession* const session);
+    public:
+        bool ValidateCheatCheckResult(WorldSession* const session, WorldPacket& clientPacket);
+        void Unregister(WorldSession* const session);
+        void ReactToCheatCheckResult(WorldSession* const session, bool result);
+    private:
+        MemoryCheckEntry *GetRandMemCheck();
+        PageCheckEntry *GetRandPageCheck();
+        FileCheckEntry *GetRandFileCheck();
+        LuaCheckEntry *GetRandLuaCheck();
+        DriverCheckEntry *GetRandDriverCheck();
+
         uint32 BuildChecksum(const uint8* data, uint32 dataLen);
 
         ACE_SOCK_Stream *m_WardenProcessStream;
         ACE_SOCK_Connector *m_WardenProcessConnection;
 
     protected:
-        bool m_IsWardenInit;
         bool m_Enabled;
         bool m_PingOut;
         bool m_Disconnected;
+        bool m_Banning;
         std::string m_WardendAddress;
         u_short m_WardendPort;
         WardendConnector m_connector;
         IntervalTimer m_PingTimer;
+
+        WardenModuleCheckMap m_WardenModuleChecks;
+        WardenMemoryChecks m_WardenMemoryChecks;
+        WardenPageChecks m_WardenPageChecks;
+        WardenFileChecks m_WardenFileChecks;
+        WardenLuaChecks m_WardenLuaChecks;
+        WardenDriverChecks m_WardenDriverChecks;
 };
 
 #define sWardenMgr ACE_Singleton<WardenMgr, ACE_Thread_Mutex>::instance()

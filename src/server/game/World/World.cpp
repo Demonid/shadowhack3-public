@@ -94,7 +94,6 @@ uint32 World::m_TeleportToPlaneAlarms = 50;
 uint32 World::m_MistimingAlarms = 20;
 uint32 World::m_MistimingDelta = 2000;
 
-bool World::m_WardenBan = false;
 std::string World::m_WardenBanTime = "20m";
 
 /// World constructor
@@ -627,9 +626,6 @@ void World::LoadConfigSettings(bool reload)
         m_MistimingAlarms = 50;
     }
     ///- Read other configuration items from the config file
-
-    m_WardenBan = sConfig->GetBoolDefault("Wardend.CanBan", false);
-    m_WardenBanTime = sConfig->GetStringDefault("Wardend.BanTime", "20m");
 
     m_bool_configs[CONFIG_DURABILITY_LOSS_IN_PVP] = sConfig->GetBoolDefault("DurabilityLoss.InPvP", false);
 
@@ -1777,27 +1773,6 @@ void World::SetInitialWorldSettings()
     uint32 nextGameEvent = sGameEventMgr->StartSystem();
     m_timers[WUPDATE_EVENTS].SetInterval(nextGameEvent);    //depend on next event
 
-    if (sConfig->GetBoolDefault("wardend.enable", false))
-    {
-
-
-        sLog->outString("Starting Warden system...");
-        if (!sWardenMgr->Initialize(sConfig->GetStringDefault("wardend.address","127.0.0.1").c_str(), sConfig->GetIntDefault("wardend.port", 4321)))
-        {
-            sLog->outError("Warden Daemon is not reachable, disabling this function");
-            sWardenMgr->SetDisabled();
-        }
-        else
-        {
-            m_timers[WUPDATE_WARDEN].SetInterval(300); // 300ms
-        }
-    }
-    else
-    {
-        sLog->outString("Warden system disabled, skipping");
-        sWardenMgr->SetDisabled();
-    }
-
     // Delete all characters which have been deleted X days before
     Player::DeleteOldCharacters();
 
@@ -1829,6 +1804,19 @@ void World::SetInitialWorldSettings()
 
     sLog->outString("Deleting expired bans...");
     LoginDatabase.Execute("DELETE FROM ip_banned WHERE unbandate <= UNIX_TIMESTAMP() AND unbandate<>bandate");
+
+    m_WardenBanTime = sConfig->GetStringDefault("Wardend.BanTime", "20m");
+    if (sConfig->GetBoolDefault("wardend.enable", false))
+    {
+        sLog->outString("Starting Warden system...");
+        sWardenMgr->Initialize(sConfig->GetStringDefault("wardend.address", "127.0.0.1").c_str(), sConfig->GetIntDefault("wardend.port", 4321), sConfig->GetBoolDefault("wardend.ban", true));
+        m_timers[WUPDATE_WARDEN].SetInterval(500); // 500ms
+    }
+    else
+    {
+        sLog->outString("Warden system disabled, skipping");
+        sWardenMgr->SetDisabled();
+    }
 
     sLog->outString("Calculate next daily quest reset time...");
     InitDailyQuestResetTime();

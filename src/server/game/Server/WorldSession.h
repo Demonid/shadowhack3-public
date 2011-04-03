@@ -350,11 +350,15 @@ class WorldSession
         BigNumber &GetSessionKey() const;
         uint8 *GetWardenClientKey() { return m_rc4ClientKey; }
         uint8 *GetWardenServerKey() { return m_rc4ServerKey; }
+        uint8 *GetWardenSeed() { return m_wardenSeed; }
         uint8 GetWardenStatus() { return m_wardenStatus; }
         void SetWardenStatus(uint8 status) { m_wardenStatus = status; }
-        uint8 GetWardenSeedByte0() { return m_seedByte0; }
-        void SetWardenSeedByte0(uint8 seedByte0) { m_seedByte0 = seedByte0; }
         IntervalTimer &GetWardenTimer() { return m_WardenTimer; }
+        void SetWardenModule(const std::string &md5) { m_WardenModule = md5; }
+        const std::string& GetWardenModule() const { return m_WardenModule; }
+        void *GetWardenCheckList() { return m_WardenClientChecks; }
+        void SetWardenCheckList(void *value) { m_WardenClientChecks = value; }
+        uint8 *GetWardenTempClientKey() { return m_WardenTmpClientKey; }
 
 
         time_t m_timeOutTime;
@@ -918,7 +922,7 @@ class WorldSession
         AccountTypes _security;
         uint32 _accountId;
         uint8 m_expansion;
-		uint8 m_premiumtype;
+        uint8 m_premiumtype;
 
         time_t _logoutTime;
         bool m_inQueue;                                     // session wait in auth.queue
@@ -937,10 +941,13 @@ class WorldSession
         ACE_Based::LockedQueue<WorldPacket*, ACE_Thread_Mutex> _recvQueue;
 
         uint8 m_wardenStatus;
-        uint8 m_seedByte0;
         uint8 m_rc4ServerKey[0x102];
         uint8 m_rc4ClientKey[0x102];
+        uint8 m_wardenSeed[16];
         IntervalTimer m_WardenTimer;
+        std::string m_WardenModule;
+        void *m_WardenClientChecks;
+        uint8 m_WardenTmpClientKey[0x102];
 };
 #endif
 /// @}
