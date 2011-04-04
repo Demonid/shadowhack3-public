@@ -68,9 +68,11 @@ bool ChatHandler::HandleMuteCommand(const char* args)
 
     uint32 account_id = target ? target->GetSession()->GetAccountId() : sObjectMgr->GetPlayerAccountIdByGUID(target_guid);
 
+    WorldSession* session = sWorld->FindSession(account_id);
+
     // find only player from same account if any
     if (!target)
-        if (WorldSession* session = sWorld->FindSession(account_id))
+        if (session)
             target = session->GetPlayer();
 
     uint32 notspeaktime = (uint32) atoi(delayStr);
@@ -79,7 +81,11 @@ bool ChatHandler::HandleMuteCommand(const char* args)
     if (HasLowerSecurity (target,target_guid,true))
         return false;
 
-    time_t mutetime = time(NULL) + notspeaktime*60;
+    if (session && session->GetSecurity() < SEC_GAMEMASTER_LOW)
+        if (notspeaktime > 60)
+            notspeaktime = 60;
+
+    time_t mutetime = time(NULL) + notspeaktime * 60;    
 
     if (target)
         target->GetSession()->m_muteTime = mutetime;
