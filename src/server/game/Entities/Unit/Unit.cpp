@@ -16356,7 +16356,7 @@ void Unit::KnockbackFrom(float x, float y, float speedXY, float speedZ)
         data << float(-speedZ);                                 // Z Movement speed (vertical)
 
         player->GetSession()->SendPacket(&data);
-        player->addAnticheatTemporaryImmunity(speedZ * 100);
+        player->addAnticheatTemporaryImmunity(speedZ * 100 + 2 * IN_MILLISECONDS);
     }
 }
 
@@ -16366,7 +16366,7 @@ void Unit::KnockBackWithAngle(float angle, float horizontalSpeed, float vertical
     float vcos = cos(angle);
 
     // Effect propertly implemented only for players
-    if(GetTypeId()==TYPEID_PLAYER)
+    if(GetTypeId() == TYPEID_PLAYER)
     {
         WorldPacket data(SMSG_MOVE_KNOCK_BACK, (8+4+4+4+4+4));
         data.append(GetPackGUID());
@@ -16375,7 +16375,7 @@ void Unit::KnockBackWithAngle(float angle, float horizontalSpeed, float vertical
         data << float(vsin);                                // y direction
         data << float(horizontalSpeed);                     // Horizontal speed
         data << float(-verticalSpeed);                      // Z Movement speed (vertical)
-        ToPlayer()->addAnticheatTemporaryImmunity(verticalSpeed * 100 + 500);
+        ToPlayer()->addAnticheatTemporaryImmunity(verticalSpeed * 100 + 2 * IN_MILLISECONDS);
         ToPlayer()->GetSession()->SendPacket(&data);
     }
     else
