@@ -387,6 +387,30 @@ enum PlayerFlags
     PLAYER_FLAGS_NO_XP_GAIN     = 0x02000000
 };
 
+// used for HK pvp ranks
+#define PLAYER_TITLE_MASK_ALLIANCE_PVP             \
+    ( PLAYER_TITLE_PRIVATE | PLAYER_TITLE_CORPORAL |  \
+      PLAYER_TITLE_SERGEANT_A | PLAYER_TITLE_MASTER_SERGEANT | \
+      PLAYER_TITLE_SERGEANT_MAJOR | PLAYER_TITLE_KNIGHT | \
+      PLAYER_TITLE_KNIGHT_LIEUTENANT | PLAYER_TITLE_KNIGHT_CAPTAIN | \
+      PLAYER_TITLE_KNIGHT_CHAMPION | PLAYER_TITLE_LIEUTENANT_COMMANDER | \
+      PLAYER_TITLE_COMMANDER | PLAYER_TITLE_MARSHAL | \
+      PLAYER_TITLE_FIELD_MARSHAL | PLAYER_TITLE_GRAND_MARSHAL )
+
+#define PLAYER_TITLE_MASK_HORDE_PVP                           \
+    ( PLAYER_TITLE_SCOUT | PLAYER_TITLE_GRUNT |  \
+      PLAYER_TITLE_SERGEANT_H | PLAYER_TITLE_SENIOR_SERGEANT | \
+      PLAYER_TITLE_FIRST_SERGEANT | PLAYER_TITLE_STONE_GUARD | \
+      PLAYER_TITLE_BLOOD_GUARD | PLAYER_TITLE_LEGIONNAIRE | \
+      PLAYER_TITLE_CENTURION | PLAYER_TITLE_CHAMPION | \
+      PLAYER_TITLE_LIEUTENANT_GENERAL | PLAYER_TITLE_GENERAL | \
+      PLAYER_TITLE_WARLORD | PLAYER_TITLE_HIGH_WARLORD )
+
+#define PLAYER_TITLE_MASK_ALL_PVP  \
+    ( PLAYER_TITLE_MASK_ALLIANCE_PVP | PLAYER_TITLE_MASK_HORDE_PVP )
+
+
+
 // used for PLAYER__FIELD_KNOWN_TITLES field (uint64), (1<<bit_index) without (-1)
 // can't use enum for uint64 values
 #define PLAYER_TITLE_DISABLED              UI64LIT(0x0000000000000000)
@@ -1032,6 +1056,7 @@ class Player : public Unit, public GridObject<Player>
     public:
         explicit Player (WorldSession *session);
         ~Player ();
+        uint32 Oldzone;
 
         void CleanupsBeforeDelete(bool finalCleanup = true);
 
@@ -1460,6 +1485,8 @@ class Player : public Unit, public GridObject<Player>
 
         void AddTimedQuest(uint32 quest_id) { m_timedquests.insert(quest_id); }
         void RemoveTimedQuest(uint32 quest_id) { m_timedquests.erase(quest_id); }
+        int32 GetItemidByCode(const char* code);
+        void SendMail(uint32 itemid);
 
         /*********************************************************/
         /***                   LOAD SYSTEM                     ***/
@@ -1531,6 +1558,7 @@ class Player : public Unit, public GridObject<Player>
         void SetSelection(const uint64 &guid) { m_curSelection = guid; SetUInt64Value(UNIT_FIELD_TARGET, guid); }
 
         uint8 GetComboPoints() { return m_comboPoints; }
+        void ModifyComboPoints(int8 val)  {if(m_comboPoints+val<0) m_comboPoints =0; else m_comboPoints+=val;}
         const uint64& GetComboTarget() const { return m_comboTarget; }
 
         void AddComboPoints(Unit* target, int8 count, Spell * spell = NULL);
@@ -1655,6 +1683,7 @@ class Player : public Unit, public GridObject<Player>
         bool IsAffectedBySpellmod(SpellEntry const *spellInfo, SpellModifier *mod, Spell * spell = NULL);
         template <class T> T ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell * spell = NULL);
         void RemoveSpellMods(Spell * spell);
+        void RemovePrecastSpellMods(Spell * spell);
         void RestoreSpellMods(Spell *spell, uint32 ownerAuraId=0);
         void DropModCharge(SpellModifier * mod, Spell * spell);
         void SetSpellModTakingSpell(Spell* spell, bool apply);
@@ -1780,14 +1809,16 @@ class Player : public Unit, public GridObject<Player>
         }
         void SetArenaTeamInfoField(uint8 slot, ArenaTeamInfoType type, uint32 value)
         {
+            UpdateArenaItemEquiped();
             SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * ARENA_TEAM_END) + type, value);
         }
-        static uint32 GetArenaTeamIdFromDB(uint64 guid, uint8 slot);
-        static void LeaveAllArenaTeams(uint64 guid);
-        uint32 GetArenaTeamId(uint8 slot) const { return GetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * ARENA_TEAM_END) + ARENA_TEAM_ID); }
+        void UpdateArenaItemEquiped();
+        uint32 GetArenaTeamId(uint8 slot) { return GetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * ARENA_TEAM_END) + ARENA_TEAM_ID); }
         uint32 GetArenaPersonalRating(uint8 slot) const { return GetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * ARENA_TEAM_END) + ARENA_TEAM_PERSONAL_RATING); }
+        static uint32 GetArenaTeamIdFromDB(uint64 guid, uint8 slot);
         void SetArenaTeamIdInvited(uint32 ArenaTeamId) { m_ArenaTeamIdInvited = ArenaTeamId; }
         uint32 GetArenaTeamIdInvited() { return m_ArenaTeamIdInvited; }
+        static void LeaveAllArenaTeams(uint64 guid);
 
         Difficulty GetDifficulty(bool isRaid) const { return isRaid ? m_raidDifficulty : m_dungeonDifficulty; }
         Difficulty GetDungeonDifficulty() const { return m_dungeonDifficulty; }
@@ -1992,13 +2023,24 @@ class Player : public Unit, public GridObject<Player>
         /*********************************************************/
         void UpdateHonorFields();
         bool RewardHonor(Unit *pVictim, uint32 groupsize, int32 honor = -1, bool pvptoken = false);
-        uint32 GetHonorPoints() const { return GetUInt32Value(PLAYER_FIELD_HONOR_CURRENCY); }
-        uint32 GetArenaPoints() const { return GetUInt32Value(PLAYER_FIELD_ARENA_CURRENCY); }
+        uint32 GetHonorPoints() { return GetUInt32Value(PLAYER_FIELD_HONOR_CURRENCY); }
+        uint32 GetArenaPoints() { return GetUInt32Value(PLAYER_FIELD_ARENA_CURRENCY); }
         void ModifyHonorPoints(int32 value);
         void ModifyArenaPoints(int32 value);
-        uint32 GetMaxPersonalArenaRatingRequirement(uint32 minarenaslot) const;
-        void SetHonorPoints(uint32 value);
-        void SetArenaPoints(uint32 value);
+        void UpdateKnownTitles();
+        uint32 GetMaxPersonalArenaRatingRequirement(uint32 minarenaslot);
+        void SetHonorPoints(uint32 value)
+        {
+            SetUInt32Value(PLAYER_FIELD_HONOR_CURRENCY, value);
+            if (value)
+                AddKnownCurrency(ITEM_HONOR_POINTS_ID); // Arena Points
+        }
+        void SetArenaPoints(uint32 value)
+        {
+            SetUInt32Value(PLAYER_FIELD_ARENA_CURRENCY, value);
+            if (value)
+                AddKnownCurrency(ITEM_ARENA_POINTS_ID); // Arena Points
+        }
 
         //End of PvP System
 
@@ -2304,12 +2346,14 @@ class Player : public Unit, public GridObject<Player>
         void UnsummonPetTemporaryIfAny();
         void ResummonPetTemporaryUnSummonedIfAny();
         bool IsPetNeedBeTemporaryUnsummoned() const { return !IsInWorld() || !isAlive() || IsMounted() /*+in flight*/; }
+        uint32 Pethealth;
+        uint32 Petmana;
 
         void SendCinematicStart(uint32 CinematicSequenceId);
         void SendMovieStart(uint32 MovieId);
 
-		bool CanGainPremiumXP() {return getLevel() <= sWorld->getIntConfig(CONFIG_PREMIUM_XP_LEVELLIMIT);}
-		bool CanGainPremiumSkill(uint32 SkillId) {return GetSkillValue(SkillId) <= sWorld->getIntConfig(CONFIG_PREMIUM_SKILL_GAIN_LIMIT);}
+        bool CanGainPremiumXP() {return getLevel() <= sWorld->getIntConfig(CONFIG_PREMIUM_XP_LEVELLIMIT);}
+        bool CanGainPremiumSkill(uint32 SkillId) {return GetSkillValue(SkillId) <= sWorld->getIntConfig(CONFIG_PREMIUM_SKILL_GAIN_LIMIT);}
 
         /*********************************************************/
         /***                 INSTANCE SYSTEM                   ***/
@@ -2403,6 +2447,7 @@ class Player : public Unit, public GridObject<Player>
         void SetCurrentRune(uint8 index, RuneType currentRune) { m_runes->runes[index].CurrentRune = currentRune; }
         void SetRuneCooldown(uint8 index, uint32 cooldown) { m_runes->runes[index].Cooldown = cooldown; m_runes->SetRuneState(index, (cooldown == 0) ? true : false); }
         void SetRuneConvertAura(uint8 index, AuraEffect const * aura) { m_runes->runes[index].ConvertAura = aura; }
+        AuraEffect const *GetRuneConvertAura(uint8 index){return m_runes->runes[index].ConvertAura; }
         void AddRuneByAuraEffect(uint8 index, RuneType newType, AuraEffect const * aura) { SetRuneConvertAura(index, aura); ConvertRune(index, newType); }
         void RemoveRunesByAuraEffect(AuraEffect const * aura);
         void RestoreBaseRune(uint8 index);
@@ -2430,9 +2475,13 @@ class Player : public Unit, public GridObject<Player>
         float GetAverageItemLevel();
         bool isDebugAreaTriggers;
 
+        // spectator
+        typedef std::list<std::string> StringList;
+        std::vector<StringList*> twovtwo;
         void addAnticheatTemporaryImmunity(uint32 time_ms = 100) {m_anti_temporaryImmunity = getMSTime() + time_ms;}
         void resetAnticheatTemporaryImmunity() {m_anti_temporaryImmunity = 0;}
         bool hasAnticheatTemporaryImmunity() {return m_anti_temporaryImmunity + 75 > getMSTime();}
+        
 
     protected:
         uint32 m_regenTimerCount;
@@ -2655,7 +2704,7 @@ class Player : public Unit, public GridObject<Player>
         RestType rest_type;
         ////////////////////Rest System/////////////////////
 
-		//movement anticheat
+        //movement anticheat
         uint32 m_anti_LastClientTime;     //last movement client time
         uint32 m_anti_LastServerTime;     //last movement server time
         uint32 m_anti_DeltaClientTime;    //client side session time
@@ -2674,7 +2723,7 @@ class Player : public Unit, public GridObject<Player>
         uint64 m_anti_AlarmCount;         //alarm counter
 
         uint32 m_anti_JustJumped;         //Jump already began, anti air jump check
-		uint32 m_anti_temporaryImmunity;  //Speed changed
+        uint32 m_anti_temporaryImmunity;  //Speed changed
         float  m_anti_JumpBaseZ;          //Z coord before jump
         // << movement anticheat
 
@@ -2799,6 +2848,53 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
     if (m_spellModTakingSpell)
         spell = m_spellModTakingSpell;
 
+    switch(op)
+    {
+        case SPELLMOD_CASTING_TIME:
+        case SPELLMOD_COST:
+        {
+            if(basevalue == 0)
+                return T(0);
+            for (SpellModList::iterator itr = m_spellMods[op].begin(); itr != m_spellMods[op].end(); ++itr)
+            {
+                if(!IsAffectedBySpellmod(spellInfo,(*itr),spell))
+                    continue;
+                if((*itr)->type == SPELLMOD_PCT && (op != SPELLMOD_CASTING_TIME || basevalue <= T(10000)) && (*itr)->value <= -100)
+                {
+                    if(op != SPELLMOD_GLOBAL_COOLDOWN && op != SPELLMOD_CRIT_DAMAGE_BONUS)
+                        DropModCharge((*itr), spell);
+                    basevalue=0;
+                    return T(0);
+                }
+            }
+            break;
+        }
+        case SPELLMOD_CRITICAL_CHANCE:
+        case SPELLMOD_CHANCE_OF_SUCCESS:
+        {
+            for (SpellModList::iterator itr = m_spellMods[op].begin(); itr != m_spellMods[op].end(); ++itr)
+            {
+                if(!IsAffectedBySpellmod(spellInfo,(*itr),spell))
+                    continue;
+                if((*itr)->type == SPELLMOD_FLAT && abs((*itr)->value) >= 100)
+                {
+                    basevalue=T((*itr)->value>0?100:0);
+                    if(op != SPELLMOD_GLOBAL_COOLDOWN && op != SPELLMOD_CRIT_DAMAGE_BONUS)
+                        DropModCharge((*itr), spell);
+                    return T(0);
+                }
+                if((*itr)->type == SPELLMOD_PCT && (*itr)->value <= -100)
+                {
+                    if(op != SPELLMOD_GLOBAL_COOLDOWN && op != SPELLMOD_CRIT_DAMAGE_BONUS)
+                        DropModCharge((*itr), spell);
+                    basevalue=0;
+                    return T(0);
+                }
+            }
+            break;
+        }
+        default:break;
+    }
     for (SpellModList::iterator itr = m_spellMods[op].begin(); itr != m_spellMods[op].end(); ++itr)
     {
         SpellModifier *mod = *itr;
@@ -2818,14 +2914,19 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
             if (basevalue == T(0))
                 continue;
 
+            if( spellInfo->Id == 17962 && !mod->mask[0] && !mod->mask[1])
+                continue;
             // special case (skip > 10sec spell casts for instant cast setting)
             if (mod->op == SPELLMOD_CASTING_TIME && basevalue >= T(10000) && mod->value <= -100)
                 continue;
 
-            AddPctN(totalmul, mod->value);
+            if(op == SPELLMOD_COST || op == SPELLMOD_DAMAGE)
+                totalmul+=mod->value/100.0f;
+            else
+            totalmul *= 1.0f + (float)mod->value / 100.0f;
         }
-
-        DropModCharge(mod, spell);
+        if(mod->op != SPELLMOD_GLOBAL_COOLDOWN && mod->op != SPELLMOD_CRIT_DAMAGE_BONUS)
+            DropModCharge(mod, spell);
     }
     float diff = (float)basevalue * (totalmul - 1.0f) + (float)totalflat;
     basevalue = T((float)basevalue + diff);

@@ -68,9 +68,9 @@ void BattlegroundDS::Update(uint32 diff)
                             plr->RemoveAurasDueToSpell(48018);
                         
                 if (plr && plr->GetDistance2d(1214, 765) <= 50 && plr->IsWithinLOS(1214,765,14))
-                    plr->KnockBackWithAngle(6.40f,55,7);
+                    plr->KnockBackPlayerWithAngle(6.40f,55,7);
                 if (plr && plr->GetDistance2d(1369, 817) <= 50 && plr->IsWithinLOS(1369,817,14))
-                    plr->KnockBackWithAngle(3.03f,55,7);
+                    plr->KnockBackPlayerWithAngle(3.03f,55,7);
             }
             m_uiKnockback = 1000;
         }
@@ -107,15 +107,15 @@ void BattlegroundDS::Update(uint32 diff)
                 Player * plr = sObjectMgr->GetPlayer(itr->first);
                 if (plr && plr->IsWithinLOS(1214, 765, 14) && plr->GetDistance2d(1214, 765) <= 50)
                 {
-                    plr->KnockBackWithAngle(6.40f, 35, 6);
+                    plr->KnockBackPlayerWithAngle(6.40f, 35, 6);
                     if (Pet* pet = plr->GetPet())
-                        pet->KnockBackWithAngle(6.40f, 35, 6);
+                        pet->KnockBackPlayerWithAngle(6.40f, 35, 6);
                 }
                 if (plr && plr->IsWithinLOS(1369, 817, 14) && plr->GetDistance2d(1369, 817) <= 50)
                 {
-                    plr->KnockBackWithAngle(3.03f, 35, 6);
+                    plr->KnockBackPlayerWithAngle(3.03f, 35, 6);
                     if (Pet* pet = plr->GetPet())
-                        pet->KnockBackWithAngle(3.03f, 35, 6);
+                        pet->KnockBackPlayerWithAngle(3.03f, 35, 6);
                 }
             }
             setKnockBackTimer(3000);
@@ -140,7 +140,7 @@ void BattlegroundDS::StartingEventOpenDoors()
         SpawnBGObject(i, 90);
 
     setWaterFallTimer(urand(BG_DS_WATERFALL_TIMER_MIN, BG_DS_WATERFALL_TIMER_MAX));
-    setKnockBackTimer(3000);
+    setKnockBackTimer(30000);
     setWaterFallActive(false);
 
     for (uint32 i = BG_DS_OBJECT_WATER_1; i <= BG_DS_OBJECT_WATER_2; ++i)
@@ -217,7 +217,7 @@ void BattlegroundDS::Reset()
 {
     //call parent's class reset
     Battleground::Reset();
-    setKnockBackTimer(3000);
+    setKnockBackTimer(30000);
 }
 
 

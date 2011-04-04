@@ -45,26 +45,26 @@ class instance_archavon : public InstanceMapScript
                 ToravonGUID = 0;
             }
 
-			void OnPlayerEnter(Player *m_player)
-			{
-				if (sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
-				{
-					if(OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197))
-					{
-						if (m_player->GetTeamId() != sWorld->getWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID))
-						{
-							if (!pvpWG->isWarTime())
-							{
-								m_player->CastSpell(m_player, SPELL_TELEPORT_DALARAN, true);
-							}
-							else
-							{
-								m_player->CastSpell(m_player, m_player->GetTeamId() == TEAM_ALLIANCE ? SPELL_TELEPORT_ALLIANCE_CAMP : SPELL_TELEPORT_HORDE_CAMP, true);
-							}
-						}
-					}
-				}
-			}
+            void OnPlayerEnter(Player *m_player)
+            {
+                if (sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+                {
+                    if(OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197))
+                    {
+                        if (m_player->GetTeamId() != sWorld->getWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID))
+                        {
+                            if (!pvpWG->isWarTime())
+                            {
+                                m_player->CastSpell(m_player, SPELL_TELEPORT_DALARAN, true);
+                            }
+                            else
+                            {
+                                m_player->CastSpell(m_player, m_player->GetTeamId() == TEAM_ALLIANCE ? SPELL_TELEPORT_ALLIANCE_CAMP : SPELL_TELEPORT_HORDE_CAMP, true);
+                            }
+                        }
+                    }
+                }
+            }
 
             void OnCreatureCreate(Creature* creature)
             {

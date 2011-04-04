@@ -1767,7 +1767,7 @@ public:
                         else
                             DoCast(me->getVictim(), SPELL_DEADLY_POISON);
                     }
-                    SpellTimer = VENOMOUS_SNAKE_TIMER + (rand() %5)*100;					
+                    SpellTimer = VENOMOUS_SNAKE_TIMER + (rand() %5)*100;                    
                 }
             } else SpellTimer -= diff;
             DoMeleeAttackIfReady();
@@ -2146,6 +2146,103 @@ public:
     CreatureAI *GetAI(Creature *creature) const
     {
         return new npc_shadowfiendAI(creature);
+    }
+};
+
+/*######
+# npc_Valkyr
+######*/
+
+class npc_Valkyr : public CreatureScript
+{
+    public:
+        npc_Valkyr() : CreatureScript("npc_valkyr") { }
+        
+    struct npc_ValkyrAI : public ScriptedAI
+    {
+        npc_ValkyrAI(Creature* pCreature) : ScriptedAI(pCreature) {}
+
+        Unit * Target;
+        uint32 cooldown;
+        void Reset()
+        {
+            cooldown=0;
+            Target = NULL;
+        }
+        void UpdateAI(const uint32 diff)
+        {
+            if (!UpdateVictim())
+                return;
+            if (cooldown <= diff)
+            {
+                if(Unit * owner=((Guardian*)me)->GetOwner())
+                {
+                    if(Unit * tmp=owner->ToPlayer()->GetSelectedUnit())
+                        if(tmp->IsHostileTo(owner))
+                            Target = tmp;
+                    if(Target && Target->IsInWorld())
+                         me->CastSpell(Target, me->GetEntry() == 38392 ? 71842: 71841, false);
+                     cooldown=1500;
+                }
+            }
+            else cooldown-=diff;
+        }
+    };
+    
+    CreatureAI *GetAI(Creature *creature) const
+    {
+        return new npc_ValkyrAI(creature);
+    }
+};
+
+/*######
+# belochka AI
+######*/
+
+class belochka : public CreatureScript
+{
+    public:
+        belochka() : CreatureScript("belochka") { }
+        
+    struct belochkaAI : public ScriptedAI
+    {
+        belochkaAI(Creature* pCreature) : ScriptedAI(pCreature) {}
+        
+        void Reset()
+        {
+            DoCast(46705);
+        }
+    };
+    
+    CreatureAI *GetAI(Creature *creature) const
+    {
+        return new belochkaAI(creature);
+    }
+};
+
+/*######
+# npc_bird
+######*/
+
+class npc_bird : public CreatureScript
+{
+    public:
+        npc_bird() : CreatureScript("npc_bird") { }
+        
+    struct npc_birdAI : public ScriptedAI
+    {
+        npc_birdAI(Creature* pCreature) : ScriptedAI(pCreature) {}
+
+        void DamageTaken(Unit* pKiller, uint32 &damage)
+        {
+            if (damage >= me->GetHealth())
+                DoCast(pKiller, 5);
+        }
+    };
+
+    CreatureAI *GetAI(Creature *creature) const
+    {
+        return new npc_birdAI(creature);
     }
 };
 
@@ -2638,17 +2735,17 @@ public:
 
     struct npc_strangerAI : public ScriptedAI
     {
-	    npc_strangerAI(Creature *c) : ScriptedAI(c) {}
+        npc_strangerAI(Creature *c) : ScriptedAI(c) {}
 
-	    void Reset()
-	    {
-		    me->setActive(true);
-	    }	
+        void Reset()
+        {
+            me->setActive(true);
+        }    
 
     };
     CreatureAI* GetAI(Creature* pCreature) const
     {
-	    return new npc_strangerAI(pCreature);
+        return new npc_strangerAI(pCreature);
     }
 };
 
@@ -2838,7 +2935,7 @@ public:
 
     CreatureAI* GetAI(Creature* pCreature) const
     {
-	    return new npc_bountiful_chairAI(pCreature);
+        return new npc_bountiful_chairAI(pCreature);
     }
 };
 
@@ -2880,5 +2977,8 @@ void AddSC_npcs_special()
     new npc_experience;
     new npc_stranger;
     new npc_bountiful_chair;
+    new belochka;
+    new npc_bird;
+    new npc_Valkyr;
 }
 
