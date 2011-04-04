@@ -34,6 +34,9 @@ Useful information:
 
 WardenMgr::WardenMgr() : m_Disconnected(false), m_Banning(false)
 {
+    #if defined (ACE_HAS_EVENT_POLL) || defined (ACE_HAS_DEV_POLL)
+        ACE_Reactor::instance(new ACE_Reactor(new ACE_Dev_Poll_Reactor(ACE::max_handles(), 1), 1), true);
+    #endif
 }
 
 WardenMgr::~WardenMgr()
@@ -618,6 +621,7 @@ void WardenMgr::LoadModuleAndGetKeys(WorldSession* const session)
     // Same as when we send this transformed seed request to client
     pkt << (uint8)WARDS_SEED;
     pkt.append(session->GetWardenSeed(), 16);
+    free(m_tmpModule);
 
     m_WardenProcessStream->send((char const*)pkt.contents(), pkt.size());
 }
@@ -1095,7 +1099,7 @@ void WardenMgr::ReactToCheatCheckResult(WorldSession* const session, bool result
         session->SetWardenStatus(WARD_STATUS_CHEAT_CHECK_IN);
         const uint32 shortTime = urand(15, 25);                 // from 15 to 25 seconds
         session->GetWardenTimer().SetCurrent(0);                // so that we don't overload the timer
-        session->GetWardenTimer().SetInterval(shortTime*IN_MILLISECONDS);
+        session->GetWardenTimer().SetInterval(shortTime * IN_MILLISECONDS);
         sLog->outStaticDebug("Timer set to %u seconds", shortTime);
         session->GetWardenTimer().Reset();
     }
