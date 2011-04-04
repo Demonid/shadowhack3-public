@@ -15573,7 +15573,6 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit *pVictim, Aura * aura, SpellEntry co
         {
             if (spellProto->SpellIconID == 2961 && spellProto->Id != 60503 ) // taste for blood
                 return false;
-            active = true;
         }
         else if (spellProto->SpellIconID == 1985 && (procFlag == PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_NEG || procFlag == PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG))
             active = true;
