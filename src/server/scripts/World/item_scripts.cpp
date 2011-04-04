@@ -469,12 +469,12 @@ public:
     {
         if (pPlayer->GetZoneId() != ZONE_ID_BOREAN_TUNDRA || pPlayer->GetAreaId() != AREA_ID_GEYSER_FIELD)
         {
-	        return false;
+            return false;
         }
 
         if (pPlayer->GetQuestStatus(QUEST_THE_COLLAPSE) == QUEST_STATUS_INCOMPLETE)
         {
-	        pPlayer->GroupKillHappens(NPC_ALLUVIUS, pPlayer);
+            pPlayer->GroupKillHappens(NPC_ALLUVIUS, pPlayer);
             return true;
         }
 
@@ -492,16 +492,16 @@ public:
         if (pPlayer->GetQuestStatus(12099) == QUEST_STATUS_INCOMPLETE)
         {
             Quest const* qInfo = sObjectMgr->GetQuestTemplate(12099);
-	        if ( pPlayer->getQuestStatusMap()[12099].m_creatureOrGOcount[0] < qInfo->ReqCreatureOrGOCount[0] )
-	        {
-		        uint32 reqkillcount = qInfo->ReqCreatureOrGOCount[0];
-		        uint32 curkillcount = pPlayer->getQuestStatusMap()[12099].m_creatureOrGOcount[0];
-		        if (curkillcount < reqkillcount)
-		        {
-			        pPlayer->getQuestStatusMap()[12099].m_creatureOrGOcount[0] = curkillcount + 1;
-			        pPlayer->SendQuestUpdateAddCreatureOrGo( qInfo, pPlayer->GetGUID(), 0, curkillcount, 1);
+            if ( pPlayer->getQuestStatusMap()[12099].m_creatureOrGOcount[0] < qInfo->ReqCreatureOrGOCount[0] )
+            {
+                uint32 reqkillcount = qInfo->ReqCreatureOrGOCount[0];
+                uint32 curkillcount = pPlayer->getQuestStatusMap()[12099].m_creatureOrGOcount[0];
+                if (curkillcount < reqkillcount)
+                {
+                    pPlayer->getQuestStatusMap()[12099].m_creatureOrGOcount[0] = curkillcount + 1;
+                    pPlayer->SendQuestUpdateAddCreatureOrGo( qInfo, pPlayer->GetGUID(), 0, curkillcount, 1);
                 }               
-	        }
+            }
         }
         return false;
     }

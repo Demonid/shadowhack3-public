@@ -524,17 +524,17 @@ public:
             }
         }
 
-	    void DamageTaken(Unit * /*pDoneBy*/, uint32 & uiDamage)
+        void DamageTaken(Unit * /*pDoneBy*/, uint32 & uiDamage)
         {
             me->SetReactState(REACT_PASSIVE);
-		    uiDamage = 0;
+            uiDamage = 0;
         }
 
-	    void EnterCombat(Unit* /*pWho*/)
-	    {
-		    me->SetReactState(REACT_PASSIVE);
-		    return;
-	    }
+        void EnterCombat(Unit* /*pWho*/)
+        {
+            me->SetReactState(REACT_PASSIVE);
+            return;
+        }
 
         void FinishPointReached()
         {

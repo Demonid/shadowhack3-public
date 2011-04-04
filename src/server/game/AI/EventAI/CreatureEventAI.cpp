@@ -487,7 +487,7 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
                         }
 
                     }
-                    else
+                    else if (!me->HasSpellCooldown(action.cast.spellId))
                     {
                         //Interrupt any previous spell
                         if (caster->IsNonMeleeSpellCasted(false) && action.cast.castFlags & CAST_INTERRUPT_PREVIOUS)

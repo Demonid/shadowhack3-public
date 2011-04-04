@@ -933,7 +933,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
         return -1;
     }
 
-	QueryResult premresult =
+    QueryResult premresult =
         LoginDatabase.PQuery ("SELECT premium_type "
                                 "FROM account_premium "
                                 "WHERE id = '%u' AND active = 1",
@@ -941,12 +941,12 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
 
     if (premresult) // if account premium
     {
-		do
-		{
-			Field *fields = premresult->Fetch();
-			premiumtype |= fields[0].GetUInt8();
-		}
-		while(premresult->NextRow());
+        do
+        {
+            Field *fields = premresult->Fetch();
+            premiumtype |= fields[0].GetUInt8();
+        }
+        while(premresult->NextRow());
     }
 
     // Check locked state for server

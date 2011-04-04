@@ -32,6 +32,21 @@ EndContentData */
 #include "ScriptPCH.h"
 #include "GuardAI.h"
 
+enum gSpells
+{
+    AOE          = 61603,
+    MS           = 68784,
+    BUBLE        = 67251,
+    HAMSTRING    = 62845,
+    SPELL_HEAL   = 68013,
+    BLADESTORM   = 10308,
+    GRIP         = 49576,
+    REND         = 49909,
+    FREEDOM      = 68758,
+    Trinket      = 42292,
+    Charge       = 68764
+};
+
 enum GuardGeneric
 {
     GENERIC_CREATURE_COOLDOWN       = 5000,
@@ -59,6 +74,16 @@ public:
         {
             globalCooldown = 0;
             buffTimer = 0;
+            MS_Timer = 5000;
+            AOE_Timer = 7000;
+            BUBLE_Timer = 37000;
+            HAMSTRING_Timer = 1500;
+            HEAL_Timer = 15500;
+            BLADESTORM_Timer = 10100;
+            GRIP_Timer = 10000;
+            REND_Timer = 6000;
+            Freedom_Timer = 4000;
+            Charge_Timer = 9000;
         }
 
         void EnterCombat(Unit* who)
@@ -189,6 +214,86 @@ public:
                 }
             }
 
+            if (Freedom_Timer < diff)
+            {
+                DoCast(me, FREEDOM);
+                Freedom_Timer = 5000;
+            }
+            else
+            Freedom_Timer -=diff;
+    
+            if (Charge_Timer < diff)
+            {
+                DoCast(me->getVictim(), Charge);
+                Charge_Timer = 5000;
+            }
+            else
+            Charge_Timer -=diff;
+
+            if (BLADESTORM_Timer < diff)
+            {
+                DoCast(me->getVictim(), BLADESTORM);
+                BLADESTORM_Timer = 10000;
+            }
+            else
+            BLADESTORM_Timer -=diff;
+    
+            if (MS_Timer < diff)
+            {
+                DoCast(me->getVictim(), MS);
+                MS_Timer = 10000;
+            }
+            else
+            MS_Timer -=diff;
+    
+            if (REND_Timer < diff)
+            {
+                DoCast(me->getVictim(), REND);
+                REND_Timer = 11000;
+            }
+            else
+            REND_Timer -=diff;
+    
+            if (GRIP_Timer < diff)
+            {
+                DoCast(me->getVictim(), GRIP);
+                GRIP_Timer = 10000;
+            }
+            else
+            GRIP_Timer -=diff;
+    
+            if (AOE_Timer < diff)
+            {
+                DoCast(me->getVictim(), AOE);
+                AOE_Timer = 10000;
+            }
+            else
+            AOE_Timer -=diff;
+    
+            if (BUBLE_Timer < diff)
+            {
+                DoCast(me, BUBLE);
+                BUBLE_Timer = 37000;
+            }
+            else
+            BUBLE_Timer -=diff;
+    
+            if (HAMSTRING_Timer < diff)
+            {
+                DoCast(me->getVictim(), HAMSTRING);
+                HAMSTRING_Timer = 5000;
+            }
+            else
+            HAMSTRING_Timer -=diff;
+    
+            if (HEAL_Timer < diff && HealthBelowPct(30))
+            {
+                DoCast(me, SPELL_HEAL);
+                HEAL_Timer = 16000;
+            }
+            else
+            HEAL_Timer -=diff;
+            
             DoMeleeAttackIfReady();
         }
 
@@ -226,6 +331,17 @@ public:
     private:
         uint32 globalCooldown;
         uint32 buffTimer;
+        uint32 AOE_Timer;
+        uint32 MS_Timer;
+        uint32 BUBLE_Timer;
+        uint32 HAMSTRING_Timer;
+        uint32 HEAL_Timer;
+        uint32 BLADESTORM_Timer;
+        uint32 GRIP_Timer;
+        uint32 REND_Timer;
+        uint32 Freedom_Timer;
+        uint32 Trinket_Timer;
+        uint32 Charge_Timer;
     };
 
     CreatureAI *GetAI(Creature* creature) const

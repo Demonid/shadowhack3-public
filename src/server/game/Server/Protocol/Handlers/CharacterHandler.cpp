@@ -818,23 +818,23 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
 
     sObjectAccessor->AddObject(pCurrChar);
 
-	if (sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
-	{
-		if (OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197))
-		{
-				if (pvpWG->isWarTime())
-				{
-					// "Battle in progress"
-					pCurrChar->SendUpdateWorldState(ClockWorldState[1], uint32(time(NULL)));
-				}
-				else
-				{
-					// Time to next battle
-					pvpWG->SendInitWorldStatesTo(pCurrChar);
-					pCurrChar->SendUpdateWorldState(ClockWorldState[1], uint32(time(NULL) + pvpWG->GetTimer()));
-				}
-		}
-	}
+    if (sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+    {
+        if (OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197))
+        {
+                if (pvpWG->isWarTime())
+                {
+                    // "Battle in progress"
+                    pCurrChar->SendUpdateWorldState(ClockWorldState[1], uint32(time(NULL)));
+                }
+                else
+                {
+                    // Time to next battle
+                    pvpWG->SendInitWorldStatesTo(pCurrChar);
+                    pCurrChar->SendUpdateWorldState(ClockWorldState[1], uint32(time(NULL) + pvpWG->GetTimer()));
+                }
+        }
+    }
 
     pCurrChar->SendInitialPacketsAfterAddToMap();
 
@@ -1708,12 +1708,12 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recv_data)
 
         if (!sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GUILD))
         {
-			if (uint32 glId = Player::GetGuildIdFromDB(lowGuid))
-			{
-				Guild* targetGuild = sObjectMgr->GetGuildById(glId);
-				if (targetGuild)
-					targetGuild->DeleteMember(lowGuid, false, true);
-			}
+            if (uint32 glId = Player::GetGuildIdFromDB(lowGuid))
+            {
+                Guild* targetGuild = sObjectMgr->GetGuildById(glId);
+                if (targetGuild)
+                    targetGuild->DeleteMember(lowGuid, false, true);
+            }
         }
 
         if (!sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_ADD_FRIEND))

@@ -45,8 +45,8 @@ enum Spells
     SPELL_GRAB                               = 62707,
     SPELL_BERSERK                            = 47008,
 
-	// Scorch Ground
-	SPELL_SCORCH_GROUND                      = 62548
+    // Scorch Ground
+    SPELL_SCORCH_GROUND                      = 62548
 };
 
 enum Events
@@ -361,11 +361,11 @@ public:
 
         void DamageTaken(Unit* /*attacker*/, uint32& damage)
         {
-		    if (me->HasAura(SPELL_FREEZE_ANIM))
-		    {
-			    damage = 0;
-			    return;
-		    }
+            if (me->HasAura(SPELL_FREEZE_ANIM))
+            {
+                damage = 0;
+                return;
+            }
             if (me->HasAura(SPELL_BRITTLE) && damage >= 5000)
             {
                 DoCastAOE(SPELL_SHATTER, true);
@@ -379,32 +379,32 @@ public:
 
         void UpdateAI(const uint32 uiDiff)
         {
-			if (construct_activation && !construct_activated)
-			{
-				if (activationTimer <= uiDiff)
-				{
-					construct_activated = true;
+            if (construct_activation && !construct_activated)
+            {
+                if (activationTimer <= uiDiff)
+                {
+                    construct_activated = true;
 
-					me->setFaction(16);
-					me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED | UNIT_FLAG_STUNNED | UNIT_FLAG_DISABLE_MOVE);
-					me->SetReactState(REACT_AGGRESSIVE);
+                    me->setFaction(16);
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED | UNIT_FLAG_STUNNED | UNIT_FLAG_DISABLE_MOVE);
+                    me->SetReactState(REACT_AGGRESSIVE);
 
-					me->RemoveAurasDueToSpell(SPELL_FREEZE_ANIM);
+                    me->RemoveAurasDueToSpell(SPELL_FREEZE_ANIM);
 
-					if (Creature *pIgnis = me->GetCreature(*me, instance->GetData64(DATA_IGNIS)))
-					{
-						if (pIgnis->getVictim())
-							me->AI()->AttackStart(pIgnis->getVictim());
-					}
+                    if (Creature *pIgnis = me->GetCreature(*me, instance->GetData64(DATA_IGNIS)))
+                    {
+                        if (pIgnis->getVictim())
+                            me->AI()->AttackStart(pIgnis->getVictim());
+                    }
 
-					me->AI()->DoZoneInCombat();
-				}
-				else
-					activationTimer -= uiDiff;
-			}			
+                    me->AI()->DoZoneInCombat();
+                }
+                else
+                    activationTimer -= uiDiff;
+            }            
 
-			if (!construct_activated)
-				return;
+            if (!construct_activated)
+                return;
 
             Map *cMap = me->GetMap();
 

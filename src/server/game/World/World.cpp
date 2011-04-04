@@ -469,10 +469,11 @@ void World::LoadConfigSettings(bool reload)
     rate_values[RATE_XP_KILL]     = sConfig->GetFloatDefault("Rate.XP.Kill", 1.0f);
     rate_values[RATE_XP_QUEST]    = sConfig->GetFloatDefault("Rate.XP.Quest", 1.0f);
     rate_values[RATE_XP_EXPLORE]  = sConfig->GetFloatDefault("Rate.XP.Explore", 1.0f);
-	rate_values[RATE_PREMIUM_XP_KILL]     = sConfig->GetFloatDefault("Rate.Premium.XP.Kill", 2.0f);
-	rate_values[RATE_PREMIUM_XP_QUEST]    = sConfig->GetFloatDefault("Rate.Premium.XP.Quest", 2.0f);
-	rate_values[RATE_PREMIUM_XP_EXPLORE]  = sConfig->GetFloatDefault("Rate.Premium.XP.Explore", 2.0f);
+    rate_values[RATE_PREMIUM_XP_KILL]     = sConfig->GetFloatDefault("Rate.Premium.XP.Kill", 2.0f);
+    rate_values[RATE_PREMIUM_XP_QUEST]    = sConfig->GetFloatDefault("Rate.Premium.XP.Quest", 2.0f);
+    rate_values[RATE_PREMIUM_XP_EXPLORE]  = sConfig->GetFloatDefault("Rate.Premium.XP.Explore", 2.0f);
     rate_values[RATE_REPAIRCOST]  = sConfig->GetFloatDefault("Rate.RepairCost", 1.0f);
+    rate_values[RATE_LOYALITY]              = sConfig->GetFloatDefault("Rate.Loyalty", 1.0f);
     if (rate_values[RATE_REPAIRCOST] < 0.0f)
     {
         sLog->outError("Rate.RepairCost (%f) must be >=0. Using 0.0 instead.",rate_values[RATE_REPAIRCOST]);
@@ -506,6 +507,7 @@ void World::LoadConfigSettings(bool reload)
     rate_values[RATE_AUCTION_DEPOSIT] = sConfig->GetFloatDefault("Rate.Auction.Deposit", 1.0f);
     rate_values[RATE_AUCTION_CUT] = sConfig->GetFloatDefault("Rate.Auction.Cut", 1.0f);
     rate_values[RATE_HONOR] = sConfig->GetFloatDefault("Rate.Honor",1.0f);
+    rate_values[RATE_PVP_RANK_EXTRA_HONOR] = sConfig->GetFloatDefault("Rate.Rank.ExtraHonor", 1.0f);
     rate_values[RATE_MINING_AMOUNT] = sConfig->GetFloatDefault("Rate.Mining.Amount",1.0f);
     rate_values[RATE_MINING_NEXT]   = sConfig->GetFloatDefault("Rate.Mining.Next",1.0f);
     rate_values[RATE_INSTANCE_RESET_TIME] = sConfig->GetFloatDefault("Rate.InstanceResetTime",1.0f);
@@ -652,6 +654,7 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_INTERVAL_SAVE] = sConfig->GetIntDefault("PlayerSaveInterval", 15 * MINUTE * IN_MILLISECONDS);
     m_int_configs[CONFIG_INTERVAL_DISCONNECT_TOLERANCE] = sConfig->GetIntDefault("DisconnectToleranceInterval", 0);
     m_bool_configs[CONFIG_STATS_SAVE_ONLY_ON_LOGOUT] = sConfig->GetBoolDefault("PlayerSave.Stats.SaveOnlyOnLogout", true);
+    m_bool_configs[CONFIG_DUEL_RESET_COOLDOWN] = sConfig->GetBoolDefault("DuelResetCooldown", false);
 
     m_int_configs[CONFIG_MIN_LEVEL_STAT_SAVE] = sConfig->GetIntDefault("PlayerSave.Stats.MinLevel", 0);
     if (m_int_configs[CONFIG_MIN_LEVEL_STAT_SAVE] > MAX_LEVEL)
@@ -689,6 +692,18 @@ void World::LoadConfigSettings(bool reload)
     else
         m_int_configs[CONFIG_PORT_WORLD] = sConfig->GetIntDefault("WorldServerPort", 8085);
 
+    std::string s_pvp_ranks = sConfig->GetStringDefault("PvPRank.HKPerRank", "10,50,100,200,450,750,1300,2000,3500,6000,9500,15000,21000,30000");
+    char *c_pvp_ranks = const_cast<char*>(s_pvp_ranks.c_str());
+    for (int i = 0; i !=HKRANKMAX; i++)
+    {
+        if (i==0)
+            pvp_ranks[0] = 0;
+        else if (i==1)
+            pvp_ranks[1] = atoi(strtok (c_pvp_ranks, ","));
+        else
+            pvp_ranks[i] = atoi(strtok (NULL, ","));
+    } 
+        
     m_int_configs[CONFIG_SOCKET_TIMEOUTTIME] = sConfig->GetIntDefault("SocketTimeOutTime", 900000);
     m_int_configs[CONFIG_SESSION_ADD_DELAY] = sConfig->GetIntDefault("SessionAddDelay", 10000);
 
@@ -730,6 +745,8 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_STRICT_PLAYER_NAMES]                 = sConfig->GetIntDefault ("StrictPlayerNames",  0);
     m_int_configs[CONFIG_STRICT_CHARTER_NAMES]                = sConfig->GetIntDefault ("StrictCharterNames", 0);
     m_int_configs[CONFIG_STRICT_PET_NAMES]                    = sConfig->GetIntDefault ("StrictPetNames",     0);
+    m_bool_configs[CONFIG_ANTIPERELIV]                        = sConfig->GetBoolDefault("AntiPereliv", false);
+    m_bool_configs[CONFIG_ANTIDODGE]                          = sConfig->GetBoolDefault("AntiDodge", false);
 
     m_int_configs[CONFIG_MIN_PLAYER_NAME]                     = sConfig->GetIntDefault ("MinPlayerName",  2);
     if (m_int_configs[CONFIG_MIN_PLAYER_NAME] < 1 || m_int_configs[CONFIG_MIN_PLAYER_NAME] > MAX_PLAYER_NAME)
@@ -894,6 +911,7 @@ void World::LoadConfigSettings(bool reload)
     }
 
     m_int_configs[CONFIG_MAX_RECRUIT_A_FRIEND_BONUS_PLAYER_LEVEL_DIFFERENCE] = sConfig->GetIntDefault("RecruitAFriend.MaxDifference", 3);
+    m_int_configs[CONFIG_ARENA_SPECTATOR_PRICE_HONOR] = sConfig->GetIntDefault("ArenaSpectator.HonorPrice", 5000);
     m_bool_configs[CONFIG_ALL_TAXI_PATHS] = sConfig->GetBoolDefault("AllFlightPaths", false);
     m_bool_configs[CONFIG_INSTANT_TAXI] = sConfig->GetBoolDefault("InstantFlightPaths", false);
 
@@ -973,8 +991,8 @@ void World::LoadConfigSettings(bool reload)
     sLog->outString("Will clear `logs` table of entries older than %i seconds every %u minutes.",
         m_int_configs[CONFIG_LOGDB_CLEARTIME], m_int_configs[CONFIG_LOGDB_CLEARINTERVAL]);
 
-	m_int_configs[CONFIG_PREMIUM_XP_LEVELLIMIT]     = sConfig->GetIntDefault("Rate.Premium.XP.LevelLimit", 70);
-	m_int_configs[CONFIG_PREMIUM_SKILL_GAIN_LIMIT]  = sConfig->GetIntDefault("Rate.Premium.SkillGain.Limit", 400);
+    m_int_configs[CONFIG_PREMIUM_XP_LEVELLIMIT]     = sConfig->GetIntDefault("Rate.Premium.XP.LevelLimit", 70);
+    m_int_configs[CONFIG_PREMIUM_SKILL_GAIN_LIMIT]  = sConfig->GetIntDefault("Rate.Premium.SkillGain.Limit", 400);
 
     m_int_configs[CONFIG_SKILL_CHANCE_ORANGE] = sConfig->GetIntDefault("SkillChance.Orange",100);
     m_int_configs[CONFIG_SKILL_CHANCE_YELLOW] = sConfig->GetIntDefault("SkillChance.Yellow",75);
@@ -989,14 +1007,14 @@ void World::LoadConfigSettings(bool reload)
 
     m_int_configs[CONFIG_SKILL_GAIN_CRAFTING]  = sConfig->GetIntDefault("SkillGain.Crafting", 1);
 
-	m_int_configs[CONFIG_PREMIUM_SKILL_GAIN_CRAFTING]  = sConfig->GetIntDefault("SkillGain.Premium.Crafting", 2);
+    m_int_configs[CONFIG_PREMIUM_SKILL_GAIN_CRAFTING]  = sConfig->GetIntDefault("SkillGain.Premium.Crafting", 2);
 
 
     m_int_configs[CONFIG_SKILL_GAIN_DEFENSE]  = sConfig->GetIntDefault("SkillGain.Defense", 1);
 
     m_int_configs[CONFIG_SKILL_GAIN_GATHERING]  = sConfig->GetIntDefault("SkillGain.Gathering", 1);
 
-	m_int_configs[CONFIG_PREMIUM_SKILL_GAIN_GATHERING]  = sConfig->GetIntDefault("SkillGain.Premium.Gathering", 2);
+    m_int_configs[CONFIG_PREMIUM_SKILL_GAIN_GATHERING]  = sConfig->GetIntDefault("SkillGain.Premium.Gathering", 2);
 
     m_int_configs[CONFIG_SKILL_GAIN_WEAPON]  = sConfig->GetIntDefault("SkillGain.Weapon", 1);
 
@@ -1093,6 +1111,7 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_BATTLEGROUND_PREMATURE_FINISH_TIMER]        = sConfig->GetIntDefault ("Battleground.PrematureFinishTimer", 5 * MINUTE * IN_MILLISECONDS);
     m_int_configs[CONFIG_BATTLEGROUND_PREMADE_GROUP_WAIT_FOR_MATCH]  = sConfig->GetIntDefault ("Battleground.PremadeGroupWaitForMatch", 30 * MINUTE * IN_MILLISECONDS);
     m_bool_configs[CONFIG_BG_XP_FOR_KILL]                            = sConfig->GetBoolDefault("Battleground.GiveXPForKills", false);
+    m_bool_configs[CONFIG_BG_GIVEMARKS]                              = sConfig->GetBoolDefault("Battleground.GiveMarks", false);
     m_int_configs[CONFIG_ARENA_MAX_RATING_DIFFERENCE]                = sConfig->GetIntDefault ("Arena.MaxRatingDifference", 150);
     m_int_configs[CONFIG_ARENA_RATING_DISCARD_TIMER]                 = sConfig->GetIntDefault ("Arena.RatingDiscardTimer", 10 * MINUTE * IN_MILLISECONDS);
     m_bool_configs[CONFIG_ARENA_AUTO_DISTRIBUTE_POINTS]              = sConfig->GetBoolDefault("Arena.AutoDistributePoints", false);
@@ -1105,6 +1124,10 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_ARENA_START_MATCHMAKER_RATING]              = sConfig->GetIntDefault ("Arena.ArenaStartMatchmakerRating", 1500);
     m_bool_configs[CONFIG_ARENA_SEASON_IN_PROGRESS]                  = sConfig->GetBoolDefault("Arena.ArenaSeason.InProgress", true);
     m_bool_configs[CONFIG_ARENA_LOG_EXTENDED_INFO]                   = sConfig->GetBoolDefault("ArenaLog.ExtendedInfo", false);
+    m_bool_configs[CONFIG_ARENA_2v2_BRACKET_ENABLE]                  = sConfig->GetBoolDefault("Arena.2v2.Bracket.Enable", true);
+    m_bool_configs[CONFIG_ARENA_3v3_BRACKET_ENABLE]                  = sConfig->GetBoolDefault("Arena.3v3.Bracket.Enable", true);
+    m_bool_configs[CONFIG_ARENA_5v5_BRACKET_ENABLE]                  = sConfig->GetBoolDefault("Arena.5v5.Bracket.Enable", true);
+    m_bool_configs[CONFIG_ARENA_MARK_OF_WIN_ENABLE]                  = sConfig->GetBoolDefault("Arena.MarkOfWin.Enable", false);
 
     m_bool_configs[CONFIG_OFFHAND_CHECK_AT_SPELL_UNLEARN]            = sConfig->GetBoolDefault("OffhandCheckAtSpellUnlearn", true);
 
@@ -1210,7 +1233,11 @@ void World::LoadConfigSettings(bool reload)
     sLog->outString("WORLD: VMap data directory is: %svmaps",m_dataPath.c_str());
 
     m_bool_configs[CONFIG_MOVEMAP_ENABLE] = sConfig->GetBoolDefault("PathFinding.Enable", true);
-
+    m_int_configs[CONFIG_MAX_PATH_LENGTH] = sConfig->GetIntDefault("PathFinding.MaxPathLength", 50);
+    if(sConfig->GetBoolDefault("PathFinding.MovemapType", true))
+        MAP_VERSION_MAGIC = "v2.1";
+    else
+        MAP_VERSION_MAGIC = "v1.2";
     std::string ignoreMMapIds = sConfig->GetStringDefault("PathFinding.ignoreMapIds", "");
     MMAP::MMapFactory::preventPathfindingOnMaps(ignoreMMapIds.c_str());
     sLog->outString("WORLD: PathFinding %sabled", getBoolConfig(CONFIG_MOVEMAP_ENABLE) ? "en" : "dis");
@@ -1238,22 +1265,22 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_NUMTHREADS] = sConfig->GetIntDefault("MapUpdate.Threads", 1);
     m_int_configs[CONFIG_MAX_RESULTS_LOOKUP_COMMANDS] = sConfig->GetIntDefault("Command.LookupMaxResults", 0);
 
-	m_bool_configs[CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED]          = sConfig->GetBoolDefault("OutdoorPvP.Wintergrasp.Enabled", true);
-	m_bool_configs[CONFIG_OUTDOORPVP_WINTERGRASP_CUSTOM_HONOR]     = sConfig->GetBoolDefault("OutdoorPvP.Wintergrasp.CustomHonorRewards", false);
+    m_bool_configs[CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED]          = sConfig->GetBoolDefault("OutdoorPvP.Wintergrasp.Enabled", true);
+    m_bool_configs[CONFIG_OUTDOORPVP_WINTERGRASP_CUSTOM_HONOR]     = sConfig->GetBoolDefault("OutdoorPvP.Wintergrasp.CustomHonorRewards", false);
 
-	m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_START_TIME]        = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.StartTime", 30);
-	m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_BATTLE_TIME]       = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.BattleTime", 30);
-	m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_INTERVAL]          = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.Interval", 150);	
-	m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_WIN_BATTLE]        = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorBattleWin", 3000);
-	m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_LOSE_BATTLE]       = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorBattleLose", 1250);
-	m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_DAMAGED_TOWER]     = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorDamageTower", 750);
-	m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_DESTROYED_TOWER]   = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorDestroyedTower", 750);
-	m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_DAMAGED_BUILDING]  = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorDamagedBuilding", 750);
-	m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_INTACT_BUILDING]   = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorIntactBuilding", 1500);
+    m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_START_TIME]        = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.StartTime", 30);
+    m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_BATTLE_TIME]       = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.BattleTime", 30);
+    m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_INTERVAL]          = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.Interval", 150);    
+    m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_WIN_BATTLE]        = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorBattleWin", 3000);
+    m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_LOSE_BATTLE]       = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorBattleLose", 1250);
+    m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_DAMAGED_TOWER]     = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorDamageTower", 750);
+    m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_DESTROYED_TOWER]   = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorDestroyedTower", 750);
+    m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_DAMAGED_BUILDING]  = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorDamagedBuilding", 750);
+    m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_INTACT_BUILDING]   = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorIntactBuilding", 1500);
 
-	m_bool_configs[CONFIG_OUTDOORPVP_WINTERGRASP_ANTIFARM_ENABLE]  = sConfig->GetBoolDefault("OutdoorPvP.Wintergrasp.Antifarm.Enable", false);
-	m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_ANTIFARM_ATK]      = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.Antifarm.Atk", 5);
-	m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_ANTIFARM_DEF]      = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.Antifarm.Def", 5);
+    m_bool_configs[CONFIG_OUTDOORPVP_WINTERGRASP_ANTIFARM_ENABLE]  = sConfig->GetBoolDefault("OutdoorPvP.Wintergrasp.Antifarm.Enable", false);
+    m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_ANTIFARM_ATK]      = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.Antifarm.Atk", 5);
+    m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_ANTIFARM_DEF]      = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.Antifarm.Def", 5);
 
     // chat logging
     m_bool_configs[CONFIG_CHATLOG_CHANNEL] = sConfig->GetBoolDefault("ChatLogs.Channel", false);
@@ -1409,11 +1436,11 @@ void World::SetInitialWorldSettings()
     sLog->outString("Loading Spell Bonus Data...");
     sSpellMgr->LoadSpellBonusess();
 
+    sLog->outString("Loading Pet Spell Bonus Data...");
+    sSpellMgr->LoadPetSpellBonusess();
+
     sLog->outString("Loading Aggro Spells Definitions...");
     sSpellMgr->LoadSpellThreats();
-
-    sLog->outString("Loading Spell Group Stack Rules...");
-    sSpellMgr->LoadSpellGroupStackRules();
 
     sLog->outString("Loading NPC Texts...");
     sObjectMgr->LoadGossipText();
@@ -1683,6 +1710,8 @@ void World::SetInitialWorldSettings()
 
     sLog->outString("Loading Autobroadcasts...");
     LoadAutobroadcasts();
+    sLog->outString("Loading ItemRequirements...");
+    sObjectMgr->LoadItemRequirements();
 
     ///- Load and initialize scripts
     sObjectMgr->LoadQuestStartScripts();                         // must be after load Creature/Gameobject(Template/Data) and QuestTemplate
@@ -2951,26 +2980,26 @@ void World::ProcessQueryCallbacks()
 
 void World::SendWintergraspState()
 {
-	OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197);
-	if (!pvpWG)
-		return;
+    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197);
+    if (!pvpWG)
+        return;
 
-	for (SessionMap::const_iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
-	{
-		if (!itr->second || !itr->second->GetPlayer() || !itr->second->GetPlayer()->IsInWorld())
-			continue;
+    for (SessionMap::const_iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
+    {
+        if (!itr->second || !itr->second->GetPlayer() || !itr->second->GetPlayer()->IsInWorld())
+            continue;
 
-		if (pvpWG->isWarTime())
-		{
-			// "Battle in progress"
-			itr->second->GetPlayer()->SendUpdateWorldState(ClockWorldState[1], (time(NULL)));
-		} 
-		else
-		{
-			pvpWG->SendInitWorldStatesTo(itr->second->GetPlayer());
-			itr->second->GetPlayer()->SendUpdateWorldState(ClockWorldState[1], (time(NULL) + pvpWG->GetTimer()));
-			// Hide unneeded info which in center of screen
-			itr->second->GetPlayer()->SendInitWorldStates(itr->second->GetPlayer()->GetZoneId(), itr->second->GetPlayer()->GetAreaId());
-		}
-	}
+        if (pvpWG->isWarTime())
+        {
+            // "Battle in progress"
+            itr->second->GetPlayer()->SendUpdateWorldState(ClockWorldState[1], (time(NULL)));
+        } 
+        else
+        {
+            pvpWG->SendInitWorldStatesTo(itr->second->GetPlayer());
+            itr->second->GetPlayer()->SendUpdateWorldState(ClockWorldState[1], (time(NULL) + pvpWG->GetTimer()));
+            // Hide unneeded info which in center of screen
+            itr->second->GetPlayer()->SendInitWorldStates(itr->second->GetPlayer()->GetZoneId(), itr->second->GetPlayer()->GetAreaId());
+        }
+    }
 }

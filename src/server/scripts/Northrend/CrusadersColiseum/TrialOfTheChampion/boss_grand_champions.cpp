@@ -146,32 +146,32 @@ public:
             switch(uiType)
             {
                 case 1:
-					AddWaypoint(0, 746.45f, 647.03f, 411.57f);
-					AddWaypoint(1, 771.434f, 642.606f, 411.9f);
-					AddWaypoint(2, 779.807f, 617.535f, 411.716f);
-					AddWaypoint(3, 771.098f, 594.635f, 411.625f);
-					AddWaypoint(4, 746.887f, 583.425f, 411.668f);
-					AddWaypoint(5, 715.176f, 583.782f, 412.394f);
-					AddWaypoint(6, 720.719f, 591.141f, 411.737f);
+                    AddWaypoint(0, 746.45f, 647.03f, 411.57f);
+                    AddWaypoint(1, 771.434f, 642.606f, 411.9f);
+                    AddWaypoint(2, 779.807f, 617.535f, 411.716f);
+                    AddWaypoint(3, 771.098f, 594.635f, 411.625f);
+                    AddWaypoint(4, 746.887f, 583.425f, 411.668f);
+                    AddWaypoint(5, 715.176f, 583.782f, 412.394f);
+                    AddWaypoint(6, 720.719f, 591.141f, 411.737f);
                     uiWaypointPath = 1;
                     break;
                 case 2:
-					AddWaypoint(0, 746.45f, 647.03f, 411.57f);
-					AddWaypoint(1, 771.434f, 642.606f, 411.9f);
-					AddWaypoint(2, 779.807f, 617.535f, 411.716f);
-					AddWaypoint(3, 771.098f, 594.635f, 411.625f);
-					AddWaypoint(4, 746.887f, 583.425f, 411.668f);
-					AddWaypoint(5, 746.16f, 571.678f, 412.389f);
-					AddWaypoint(6, 746.887f, 583.425f, 411.668f);
+                    AddWaypoint(0, 746.45f, 647.03f, 411.57f);
+                    AddWaypoint(1, 771.434f, 642.606f, 411.9f);
+                    AddWaypoint(2, 779.807f, 617.535f, 411.716f);
+                    AddWaypoint(3, 771.098f, 594.635f, 411.625f);
+                    AddWaypoint(4, 746.887f, 583.425f, 411.668f);
+                    AddWaypoint(5, 746.16f, 571.678f, 412.389f);
+                    AddWaypoint(6, 746.887f, 583.425f, 411.668f);
                     uiWaypointPath = 2;
                     break;
                 case 3:
-					AddWaypoint(0, 746.45f, 647.03f, 411.57f);
-					AddWaypoint(1, 771.434f, 642.606f, 411.9f);
-					AddWaypoint(2, 779.807f, 617.535f, 411.716f);
-					AddWaypoint(3, 771.098f, 594.635f, 411.625f);
-					AddWaypoint(4, 777.759f, 584.577f, 412.393f);
-					AddWaypoint(5, 772.48f, 592.99f, 411.68f);
+                    AddWaypoint(0, 746.45f, 647.03f, 411.57f);
+                    AddWaypoint(1, 771.434f, 642.606f, 411.9f);
+                    AddWaypoint(2, 779.807f, 617.535f, 411.716f);
+                    AddWaypoint(3, 771.098f, 594.635f, 411.625f);
+                    AddWaypoint(4, 777.759f, 584.577f, 412.393f);
+                    AddWaypoint(5, 772.48f, 592.99f, 411.68f);
                     uiWaypointPath = 3;
                     break;
             }
@@ -219,8 +219,8 @@ public:
 
                 uiBuffTimer = urand(30000, 45000);
             }
-			else
-				uiBuffTimer -= uiDiff;
+            else
+                uiBuffTimer -= uiDiff;
 
             if (uiChargeTimer <= uiDiff)
             {
@@ -241,8 +241,8 @@ public:
                 }
                 uiChargeTimer = 5000;
             }
-			else 
-				uiChargeTimer -= uiDiff;
+            else 
+                uiChargeTimer -= uiDiff;
 
             //dosen't work at all
             if (uiShieldBreakerTimer <= uiDiff)
@@ -270,8 +270,8 @@ public:
                 }
                 uiShieldBreakerTimer = 7000;
             }
-			else 
-				uiShieldBreakerTimer -= uiDiff;
+            else 
+                uiShieldBreakerTimer -= uiDiff;
 
             DoMeleeAttackIfReady();
         }
@@ -346,7 +346,7 @@ public:
             {
                 bDone = true;
 
-                DoScriptText(SAY_START_2, me);	
+                DoScriptText(SAY_START_2, me);    
 
                 if (pInstance && me->GetGUID() == pInstance->GetData64(DATA_GRAND_CHAMPION_1))
                     me->SetHomePosition(739.678f, 662.541f, 412.393f, 4.49f);
@@ -363,14 +363,14 @@ public:
             {
                 if (uiPhase == 1)
                 {
-					me->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
-					me->SetReactState(REACT_AGGRESSIVE);
-					me->SetInCombatWithZone();
+                    me->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    me->SetInCombatWithZone();
                     uiPhase = 0;
                 }
             }
-			else 
-				uiPhaseTimer -= uiDiff;
+            else 
+                uiPhaseTimer -= uiDiff;
 
             if (!UpdateVictim() || me->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
                 return;
@@ -394,24 +394,24 @@ public:
                 }
                 uiInterceptTimer = 7000;
             }
-			else
-				uiInterceptTimer -= uiDiff;
+            else
+                uiInterceptTimer -= uiDiff;
 
             if (uiBladeStormTimer <= uiDiff)
             {
                 DoCastVictim(SPELL_BLADESTORM);
                 uiBladeStormTimer = urand(15000, 20000);
             } 
-			else
-				uiBladeStormTimer -= uiDiff;
+            else
+                uiBladeStormTimer -= uiDiff;
 
             if (uiMortalStrikeTimer <= uiDiff)
             {
                 DoCastVictim(SPELL_MORTAL_STRIKE);
                 uiMortalStrikeTimer = urand(8000, 12000);
             }
-			else 
-				uiMortalStrikeTimer -= uiDiff;
+            else 
+                uiMortalStrikeTimer -= uiDiff;
 
             DoMeleeAttackIfReady();
         }
@@ -512,24 +512,24 @@ public:
                 if (uiPhase == 1)
                 {
                     me->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
-					me->SetReactState(REACT_AGGRESSIVE);
-					me->SetInCombatWithZone();
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    me->SetInCombatWithZone();
 
                     uiPhase = 0;
                 }
             }
-			else 
-				uiPhaseTimer -= uiDiff;
-			if (!UpdateVictim() || me->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
-				return;
+            else 
+                uiPhaseTimer -= uiDiff;
+            if (!UpdateVictim() || me->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
+                return;
 
             if (uiFireBallTimer <= uiDiff)
             {
                 DoCastVictim(SPELL_FIREBALL);
                 uiFireBallTimer = 5000;     //Q: old was 17*IN_MILLISECONDS
             }
-			else
-				uiFireBallTimer -= uiDiff;
+            else
+                uiFireBallTimer -= uiDiff;
 
             if (uiPolymorphTimer <= uiDiff)
             {
@@ -538,16 +538,16 @@ public:
 
                 uiPolymorphTimer = 8000;    //Q: old was 22*IN_MILLISECONDS
             }
-			else
-				uiPolymorphTimer -= uiDiff;
+            else
+                uiPolymorphTimer -= uiDiff;
 
             if (uiBlastWaveTimer <= uiDiff)
             {
                 DoCastAOE(SPELL_BLAST_WAVE, false);
                 uiBlastWaveTimer = 13000;   //Q: old was 30*IN_MILLISECONDS
             } 
-			else 
-				uiBlastWaveTimer -= uiDiff;
+            else 
+                uiBlastWaveTimer -= uiDiff;
 
             if (uiHasteTimer <= uiDiff)
             {
@@ -556,8 +556,8 @@ public:
                 DoCast(me, SPELL_HASTE);
                 uiHasteTimer = 22000;       //Q: old was 40*IN_MILLISECONDS
             }
-			else 
-				uiHasteTimer -= uiDiff;
+            else 
+                uiHasteTimer -= uiDiff;
 
             DoMeleeAttackIfReady();
         }
@@ -664,13 +664,13 @@ public:
                 if (uiPhase == 1)
                 {
                     me->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
-					me->SetReactState(REACT_AGGRESSIVE);
-					me->SetInCombatWithZone();
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    me->SetInCombatWithZone();
                     uiPhase = 0;
                 }
             }
-			else
-				uiPhaseTimer -= uiDiff;
+            else
+                uiPhaseTimer -= uiDiff;
 
             if (!UpdateVictim() || me->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
                 return;
@@ -682,8 +682,8 @@ public:
 
                 uiChainLightningTimer = 16000;  //Q: old was 23*IN_MILLISECONDS
             }
-			else
-				uiChainLightningTimer -= uiDiff;
+            else
+                uiChainLightningTimer -= uiDiff;
 
             if (uiHealingWaveTimer <= uiDiff)
             {
@@ -698,8 +698,8 @@ public:
 
                 uiHealingWaveTimer = 12000;     //Q: old was 19*IN_MILLISECONDS
             } 
-			else 
-				uiHealingWaveTimer -= uiDiff;
+            else 
+                uiHealingWaveTimer -= uiDiff;
 
             if (uiEartShieldTimer <= uiDiff)
             {
@@ -707,8 +707,8 @@ public:
 
                 uiEartShieldTimer = urand(30000, 35000);    //Q: old was (40,45)*IN_MILLISECONDS
             } 
-			else
-				uiEartShieldTimer -= uiDiff;
+            else
+                uiEartShieldTimer -= uiDiff;
 
             if (uiHexMendingTimer <= uiDiff)
             {
@@ -716,8 +716,8 @@ public:
 
                 uiHexMendingTimer = urand(20000, 25000);    //Q: old was (30,35)*IN_MILLISECONDS
             }
-			else 
-				uiHexMendingTimer -= uiDiff;
+            else 
+                uiHexMendingTimer -= uiDiff;
 
             DoMeleeAttackIfReady();
         }
@@ -825,13 +825,13 @@ public:
                 if (uiPhase == 1)
                 {
                     me->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
-					me->SetReactState(REACT_AGGRESSIVE);
-					me->SetInCombatWithZone();
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    me->SetInCombatWithZone();
                     uiPhase = 0;
                 }
             }
-			else 
-				uiPhaseTimer -= uiDiff;
+            else 
+                uiPhaseTimer -= uiDiff;
 
             if (!UpdateVictim() || me->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
                 return;
@@ -845,8 +845,8 @@ public:
                 }
                 uiDisengageCooldown = 20000;
             }
-			else 
-				uiDisengageCooldown -= uiDiff;
+            else 
+                uiDisengageCooldown -= uiDiff;
 
             if (uiLightningArrowsTimer <= uiDiff)
             {
@@ -855,8 +855,8 @@ public:
 
                 uiLightningArrowsTimer = 7000;  //Q: old was 15*IN_MILLISECONDS
             } 
-			else 
-				uiLightningArrowsTimer -= uiDiff;
+            else 
+                uiLightningArrowsTimer -= uiDiff;
 
             if (uiShootTimer <= uiDiff)
             {
@@ -869,8 +869,8 @@ public:
                 uiMultiShotTimer = 3000;    //Q: old was 8*IN_MILLISECONDS
                 bShoot = true;
             } 
-			else 
-				uiShootTimer -= uiDiff;
+            else 
+                uiShootTimer -= uiDiff;
 
             if (bShoot && uiMultiShotTimer <= uiDiff)
             {
@@ -899,8 +899,8 @@ public:
                 }
                 bShoot = false;
             } 
-			else 
-				uiMultiShotTimer -= uiDiff;
+            else 
+                uiMultiShotTimer -= uiDiff;
 
             DoMeleeAttackIfReady();
         }
@@ -998,13 +998,13 @@ public:
                 if (uiPhase == 1)
                 {
                     me->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
-					me->SetReactState(REACT_AGGRESSIVE);
-					me->SetInCombatWithZone();
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    me->SetInCombatWithZone();
                     uiPhase = 0;
                 }
             } 
-			else 
-				uiPhaseTimer -= uiDiff;
+            else 
+                uiPhaseTimer -= uiDiff;
 
             if (!UpdateVictim() || me->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
                 return;
@@ -1014,16 +1014,16 @@ public:
                 DoCastVictim(SPELL_EVISCERATE);
                 uiEviscerateTimer = 8000;   //Q: old was 22*IN_MILLISECONDS
             } 
-			else 
-				uiEviscerateTimer -= uiDiff;
+            else 
+                uiEviscerateTimer -= uiDiff;
 
             if (uiFanKivesTimer <= uiDiff)
             {
                 DoCastAOE(SPELL_FAN_OF_KNIVES, false);
                 uiFanKivesTimer = 14000;    //Q: old was 20*IN_MILLISECONDS
             }
-			else 
-				uiFanKivesTimer -= uiDiff;
+            else 
+                uiFanKivesTimer -= uiDiff;
 
             if (uiPosionBottleTimer <= uiDiff)
             {
@@ -1032,8 +1032,8 @@ public:
 
                 uiPosionBottleTimer = 19000;
             } 
-			else 
-				uiPosionBottleTimer -= uiDiff;
+            else 
+                uiPosionBottleTimer -= uiDiff;
 
             DoMeleeAttackIfReady();
         }
