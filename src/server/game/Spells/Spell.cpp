@@ -3752,7 +3752,7 @@ void Spell::_handle_immediate_phase()
             }
         }
         // Proc damage for spells which have only dest targets (2484 should proc 51486 for example)
-        m_caster->ProcDamageAndSpell(0, procAttacker, 0, m_procEx | PROC_EX_NORMAL_HIT, 0, 0, BASE_ATTACK, m_spellInfo, m_triggeredByAuraSpell);
+        m_originalCaster->ProcDamageAndSpell(unitTarget, procAttacker, 0, m_procEx | PROC_EX_NORMAL_HIT, 0, 0, BASE_ATTACK, m_spellInfo, m_triggeredByAuraSpell);
     }
 }
 

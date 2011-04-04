@@ -4464,10 +4464,6 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->InterruptFlags = 0x0000000F;
             count++;
             break;
-        case 59630:    // Black Magic
-            spellInfo->AttributesEx3 |= SPELL_ATTR3_DEATH_PERSISTENT;
-            count++;
-            break;
         case 18174:    // Suppression
         case 18175:
         case 18176:
