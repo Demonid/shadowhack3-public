@@ -1283,6 +1283,8 @@ void World::LoadConfigSettings(bool reload)
     // MySQL ping time interval
     m_int_configs[CONFIG_DB_PING_INTERVAL] = sConfig->GetIntDefault("MaxPingTime", 30);
 
+    m_WardenBanTime = sConfig->GetStringDefault("Wardend.BanTime", "20m");
+
     sScriptMgr->OnConfigLoad(reload);
 }
 
@@ -1805,7 +1807,6 @@ void World::SetInitialWorldSettings()
     sLog->outString("Deleting expired bans...");
     LoginDatabase.Execute("DELETE FROM ip_banned WHERE unbandate <= UNIX_TIMESTAMP() AND unbandate<>bandate");
 
-    m_WardenBanTime = sConfig->GetStringDefault("Wardend.BanTime", "20m");
     if (sConfig->GetBoolDefault("wardend.enable", false))
     {
         sLog->outString("Starting Warden system...");
