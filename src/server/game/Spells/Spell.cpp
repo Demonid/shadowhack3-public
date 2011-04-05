@@ -5153,12 +5153,13 @@ SpellCastResult Spell::CheckCast(bool strict)
             return castResult;
 
         // Prevent cheating
-        if(target && m_caster->GetTypeId()==target->GetTypeId() && target->GetTypeId()==TYPEID_PLAYER && !IsPositiveSpell(m_spellInfo->Id) &&
-            m_caster->GetGUID()!=target->GetGUID() && target->IsFriendlyTo(m_caster))
+        if(target && m_caster->GetTypeId() == target->GetTypeId() && target->GetTypeId() == TYPEID_PLAYER && !IsPositiveSpell(m_spellInfo->Id) &&
+            m_caster->GetGUID() != target->GetGUID() && target->IsFriendlyTo(m_caster))
             switch(m_spellInfo->Id)
             {
-                case 7266: // duel
-                case 10909: // mind vision
+                case 7266:   // Duel
+                case 10909:  // Mind Vision
+                case 31789:  // Righteous Defense
                     break;
                 default: return SPELL_FAILED_BAD_TARGETS;
             }
