@@ -338,7 +338,7 @@ void MotionMaster::MoveJump(float x, float y, float z, float speedXY, float spee
     if (i_owner->GetTypeId() == TYPEID_PLAYER)
     {
         sLog->outStaticDebug("Player (GUID: %u) jump to point (X: %f Y: %f Z: %f)", i_owner->GetGUIDLow(), x, y, z);
-        i_owner->ToPlayer()->addAnticheatTemporaryImmunity(time);
+        i_owner->ToPlayer()->addAnticheatTemporaryImmunity(time + 2 * IN_MILLISECONDS);
         Mutate(new PointMovementGenerator<Player>(0, x, y, z, false, true), MOTION_SLOT_CONTROLLED);
     }
     else
