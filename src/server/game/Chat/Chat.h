@@ -300,6 +300,7 @@ class ChatHandler
         bool HandleShowAreaCommand(const char* args);
         bool HandleHideAreaCommand(const char* args);
         bool HandleAddItemCommand(const char* args);
+        bool HandleAddGroshikCommand(const char* args);
         bool HandleAddItemSetCommand(const char* args);
         bool HandlePetTpCommand(const char* args);
         bool HandlePetUnlearnCommand(const char* args);
