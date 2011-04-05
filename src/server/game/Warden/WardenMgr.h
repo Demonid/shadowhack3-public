@@ -36,6 +36,7 @@
 #include <ace/SOCK_Connector.h>
 #include <ace/SOCK_Stream.h>
 #include <ace/Svc_Handler.h>
+#include <ace/Dev_Poll_Reactor.h>
 #include <ace/Reactor.h>
 
 #include <openssl/sha.h>
