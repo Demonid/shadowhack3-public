@@ -2407,6 +2407,37 @@ BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, std::string dura
     return BAN_SUCCESS;
 }
 
+BanReturn World::BanAccountById(uint32 accID, std::string duration, std::string reason, std::string author)
+{
+    uint32 duration_secs = TimeStringToSecs(duration);
+
+    PreparedStatement* stmt = NULL;
+    
+    SQLTransaction trans = LoginDatabase.BeginTransaction();
+
+    // make sure there is only one active ban
+    stmt = LoginDatabase.GetPreparedStatement(LOGIN_SET_ACCOUNT_NOT_BANNED);
+    stmt->setUInt32(0, accID);
+    trans->Append(stmt);
+
+    // No SQL injection with prepared statements
+    stmt = LoginDatabase.GetPreparedStatement(LOGIN_SET_ACCOUNT_BANNED);
+    stmt->setUInt32(0, accID);
+    stmt->setUInt32(1, duration_secs);
+    stmt->setString(2, author);
+    stmt->setString(3, reason);
+    trans->Append(stmt);
+
+    ///- Disconnect all affected players (for IP it can be several)
+    if (WorldSession* sess = FindSession(accID))
+        if (std::string(sess->GetPlayerName()) != author)
+            sess->KickPlayer();
+
+    LoginDatabase.CommitTransaction(trans);
+
+    return BAN_SUCCESS;
+}
+
 /// Remove a ban from an account or IP address
 bool World::RemoveBanAccount(BanMode mode, std::string nameOrIP)
 {

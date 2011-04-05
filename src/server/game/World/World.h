@@ -735,6 +735,7 @@ class World
         void KickAll();
         void KickAllLess(AccountTypes sec);
         BanReturn BanAccount(BanMode mode, std::string nameOrIP, std::string duration, std::string reason, std::string author);
+        BanReturn BanAccountById(uint32 accID, std::string duration, std::string reason, std::string author);
         bool RemoveBanAccount(BanMode mode, std::string nameOrIP);
         BanReturn BanCharacter(std::string name, std::string duration, std::string reason, std::string author);
         bool RemoveBanCharacter(std::string name);
