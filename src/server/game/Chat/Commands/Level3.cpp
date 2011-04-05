@@ -209,6 +209,27 @@ bool ChatHandler::HandleCooldownCommand(const char *args)
     return true;
 }
 
+bool ChatHandler::HandleAddGroshikCommand(const char *args)
+{
+    if (!*args)
+        return false;
+
+    Player* plTarget = getSelectedPlayer();
+    if(!plTarget)
+    {
+        PSendSysMessage(LANG_NO_CHAR_SELECTED);
+        SetSentErrorMessage(true);
+        return false;
+    }
+    float grosh = (float)atof((char*)args);
+    uint32 acc=plTarget->GetSession()->GetAccountId();
+    QueryResult result = LoginDatabase.PQuery("SELECT cash FROM account WHERE id = '%u'", acc);
+    grosh+=result->Fetch()->GetFloat();
+    LoginDatabase.PExecute("UPDATE account set cash = %f WHERE id = '%u'", grosh, acc);
+    PSendSysMessage("now player has %f groshiks", grosh);
+    return true;
+}
+
 bool ChatHandler::HandleAddItemCommand(const char *args)
 {
     if (!*args)
