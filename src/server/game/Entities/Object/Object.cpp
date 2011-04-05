@@ -2609,6 +2609,7 @@ void WorldObject::GetNearPoint(WorldObject const* searcher, float &x, float &y, 
             searcher->UpdateAllowedPositionZ(x, y, z);        // update to LOS height if available
         else
             UpdateGroundPositionZ(x, y, z);
+        z +=0.2f;
         return;
     }
 
@@ -2644,7 +2645,10 @@ void WorldObject::GetNearPoint(WorldObject const* searcher, float &x, float &y, 
             UpdateGroundPositionZ(x, y, z);
 
         if(IsWithinLOS(x, y, z))
+        {
+            z +=0.2f;
             return;
+        }
 
         first_los_conflict = true;                          // first point have LOS problems
     }
@@ -2663,7 +2667,10 @@ void WorldObject::GetNearPoint(WorldObject const* searcher, float &x, float &y, 
             UpdateGroundPositionZ(x, y, z);
 
         if(IsWithinLOS(x, y, z))
+        {
+            z +=0.2f;
             return;
+        }
     }
 
     // set first used pos in lists
@@ -2681,7 +2688,10 @@ void WorldObject::GetNearPoint(WorldObject const* searcher, float &x, float &y, 
             UpdateGroundPositionZ(x, y, z);
 
         if(IsWithinLOS(x, y, z))
+        {
+            z +=0.2f;
             return;
+        }
     }
 
     // BAD NEWS: not free pos (or used or have LOS problems)
@@ -2696,6 +2706,7 @@ void WorldObject::GetNearPoint(WorldObject const* searcher, float &x, float &y, 
             searcher->UpdateAllowedPositionZ(x, y, z);        // update to LOS height if available
         else
             UpdateGroundPositionZ(x, y, z);
+        z +=0.2f;
         return;
     }
 
@@ -2713,7 +2724,10 @@ void WorldObject::GetNearPoint(WorldObject const* searcher, float &x, float &y, 
                 UpdateGroundPositionZ(x, y, z);
 
             if(IsWithinLOS(x, y, z))
+            {
+                z +=0.2f;
                 return;
+            }
         }
     }
 
@@ -2732,7 +2746,10 @@ void WorldObject::GetNearPoint(WorldObject const* searcher, float &x, float &y, 
             UpdateGroundPositionZ(x, y, z);
 
         if(IsWithinLOS(x, y, z))
+        {
+            z +=0.2f;
             return;
+        }
     }
 
     // BAD BAD NEWS: all found pos (free and used) have LOS problem :(
