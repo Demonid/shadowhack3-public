@@ -618,7 +618,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             //speed hack checks
             if ((real_delta > allowed_delta && real_delta < 4900.0f) && (delta_z < (plMover->m_anti_Last_VSpeed * time_delta) || delta_z < 1) )
             {
-                if (!hasTimedImmunity)
+                if (!hasTimedImmunity && !(sWardenMgr->IsEnabled() && plMover->GetMapId() == 617) )
                 {
                     #ifdef MOVEMENT_ANTICHEAT_ALARM_LOG
                     sLog->outCheater("IAC: %s, speedhack alert | map: %u | cDelta = %f aDelta = %f | cSpeed = %f lSpeed = %f deltaTime = %f",
