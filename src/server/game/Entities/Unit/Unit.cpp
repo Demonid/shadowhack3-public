@@ -16699,7 +16699,7 @@ void Unit::JumpTo(float speedXY, float speedZ, bool forward)
         data << float(speedXY);                                 // Horizontal speed
         data << float(-speedZ);                                 // Z Movement speed (vertical)
 
-        ToPlayer()->addAnticheatTemporaryImmunity(speedZ * 100 + 3 * IN_MILLISECONDS);
+        ToPlayer()->addAnticheatTemporaryImmunity(speedZ * 100 + 2 * IN_MILLISECONDS);
 
         this->ToPlayer()->GetSession()->SendPacket(&data);
     }
