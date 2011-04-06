@@ -570,10 +570,12 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             if ( plMover->GetVehicle() )
             {
                 allowed_delta *= (plMover->GetVehicle()->GetVehicleInfo()->m_ID == 349) ? 10.0f : 1.1f;    // hack for Argent mount charging
-            }           
+            }  
+
+            const uint32 wardenImmunity = sWardenMgr->IsEnabled() ? 500 : 0;
 
             const uint32 immunityTime = plMover->m_anti_temporaryImmunity + cServerTimeDelta + sWorld->GetUpdateTime()
-                + plMover->GetSession()->GetLatency() + sWardenMgr->IsEnabled() ? 500 : 0;
+                + plMover->GetSession()->GetLatency() + wardenImmunity;
             // end calculating section ---------------------
 
             const bool flying_allowed = (plMover->HasAuraType(SPELL_AURA_FLY) || plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED)
@@ -622,8 +624,8 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                 if (!hasTimedImmunity && !(sWardenMgr->IsEnabled() && plMover->GetMapId() == 617) )
                 {
                     #ifdef MOVEMENT_ANTICHEAT_ALARM_LOG
-                    sLog->outCheater("IAC: %s, speedhack alert | map: %u | cDelta = %f aDelta = %f | cSpeed = %f lSpeed = %f deltaTime = %f",
-                        plMover->GetName(), plMover->GetMapId(), real_delta, allowed_delta, current_speed, plMover->m_anti_Last_HSpeed, time_delta);
+                    sLog->outCheater("IAC: %s, speedhack alert | map: %u | cDelta = %f aDelta = %f | cSpeed = %f lSpeed = %f deltaTime = %f | serverTime = %u, immunityTime = %u",
+                        plMover->GetName(), plMover->GetMapId(), real_delta, allowed_delta, current_speed, plMover->m_anti_Last_HSpeed, time_delta, cServerTime, immunityTime);
                     #endif
                     check_passed = false;
                 }                    
