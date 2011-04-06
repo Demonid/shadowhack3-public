@@ -151,7 +151,7 @@ void WardenMgr::Update(WorldSession* const session, uint32 diff)
             case WARD_STATUS_CHEAT_CHECK_IN:    // send cheat check
                 SendCheatCheck(session);
                 session->SetWardenStatus(WARD_STATUS_CHEAT_CHECK_OUT);
-                session->GetWardenTimer().SetInterval(2*MINUTE*IN_MILLISECONDS);
+                session->GetWardenTimer().SetInterval(2 * MINUTE * IN_MILLISECONDS);
                 session->GetWardenTimer().Reset();
                 return;
             default:
