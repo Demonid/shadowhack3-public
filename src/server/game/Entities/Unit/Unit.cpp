@@ -16688,8 +16688,8 @@ void Unit::JumpTo(float speedXY, float speedZ, bool forward)
         GetMotionMaster()->MoveJumpTo(angle, speedXY, speedZ);
     else
     {
-        float vcos = cos(angle+GetOrientation());
-        float vsin = sin(angle+GetOrientation());
+        float vcos = cos(angle + GetOrientation());
+        float vsin = sin(angle + GetOrientation());
 
         WorldPacket data(SMSG_MOVE_KNOCK_BACK, (8+4+4+4+4+4));
         data.append(GetPackGUID());
@@ -16699,7 +16699,7 @@ void Unit::JumpTo(float speedXY, float speedZ, bool forward)
         data << float(speedXY);                                 // Horizontal speed
         data << float(-speedZ);                                 // Z Movement speed (vertical)
 
-        ToPlayer()->addAnticheatTemporaryImmunity(speedZ * 100 + 2 * IN_MILLISECONDS);
+        ToPlayer()->addAnticheatTemporaryImmunity(speedZ * 100 + 3 * IN_MILLISECONDS);
 
         this->ToPlayer()->GetSession()->SendPacket(&data);
     }
