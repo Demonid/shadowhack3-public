@@ -565,14 +565,15 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             }
 
             if (sWardenMgr->IsEnabled())
-                allowed_delta *= 1.3f;
+                allowed_delta *= 1.5f;
 
             if ( plMover->GetVehicle() )
             {
                 allowed_delta *= (plMover->GetVehicle()->GetVehicleInfo()->m_ID == 349) ? 10.0f : 1.1f;    // hack for Argent mount charging
             }           
 
-            const uint32 immunityTime = plMover->m_anti_temporaryImmunity + cServerTimeDelta + plMover->GetSession()->GetLatency() + sWardenMgr->IsEnabled() ? 500 : 0;
+            const uint32 immunityTime = plMover->m_anti_temporaryImmunity + cServerTimeDelta + sWorld->GetUpdateTime()
+                + plMover->GetSession()->GetLatency() + sWardenMgr->IsEnabled() ? 500 : 0;
             // end calculating section ---------------------
 
             const bool flying_allowed = (plMover->HasAuraType(SPELL_AURA_FLY) || plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED)
@@ -639,9 +640,9 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             }
 
             //climb mountain hack checks // 1.56f (delta_z < GetPlayer()->m_anti_Last_VSpeed))
-            if (!sWardenMgr->IsEnabled() && ((delta_z < plMover->m_anti_Last_VSpeed) && (plMover->m_anti_JustJumped == 0) && (tg_z > 2.37f) && ((movementInfo.flags & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING)) == 0)) )
+            if ((delta_z < plMover->m_anti_Last_VSpeed) && (plMover->m_anti_JustJumped == 0) && (tg_z > 2.37f) && ((movementInfo.flags & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING)) == 0) )
             {
-                if (!hasTimedImmunity)
+                if (!sWardenMgr->IsEnabled() && !hasTimedImmunity)
                 {
                     #ifdef MOVEMENT_ANTICHEAT_ALARM_LOG
                         sLog->outCheater("IAC: %s, wallclimb alert | tg_z = %f", plMover->GetName(), tg_z);
