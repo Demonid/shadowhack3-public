@@ -190,6 +190,7 @@ public:
 class WorldSession
 {
     friend class CharacterHandler;
+    friend class WardenMgr;
     public:
         WorldSession(uint32 id, WorldSocket *sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint8 premiumType, uint32 recruiter);
         ~WorldSession();
@@ -347,19 +348,10 @@ class WorldSession
         void SetLatency(uint32 latency) { m_latency = latency; }
         uint32 getDialogStatus(Player *pPlayer, Object* questgiver, uint32 defstatus);
 
-        BigNumber &GetSessionKey() const;
-        uint8 *GetWardenClientKey() { return m_rc4ClientKey; }
-        uint8 *GetWardenServerKey() { return m_rc4ServerKey; }
-        uint8 *GetWardenSeed() { return m_wardenSeed; }
-        uint8 GetWardenStatus() { return m_wardenStatus; }
-        void SetWardenStatus(uint8 status) { m_wardenStatus = status; }
-        IntervalTimer &GetWardenTimer() { return m_WardenTimer; }
-        void SetWardenModule(const std::string &md5) { m_WardenModule = md5; }
-        const std::string& GetWardenModule() const { return m_WardenModule; }
-        void *GetWardenCheckList() { return m_WardenClientChecks; }
-        void SetWardenCheckList(void *value) { m_WardenClientChecks = value; }
-        uint8 *GetWardenTempClientKey() { return m_WardenTmpClientKey; }
-
+        uint8 *GetWardenServerKey() { return &m_rc4ServerKey[0]; }
+        uint8 *GetWardenSeed() { return &m_wardenSeed[0]; }
+        uint8 *GetWardenTempClientKey() { return &m_WardenTmpClientKey[0]; }
+        void UpdateWardenTimer(uint32 diff) { m_WardenTimer.Update(diff); }
 
         time_t m_timeOutTime;
         void UpdateTimeOutTime(uint32 diff)

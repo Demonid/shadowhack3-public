@@ -1811,7 +1811,7 @@ void World::SetInitialWorldSettings()
     {
         sLog->outString("Starting Warden system...");
         sWardenMgr->Initialize(sConfig->GetStringDefault("wardend.address", "127.0.0.1").c_str(), sConfig->GetIntDefault("wardend.port", 4321), sConfig->GetBoolDefault("wardend.CanBan", true));
-        m_timers[WUPDATE_WARDEN].SetInterval(500); // 500ms
+        m_timers[WUPDATE_WARDEN].SetInterval(1 * IN_MILLISECONDS);
     }
     else
     {
@@ -2073,8 +2073,13 @@ void World::Update(uint32 diff)
     ///- <li> Handle warden manager update
     if (m_timers[WUPDATE_WARDEN].Passed())
     {
-        m_timers[WUPDATE_WARDEN].Reset();
-        sWardenMgr->Update(diff);
+        ///- Update WardenTimer in all sessions
+        for (SessionMap::iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
+            itr->second->UpdateWardenTimer(m_timers[WUPDATE_WARDEN].GetCurrent());
+
+        ///- Then call the update method of WardenMgr Singleton
+        sWardenMgr->Update(m_timers[WUPDATE_WARDEN].GetCurrent());
+        m_timers[WUPDATE_WARDEN].SetCurrent(0);
     }
 
     ///- Delete all characters which have been deleted X days before

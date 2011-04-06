@@ -50,17 +50,18 @@
 #define WCHECK_FILE_RATIO   98.7f   // 01.3
 #define WCHECK_LUA_RATIO   100.0f   // 01.3
 
-enum eWardenClientStatus
+// State machine for warden activity on one session
+enum eWardenClientState
 {
-    WARD_STATUS_UNREGISTERED,
-    WARD_STATUS_LOAD_MODULE,
-    WARD_STATUS_LOAD_FAILED,
-    WARD_STATUS_TRANSFORM_SEED,
-    WARD_STATUS_CHEAT_CHECK_IN,
-    WARD_STATUS_CHEAT_CHECK_OUT,
-    WARD_STATUS_USER_DISABLED,
-    WARD_STATUS_PENDING_WARDEND,
-    WARD_STATUS_NEED_WARDEND,
+    WARD_STATE_UNREGISTERED,
+    WARD_STATE_LOAD_MODULE,
+    WARD_STATE_LOAD_FAILED,
+    WARD_STATE_TRANSFORM_SEED,
+    WARD_STATE_CHEAT_CHECK_IN,
+    WARD_STATE_CHEAT_CHECK_OUT,
+    WARD_STATE_USER_DISABLED,
+    WARD_STATE_PENDING_WARDEND,
+    WARD_STATE_NEED_WARDEND,
 };
 
 class WardenSvcHandler: public ACE_Svc_Handler <ACE_SOCK_STREAM, ACE_NULL_SYNCH>
@@ -99,7 +100,7 @@ class WardenMgr
 
         // Update
         void Update(uint32 diff); // Global Warden System update for packets send/receive
-        void Update(WorldSession* const session, uint32 diff); // Session specific update
+        void Update(WorldSession* const session);               // Session specific update
 
         // Connection Management
     private:
@@ -137,6 +138,11 @@ class WardenMgr
             uint8 SHA[20];
             std::string String;
         };
+        struct ModuleCheckEntry
+        {
+            uint32 Seed;
+            uint8 SHA[20];
+        };
         struct GenericCheck
         {
             uint8 check;
@@ -147,11 +153,13 @@ class WardenMgr
                 FileCheckEntry* file;
                 LuaCheckEntry* lua;
                 DriverCheckEntry* driver;
+                ModuleCheckEntry* module;
             };
         };
 
         typedef std::vector<uint8> WardenCheckMap; // store the check ids
-        typedef std::map<std::string, WardenCheckMap> WardenModuleCheckMap; // module md5/check ids
+        typedef std::map<std::string, WardenCheckMap> WardenModuleMap; // module md5/check ids
+
         typedef std::vector<MemoryCheckEntry> WardenMemoryChecks;
         typedef std::vector<PageCheckEntry> WardenPageChecks;
         typedef std::vector<FileCheckEntry> WardenFileChecks;
@@ -196,25 +204,28 @@ class WardenMgr
 
         uint32 BuildChecksum(const uint8* data, uint32 dataLen);
 
-        ACE_SOCK_Stream *m_WardenProcessStream;
-        ACE_SOCK_Connector *m_WardenProcessConnection;
-
     protected:
-        bool m_Enabled;
-        bool m_PingOut;
-        bool m_Disconnected;
-        bool m_Banning;
-        std::string m_WardendAddress;
-        u_short m_WardendPort;
-        WardendConnector m_connector;
-        IntervalTimer m_PingTimer;
+        ACE_SOCK_Stream         *m_WardenProcessStream;
+        ACE_SOCK_Connector      *m_WardenProcessConnection;
 
-        WardenModuleCheckMap m_WardenModuleChecks;
-        WardenMemoryChecks m_WardenMemoryChecks;
-        WardenPageChecks m_WardenPageChecks;
-        WardenFileChecks m_WardenFileChecks;
-        WardenLuaChecks m_WardenLuaChecks;
-        WardenDriverChecks m_WardenDriverChecks;
+        bool                    m_HalfCall;
+        bool                    m_Enabled;
+        bool                    m_PingOut;
+        bool                    m_Disconnected;
+        bool                    m_Banning;
+        std::string             m_WardendAddress;
+        u_short                 m_WardendPort;
+        WardendConnector        m_Connector;
+        IntervalTimer           m_PingTimer;
+
+        WardenModuleMap         m_WardenModuleMap;
+
+        WardenMemoryChecks      m_WardenMemoryChecks;
+        WardenPageChecks        m_WardenPageChecks;
+        WardenFileChecks        m_WardenFileChecks;
+        WardenLuaChecks         m_WardenLuaChecks;
+        WardenDriverChecks      m_WardenDriverChecks;
+        //WardenModuleChecks    m_WardenModuleChecks;
 };
 
 #define sWardenMgr ACE_Singleton<WardenMgr, ACE_Thread_Mutex>::instance()
