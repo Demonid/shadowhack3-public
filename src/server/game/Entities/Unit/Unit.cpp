@@ -2605,9 +2605,9 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell, 
         {
             int32 resist = pVictim->GetResistance(school);
             if(resist)
-                if (Player *modOwner = GetSpellModOwner())
-                    resist+=(float) modOwner->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, schoolMask)+
-                    modOwner->GetInt32Value(PLAYER_FIELD_MOD_TARGET_RESISTANCE);
+            	resist += float(GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, schoolMask));
+                if (Player* player = ToPlayer())
+                	resist += float(player->GetSpellPenetrationItemMod());
             if(resist<0)
                 resist=0;
             uint32 level = getLevel();
