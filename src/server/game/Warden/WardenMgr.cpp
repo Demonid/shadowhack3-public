@@ -154,7 +154,7 @@ void WardenMgr::Update(WorldSession* const session)
             case WARD_STATE_CHEAT_CHECK_IN:    // send cheat check
                 SendCheatCheck(session);
                 session->m_wardenStatus = WARD_STATE_CHEAT_CHECK_OUT;
-                session->m_WardenTimer.SetInterval( 2 * MINUTE * IN_MILLISECONDS );
+                session->m_WardenTimer.SetInterval( 3 * MINUTE * IN_MILLISECONDS );
                 session->m_WardenTimer.SetCurrent(0);
                 return;
             default:
@@ -165,7 +165,7 @@ void WardenMgr::Update(WorldSession* const session)
     if (m_Disconnected)
     {
         session->m_WardenTimer.SetInterval( 15 * IN_MILLISECONDS); // push back warden activity in session by 15 seconds
-        session->m_WardenTimer.Reset();
+        session->m_WardenTimer.SetCurrent(0);
         if (session->m_wardenStatus == WARD_STATE_PENDING_WARDEND)
             session->m_wardenStatus = WARD_STATE_NEED_WARDEND;     // We needed data, so have to redo the request
         return;
@@ -176,7 +176,7 @@ void WardenMgr::Update(WorldSession* const session)
     {
         LoadModuleAndGetKeys(session);
         session->m_WardenTimer.SetInterval(10 * IN_MILLISECONDS);
-        session->m_WardenTimer.Reset();
+        session->m_WardenTimer.SetCurrent(0);
         session->m_wardenStatus = WARD_STATE_PENDING_WARDEND;
     }
 }
@@ -393,7 +393,7 @@ bool WardenMgr::CheckModuleExistOnDisk(const std::string &md5)
 void WardenMgr::Register(WorldSession* const session)
 {
     session->m_WardenTimer.SetInterval(2 * IN_MILLISECONDS);
-    session->m_WardenTimer.Reset();
+    session->m_WardenTimer.SetCurrent(0);
 }
 
 void WardenMgr::StartForSession(WorldSession* const session)
@@ -447,7 +447,7 @@ void WardenMgr::StartForSession(WorldSession* const session)
         SendLoadModuleRequest(session);
         session->m_wardenStatus = WARD_STATE_LOAD_MODULE;
         session->m_WardenTimer.SetInterval(20 * IN_MILLISECONDS);
-        session->m_WardenTimer.Reset();
+        session->m_WardenTimer.SetCurrent(0);
     }
 }
 
@@ -555,7 +555,7 @@ void WardenMgr::SendSeedTransformRequest(WorldSession* const session)
     session->SendPacket(&data);
     session->m_wardenStatus = WARD_STATE_TRANSFORM_SEED;
     session->m_WardenTimer.SetInterval(20 * IN_MILLISECONDS);
-    session->m_WardenTimer.Reset();
+    session->m_WardenTimer.SetCurrent(0);
 }
 
 void WardenMgr::SendSeedAndComputeKeys(WorldSession* const session)
@@ -944,7 +944,7 @@ bool WardenMgr::ValidateCheatCheckResult(WorldSession* const session, WorldPacke
         return false;
     }
 
-    if (pktLen==0)
+    if (pktLen == 0)
         return false;
 
     // parse the timing check always sent
@@ -1239,7 +1239,7 @@ void WorldSession::HandleWardenDataOpcode(WorldPacket& recv_data)
                     sWardenMgr->SendModule(this);
                     m_wardenStatus = WARD_STATE_LOAD_FAILED;
                     m_WardenTimer.SetInterval(20 * IN_MILLISECONDS);
-                    m_WardenTimer.Reset();
+                    m_WardenTimer.SetCurrent(0);
                 }
                 break;
             case WARDC_MODULE_LOADED:
@@ -1247,7 +1247,7 @@ void WorldSession::HandleWardenDataOpcode(WorldPacket& recv_data)
                 // We go next step: Send a seed
                 sWardenMgr->SendSeedAndComputeKeys(this);
                 m_WardenTimer.SetInterval(5 * IN_MILLISECONDS);
-                m_WardenTimer.Reset();
+                m_WardenTimer.SetCurrent(0);
                 break;
             case WARDC_CHEAT_CHECK_RESULT:
             {
@@ -1265,7 +1265,7 @@ void WorldSession::HandleWardenDataOpcode(WorldPacket& recv_data)
                     sWardenMgr->SendWardenData(this);
                     m_wardenStatus = WARD_STATE_CHEAT_CHECK_IN;
                     m_WardenTimer.SetInterval(3 * IN_MILLISECONDS); // 3 secs before the 1st cheat check
-                    m_WardenTimer.Reset();
+                    m_WardenTimer.SetCurrent(0);
                 }
                 recv_data.read_skip(20);
                 break;
