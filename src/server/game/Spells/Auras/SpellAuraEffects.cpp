@@ -6413,6 +6413,14 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
             }
             break;
         }
+        case SPELLFAMILY_WARLOCK:
+        {
+            // Glyph of Felguard visual
+            if (GetId() == 56246)
+                if (Pet * pet = caster->ToPlayer()->GetPet())
+                    pet->UpdateAttackPowerAndDamage();
+            break;
+        }
         case SPELLFAMILY_PALADIN:
             // if (!(mode & AURA_EFFECT_HANDLE_REAL))
             //    break;

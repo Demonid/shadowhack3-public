@@ -4614,7 +4614,34 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                     unitTarget->RemoveAuraFromStack(66482);
                     }
                 break;
-                case 200003:                                 // Despawn Creature (server-side spell)
+                // Izbooshka AutoCharCopy (server-side)
+                case 123456:
+                {
+                    if (!m_caster || m_caster->GetTypeId() != TYPEID_PLAYER || !unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+                        return;
+
+                    if (unitTarget->ToPlayer()->getLevel() < 80)
+					{
+                        unitTarget->ToPlayer()->SetLevel(80);
+                        unitTarget->ToPlayer()->UpdateSkillsToMaxSkillsForLevel(); // Max Skills
+					}
+
+                    unitTarget->ToPlayer()->ModifyMoney(1000 * GOLD); // 1000 Gold
+                    unitTarget->ToPlayer()->learnSpell(34091, false); // Artisan Riding
+                    unitTarget->ToPlayer()->learnSpell(54197, false); // Cold Weather Flying
+
+
+					// Items - Trinket
+                    if (unitTarget->ToPlayer()->getRace() == RACE_HUMAN)
+						unitTarget->ToPlayer()->AddItem(42990, 1); // Darkmoon Card: Death
+					else if (unitTarget->ToPlayer()->GetTeam() == TEAM_ALLIANCE)
+						unitTarget->ToPlayer()->AddItem(42123, 1); // Medallion of the Alliance
+					else if (unitTarget->ToPlayer()->GetTeam() == TEAM_HORDE)
+						unitTarget->ToPlayer()->AddItem(42122, 1); // Medallion of the Horde
+                    break;
+                }
+                // Despawn Creature (server-side spell)
+                case 200003:
                 {
                     if(!unitTarget || unitTarget->GetTypeId() != TYPEID_UNIT)
                         return;
@@ -7112,7 +7139,7 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const *
                 summon->Attack(target, true);
             }
         }
-        else 
+        else if (m_spellInfo->Id != 1122)
             summon->AI()->EnterEvadeMode();
 
         ExecuteLogEffectSummonObject(i, summon);
