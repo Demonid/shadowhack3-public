@@ -97,7 +97,7 @@ bool PointMovementGenerator<T>::Update(T &unit, const uint32 &diff)
 
     Traveller<T> traveller(unit);
 
-    i_destinationHolder.UpdateTraveller(traveller, diff, !m_usePathfinding);
+    i_destinationHolder.UpdateTraveller(traveller, diff, false);
 
     if (m_usePathfinding)
     {
