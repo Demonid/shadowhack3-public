@@ -223,6 +223,7 @@ struct AchievementCriteriaEntry
         struct
         {
             uint32  mapID;                                  // 3 Reference to Map.dbc
+            uint32  winCount;                               // 4 may be 0 for infinite counting
         } win_arena;
 
         // ACHIEVEMENT_CRITERIA_TYPE_PLAY_ARENA             = 33
