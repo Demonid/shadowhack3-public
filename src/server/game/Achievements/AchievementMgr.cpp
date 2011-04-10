@@ -270,17 +270,10 @@ bool AchievementCriteriaData::IsValid(AchievementCriteriaEntry const* criteria)
             }
             return true;
         case ACHIEVEMENT_CRITERIA_DATA_TYPE_ARENA:
-            if (!sMapStore.LookupEntry(arena.mapId))
-            {
-                sLog->outErrorDb("Table `achievement_criteria_data` (Entry: %u Type: %u) for requirement ACHIEVEMENT_CRITERIA_DATA_TYPE_ARENA (%u) has unknown map id in value1 (%u), ignored.",
-                    criteria->ID, criteria->requiredType, dataType, arena.mapId);
-                return false;
-            }
-            // arena.arena_type != 0, or else ACHIEVEMENT_CRITERIA_DATA_TYPE_MAP_ID should be used instead
-            if (arena.arena_type != ARENA_TYPE_2v2 && arena.arena_type != ARENA_TYPE_3v3 && arena.arena_type != ARENA_TYPE_5v5)
+            if (arena.type != ARENA_TYPE_2v2 && arena.type != ARENA_TYPE_3v3 && arena.type != ARENA_TYPE_5v5)
             {
                 sLog->outErrorDb("Table `achievement_criteria_data` (Entry: %u Type: %u) for requirement ACHIEVEMENT_CRITERIA_DATA_TYPE_ARENA (%u) has unknown arena battle type in value2 (%u), ignored.",
-                    criteria->ID, criteria->requiredType, dataType, arena.arena_type);
+                    criteria->ID, criteria->requiredType, dataType, arena.type);
                 return false;
             }
             return true;
@@ -390,7 +383,7 @@ bool AchievementCriteriaData::Meets(uint32 criteria_id, Player const* source, Un
         case ACHIEVEMENT_CRITERIA_DATA_TYPE_MAP_ID:
             return source->GetMapId() == map_id.mapId;
         case ACHIEVEMENT_CRITERIA_DATA_TYPE_ARENA:
-            return source->GetMapId() == arena.mapId && miscvalue1 == arena.arena_type;
+            return miscvalue1 == arena.type;
         default:
             break;
     }
@@ -1521,10 +1514,13 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
             case ACHIEVEMENT_CRITERIA_TYPE_WIN_ARENA:
             case ACHIEVEMENT_CRITERIA_TYPE_PLAY_ARENA:
             {
-                if (! miscvalue1) continue;
-                AchievementCriteriaDataSet const* data = sAchievementMgr->GetCriteriaDataSet(achievementCriteria);
-                if (!data || !data->Meets(GetPlayer(), unit, miscvalue2))
+                if (! miscvalue1 || (miscvalue1 != achievementCriteria->raw.field3))    // MapId
                     continue;
+
+                AchievementCriteriaDataSet const* data = sAchievementMgr->GetCriteriaDataSet(achievementCriteria);
+                if (!data || !data->Meets(GetPlayer(), unit, miscvalue2))   // arena_type
+                    continue;
+
                 SetCriteriaProgress(achievementCriteria, 1, PROGRESS_ACCUMULATE);
                 break;
             }
