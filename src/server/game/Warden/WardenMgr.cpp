@@ -1203,7 +1203,7 @@ void WardenMgr::ReactToCheatCheckResult(WorldSession* const session, bool result
 /////////////////////////////
 void WorldSession::HandleWardenRegister()
 {
-    if (sWardenMgr->IsEnabled())
+    if (sWardenMgr->IsEnabled() && m_wardenStatus == WARD_STATE_UNREGISTERED)
     {
         sWardenMgr->Register(this);
     }
