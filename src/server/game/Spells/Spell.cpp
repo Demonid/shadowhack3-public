@@ -524,6 +524,10 @@ m_caster(Caster), m_spellValue(new SpellValue(m_spellInfo))
     if (m_spellInfo->Id == 49575 || m_spellInfo->Id == 49560 || m_spellInfo->Id == 49576)
         m_canReflect = true;
 
+    // Mind Control
+    if (m_spellInfo->Id == 605)
+        m_canReflect = true;
+
     if (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC && !IsAreaOfEffectSpell(m_spellInfo) && !(m_spellInfo->AttributesEx2 & SPELL_ATTR2_CANT_REFLECTED))
     {
         for (int j = 0; j < MAX_SPELL_EFFECTS; ++j)

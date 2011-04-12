@@ -3810,6 +3810,11 @@ void Unit::RemoveAurasDueToSpellBySteal(uint32 spellId, uint64 casterGUID, Unit 
                 // strange but intended behaviour: Stolen single target auras won't be treated as single targeted
                 if (newAura->IsSingleTarget())
                     newAura->UnregisterSingleTarget();
+
+                if (Aura * aur = stealer->GetAura(spellId))
+                   if (aur->GetDuration() > dur)
+                       return;
+
                 newAura->SetLoadedState(dur, dur, stealCharge ? 1 : aura->GetCharges(), aura->GetStackAmount(), recalculateMask, &damage[0]);
                 newAura->ApplyForTargets();
             }
@@ -11059,12 +11064,12 @@ uint32 Unit::SpellHealingBonus(Unit *pVictim, SpellEntry const *spellProto, uint
         if (Unit* owner = GetOwner())
             return owner->SpellHealingBonus(pVictim, spellProto, healamount, damagetype, stack);
 
-    // no bonus for heal potions/bandages
+    /* no bonus for heal potions/bandages
     if (spellProto->SpellFamilyName == SPELLFAMILY_POTION)
         return healamount;
     // and Warlock's Healthstones      
     if (spellProto->SpellFamilyName == SPELLFAMILY_WARLOCK && (spellProto->SpellFamilyFlags[0] & 0x10000))
-        return healamount;
+        return healamount; */
 
     // Healing Done
     // Taken/Done total percent damage auras
