@@ -71,6 +71,7 @@ class instance_trial_of_the_crusader : public InstanceMapScript
 
             uint64 MainGateDoorGUID;
             uint64 EastPortcullisGUID;
+            uint64 WestPortcullisGUID;
             uint64 WebDoorGUID;
 
             // Achievement stuff
@@ -219,6 +220,9 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                         break;
                     case GO_EAST_PORTCULLIS:
                         EastPortcullisGUID = go->GetGUID();
+                        break;
+                    case GO_WEST_PORTCULLIS:
+                        WestPortcullisGUID = go->GetGUID();
                         break;
                     case GO_WEB_DOOR:
                         WebDoorGUID = go->GetGUID();
@@ -394,11 +398,13 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                 {
                     CloseDoor(GetData64(GO_EAST_PORTCULLIS));
                     CloseDoor(GetData64(GO_WEB_DOOR));
+                    CloseDoor(GetData64(GO_WEST_PORTCULLIS));
                 }
                 else
                 {
                     OpenDoor(GetData64(GO_EAST_PORTCULLIS));
                     OpenDoor(GetData64(GO_WEB_DOOR));
+                    OpenDoor(GetData64(GO_WEST_PORTCULLIS));
                 }
 
                 if (type < MAX_ENCOUNTERS)
