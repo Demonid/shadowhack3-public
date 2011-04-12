@@ -9703,6 +9703,8 @@ bool Unit::AttackStop()
             this->ToCreature()->SetNoSearchAssistance(false);
             UpdateSpeed(MOVE_RUN, false);
         }
+        if (IsGuardianPetStuff())
+            StopMoving();
     }
 
     SendMeleeAttackStop(victim);
