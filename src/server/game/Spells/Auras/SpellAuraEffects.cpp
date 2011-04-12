@@ -2993,14 +2993,6 @@ void AuraEffect::HandleModStealth(AuraApplication const * aurApp, uint8 mode, bo
 
     if (apply)
     {
-        Unit::AttackerSet const& attackers = target->getAttackers();
-        for (Unit::AttackerSet::const_iterator itr = attackers.begin(); itr != attackers.end();)
-        {
-            if (!(*itr)->canSeeOrDetect(target))
-                (*(itr++))->AttackStop();
-            else
-                ++itr;
-        }
         if (mode & AURA_EFFECT_HANDLE_REAL)
         {
             // drop flag at stealth in bg
@@ -3017,6 +3009,14 @@ void AuraEffect::HandleModStealth(AuraApplication const * aurApp, uint8 mode, bo
         target->SetStandFlags(UNIT_STAND_FLAGS_CREEP);
         if (target->GetTypeId() == TYPEID_PLAYER)
             target->SetByteFlag(PLAYER_FIELD_BYTES2, 3, PLAYER_FIELD_BYTE2_STEALTH);
+        Unit::AttackerSet const& attackers = target->getAttackers();
+        for (Unit::AttackerSet::const_iterator itr = attackers.begin(); itr != attackers.end();)
+        {
+            if (!(*itr)->canSeeOrDetect(target))
+                (*(itr++))->AttackStop();
+            else
+                ++itr;
+        }
     }
     else
     {
