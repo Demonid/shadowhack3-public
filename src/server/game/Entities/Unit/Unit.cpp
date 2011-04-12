@@ -3866,7 +3866,9 @@ void Unit::RemoveAurasDueToSpellBySteal(uint32 spellId, uint64 casterGUID, Unit 
                 int32 dur = (2*MINUTE*IN_MILLISECONDS < aura->GetDuration() || aura->GetDuration() < 0) ? 2*MINUTE*IN_MILLISECONDS : aura->GetDuration();
                 if (aura->IsSingleTarget())
                     aura->UnregisterSingleTarget();
-
+                if (Aura * aur = stealer->GetAura(spellId))
+                    if (aur->GetDuration() > dur)
+                        return;
                 newAura = Aura::TryCreate(aura->GetSpellProto(), effMask, stealer, NULL, &baseDamage[0], NULL, aura->GetCasterGUID());
                 if (!newAura)
                     return;
@@ -11476,12 +11478,12 @@ uint32 Unit::SpellHealingBonus(Unit *pVictim, SpellEntry const *spellProto, uint
         if (Unit* owner = GetOwner())
             return owner->SpellHealingBonus(pVictim, spellProto, healamount, damagetype, stack, modtype);
 
-    // no bonus for heal potions/bandages
+    /* no bonus for heal potions/bandages
     if (spellProto->SpellFamilyName == SPELLFAMILY_POTION)
         return healamount;
     // and Warlock's Healthstones      
     if (spellProto->SpellFamilyName == SPELLFAMILY_WARLOCK && (spellProto->SpellFamilyFlags[0] & 0x10000))
-        return healamount;
+        return healamount;*/
 
     // Healing Done
     // Taken/Done total percent damage auras
