@@ -3978,7 +3978,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 30070:
             spellInfo->DurationIndex = 18;
             break;
-        case 25841:
+        case 72423:
             spellInfo->EffectImplicitTargetA[0] = TARGET_DST_CASTER;
             spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_AREA_ALLY_DST;
             spellInfo->EffectRadiusIndex[0] = 9;

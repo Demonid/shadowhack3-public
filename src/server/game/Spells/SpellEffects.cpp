@@ -843,7 +843,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                 case 100000: // Respawner
                 {
                     uint32 entry = 0;
-                    switch(urand(0, 3))
+                    switch(urand(0, 2))
                     {
                         case 0:
                             entry = 179899;
@@ -854,9 +854,9 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                         case 2:
                             entry = 179907;
                             break;
-                        case 3:
+                        /*case 3:
                             entry = 350001;
-                            break;
+                            break;*/
                         default: break;
                     }
                     if (entry > 0)
@@ -874,11 +874,11 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                             }
                         }
                         GameObject* obj = m_caster->SummonGameObject(entry, m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), 0, 0, 0, 0, 0, 0);
-                        if (entry != 350001)
-                        {
+                        /*if (entry != 350001)
+                        {*/
                             obj->SetUInt32Value(GAMEOBJECT_FACTION, 0);
                             obj->SetOwnerGUID(0);
-                        }
+                        //}
                     }
                     return;
                 }
@@ -6153,10 +6153,12 @@ void Spell::EffectResurrect(SpellEffIndex effIndex)
 
     switch (m_spellInfo->Id)
     {
-        case 25841:
+        case 72423:
         {
+            if (unitTarget->ToPlayer()->GetCorpse()->GetGhostTime() + unitTarget->ToPlayer()->GetCorpseReclaimDelay(true) < 15*IN_MILLISECONDS)
+                break;
             WorldPacket data(SMSG_CORPSE_RECLAIM_DELAY, 4);
-            data << uint32(0);
+            data << uint32(15*IN_MILLISECONDS);
             unitTarget->ToPlayer()->GetSession()->SendPacket(&data);
             break;
         }
@@ -6198,7 +6200,7 @@ void Spell::EffectResurrect(SpellEffIndex effIndex)
     ExecuteLogEffectResurrect(effIndex, pTarget);
 
     pTarget->setResurrectRequestData(m_caster->GetGUID(), m_caster->GetMapId(), m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), health, mana);
-    SendResurrectRequest(pTarget);
+    SendResurrectRequest(pTarget, m_spellInfo->Id == 72423);
 }
 
 void Spell::EffectAddExtraAttacks(SpellEffIndex effIndex)
