@@ -258,17 +258,17 @@ public:
         pPlayer->PlayerTalkClass->ClearMenus();
         switch(uiAction)
         {
-            case GOSSIP_ACTION_INFO_DEF+1:
+            case GOSSIP_ACTION_INFO_DEF + 1:
                 pPlayer->CLOSE_GOSSIP_MENU();
                 CAST_AI(npc_sinclari_vh::npc_sinclariAI, (pCreature->AI()))->uiPhase = 1;
                 if (InstanceScript *pInstance = pCreature->GetInstanceScript())
-                    pInstance->SetData(DATA_MAIN_EVENT_PHASE,SPECIAL);
+                    pInstance->SetData(DATA_MAIN_EVENT_PHASE, SPECIAL);
                 break;
-            case GOSSIP_ACTION_INFO_DEF+2:
+            case GOSSIP_ACTION_INFO_DEF + 2:
                 pPlayer->SEND_GOSSIP_MENU(13854, pCreature->GetGUID());
                 break;
-            case GOSSIP_ACTION_INFO_DEF+3:
-                pPlayer->NearTeleportTo(playerTeleportPosition.GetPositionX(),playerTeleportPosition.GetPositionY(),playerTeleportPosition.GetPositionZ(),playerTeleportPosition.GetOrientation(),true);
+            case GOSSIP_ACTION_INFO_DEF + 3:
+                pPlayer->NearTeleportTo(playerTeleportPosition.GetPositionX(), playerTeleportPosition.GetPositionY(), playerTeleportPosition.GetPositionZ(), playerTeleportPosition.GetOrientation(), true);
                 pPlayer->CLOSE_GOSSIP_MENU();
                 break;
         }
@@ -283,12 +283,12 @@ public:
             {
                 case NOT_STARTED:
                 case FAIL: // Allow to start event if not started or wiped
-                    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT,GOSSIP_ITEM_1,GOSSIP_SENDER_MAIN,GOSSIP_ACTION_INFO_DEF+2);
-                    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT,GOSSIP_START_EVENT,GOSSIP_SENDER_MAIN,GOSSIP_ACTION_INFO_DEF+1);
+                    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+                    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_START_EVENT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
                     pPlayer->SEND_GOSSIP_MENU(13853, pCreature->GetGUID());
                     break;
                 case IN_PROGRESS: // Allow to teleport inside if event is in progress
-                    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT,GOSSIP_I_WANT_IN,GOSSIP_SENDER_MAIN,GOSSIP_ACTION_INFO_DEF+3);
+                    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_I_WANT_IN, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
                     pPlayer->SEND_GOSSIP_MENU(13853, pCreature->GetGUID());
                     break;
                 default:
@@ -740,69 +740,70 @@ struct violet_hold_trashAI : public npc_escortAI
         if (!bHasGotMovingPoints)
         {
             bHasGotMovingPoints = true;
-                switch(portalLocationID)
+            switch(portalLocationID)
             {
                 case 0:
-                    for(int i=0;i<6;i++)
-                        AddWaypoint(i,FirstPortalWPs[i][0]+irand(-1,1),FirstPortalWPs[i][1]+irand(-1,1),FirstPortalWPs[i][2]+irand(-1,1),0);
-                    me->SetHomePosition(FirstPortalWPs[5][0],FirstPortalWPs[5][1],FirstPortalWPs[5][2],3.149439f);
+                    for(int i=0; i<6; i++)
+                        AddWaypoint(i, FirstPortalWPs[i][0] + irand(-1, 1), FirstPortalWPs[i][1] + irand(-1, 1),FirstPortalWPs[i][2] + irand(-1, 1), 0);
+                    me->SetHomePosition(FirstPortalWPs[5][0], FirstPortalWPs[5][1], FirstPortalWPs[5][2], 3.149439f);
                     break;
                 case 1:
-                    secondPortalRouteID = urand(0,1);
+                    secondPortalRouteID = urand(0, 1);
                     switch(secondPortalRouteID)
                     {
                         case 0:
-                            for(int i=0;i<9;i++)
-                                AddWaypoint(i,SecondPortalFirstWPs[i][0]+irand(-1,1),SecondPortalFirstWPs[i][1]+irand(-1,1),SecondPortalFirstWPs[i][2],0);
-                            me->SetHomePosition(SecondPortalFirstWPs[8][0]+irand(-1,1),SecondPortalFirstWPs[8][1]+irand(-1,1),SecondPortalFirstWPs[8][2]+irand(-1,1),3.149439f);
+                            for(int i=0; i<9; i++)
+                                AddWaypoint(i, SecondPortalFirstWPs[i][0] + irand(-1, 1), SecondPortalFirstWPs[i][1] + irand(-1, 1),SecondPortalFirstWPs[i][2], 0);
+                            me->SetHomePosition(SecondPortalFirstWPs[8][0] + irand(-1, 1), SecondPortalFirstWPs[8][1] + irand(-1, 1),SecondPortalFirstWPs[8][2] + irand(-1, 1), 3.149439f);
                             break;
                         case 1:
-                            for(int i=0;i<8;i++)
-                                AddWaypoint(i,SecondPortalSecondWPs[i][0]+irand(-1,1),SecondPortalSecondWPs[i][1]+irand(-1,1),SecondPortalSecondWPs[i][2],0);
-                            me->SetHomePosition(SecondPortalSecondWPs[7][0],SecondPortalSecondWPs[7][1],SecondPortalSecondWPs[7][2],3.149439f);
+                            for(int i=0; i<8; i++)
+                                AddWaypoint(i, SecondPortalSecondWPs[i][0] + irand(-1, 1), SecondPortalSecondWPs[i][1] + irand(-1, 1), SecondPortalSecondWPs[i][2], 0);
+                            me->SetHomePosition(SecondPortalSecondWPs[7][0], SecondPortalSecondWPs[7][1], SecondPortalSecondWPs[7][2], 3.149439f);
                             break;
                     }
                     break;
                 case 2:
-                    for(int i=0;i<8;i++)
-                        AddWaypoint(i,ThirdPortalWPs[i][0]+irand(-1,1),ThirdPortalWPs[i][1]+irand(-1,1),ThirdPortalWPs[i][2],0);
-                        me->SetHomePosition(ThirdPortalWPs[7][0],ThirdPortalWPs[7][1],ThirdPortalWPs[7][2],3.149439f);
+                    for(int i=0; i<8; i++)
+                        AddWaypoint(i, ThirdPortalWPs[i][0] + irand(-1, 1), ThirdPortalWPs[i][1] + irand(-1, 1), ThirdPortalWPs[i][2], 0);
+                        me->SetHomePosition(ThirdPortalWPs[7][0], ThirdPortalWPs[7][1], ThirdPortalWPs[7][2], 3.149439f);
                     break;
                 case 3:
-                    for(int i=0;i<9;i++)
-                        AddWaypoint(i,FourthPortalWPs[i][0]+irand(-1,1),FourthPortalWPs[i][1]+irand(-1,1),FourthPortalWPs[i][2],0);
-                    me->SetHomePosition(FourthPortalWPs[8][0],FourthPortalWPs[8][1],FourthPortalWPs[8][2],3.149439f);
+                    for(int i=0; i<9; i++)
+                        AddWaypoint(i, FourthPortalWPs[i][0] + irand(-1, 1), FourthPortalWPs[i][1] + irand(-1, 1), FourthPortalWPs[i][2], 0);
+                    me->SetHomePosition(FourthPortalWPs[8][0], FourthPortalWPs[8][1], FourthPortalWPs[8][2], 3.149439f);
                     break;
                 case 4:
-                    for(int i=0;i<6;i++)
-                        AddWaypoint(i,FifthPortalWPs[i][0]+irand(-1,1),FifthPortalWPs[i][1]+irand(-1,1),FifthPortalWPs[i][2],0);
-                    me->SetHomePosition(FifthPortalWPs[5][0],FifthPortalWPs[5][1],FifthPortalWPs[5][2],3.149439f);
+                    for(int i=0; i<6; i++)
+                        AddWaypoint(i, FifthPortalWPs[i][0] + irand(-1, 1), FifthPortalWPs[i][1] + irand(-1, 1),FifthPortalWPs[i][2], 0);
+                    me->SetHomePosition(FifthPortalWPs[5][0], FifthPortalWPs[5][1], FifthPortalWPs[5][2], 3.149439f);
                     break;
                 case 5:
-                    for(int i=0;i<4;i++)
-                        AddWaypoint(i,SixthPoralWPs[i][0]+irand(-1,1),SixthPoralWPs[i][1]+irand(-1,1),SixthPoralWPs[i][2],0);
-                    me->SetHomePosition(SixthPoralWPs[3][0],SixthPoralWPs[3][1],SixthPoralWPs[3][2],3.149439f);
+                    for(int i=0; i<4; i++)
+                        AddWaypoint(i, SixthPoralWPs[i][0] + irand(-1, 1), SixthPoralWPs[i][1] + irand(-1, 1), SixthPoralWPs[i][2], 0);
+                    me->SetHomePosition(SixthPoralWPs[3][0], SixthPoralWPs[3][1], SixthPoralWPs[3][2], 3.149439f);
                     break;
             }
             SetDespawnAtEnd(false);
-            Start(true,true);
+            Start(true, true);
         }
     }
 
     void JustDied(Unit * /*unit*/)
     {
-        if (Creature* portal = Unit::GetCreature((*me),pInstance->GetData64(DATA_TELEPORTATION_PORTAL)))
-            CAST_AI(npc_teleportation_portal_vh::npc_teleportation_portalAI,portal->AI())->SummonedMobDied(me);
+        if (Creature* portal = Unit::GetCreature((*me), pInstance->GetData64(DATA_TELEPORTATION_PORTAL)))
+            CAST_AI(npc_teleportation_portal_vh::npc_teleportation_portalAI, portal->AI())->SummonedMobDied(me);
         if (pInstance)
-            pInstance->SetData(DATA_NPC_PRESENCE_AT_DOOR_REMOVE,1);
+            pInstance->SetData(DATA_NPC_PRESENCE_AT_DOOR_REMOVE, 1);
     }
 
     void CreatureStartAttackDoor()
     {
         me->SetReactState(REACT_PASSIVE);
+        me->AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
         DoCast(SPELL_DESTROY_DOOR_SEAL);
         if (pInstance)
-            pInstance->SetData(DATA_NPC_PRESENCE_AT_DOOR_ADD,1);
+            pInstance->SetData(DATA_NPC_PRESENCE_AT_DOOR_ADD, 1);
     }
 
 };
@@ -849,7 +850,7 @@ public:
             {
                 if (uiCleaveTimer <= diff)
                 {
-                    DoCast(me->getVictim(),SPELL_CLEAVE);
+                    DoCast(me->getVictim(), SPELL_CLEAVE);
                     uiCleaveTimer = 5000;
                 } else uiCleaveTimer -= diff;
 
@@ -857,7 +858,7 @@ public:
                 {
                     Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true);
                     if (pTarget)
-                        DoCast(pTarget,SPELL_IMPALE);
+                        DoCast(pTarget, SPELL_IMPALE);
                     uiImpaleTimer = 4000;
                 } else uiImpaleTimer -= diff;
             }
@@ -866,13 +867,13 @@ public:
             {
                 if (uiBrutalStrikeTimer <= diff)
                 {
-                    DoCast(me->getVictim(),SPELL_BRUTAL_STRIKE);
+                    DoCast(me->getVictim(), SPELL_BRUTAL_STRIKE);
                     uiBrutalStrikeTimer = 5000;
                 } else uiBrutalStrikeTimer -= diff;
 
                 if (uiSunderArmorTimer <= diff)
                 {
-                    DoCast(me->getVictim(),SPELL_SUNDER_ARMOR);
+                    DoCast(me->getVictim(), SPELL_SUNDER_ARMOR);
                     uiSunderArmorTimer = urand(8000,10000);
                 } else uiSunderArmorTimer -= diff;
 
@@ -927,7 +928,7 @@ public:
             {
                 if (uiArcaneExplosionTimer <= diff)
                 {
-                    DoCast(DUNGEON_MODE(SPELL_ARCANE_EXPLOSION,H_SPELL_ARCANE_EXPLOSION));
+                    DoCast(DUNGEON_MODE(SPELL_ARCANE_EXPLOSION, H_SPELL_ARCANE_EXPLOSION));
                     uiArcaneExplosionTimer = 5000;
                 } else uiArcaneExplosionTimer -= diff;
 
@@ -935,7 +936,7 @@ public:
                 {
                         Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true);
                     if (pTarget)
-                            DoCast(pTarget,DUNGEON_MODE(SPELL_ARCANE_BARRAGE,H_SPELL_ARCANE_BARRAGE));
+                            DoCast(pTarget, DUNGEON_MODE(SPELL_ARCANE_BARRAGE, H_SPELL_ARCANE_BARRAGE));
                     uiArcainBarrageTimer = 6000;
                 } else uiArcainBarrageTimer -= diff;
             }
@@ -944,7 +945,7 @@ public:
             {
                 if (uiFrostNovaTimer <= diff)
                 {
-                    DoCast(DUNGEON_MODE(SPELL_FROST_NOVA,H_SPELL_FROST_NOVA));
+                    DoCast(DUNGEON_MODE(SPELL_FROST_NOVA, H_SPELL_FROST_NOVA));
                     uiFrostNovaTimer = 5000;
                 } else uiFrostNovaTimer -= diff;
 
@@ -952,7 +953,7 @@ public:
                 {
                     Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true);
                     if (pTarget)
-                        DoCast(pTarget,DUNGEON_MODE(SPELL_FROSTBOLT,H_SPELL_FROSTBOLT));
+                        DoCast(pTarget,DUNGEON_MODE(SPELL_FROSTBOLT, H_SPELL_FROSTBOLT));
                     uiFrostboltTimer = 6000;
                 } else uiFrostboltTimer -= diff;
             }
@@ -1001,7 +1002,7 @@ public:
             {
                 if (uiArcaneEmpowermentTimer <= diff)
                 {
-                    DoCast(me,SPELL_ARCANE_EMPOWERMENT);
+                    DoCast(me, SPELL_ARCANE_EMPOWERMENT);
                         uiArcaneEmpowermentTimer = 14000;
                 } else uiArcaneEmpowermentTimer -= diff;
             }
@@ -1012,7 +1013,7 @@ public:
                 {
                     Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true);
                     if (pTarget)
-                        DoCast(pTarget,SPELL_SPELL_LOCK);
+                        DoCast(pTarget, SPELL_SPELL_LOCK);
                     uiSpellLockTimer = 9000;
                 } else uiSpellLockTimer -= diff;
             }
@@ -1059,14 +1060,14 @@ public:
 
             if (uiConcussionBlowTimer <= diff)
             {
-                DoCast(me->getVictim(),SPELL_CONCUSSION_BLOW);
+                DoCast(me->getVictim(), SPELL_CONCUSSION_BLOW);
                 uiConcussionBlowTimer = 5000;
             } else uiConcussionBlowTimer -= diff;
 
             if (uiMagicReflectionTimer <= diff)
             {
                 DoCast(SPELL_MAGIC_REFLECTION);
-                uiMagicReflectionTimer = urand(10000,15000);
+                uiMagicReflectionTimer = urand(10000, 15000);
             } else uiMagicReflectionTimer -= diff;
 
             DoMeleeAttackIfReady();
@@ -1099,7 +1100,7 @@ public:
         {
             uiBackstabTimer = 1300;
             uiTacticalBlinkTimer = 8000;
-            TacticalBlinkCasted =false;
+            TacticalBlinkCasted = false;
         }
 
         void UpdateAI(const uint32 diff)
@@ -1116,7 +1117,7 @@ public:
                 {
                     Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 40.0f, true);
                     if (pTarget)
-                        DoCast(pTarget,SPELL_TACTICAL_BLINK);
+                        DoCast(pTarget, SPELL_TACTICAL_BLINK);
                         uiTacticalBlinkTimer = 6000;
                     TacticalBlinkCasted = true;
                 } else uiTacticalBlinkTimer -= diff;
@@ -1127,7 +1128,7 @@ public:
                 if (uiBackstabTimer <= diff)
                 {
                     Unit* pTarget = SelectTarget(SELECT_TARGET_NEAREST, 0, 10.0f, true);
-                    DoCast(pTarget,SPELL_BACKSTAB);
+                    DoCast(pTarget, SPELL_BACKSTAB);
                     TacticalBlinkCasted = false;
                     uiBackstabTimer =1300;
                 } else uiBackstabTimer -= diff;
@@ -1178,7 +1179,7 @@ public:
                 {
                     Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true);
                     if (pTarget)
-                        DoCast(pTarget,DUNGEON_MODE(SPELL_ARCANE_BLAST,H_SPELL_ARCANE_BLAST));
+                        DoCast(pTarget, DUNGEON_MODE(SPELL_ARCANE_BLAST, H_SPELL_ARCANE_BLAST));
                     uiArcaneBlastTimer = 6000;
                 } else uiArcaneBlastTimer -= diff;
 
@@ -1186,7 +1187,7 @@ public:
                 {
                     Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true);
                         if (pTarget)
-                        DoCast(pTarget,SPELL_SLOW);
+                        DoCast(pTarget, SPELL_SLOW);
                     uiSlowTimer = 5000;
                 } else uiSlowTimer -= diff;
             }
@@ -1197,13 +1198,13 @@ public:
                 {
                     Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true);
                     if (pTarget)
-                        DoCast(pTarget,SPELL_CHAINS_OF_ICE);
+                        DoCast(pTarget, SPELL_CHAINS_OF_ICE);
                     uiChainsOfIceTimer = 7000;
                 } else uiChainsOfIceTimer -= diff;
 
                 if (uiConeOfColdTimer <= diff)
                 {
-                   DoCast(DUNGEON_MODE(SPELL_CONE_OF_COLD,H_SPELL_CONE_OF_COLD));
+                   DoCast(DUNGEON_MODE(SPELL_CONE_OF_COLD, H_SPELL_CONE_OF_COLD));
                     uiConeOfColdTimer = 5000;
                 } else uiConeOfColdTimer -= diff;
             }
@@ -1254,13 +1255,13 @@ public:
 
             if (uiMortalStrikeTimer <= diff)
             {
-                DoCast(me->getVictim(),SPELL_MORTAL_STRIKE);
+                DoCast(me->getVictim(), SPELL_MORTAL_STRIKE);
                 uiMortalStrikeTimer = 5000;
             } else uiMortalStrikeTimer -= diff;
 
             if (uiWhirlwindTimer <= diff)
             {
-                DoCast(me,SPELL_WHIRLWIND_OF_STEEL);
+                DoCast(me, SPELL_WHIRLWIND_OF_STEEL);
                 uiWhirlwindTimer = 8000;
             } else uiWhirlwindTimer -= diff;
 
@@ -1310,15 +1311,15 @@ public:
             {
                 Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true);
                 if (pTarget)
-                    DoCast(pTarget,DUNGEON_MODE(SPELL_ARCANE_STREAM,H_SPELL_ARCANE_STREAM));
-                uiArcaneStreamTimer = urand(0,5000)+5000;
+                    DoCast(pTarget, DUNGEON_MODE(SPELL_ARCANE_STREAM, H_SPELL_ARCANE_STREAM));
+                uiArcaneStreamTimer = urand(0, 5000)+5000;
                 uiArcaneStreamTimerStartingValueHolder = uiArcaneStreamTimer;
             } else uiArcaneStreamTimer -= diff;
 
             if (uiManaDetonationTimer <= diff && uiArcaneStreamTimer >=1500 && uiArcaneStreamTimer <= uiArcaneStreamTimerStartingValueHolder/2)
             {
-                DoCast(DUNGEON_MODE(SPELL_MANA_DETONATION,H_SPELL_MANA_DETONATION));
-                uiManaDetonationTimer = urand(2000,6000);
+                DoCast(DUNGEON_MODE(SPELL_MANA_DETONATION, H_SPELL_MANA_DETONATION));
+                uiManaDetonationTimer = urand(2000, 6000);
             } else uiManaDetonationTimer -= diff;
 
             DoMeleeAttackIfReady();
