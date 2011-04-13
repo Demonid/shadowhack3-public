@@ -5163,6 +5163,10 @@ SpellCastResult Spell::CheckCast(bool strict)
                     else if (!target->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID))
                         return SPELL_FAILED_TARGET_NO_WEAPONS;
                 }
+
+                // Don't allow to cast on dueling target positive spells
+                if (target->GetTypeId() == TYPEID_PLAYER && target->ToPlayer()->duel && IsPositiveSpell(m_spellInfo->Id))
+                    return SPELL_FAILED_TARGET_DUELING;
             }
 
             // Slice and dice can be used throw the LOS
