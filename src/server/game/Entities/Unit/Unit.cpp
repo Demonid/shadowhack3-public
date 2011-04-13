@@ -14918,7 +14918,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit * pTarget, uint32 procFlag,
                 case SPELL_AURA_MOD_ROOT:
                 case SPELL_AURA_TRANSFORM:
                 {
-                    damage+=absorb;
+                    damage+=abosrb;
                     // chargeable mods are breaking on hit
                     if (useCharges)
                         takeCharges = true;
@@ -16642,11 +16642,6 @@ void Unit::GetRaidMember(std::list<Unit*> &nearMembers, float radius)
     Player *owner = GetCharmerOrOwnerPlayerOrPlayerItself();
     if (!owner)
         return;
-    if(owner->ToUnit() != this)
-    {
-        owner->GetRaidMember(nearMembers, radius);
-        return;
-    }
     Group *pGroup = NULL;
     if (GetTypeId() == TYPEID_PLAYER)
         pGroup = ToPlayer()->GetGroup();
@@ -16685,8 +16680,8 @@ void Unit::GetRaidMember(std::list<Unit*> &nearMembers, float radius)
                 if (pet->isAlive() &&  IsWithinDistInMap(pet, radius))
                     nearMembers.push_back(pet);
         }
-        else*/ if(!m_Controlled.empty())
-            for (ControlList::const_iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
+        else*/ if(!owner->m_Controlled.empty())
+            for (ControlList::const_iterator itr = owner->m_Controlled.begin(); itr != owner->m_Controlled.end(); ++itr)
                 if((*itr)->IsInWorld() && IsWithinDistInMap((*itr), radius))
                     nearMembers.push_back(*itr);
 
