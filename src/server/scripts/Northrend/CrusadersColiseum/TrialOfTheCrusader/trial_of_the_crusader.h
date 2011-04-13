@@ -235,7 +235,6 @@ enum eGameObject
     GO_ARGENT_COLISEUM_FLOOR    = 195527, //20943
     GO_MAIN_GATE_DOOR           = 195647,
     GO_EAST_PORTCULLIS          = 195648,
-    GO_WEST_PORTCULLIS          = 195589,
     GO_WEB_DOOR                 = 195485,
 };
 
