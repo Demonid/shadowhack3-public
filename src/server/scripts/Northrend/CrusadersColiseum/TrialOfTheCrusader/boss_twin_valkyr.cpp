@@ -553,11 +553,9 @@ public:
         switch (creature->GetEntry())
         {
             case NPC_LIGHT_ESSENCE:
-                player->RemoveAura(SPELL_DARK_ESSENCE);
                 player->CastSpell(player, SPELL_LIGHT_ESSENCE, true);
                 break;
             case NPC_DARK_ESSENCE:
-                player->RemoveAura(SPELL_LIGHT_ESSENCE);
                 player->CastSpell(player, SPELL_DARK_ESSENCE, true);
                 break;
             default:
