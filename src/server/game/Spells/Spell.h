@@ -489,7 +489,7 @@ class Spell
         void SendInterrupted(uint8 result);
         void SendChannelUpdate(uint32 time);
         void SendChannelStart(uint32 duration);
-        void SendResurrectRequest(Player* target);
+        void SendResurrectRequest(Player* target, bool delayed = false);
         void SendPlaySpellVisual(uint32 SpellID);
 
         void HandleEffects(Unit *pUnitTarget,Item *pItemTarget,GameObject *pGOTarget,uint32 i);

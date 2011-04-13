@@ -4546,7 +4546,7 @@ void Spell::SendChannelStart(uint32 duration)
     m_caster->SetUInt32Value(UNIT_CHANNEL_SPELL, m_spellInfo->Id);
 }
 
-void Spell::SendResurrectRequest(Player* target)
+void Spell::SendResurrectRequest(Player* target, bool delayed)
 {
     // Both players and NPCs can resurrect using spells - have a look at creature 28487 for example
     // However, the packet structure differs slightly
@@ -4560,7 +4560,7 @@ void Spell::SendResurrectRequest(Player* target)
     data << sentName;
     data << uint8(0);
 
-    data << uint8(m_caster->GetTypeId() == TYPEID_PLAYER ? 0 : 1);
+    data << uint8(delayed ? 1 : 0);
     target->GetSession()->SendPacket(&data);
 }
 

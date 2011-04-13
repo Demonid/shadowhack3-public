@@ -5050,10 +5050,6 @@ void Player::BuildPlayerRepop()
     data.append(GetPackGUID());
     GetSession()->SendPacket(&data);
 
-    if (getRace() == RACE_NIGHTELF)
-        CastSpell(this, 20584, true);
-    CastSpell(this, 8326, true);
-
     // there must be SMSG.FORCE_RUN_SPEED_CHANGE, SMSG.FORCE_SWIM_SPEED_CHANGE, SMSG.MOVE_WATER_WALK
     // there must be SMSG.STOP_MIRROR_TIMER
     // there we must send 888 opcode
@@ -5096,6 +5092,10 @@ void Player::BuildPlayerRepop()
 
     // set and clear other
     SetByteValue(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND);
+
+    if (getRace() == RACE_NIGHTELF)
+        CastSpell(this, 20584, true);
+    CastSpell(this, 8326, true);
 }
 
 void Player::ResurrectPlayer(float restore_percent, bool applySickness)
