@@ -4060,7 +4060,21 @@ void Unit::RemoveAurasWithMechanic(uint32 mechanic_mask, AuraRemoveMode removemo
         {
             if (GetAllSpellMechanicMask(aura->GetSpellProto()) & mechanic_mask)
             {
-                RemoveAura(iter, removemode);
+                if (aura->HasEffectType(SPELL_AURA_PERIODIC_DAMAGE))
+                {
+                    for (uint8 i=0; i<3; ++i)
+                    {
+                        if(AuraEffect * AuraEff = aura->GetEffect(i))
+                        {
+                            if (AuraEff->GetAuraType() == SPELL_AURA_PERIODIC_DAMAGE)
+                                continue;
+                            AuraEff->SetAmount(0);
+                            AuraEff->HandleEffect(iter->second, removemode, false);
+                        }
+                    }
+                    ++iter;
+                }
+                else RemoveAura(iter, removemode);
                 continue;
             }
         }
