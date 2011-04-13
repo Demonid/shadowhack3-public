@@ -565,19 +565,32 @@ public:
         {
         }
 
-        bool   m_bFall;
+        bool   m_bFall, m_bActive;
         uint32 m_uiPermafrostTimer;
 
         void Reset()
         {
             m_bFall = false;
+            m_bActive = false;
             m_uiPermafrostTimer = 0;
             me->SetReactState(REACT_PASSIVE);
             me->SetFlying(true);
-            me->SetDisplayId(25144);
             me->SetSpeed(MOVE_RUN, 0.5, false);
             me->GetMotionMaster()->MoveRandom(20.0f);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_6);
+            me->SetDisplayId(11686);
             DoCast(SPELL_FROST_SPHERE);
+        }
+
+        void MoveInLineOfSight(Unit * who)
+        {
+            if (m_bActive || !who || !who->ToPlayer()) return;
+// the next codeline requires that players discover invisible mob approaching it by 20 yards (20^2=400)
+// maybe then MoveRandom(20.0f); in Reset() should be changed
+//            if (who->ToPlayer()->GetDistanceSqr(me->GetPositionX(),me->GetPositionY(),me->GetPositionZ()) > 400.0f) return;
+            m_bActive = true;
+            me->SetDisplayId(25144);
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_UNK_6 | UNIT_FLAG_NON_ATTACKABLE);
         }
 
         void DamageTaken(Unit* /*pWho*/, uint32& uiDamage)
