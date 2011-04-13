@@ -5165,7 +5165,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                 }
 
                 // Don't allow to cast on dueling target positive spells
-                if (target->GetTypeId() == TYPEID_PLAYER && target->ToPlayer()->duel && target->ToPlayer()->duel->opponent != m_caster && IsPositiveTargetSpell(m_spellInfo->Id))
+                if (target->GetTypeId() == TYPEID_PLAYER && target->ToPlayer()->duel && target->ToPlayer()->duel->opponent != m_caster && IsPositiveSpell(m_spellInfo->Id))
                     return SPELL_FAILED_TARGET_DUELING;
             }
 
