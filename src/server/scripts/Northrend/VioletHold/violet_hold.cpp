@@ -395,7 +395,7 @@ public:
                             break;
                         case 5:
                             if (pInstance)
-                                pInstance->SetData(DATA_MAIN_EVENT_PHASE,IN_PROGRESS);
+                                pInstance->SetData(DATA_MAIN_EVENT_PHASE, IN_PROGRESS);
                             me->SetReactState(REACT_PASSIVE);
                             uiTimer = 0;
                             uiPhase = 0;
@@ -591,11 +591,19 @@ public:
             if (!pInstance) //Massive usage of pInstance, global check
                 return;
 
+            if (pInstance->GetData(DATA_MAIN_EVENT_PHASE) == FAIL)
+            {
+                listOfMobs.DespawnAll();
+                me->DespawnOrUnsummon();
+                return;
+            }
+
             if (pInstance->GetData(DATA_REMOVE_NPC) == 1)
             {
                 me->DespawnOrUnsummon();
                 pInstance->SetData(DATA_REMOVE_NPC, 0);
-            }
+                return;
+            }           
 
             uint8 uiWaveCount = pInstance->GetData(DATA_WAVE_COUNT);
             if ((uiWaveCount == 6) || (uiWaveCount == 12)) //Don't spawn mobs on boss encounters
