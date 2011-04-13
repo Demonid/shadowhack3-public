@@ -91,12 +91,12 @@ VALUES
 REPLACE INTO spell_proc_event
    (`entry`, `SchoolMask`, `SpellFamilyName`, `SpellFamilyMask0`, `SpellFamilyMask1`, `SpellFamilyMask2`, `procFlags`, `procEx`, `ppmRate`, `CustomChance`, `Cooldown`)
 VALUES
-   (51521, 0, 11, 0, 16777216, 0, 0, 262144, 0, 0, 0);
+   (51521, 0, 11, 0, 16777216, 0, 0, 1, 0, 0, 0);
 
 REPLACE INTO spell_proc_event
    (`entry`, `SchoolMask`, `SpellFamilyName`, `SpellFamilyMask0`, `SpellFamilyMask1`, `SpellFamilyMask2`, `procFlags`, `procEx`, `ppmRate`, `CustomChance`, `Cooldown`)
 VALUES
-   (51522, 0, 11, 0, 16777216, 0, 0, 262144, 0, 0, 0);
+   (51522, 0, 11, 0, 16777216, 0, 0, 1, 0, 0, 0);
 
 REPLACE INTO spell_proc_event
    (`entry`, `SchoolMask`, `SpellFamilyName`, `SpellFamilyMask0`, `SpellFamilyMask1`, `SpellFamilyMask2`, `procFlags`, `procEx`, `ppmRate`, `CustomChance`, `Cooldown`)
