@@ -5119,23 +5119,9 @@ SpellCastResult Spell::CheckCast(bool strict)
         if (!m_IsTriggeredSpell && target == m_caster && m_spellInfo->AttributesEx & SPELL_ATTR1_CANT_TARGET_SELF)
             return SPELL_FAILED_BAD_TARGETS;
 
-        if (strict && GetSpellDuration(m_spellInfo) >= 2*MINUTE)
-        {
-            Unit::VisibleAuraMap const *visibleAuras = target->GetVisibleAuras();
-            for (Unit::VisibleAuraMap::const_iterator itr = visibleAuras->begin(); itr != visibleAuras->end(); ++itr)
-                if (AuraEffect * auraeff = itr->second->GetBase()->GetEffect(0))
-                    if (auraeff->GetAuraType() == m_spellInfo->EffectApplyAuraName[0] && auraeff->GetMiscValue() == m_spellInfo->EffectMiscValue[0])
-                    {
-                        uint32 dmg = abs(CalculateDamage(0, target));
-                        uint32 amount = abs(auraeff->GetAmount());
-                        if (amount < dmg )
-                            continue;
-                        else if(amount == dmg && GetSpellDuration(m_spellInfo) > auraeff->GetBase()->GetDuration())
-                            continue;
-                        return m_IsTriggeredSpell ? SPELL_FAILED_DONT_REPORT: SPELL_FAILED_AURA_BOUNCED;
-                    }
-            
-        }
+        if (strict && CheckForPowerfullAura(target))
+            return m_IsTriggeredSpell ? SPELL_FAILED_DONT_REPORT: SPELL_FAILED_AURA_BOUNCED;
+
         bool non_caster_target = target != m_caster && !sSpellMgr->IsSpellWithCasterSourceTargetsOnly(m_spellInfo);
 
         if (non_caster_target)
@@ -7204,25 +7190,7 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
                 // bloodlust/hymns/prayers
                 if( m_spellInfo->EffectApplyAuraName[i] && (m_spellInfo->EffectImplicitTargetB[i] == TARGET_UNIT_AREA_ALLY_SRC || 
                     m_spellInfo->EffectImplicitTargetA[i] == TARGET_UNIT_RAID_CASTER))
-                {
-                    if (GetSpellDuration(m_spellInfo) >= 2*MINUTE)
-                    {
-                        Unit::VisibleAuraMap const *visibleAuras = target->GetVisibleAuras();
-                        for (Unit::VisibleAuraMap::const_iterator itr = visibleAuras->begin(); itr != visibleAuras->end(); ++itr)
-                            if (AuraEffect * auraeff = itr->second->GetBase()->GetEffect(0))
-                                if (auraeff->GetAuraType() == m_spellInfo->EffectApplyAuraName[0] && auraeff->GetMiscValue() == m_spellInfo->EffectMiscValue[0])
-                                {
-                                    uint32 dmg = abs(CalculateDamage(0, target));
-                                    uint32 amount = abs(auraeff->GetAmount());
-                                    if (amount < dmg )
-                                        continue;
-                                    else if(amount == dmg && GetSpellDuration(m_spellInfo) > auraeff->GetBase()->GetDuration())
-                                        continue;
-                                    return false;
-                                }
-                    }
-                    return true;
-                }
+                    return !CheckForPowerfullAura(target);
                 if(IsChanneledSpell(m_spellInfo))
                     continue;
                 // Pets time!
@@ -7994,3 +7962,23 @@ void Spell::CancelGlobalCooldown()
         m_caster->ToPlayer()->GetGlobalCooldownMgr().CancelGlobalCooldown(m_spellInfo);
 }
 
+bool Spell::CheckForPowerfullAura(Unit * target)
+{
+    if (GetSpellDuration(m_spellInfo) >= 2*MINUTE)
+    {
+        Unit::VisibleAuraMap const *visibleAuras = target->GetVisibleAuras();
+        for (Unit::VisibleAuraMap::const_iterator itr = visibleAuras->begin(); itr != visibleAuras->end(); ++itr)
+            if (AuraEffect * auraeff = itr->second->GetBase()->GetEffect(0))
+                if (auraeff->GetAuraType() == m_spellInfo->EffectApplyAuraName[0] && auraeff->GetMiscValue() == m_spellInfo->EffectMiscValue[0])
+                {
+                    uint32 dmg = abs(CalculateDamage(0, target));
+                    uint32 amount = abs(auraeff->GetAmount());
+                    if (amount < dmg )
+                        continue;
+                    else if(amount == dmg && GetSpellDuration(m_spellInfo) > auraeff->GetBase()->GetDuration())
+                        continue;
+                    return true;
+                }
+    }
+    return false;
+}

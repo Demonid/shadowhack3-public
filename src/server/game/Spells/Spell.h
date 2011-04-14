@@ -730,6 +730,8 @@ class Spell
 
         ByteBuffer * m_effectExecuteData[MAX_SPELL_EFFECTS];
 
+        bool CheckForPowerfullAura(Unit * target);
+
 #ifdef MAP_BASED_RAND_GEN
         int32 irand(int32 min, int32 max)       { return int32 (m_caster->GetMap()->mtRand.randInt(max - min)) + min; }
         uint32 urand(uint32 min, uint32 max)    { return m_caster->GetMap()->mtRand.randInt(max - min) + min; }
