@@ -29,7 +29,7 @@ extern LoginDatabaseWorkerPool LoginDatabase;
 
 Log::Log() :
     raLogfile(NULL), logfile(NULL), gmLogfile(NULL), charLogfile(NULL),
-    dberLogfile(NULL), chatLogfile(NULL), cheatLogfile(NULL), arenaLogFile(NULL), sqlLogFile(NULL),
+    dberLogfile(NULL), chatLogfile(NULL), cheatLogfile(NULL), wardenLogfile(NULL), arenaLogFile(NULL), sqlLogFile(NULL),
     m_gmlog_per_account(false), m_enableLogDBLater(false),
     m_enableLogDB(false), m_colored(false)
 {
@@ -65,6 +65,11 @@ Log::~Log()
     if (cheatLogfile != NULL)
         fclose(cheatLogfile);
     cheatLogfile = NULL;
+
+    if (wardenLogfile != NULL)
+        fclose(wardenLogfile);
+    wardenLogfile = NULL;
+
     if (arenaLogFile != NULL)
         fclose(arenaLogFile);
     arenaLogFile = NULL;
@@ -163,6 +168,7 @@ void Log::Initialize()
     raLogfile = openLogFile("RaLogFile", NULL, "a");
     chatLogfile = openLogFile("ChatLogFile", "ChatLogTimestamp", "a");
     cheatLogfile = openLogFile("CheatersLogFile", NULL, "a");
+    wardenLogfile = openLogFile("WardenLogFile", NULL, "a");
     arenaLogFile = openLogFile("ArenaLogFile", NULL,"a");
     sqlLogFile = openLogFile("SQLDriverLogFile", NULL, "a");
 
@@ -540,6 +546,37 @@ void Log::outCheater(const char * cheat, ...)
 
         fprintf(cheatLogfile, "\n");
         fflush(cheatLogfile);
+    }
+    fflush(stdout);
+}
+
+void Log::outWarden(const char * cheat, ...)
+{
+    if (!cheat)
+        return;
+
+    if (m_colored)
+        SetColor(false,LRED);
+
+    va_list ap;
+
+    va_start(ap, cheat);
+    vutf8printf(stdout, cheat, &ap);
+    va_end(ap);
+
+    if (m_colored)
+        ResetColor(false);
+
+    fprintf( stdout, "\n");
+    if (wardenLogfile)
+    {
+        outTimestamp(wardenLogfile);
+        va_start(ap, cheat);
+        vfprintf(wardenLogfile, cheat, ap);
+        va_end(ap);
+
+        fprintf(wardenLogfile, "\n");
+        fflush(wardenLogfile);
     }
     fflush(stdout);
 }

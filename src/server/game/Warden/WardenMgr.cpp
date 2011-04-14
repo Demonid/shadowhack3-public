@@ -934,11 +934,11 @@ bool WardenMgr::ValidateCheatCheckResult(WorldSession* const session, WorldPacke
     {
         if (session->GetPlayer())
         {
-            sLog->outCheater("Warden Cheat-check: Kicking player %s for failed check, Packet Checksum 0x%08X is invalid!", session->GetPlayerName(), checksum);
+            sLog->outWarden("Warden Cheat-check: Kicking player %s for failed check, Packet Checksum 0x%08X is invalid!", session->GetPlayerName(), checksum);
         }
         else
         {
-            sLog->outCheater("Warden Cheat-check: Kicking account %u for failed check, Packet Checksum 0x%08X is invalid!", session->GetAccountId(), checksum);
+            sLog->outWarden("Warden Cheat-check: Kicking account %u for failed check, Packet Checksum 0x%08X is invalid!", session->GetAccountId(), checksum);
         }
         ReactToCheatCheckResult(session, false);
         return false;
@@ -987,11 +987,11 @@ bool WardenMgr::ValidateCheatCheckResult(WorldSession* const session, WorldPacke
                     valid = false;
                     if (session->GetPlayer())
                     {
-                        sLog->outCheater("Warden: player %s failed check, MEM at Offset 0x%04X, lentgh %u could not be read by client", session->GetPlayerName(), (*checkList)[i].mem->Offset, (*checkList)[i].mem->Length);
+                        sLog->outWarden("Warden: player %s failed check, MEM at Offset 0x%04X, lentgh %u could not be read by client", session->GetPlayerName(), (*checkList)[i].mem->Offset, (*checkList)[i].mem->Length);
                     }
                     else
                     {
-                        sLog->outCheater("Warden: account %u failed check, MEM at Offset 0x%04X, lentgh %u could not be read by client", session->GetAccountId(), (*checkList)[i].mem->Offset, (*checkList)[i].mem->Length);
+                        sLog->outWarden("Warden: account %u failed check, MEM at Offset 0x%04X, lentgh %u could not be read by client", session->GetAccountId(), (*checkList)[i].mem->Offset, (*checkList)[i].mem->Length);
                     }                    
                 }
                 else
@@ -1019,12 +1019,12 @@ bool WardenMgr::ValidateCheatCheckResult(WorldSession* const session, WorldPacke
 
                         if (session->GetPlayer())
                         {
-                            sLog->outCheater("Warden: player %s failed check, MEM Offset 0x%04X length %u has content '%s' instead of '%s'",
+                            sLog->outWarden("Warden: player %s failed check, MEM Offset 0x%04X length %u has content '%s' instead of '%s'",
                                 session->GetPlayerName(), (*checkList)[i].mem->Offset, (*checkList)[i].mem->Length, strContent.c_str(), strContent2.c_str());
                         }
                         else
                         {
-                            sLog->outCheater("Warden: account %u failed check, MEM Offset 0x%04X length %u has content '%s' instead of '%s'",
+                            sLog->outWarden("Warden: account %u failed check, MEM Offset 0x%04X length %u has content '%s' instead of '%s'",
                                 session->GetAccountId(), (*checkList)[i].mem->Offset, (*checkList)[i].mem->Length, strContent.c_str(), strContent2.c_str());
                         } 
                         
@@ -1044,11 +1044,11 @@ bool WardenMgr::ValidateCheatCheckResult(WorldSession* const session, WorldPacke
                     valid = false;
                     if (session->GetPlayer())
                     {
-                        sLog->outCheater("Warden: player %s failed check, MPQ '%s' not found by client", session->GetPlayerName(), (*checkList)[i].file->String.c_str());
+                        sLog->outWarden("Warden: player %s failed check, MPQ '%s' not found by client", session->GetPlayerName(), (*checkList)[i].file->String.c_str());
                     }
                     else
                     {
-                        sLog->outCheater("Warden: account %u failed check, MPQ '%s' not found by client", session->GetAccountId(), (*checkList)[i].file->String.c_str());
+                        sLog->outWarden("Warden: account %u failed check, MPQ '%s' not found by client", session->GetAccountId(), (*checkList)[i].file->String.c_str());
                     }
                     
                     pktLen = pktLen - 1;
@@ -1066,11 +1066,11 @@ bool WardenMgr::ValidateCheatCheckResult(WorldSession* const session, WorldPacke
 
                         if (session->GetPlayer())
                         {
-                            sLog->outCheater("Warden: player %s failed check, MPQ '%s' SHA1 is '%s' instead of '%s'", session->GetPlayerName(), (*checkList)[i].file->String.c_str(), strResSHA1.c_str(), strReqSHA1.c_str());
+                            sLog->outWarden("Warden: player %s failed check, MPQ '%s' SHA1 is '%s' instead of '%s'", session->GetPlayerName(), (*checkList)[i].file->String.c_str(), strResSHA1.c_str(), strReqSHA1.c_str());
                         }
                         else
                         {
-                            sLog->outCheater("Warden: account %u failed check, MPQ '%s' SHA1 is '%s' instead of '%s'", session->GetAccountId(), (*checkList)[i].file->String.c_str(), strResSHA1.c_str(), strReqSHA1.c_str());
+                            sLog->outWarden("Warden: account %u failed check, MPQ '%s' SHA1 is '%s' instead of '%s'", session->GetAccountId(), (*checkList)[i].file->String.c_str(), strResSHA1.c_str(), strReqSHA1.c_str());
                         }
                         
                     }
@@ -1098,11 +1098,11 @@ bool WardenMgr::ValidateCheatCheckResult(WorldSession* const session, WorldPacke
 
                     if (session->GetPlayer())
                     {
-                        sLog->outCheater("Warden: player %s failed lua check, Lua '%s' found as '%s'", session->GetPlayerName(), (*checkList)[i].lua->String.c_str(), (char*)luaStr);
+                        sLog->outWarden("Warden: player %s failed lua check, Lua '%s' found as '%s'", session->GetPlayerName(), (*checkList)[i].lua->String.c_str(), (char*)luaStr);
                     }
                     else
                     {
-                        sLog->outCheater("Warden: account %u failed lua check, Lua '%s' found as '%s'", session->GetAccountId(), (*checkList)[i].lua->String.c_str(), (char*)luaStr);
+                        sLog->outWarden("Warden: account %u failed lua check, Lua '%s' found as '%s'", session->GetAccountId(), (*checkList)[i].lua->String.c_str(), (char*)luaStr);
                     }
 
                     valid = false;
@@ -1125,22 +1125,22 @@ bool WardenMgr::ValidateCheatCheckResult(WorldSession* const session, WorldPacke
                     {
                         if (session->GetPlayer())
                         {
-                            sLog->outCheater("Warden: player %s failed driver check '%s'", session->GetPlayerName(), (*checkList)[i].driver->String.c_str());
+                            sLog->outWarden("Warden: player %s failed driver check '%s'", session->GetPlayerName(), (*checkList)[i].driver->String.c_str());
                         }
                         else
                         {
-                            sLog->outCheater("Warden: account %u failed driver check '%s'", session->GetAccountId(), (*checkList)[i].driver->String.c_str());
+                            sLog->outWarden("Warden: account %u failed driver check '%s'", session->GetAccountId(), (*checkList)[i].driver->String.c_str());
                         }                        
                     }
                     else
                     {
                         if (session->GetPlayer())
                         {
-                            sLog->outCheater("Warden: player %s failed page check Offset 0x%08X, length %u", session->GetPlayerName(), (*checkList)[i].page->Offset, (*checkList)[i].page->Length);
+                            sLog->outWarden("Warden: player %s failed page check Offset 0x%08X, length %u", session->GetPlayerName(), (*checkList)[i].page->Offset, (*checkList)[i].page->Length);
                         }
                         else
                         {
-                            sLog->outCheater("Warden: account %u failed page check Offset 0x%08X, length %u", session->GetAccountId(), (*checkList)[i].page->Offset, (*checkList)[i].page->Length);
+                            sLog->outWarden("Warden: account %u failed page check Offset 0x%08X, length %u", session->GetAccountId(), (*checkList)[i].page->Offset, (*checkList)[i].page->Length);
                         }                        
                     }
                     valid = false;
@@ -1155,11 +1155,11 @@ bool WardenMgr::ValidateCheatCheckResult(WorldSession* const session, WorldPacke
 
                 if (session->GetPlayer())
                 {
-                    sLog->outCheater("Wrong packet for player %s or problem to parse it, I had to clean %u bytes", session->GetPlayerName(), clientPacket.size() - clientPacket.rpos());
+                    sLog->outWarden("Wrong packet for player %s or problem to parse it, I had to clean %u bytes", session->GetPlayerName(), clientPacket.size() - clientPacket.rpos());
                 }
                 else
                 {
-                    sLog->outCheater("Wrong packet for account %u or problem to parse it, I had to clean %u bytes", session->GetAccountId(), clientPacket.size() - clientPacket.rpos());
+                    sLog->outWarden("Wrong packet for account %u or problem to parse it, I had to clean %u bytes", session->GetAccountId(), clientPacket.size() - clientPacket.rpos());
                 } 
 
                 clientPacket.read_skip(clientPacket.size() - clientPacket.rpos());
