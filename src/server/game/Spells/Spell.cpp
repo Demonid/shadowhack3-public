@@ -7966,19 +7966,20 @@ bool Spell::CheckForPowerfullAura(Unit * target)
 {
     if (GetSpellDuration(m_spellInfo) >= 2*MINUTE*IN_MILLISECONDS)
     {
-        Unit::VisibleAuraMap const *visibleAuras = target->GetVisibleAuras();
-        for (Unit::VisibleAuraMap::const_iterator itr = visibleAuras->begin(); itr != visibleAuras->end(); ++itr)
-            if (AuraEffect * auraeff = itr->second->GetBase()->GetEffect(0))
+        switch (m_spellInfo->EffectApplyAuraName[0])
+        {
+            case SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE:
+            case SPELL_AURA_MOD_STAT:
+            case SPELL_AURA_MOD_RANGED_ATTACK_POWER:
             {
-                if (auraeff->GetSpellProto()->SpellFamilyName == SPELLFAMILY_POTION)
-                    continue;
-                if (auraeff->GetAuraType() == m_spellInfo->EffectApplyAuraName[0])
-                    switch (m_spellInfo->EffectApplyAuraName[0])
+                Unit::VisibleAuraMap const *visibleAuras = target->GetVisibleAuras();
+                for (Unit::VisibleAuraMap::const_iterator itr = visibleAuras->begin(); itr != visibleAuras->end(); ++itr)
+                    if (AuraEffect * auraeff = itr->second->GetBase()->GetEffect(0))
                     {
-                        case SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE:
-                        case SPELL_AURA_MOD_STAT:
-                            if(m_spellInfo->EffectMiscValue[0] == auraeff->GetMiscValue())
-                        case SPELL_AURA_MOD_RANGED_ATTACK_POWER:
+                        if (auraeff->GetSpellProto()->SpellFamilyName == SPELLFAMILY_POTION)
+                            continue;
+                        if (auraeff->GetAuraType() == m_spellInfo->EffectApplyAuraName[0] &&
+                            (m_spellInfo->EffectApplyAuraName[0] == SPELL_AURA_MOD_RANGED_ATTACK_POWER ||m_spellInfo->EffectMiscValue[0] == auraeff->GetMiscValue()))
                         {
                             uint32 dmg = abs(CalculateDamage(0, target));
                             uint32 amount = abs(auraeff->GetAmount());
@@ -7988,9 +7989,10 @@ bool Spell::CheckForPowerfullAura(Unit * target)
                                 continue;
                             return true;
                         }
-                        default:break;
                     }
             }
+            default:break;
+        }
     }
     return false;
 }
