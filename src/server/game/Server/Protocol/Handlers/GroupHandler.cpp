@@ -145,7 +145,8 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket & recv_data)
             return;
         }
         // not have place
-        if (group->IsFull())
+        if (group->IsFull(GetPlayer()->GetZoneId() == 1497 || 
+            GetPlayer()->GetZoneId() == 85 ? 3: 0))
         {
             SendPartyResult(PARTY_OP_INVITE, "", ERR_GROUP_FULL);
             return;
@@ -210,13 +211,6 @@ void WorldSession::HandleGroupAcceptOpcode(WorldPacket& recv_data)
         return;
     }
 
-    // Group is full
-    if (group->IsFull())
-    {
-        SendPartyResult(PARTY_OP_INVITE, "", ERR_GROUP_FULL);
-        return;
-    }
-
     Player* leader = sObjectMgr->GetPlayer(group->GetLeaderGUID());
 
     // Forming a new group, create it
@@ -228,7 +222,18 @@ void WorldSession::HandleGroupAcceptOpcode(WorldPacket& recv_data)
             group->RemoveAllInvites();
             return;
         }
-
+    }
+    // Group is full
+    if (group->IsFull( ((leader && (leader->GetZoneId() == 1497 || leader->GetZoneId() == 85)) ||
+        (GetPlayer() && (GetPlayer()->GetZoneId() == 1497 || GetPlayer()->GetZoneId() == 85)))
+        ? 3: 0))
+    {
+        SendPartyResult(PARTY_OP_INVITE, "", ERR_GROUP_FULL);
+        return;
+    }
+    // Forming a new group, create it
+    if (!group->IsCreated())
+    {
         // If we're about to create a group there really should be a leader present
         ASSERT(leader);
         group->RemoveInvite(leader);

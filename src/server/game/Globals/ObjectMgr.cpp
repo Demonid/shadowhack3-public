@@ -2919,6 +2919,7 @@ void ObjectMgr::LoadPetLevelInfo()
         pLevelInfo->min_dmg = fields[10].GetUInt16();
         pLevelInfo->max_dmg = fields[11].GetUInt16();
 
+
         for (int i = 0; i < MAX_STATS; i++)
         {
             pLevelInfo->stats[i] = fields[i+4].GetUInt16();
@@ -4002,6 +4003,7 @@ void ObjectMgr::LoadArenaTeams()
         AddArenaTeam(newArenaTeam);
     }while (result->NextRow());
 
+    ReloadArenaTeamRanks();
     sLog->outString();
     sLog->outString(">> Loaded %u arena team definitions in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
@@ -4113,6 +4115,8 @@ void ObjectMgr::LoadGroups()
         {
             Field *fields = result->Fetch();
             Group *group = GetGroupByStorageId(fields[0].GetUInt32());
+            if (!group)
+                continue;
             // group will never be NULL (we have run consistency sql's before loading)
 
             MapEntry const* mapEntry = sMapStore.LookupEntry(fields[1].GetUInt32());
@@ -5913,94 +5917,94 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
 
 void ObjectMgr::SendExternalMails()
 {
-	QueryResult result = CharacterDatabase.PQuery("SELECT id, receiver, subject, message, money, item, item_count FROM mail_external");
-	if(!result)
-	{
-		sLog->outString("Izb00shkaMailer: No Mails in Queue...");
-		return;
-	}
+    QueryResult result = CharacterDatabase.PQuery("SELECT id, receiver, subject, message, money, item, item_count FROM mail_external");
+    if(!result)
+    {
+        sLog->outString("Izb00shkaMailer: No Mails in Queue...");
+        return;
+    }
 
-	sLog->outString("Izb00shkaMailer: Send Mails from Queue...");
+    sLog->outString("Izb00shkaMailer: Send Mails from Queue...");
 
-	do
-	{
-		Field *fields = result->Fetch();
-		uint32 id = fields[0].GetUInt32();
-		uint32 receiver_guid = fields[1].GetUInt32();
-		std::string subject = fields[2].GetString();
-		std::string message = fields[3].GetString();
-		uint32 money = fields[4].GetUInt32();
-		uint32 ItemID = fields[5].GetUInt32();
-		uint32 ItemCount = fields[6].GetUInt32();
-		Player *receiver = NULL;
-		uint64 rec_guid = 0;
+    do
+    {
+        Field *fields = result->Fetch();
+        uint32 id = fields[0].GetUInt32();
+        uint32 receiver_guid = fields[1].GetUInt32();
+        std::string subject = fields[2].GetString();
+        std::string message = fields[3].GetString();
+        uint32 money = fields[4].GetUInt32();
+        uint32 ItemID = fields[5].GetUInt32();
+        uint32 ItemCount = fields[6].GetUInt32();
+        Player *receiver = NULL;
+        uint64 rec_guid = 0;
 
-		if (!receiver_guid)
-		{
-			sLog->outError("Izb00shkaMailer: Unknown player GUID, skip mail.");
-			continue;
-		}
+        if (!receiver_guid)
+        {
+            sLog->outError("Izb00shkaMailer: Unknown player GUID, skip mail.");
+            continue;
+        }
 
-		rec_guid = MAKE_NEW_GUID(receiver_guid, 0, HIGHGUID_PLAYER);
+        rec_guid = MAKE_NEW_GUID(receiver_guid, 0, HIGHGUID_PLAYER);
 
-		receiver = sObjectMgr->GetPlayer(receiver_guid);
+        receiver = sObjectMgr->GetPlayer(receiver_guid);
 
-		MailSender sender(MAIL_NORMAL, 0, MAIL_STATIONERY_GM);
-		MailDraft draft(subject, message);
+        MailSender sender(MAIL_NORMAL, 0, MAIL_STATIONERY_GM);
+        MailDraft draft(subject, message);
 
-		Item* ToMailItem = NULL;
-		ItemPrototype const* item_proto = NULL;
+        Item* ToMailItem = NULL;
+        ItemPrototype const* item_proto = NULL;
 
-		SQLTransaction trans = CharacterDatabase.BeginTransaction();
+        SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
-		if (ItemID)
-			item_proto = sObjectMgr->GetItemPrototype(ItemID);
+        if (ItemID)
+            item_proto = sObjectMgr->GetItemPrototype(ItemID);
 
-		if(item_proto)
-		{
-			if ( ItemCount < 1 || (item_proto->MaxCount > 0 && ItemCount > uint32(item_proto->MaxCount)) )
-			{
-				sLog->outDetail("Izb00shkaMailer: Warning: invalid ItemCount of %u, setting to 1", ItemCount);
-				ItemCount = 1;
-			}
+        if(item_proto)
+        {
+            if ( ItemCount < 1 || (item_proto->MaxCount > 0 && ItemCount > uint32(item_proto->MaxCount)) )
+            {
+                sLog->outDetail("Izb00shkaMailer: Warning: invalid ItemCount of %u, setting to 1", ItemCount);
+                ItemCount = 1;
+            }
 
-			if ( ItemCount > 1 && ItemCount > item_proto->GetMaxStackSize() )
-			{
-				sLog->outDetail("Izb00shkaMailer: Warning: invalid ItemCount of %u, setting to %u.", ItemCount, item_proto->GetMaxStackSize());
-				ItemCount = item_proto->GetMaxStackSize();
-			}
+            if ( ItemCount > 1 && ItemCount > item_proto->GetMaxStackSize() )
+            {
+                sLog->outDetail("Izb00shkaMailer: Warning: invalid ItemCount of %u, setting to %u.", ItemCount, item_proto->GetMaxStackSize());
+                ItemCount = item_proto->GetMaxStackSize();
+            }
 
-			ToMailItem = Item::CreateItem(ItemID, ItemCount, receiver);
-		}
+            ToMailItem = Item::CreateItem(ItemID, ItemCount, receiver);
+        }
 
-		if (ToMailItem)
-		{
-			ToMailItem->SaveToDB(trans);
-			draft.AddItem(ToMailItem);
+        if (ToMailItem)
+        {
+            ToMailItem->SaveToDB(trans);
+            draft.AddItem(ToMailItem);
 
-			sLog->outString("Izb00shkaMailer: Sending mail to player %s. Attached item: %u", receiver ? receiver->GetName() : "", ItemID);				
-		}
-		else
-		{
-			sLog->outString("Izb00shkaMailer: Sending mail to player %s.", receiver ? receiver->GetName() : "");
-		}
+            sLog->outString("Izb00shkaMailer: Sending mail to player %s. Attached item: %u", receiver ? receiver->GetName() : "", ItemID);                
+        }
+        else
+        {
+            sLog->outString("Izb00shkaMailer: Sending mail to player %s.", receiver ? receiver->GetName() : "");
+        }
 
-		if (money)
-			draft.AddMoney(money);
+        if (money)
+            draft.AddMoney(money);
 
-		draft.SendMailTo(trans, MailReceiver(receiver, GUID_LOPART(rec_guid)), sender);
+        draft.SendMailTo(trans, MailReceiver(receiver, GUID_LOPART(rec_guid)), sender);
 
-		std::ostringstream ss;
+        std::ostringstream ss;
 
-		ss << "DELETE FROM mail_external WHERE id = " << id << ";";
+        ss << "DELETE FROM mail_external WHERE id = " << id << ";";
 
-		trans->Append(ss.str().c_str());
+        trans->Append(ss.str().c_str());
 
-		CharacterDatabase.CommitTransaction(trans);
+        CharacterDatabase.CommitTransaction(trans);
 
-	} while(result->NextRow());
+    } while(result->NextRow());
 
-	sLog->outString("Izb00shkaMailer: All Mails Sent.");
+    sLog->outString("Izb00shkaMailer: All Mails Sent.");
 }
 
 void ObjectMgr::LoadQuestAreaTriggers()
@@ -6338,11 +6342,16 @@ WorldSafeLocsEntry const *ObjectMgr::GetClosestGraveYard(float x, float y, float
     //     then check faction
     GraveYardMap::const_iterator graveLow  = mGraveYardMap.lower_bound(zoneId);
     GraveYardMap::const_iterator graveUp   = mGraveYardMap.upper_bound(zoneId);
+
     MapEntry const* map = sMapStore.LookupEntry(MapId);
     // not need to check validity of map object; MapId _MUST_ be valid here
 
     if (graveLow == graveUp && !map->IsBattleArena())
     {
+        if (zoneId == 1497 || zoneId == 85)
+        {
+            return sWorldSafeLocsStore.LookupEntry(urand(1725, 1729));
+        }
         sLog->outErrorDb("Table `game_graveyard_zone` incomplete: Zone %u Team %u does not have a linked graveyard.",zoneId,team);
         return NULL;
     }
@@ -8679,11 +8688,11 @@ void ObjectMgr::LoadMailLevelRewards()
         uint32 raceMask       = fields[1].GetUInt32();
         uint32 mailTemplateId = fields[2].GetUInt32();
         uint32 senderEntry    = fields[3].GetUInt32();
-		std::string subject   = fields[4].GetString();
-		std::string message   = fields[5].GetString();
-		uint32 money          = fields[6].GetUInt32();
-		uint32 ItemID         = fields[7].GetUInt32();
-		uint32 ItemCount      = fields[8].GetUInt32();
+        std::string subject   = fields[4].GetString();
+        std::string message   = fields[5].GetString();
+        uint32 money          = fields[6].GetUInt32();
+        uint32 ItemID         = fields[7].GetUInt32();
+        uint32 ItemCount      = fields[8].GetUInt32();
 
         if (level > MAX_LEVEL)
         {
@@ -9601,4 +9610,42 @@ void ObjectMgr::FreeGroupStorageId(Group* group)
         NextGroupStorageId = storageId;
 
     mGroupStorage[storageId] = NULL;
+}
+
+void ObjectMgr::LoadItemRequirements()
+{
+    uint32 oldMSTime = getMSTime();
+
+    QueryResult result = WorldDatabase.Query("SELECT * FROM item_requirements");
+
+    if (!result)
+    {
+        sLog->outString(">> Loaded 0 item requirements pairs. DB table `item_requirements` is empty.");
+        sLog->outString();
+        return;
+    }
+
+    uint32 count = 0;
+
+    do
+    {
+        Field *fields = result->Fetch();
+
+        uint32 id = fields[0].GetUInt32();
+        if (!sItemStorage.LookupEntry<ItemPrototype>(id))
+        {
+            sLog->outErrorDb("Item with id %u listed by id in item_requirements!", id);
+            continue;
+        }
+        uint32 rating = fields[1].GetUInt32();
+        uint32 ratingbracket = fields[2].GetUInt32();
+        uint32 requitem = fields[3].GetUInt32();
+        ItemRequirements req = {id, rating, ratingbracket, requitem};
+        item_req[id] = req;
+        ++count;
+    }
+    while (result->NextRow());
+    
+    sLog->outString(">> Loaded %u items with a requirements in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    sLog->outString();
 }

@@ -390,17 +390,17 @@ public:
 
     bool OnGossipHello(Player* pPlayer, Creature* pCreature)
     {
-		if (pPlayer->GetQuestStatus(QUEST_DEATH_CHALLENGE) == QUEST_STATUS_INCOMPLETE && pCreature->IsFullHealth())
-		{
-			if (pPlayer->HealthBelowPct(10))
-				return true;
+        if (pPlayer->GetQuestStatus(QUEST_DEATH_CHALLENGE) == QUEST_STATUS_INCOMPLETE && pCreature->IsFullHealth())
+        {
+            if (pPlayer->HealthBelowPct(10))
+                return true;
 
-			if (pPlayer->isInCombat() || pCreature->isInCombat())
-				return true;
+            if (pPlayer->isInCombat() || pCreature->isInCombat())
+                return true;
 
-			pPlayer->PrepareGossipMenu(pCreature, pCreature->GetCreatureInfo()->GossipMenuId);
-			pPlayer->SendPreparedGossip(pCreature);
-		}
+            pPlayer->PrepareGossipMenu(pCreature, pCreature->GetCreatureInfo()->GossipMenuId);
+            pPlayer->SendPreparedGossip(pCreature);
+        }
         return true;
     }
 
@@ -807,7 +807,7 @@ public:
                     }
                 }
             }
-			MinionList.clear();
+            MinionList.clear();
         }
 
         void UpdateAI(const uint32 /*diff*/)

@@ -179,12 +179,12 @@ namespace Trinity
                         gain *= 2;
                 }
 
-				float rate_multiplier = (pl->GetSession()->HasPremiumByType(PREMIUM_TYPE_XP_KILL) && pl->CanGainPremiumXP()) ? sWorld->getRate(RATE_PREMIUM_XP_KILL) :  sWorld->getRate(RATE_XP_KILL);
+                float rate_multiplier = (pl->GetSession()->HasPremiumByType(PREMIUM_TYPE_XP_KILL) && pl->CanGainPremiumXP()) ? sWorld->getRate(RATE_PREMIUM_XP_KILL) :  sWorld->getRate(RATE_XP_KILL);
 
-				if (pl->GetsRecruitAFriendBonus(true))
-					rate_multiplier = rate_multiplier + 3.0f;
+                if (pl->GetsRecruitAFriendBonus(true))
+                    rate_multiplier = rate_multiplier + 3.0f;
 
-				gain = uint32(gain * rate_multiplier); 
+                gain = uint32(gain * rate_multiplier); 
 
             }
 

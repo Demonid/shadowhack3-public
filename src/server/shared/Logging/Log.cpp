@@ -163,7 +163,7 @@ void Log::Initialize()
     raLogfile = openLogFile("RaLogFile", NULL, "a");
     chatLogfile = openLogFile("ChatLogFile", "ChatLogTimestamp", "a");
     cheatLogfile = openLogFile("CheatersLogFile", NULL, "a");
-    arenaLogFile = openLogFile("ArenaLogFile", NULL,"a");
+    arenaLogFile = openLogFile("ArenaLogFile", "ArenaLogTimestamp","a");
     sqlLogFile = openLogFile("SQLDriverLogFile", NULL, "a");
 
     // Main log file settings

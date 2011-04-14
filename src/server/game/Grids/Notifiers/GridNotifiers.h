@@ -146,8 +146,10 @@ namespace Trinity
             if (!plr->HaveAtClient(i_source))
                 return;
 
-            if (WorldSession* session = plr->GetSession())
-                session->SendPacket(i_message);
+            if(i_message->GetOpcode() != SMSG_CLEAR_TARGET || ((i_source->GetTypeId() == TYPEID_UNIT || i_source->GetTypeId() == TYPEID_PLAYER) 
+                && plr->GetSession()->HandleClearTargetOpcode(*i_message, ((Unit*)i_source))))
+                plr->GetSession()->SendPacket(i_message);
+
         }
     };
 

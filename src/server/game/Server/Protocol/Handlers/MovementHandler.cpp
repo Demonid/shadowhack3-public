@@ -31,6 +31,7 @@
 #include "WaypointMovementGenerator.h"
 #include "InstanceSaveMgr.h"
 #include "ObjectMgr.h"
+#include "BattlegroundRV.h"
 #include "WardenMgr.h"
 
 /*Movement anticheat DEBUG defines */
@@ -79,6 +80,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
         oldMap->Remove(GetPlayer(), false);
     }
 
+    uint32 Zone = GetPlayer()->GetZoneId();
     // relocate the player to the teleport destination
     Map * newMap = sMapMgr->CreateMap(loc.GetMapId(), GetPlayer(), 0);
     // the CanEnter checks are done in TeleporTo but conditions may change
@@ -106,6 +108,8 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     }
 
     // battleground state prepare (in case join to BG), at relogin/tele player not invited
+    // resummon pet
+    GetPlayer()->ResummonPetTemporaryUnSummonedIfAny();
     // only add to bg group and object, if the player was invited (else he entered through command)
     if (_player->InBattleground())
     {
@@ -122,6 +126,8 @@ void WorldSession::HandleMoveWorldportAckOpcode()
         {
             if (_player->IsInvitedForBattlegroundInstance(_player->GetBattlegroundId()))
                 bg->AddPlayer(_player);
+            if( bg->isArena() && sWorld->getBoolConfig(CONFIG_ANTIDODGE))
+                _player->Oldzone = Zone;
         }
     }
 
@@ -188,9 +194,6 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     // in friendly area
     else if (GetPlayer()->IsPvP() && !GetPlayer()->HasFlag(PLAYER_FLAGS,PLAYER_FLAGS_IN_PVP))
         GetPlayer()->UpdatePvP(false, false);
-
-    // resummon pet
-    GetPlayer()->ResummonPetTemporaryUnSummonedIfAny();
 
     //lets process all delayed operations on successful teleport
     GetPlayer()->ProcessDelayedOperations();
@@ -361,7 +364,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
         movementInfo.t_pos.Relocate(0.0f, 0.0f, 0.0f, 0.0f);
         movementInfo.t_time = 0;
         movementInfo.t_seat = -1;
-        plMover->m_anti_TransportGUID = 0; 
+        plMover->m_anti_TransportGUID = 0;        
     }
 
     
@@ -852,42 +855,57 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
         }
 
         mover->SetPosition(movementInfo.pos);
-        if (plMover)                                            // nothing is charmed, or player charmed
-        {
+        if(plMover)
             plMover->UpdateFallInformationIfNeed(movementInfo, opcode);
 
-            if (movementInfo.pos.GetPositionZ() < -500.0f)
+        if (plMover && !vehMover)                                            // nothing is charmed, or player charmed
+        {            
+            if (plMover->InBattleground()
+                && plMover->GetBattleground()
+                
+            && plMover->GetBattleground()->isArena() && plMover->GetBattleground()->GetStatus() == STATUS_IN_PROGRESS)
             {
-                if (!(plMover->InBattleground()
-                    && plMover->GetBattleground()
-                    && plMover->GetBattleground()->HandlePlayerUnderMap(_player)))
+                float heigh=0.0f;
+                switch(plMover->GetBattleground()->GetTypeID())
                 {
-                    // NOTE: this is actually called many times while falling
-                    // even after the player has been teleported away
-                    // TODO: discard movement packets after the player is rooted
-                    if (plMover->isAlive())
-                    {
-                        plMover->EnvironmentalDamage(DAMAGE_FALL_TO_VOID, GetPlayer()->GetMaxHealth());
-                        // pl can be alive if GM/etc
-                        if (!plMover->isAlive())
-                        {
-                            // change the death state to CORPSE to prevent the death timer from
-                            // starting in the next player update
-                            plMover->KillPlayer();
-                            plMover->BuildPlayerRepop();
-                        }
-                    }
-
-                    // cancel the death timer here if started
-                    plMover->RepopAtGraveyard();
+                    case BATTLEGROUND_NA: heigh=10.0f; break;
+                    case BATTLEGROUND_RV: heigh=((BattlegroundRV*)plMover->GetBattleground())->fencesopened ? 28.0f: 2.0f; break;
+                    case BATTLEGROUND_RL: heigh=31.0f; break;
+                    case BATTLEGROUND_DS: heigh=3.0f; break;
+                    case BATTLEGROUND_BE: heigh=0.5f; break;
+                    default:break;
                 }
+                if(heigh && movementInfo.pos.GetPositionZ()<heigh)
+                    plMover->GetBattleground()->HandlePlayerUnderMap(plMover);
             }
+            else if (movementInfo.pos.GetPositionZ() < -500.0f)
+            {
+                // NOTE: this is actually called many times while falling
+                // even after the player has been teleported away
+                // TODO: discard movement packets after the player is rooted
+                if (plMover->isAlive())
+                {
+                    plMover->EnvironmentalDamage(DAMAGE_FALL_TO_VOID, GetPlayer()->GetMaxHealth());
+                    // pl can be alive if GM/etc
+                    if (!plMover->isAlive())
+                    {
+                        // change the death state to CORPSE to prevent the death timer from
+                        // starting in the next player update
+                        plMover->KillPlayer();
+                        plMover->BuildPlayerRepop();
+                    }
+                }
 
-            if(plMover->getStandState() == UNIT_STAND_STATE_SIT)
+                // cancel the death timer here if started
+                plMover->RepopAtGraveyard();
+            }
+        }
+
+            if(plMover && plMover->getStandState() == UNIT_STAND_STATE_SIT)
                 plMover->SetStandState(UNIT_STAND_STATE_STAND);
 
             //movement anticheat >>>
-            if (plMover->m_anti_AlarmCount > 0)
+            if (plMover && plMover->m_anti_AlarmCount > 0)
             {
                 #ifdef MOVEMENT_ANTICHEAT_DEBUG
                     sLog->outError("IAC: %s produce %d anticheat alarms", plMover->GetName(), plMover->m_anti_AlarmCount);
@@ -895,7 +913,6 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                 plMover->m_anti_AlarmCount = 0;
             }
             // end movement anticheat
-        }
     }
     else if (plMover)
     {
