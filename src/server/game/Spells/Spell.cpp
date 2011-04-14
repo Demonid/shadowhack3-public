@@ -7964,7 +7964,7 @@ void Spell::CancelGlobalCooldown()
 
 bool Spell::CheckForPowerfullAura(Unit * target)
 {
-    if (GetSpellDuration(m_spellInfo) >= 2*MINUTE)
+    if (GetSpellDuration(m_spellInfo) >= 2*MINUTE*IN_MILLISECONDS)
     {
         Unit::VisibleAuraMap const *visibleAuras = target->GetVisibleAuras();
         for (Unit::VisibleAuraMap::const_iterator itr = visibleAuras->begin(); itr != visibleAuras->end(); ++itr)
