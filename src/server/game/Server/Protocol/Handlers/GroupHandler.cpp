@@ -376,6 +376,12 @@ void WorldSession::HandleGroupSetLeaderOpcode(WorldPacket & recv_data)
         return;
     /********************/
 
+    // cheats CD instance (thx blackmanos)
+    if (uint64 LeaderGUID = group->GetLeaderGUID())
+        if (Player *leader = sObjectMgr->GetPlayer(LeaderGUID))
+            if((leader->GetInstanceId() != player->GetInstanceId()) )
+                return;
+
     // Everything's fine, do it
     group->ChangeLeader(guid);
 
