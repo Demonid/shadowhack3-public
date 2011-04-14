@@ -7970,18 +7970,26 @@ bool Spell::CheckForPowerfullAura(Unit * target)
         for (Unit::VisibleAuraMap::const_iterator itr = visibleAuras->begin(); itr != visibleAuras->end(); ++itr)
             if (AuraEffect * auraeff = itr->second->GetBase()->GetEffect(0))
             {
-                if (auraeff->GetSpellProto()->SpellFamilyFlags == SPELLFAMILY_POTION)
+                if (auraeff->GetSpellProto()->SpellFamilyName == SPELLFAMILY_POTION)
                     continue;
-                if (auraeff->GetAuraType() == m_spellInfo->EffectApplyAuraName[0] && auraeff->GetMiscValue() == m_spellInfo->EffectMiscValue[0])
-                {
-                    uint32 dmg = abs(CalculateDamage(0, target));
-                    uint32 amount = abs(auraeff->GetAmount());
-                    if (amount < dmg )
-                        continue;
-                    else if(amount == dmg && GetSpellDuration(m_spellInfo) > auraeff->GetBase()->GetDuration())
-                        continue;
-                    return true;
-                }
+                if (auraeff->GetAuraType() == m_spellInfo->EffectApplyAuraName[0])
+                    switch (m_spellInfo->EffectApplyAuraName[0])
+                    {
+                        case SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE:
+                        case SPELL_AURA_MOD_STAT:
+                            if(m_spellInfo->EffectMiscValue[0] == auraeff->GetMiscValue())
+                        case SPELL_AURA_MOD_RANGED_ATTACK_POWER:
+                        {
+                            uint32 dmg = abs(CalculateDamage(0, target));
+                            uint32 amount = abs(auraeff->GetAmount());
+                            if (amount < dmg )
+                                continue;
+                            else if(amount == dmg && GetSpellDuration(m_spellInfo) > auraeff->GetBase()->GetDuration())
+                                continue;
+                            return true;
+                        }
+                        default:break;
+                    }
             }
     }
     return false;
