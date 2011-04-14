@@ -733,6 +733,13 @@ ChatLogFile = "Chat.log"
 
 CheatersLogFile = "cheaters.log"
 
+#    WardenLogFile
+#        Description: Log file for Warden logs.
+#        Default:     "warden.log" - (Enabled)
+#                     ""             - (Disabled)
+
+WardenLogFile = "warden.log"
+
 #    ChatLogTimestamp
 #        Description: Append timestamp to the chat log file name.
 #                     Logname_YYYY-MM-DD_HH-MM-SS.Ext for Logname.Ext
