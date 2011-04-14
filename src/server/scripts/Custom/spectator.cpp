@@ -122,7 +122,9 @@ class spectator : public CreatureScript
         // set and clear other
         player->SetByteValue(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND);
         float x,y,z;
-        pl->GetContactPoint(player,x,y,z);
+        x = pl->GetPositionX();
+        y = pl->GetPositionY();
+        z = pl->GetPositionZ()+0.2f;
 
         player->TeleportTo(pl->GetMapId(), x, y, z, player->GetAngle(pl), TELE_TO_GM_MODE);
         player->CastSpell(player, 8326, true);
