@@ -5124,7 +5124,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             Unit::VisibleAuraMap const *visibleAuras = target->GetVisibleAuras();
             for (Unit::VisibleAuraMap::const_iterator itr = visibleAuras->begin(); itr != visibleAuras->end(); ++itr)
                 if (AuraEffect * auraeff = itr->second->GetBase()->GetEffect(0))
-                    if (auraeff->GetAuraType() == m_spellInfo->EffectApplyAuraName[0])
+                    if (auraeff->GetAuraType() == m_spellInfo->EffectApplyAuraName[0] && auraeff->GetMiscValue() == m_spellInfo->EffectMiscValue[0])
                     {
                         uint32 dmg = abs(CalculateDamage(0, target));
                         uint32 amount = abs(auraeff->GetAmount());
@@ -7210,7 +7210,7 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
                         Unit::VisibleAuraMap const *visibleAuras = target->GetVisibleAuras();
                         for (Unit::VisibleAuraMap::const_iterator itr = visibleAuras->begin(); itr != visibleAuras->end(); ++itr)
                             if (AuraEffect * auraeff = itr->second->GetBase()->GetEffect(0))
-                                if (auraeff->GetAuraType() == m_spellInfo->EffectApplyAuraName[0])
+                                if (auraeff->GetAuraType() == m_spellInfo->EffectApplyAuraName[0] && auraeff->GetMiscValue() == m_spellInfo->EffectMiscValue[0])
                                 {
                                     uint32 dmg = abs(CalculateDamage(0, target));
                                     uint32 amount = abs(auraeff->GetAmount());
