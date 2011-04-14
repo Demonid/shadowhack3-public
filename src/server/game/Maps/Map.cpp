@@ -1204,20 +1204,20 @@ float Map::GetWaterLevel(float x, float y) const
 
 float Map::GetWaterOrGroundLevel(float x, float y, float z, float* pGround /*= NULL*/, bool swim /*= false*/) const
 {
-	if (const_cast<Map*>(this)->GetGrid(x, y))
-	{
-		// we need ground level (including grid height version) for proper return water level in point
-		float ground_z = GetHeight(x, y, z, true, DEFAULT_WATER_SEARCH);
-		if (pGround)
-			*pGround = ground_z;
+    if (const_cast<Map*>(this)->GetGrid(x, y))
+    {
+        // we need ground level (including grid height version) for proper return water level in point
+        float ground_z = GetHeight(x, y, z, true, DEFAULT_WATER_SEARCH);
+        if (pGround)
+            *pGround = ground_z;
 
-		GridMapLiquidData liquid_status;
+        GridMapLiquidData liquid_status;
 
-		GridMapLiquidStatus res = getLiquidStatus(x, y, ground_z, MAP_ALL_LIQUIDS, &liquid_status);
-		return res ? ( swim ? liquid_status.level - 2.0f : liquid_status.level) : ground_z;
-	}
+        GridMapLiquidStatus res = getLiquidStatus(x, y, ground_z, MAP_ALL_LIQUIDS, &liquid_status);
+        return res ? ( swim ? liquid_status.level - 2.0f : liquid_status.level) : ground_z;
+    }
 
-	return VMAP_INVALID_HEIGHT_VALUE;
+    return VMAP_INVALID_HEIGHT_VALUE;
 }
 
 uint32 Map::GetAreaIdByAreaFlag(uint16 areaflag,uint32 map_id)
@@ -2074,8 +2074,10 @@ void BattlegroundMap::RemoveAllPlayers()
         for (MapRefManager::iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
             if (Player* plr = itr->getSource())
                 if (!plr->IsBeingTeleportedFar())
+                {
                     plr->TeleportTo(plr->GetBattlegroundEntryPoint());
-
+                    plr->ResurrectPlayer(100);
+                }
 }
 
 Creature*

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -24,20 +24,8 @@ SDCategory: Script Examples
 EndScriptData */
 
 #include "ScriptPCH.h"
-#include <cstring>
-
-enum eEnums
-{
-    SPELL_POLYMORPH         = 12826,
-    SPELL_MARK_OF_THE_WILD  = 26990,
-
-    SAY_NOT_INTERESTED      = -1999922,
-    SAY_WRONG               = -1999923,
-    SAY_CORRECT             = -1999924
-};
-
-#define GOSSIP_ITEM_1       "A quiz: what's your name?"
-#define GOSSIP_ITEM_2       "I'm not interested"
+#define GOSSIP_ITEM_1       "Insert your secret code"
+#define GOSSIP_ITEM_2       "I don't have secret code"
 
 class example_gossip_codebox : public CreatureScript
 {
@@ -48,52 +36,41 @@ class example_gossip_codebox : public CreatureScript
         {
         }
 
-        bool OnGossipHello(Player* pPlayer, Creature* pCreature)
+        bool OnGossipHello(Player* player, Creature* creature)
         {
-            pPlayer->ADD_GOSSIP_ITEM_EXTENDED(0, GOSSIP_ITEM_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1, "", 0, true);
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+            player->ADD_GOSSIP_ITEM_EXTENDED(0, GOSSIP_ITEM_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1, "", 0, true);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
 
-            pPlayer->PlayerTalkClass->SendGossipMenu(907, pCreature->GetGUID());
+            player->PlayerTalkClass->SendGossipMenu(907, creature->GetGUID());
 
             return true;
         }
 
-        bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
+        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
         {
-            pPlayer->PlayerTalkClass->ClearMenus();
-            if (uiAction == GOSSIP_ACTION_INFO_DEF+2)
-            {
-                DoScriptText(SAY_NOT_INTERESTED, pCreature);
-                pPlayer->CLOSE_GOSSIP_MENU();
-            }
+            if (action == GOSSIP_ACTION_INFO_DEF+2)
+                player->CLOSE_GOSSIP_MENU();
 
             return true;
         }
 
-        bool OnGossipSelectCode(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction, const char* code)
+        bool OnGossipSelectCode(Player* player, Creature* creature, uint32 sender, uint32 action, const char* code)
         {
-            pPlayer->PlayerTalkClass->ClearMenus();
-            if (uiSender == GOSSIP_SENDER_MAIN)
+            if (sender == GOSSIP_SENDER_MAIN)
             {
-                switch (uiAction)
+                if (action == GOSSIP_ACTION_INFO_DEF+1)
                 {
-                case GOSSIP_ACTION_INFO_DEF+1:
-                    if (std::strcmp(code, pPlayer->GetName()) != 0)
-                    {
-                        DoScriptText(SAY_WRONG, pCreature);
-                        pCreature->CastSpell(pPlayer, SPELL_POLYMORPH, true);
-                    }
-                    else
-                    {
-                        DoScriptText(SAY_CORRECT, pCreature);
-                        pCreature->CastSpell(pPlayer, SPELL_MARK_OF_THE_WILD, true);
-                    }
-                    pPlayer->CLOSE_GOSSIP_MENU();
-
+                    int32 item=player->GetItemidByCode(code);
+                    if(item>0)
+                        player->SendMail(item);
+                    else if(!item)
+                        creature->MonsterSay("Wrong code",0,0);
+                    else if(SpellEntry const* combatEntry = GetSpellStore()->LookupEntry(abs(item)))
+                        creature->CastSpell(player, combatEntry, false);
+                    player->CLOSE_GOSSIP_MENU();
                     return true;
                 }
             }
-
             return false;
         }
 };

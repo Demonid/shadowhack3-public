@@ -16,6 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PetAI.h"
 #include "Common.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
@@ -138,6 +139,9 @@ void WorldSession::HandlePetStopAttack(WorldPacket &recv_data)
 
 void WorldSession::HandlePetActionHelper(Unit *pet, uint64 guid1, uint16 spellid, uint16 flag, uint64 guid2)
 {
+    // heart of the phoenix
+    if((spellid == 55709) == (pet->isAlive()))
+        return;
     CharmInfo *charmInfo = pet->GetCharmInfo();
     if (!charmInfo)
     {
@@ -146,6 +150,8 @@ void WorldSession::HandlePetActionHelper(Unit *pet, uint64 guid1, uint16 spellid
         return;
     }
 
+    if(pet->GetAI())
+        ((PetAI*)pet->GetAI())->fakeautocast = 0;
     switch(flag)
     {
         case ACT_COMMAND:                                   //0x07
@@ -154,7 +160,7 @@ void WorldSession::HandlePetActionHelper(Unit *pet, uint64 guid1, uint16 spellid
                 case COMMAND_STAY:                          //flat=1792  //STAY
                     pet->AttackStop();
                     pet->InterruptNonMeleeSpells(false);
-					pet->StopMoving();
+                    pet->StopMoving();
                     pet->GetMotionMaster()->MoveIdle();
                     charmInfo->SetCommandState(COMMAND_STAY);
 
@@ -325,6 +331,14 @@ void WorldSession::HandlePetActionHelper(Unit *pet, uint64 guid1, uint16 spellid
             Spell *spell = new Spell(pet, spellInfo, false);
 
             SpellCastResult result = spell->CheckPetCast(unit_target);
+
+            if(SpellCastResult res = spell->CheckRange(true))
+                if((res != SPELL_CAST_OK || result == SPELL_FAILED_LINE_OF_SIGHT) && pet->GetAI())
+                {
+                    HandlePetActionHelper(pet, guid1, COMMAND_ATTACK, ACT_COMMAND, guid2);
+                    ((PetAI*)pet->GetAI())->fakeautocast = spellid;
+                    return;
+                }
 
             //auto turn to target unless possessed
             if (result == SPELL_FAILED_UNIT_NOT_INFRONT && !pet->isPossessed() && !pet->IsVehicle())
@@ -776,8 +790,8 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
 
     caster->ClearUnitState(UNIT_STAT_FOLLOW);
 
-    Spell *spell = new Spell(caster, spellInfo, false);
-    spell->m_cast_count = castCount;                    // probably pending spell cast
+    Spell *spell = new Spell(caster, spellInfo, spellId == 33395); // water elemental can cast freeze as triggered
+    spell->m_cast_count = spellId == 33395 ? 0 : castCount;                       // probably pending spell cast
     spell->m_targets = targets;
 
     // TODO: need to check victim?

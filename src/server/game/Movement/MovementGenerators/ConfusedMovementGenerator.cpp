@@ -32,13 +32,18 @@ template<class T>
 void
 ConfusedMovementGenerator<T>::Initialize(T &unit)
 {
-    const float wander_distance = 5;
+    const float wander_distance = 4;
     float x,y,z;
     x = unit.GetPositionX();
     y = unit.GetPositionY();
     z = unit.GetPositionZ();
 
     Map const* map = unit.GetBaseMap();
+
+    // wtf air bug
+    float tmpz = map->GetHeight(x, y, z, true);
+    if ((z - tmpz) > 4)
+        z = tmpz;
 
     i_nextMove = 1;
 
@@ -61,7 +66,7 @@ ConfusedMovementGenerator<T>::Initialize(T &unit)
             bool is_water_next = map->IsInWater(wanderX, wanderY, new_z);
             if ((is_water_now && !is_water_next && !is_land_ok) || (!is_water_now && is_water_next && !is_water_ok))
             {
-                i_waypoints[idx][0] = idx > 0 ? i_waypoints[idx-1][0] : x; // Back to previous location
+                i_waypoints[idx][0] = idx > 0 ? i_waypoints[idx-1][0] : x;
                 i_waypoints[idx][1] = idx > 0 ? i_waypoints[idx-1][1] : y;
                 i_waypoints[idx][2] = idx > 0 ? i_waypoints[idx-1][2] : z;
                 continue;
@@ -141,7 +146,7 @@ ConfusedMovementGenerator<T>::Update(T &unit, const uint32 &diff)
                 unit.ClearUnitState(UNIT_STAT_MOVE);
 
                 i_nextMove = urand(1,MAX_CONF_WAYPOINTS);
-                i_nextMoveTime.Reset(urand(0, 1500-1));     // TODO: check the minimum reset time, should be probably higher
+                i_nextMoveTime.Reset(urand(0, 300));     // TODO: check the minimum reset time, should be probably higher
             }
         }
     }

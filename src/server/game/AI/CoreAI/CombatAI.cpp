@@ -167,7 +167,8 @@ void CasterAI::UpdateAI(const uint32 diff)
 
     if (uint32 spellId = events.ExecuteEvent())
     {
-        DoCast(spellId);
+        if (!me->HasSpellCooldown(spellId))
+            DoCast(spellId);
         uint32 casttime = me->GetCurrentSpellCastTime(spellId);
         events.ScheduleEvent(spellId, (casttime ? casttime : 500) + GetAISpellInfo(spellId)->realCooldown);
     }

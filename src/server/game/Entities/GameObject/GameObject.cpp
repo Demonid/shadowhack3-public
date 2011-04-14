@@ -460,45 +460,52 @@ void GameObject::Update(uint32 diff)
                         {
                             //Battleground gameobjects case
                             if (ok->ToPlayer()->InBattleground())
+                            {
                                 if (Battleground *bg = ok->ToPlayer()->GetBattleground())
                                     bg->HandleTriggerBuff(GetGUID());
+                            }
+                            else 
+                            {
+                                SetRespawnTime(DAY);
+                                SetLootState(GO_JUST_DEACTIVATED);
+                            }
                         }
                     }
                 }
-				else if (goInfo->type == GAMEOBJECT_TYPE_SPELL_FOCUS)
-				{
-					if(m_cooldownTime >= time(NULL))
-						return;
+                else if (goInfo->type == GAMEOBJECT_TYPE_SPELL_FOCUS)
+                {
+                    if(m_cooldownTime >= time(NULL))
+                        return;
 
-					if(uint32 trapEntry = goInfo->spellFocus.linkedTrapId)
-					{
-						Unit* ok = NULL; 
+                    if(uint32 trapEntry = goInfo->spellFocus.linkedTrapId)
+                    {
+                        Unit* ok = NULL; 
 
-						GameObjectInfo const* trapInfo = sGOStorage.LookupEntry<GameObjectInfo>(trapEntry);
-						if (!trapInfo || trapInfo->type != GAMEOBJECT_TYPE_TRAP)
-							return;
+                        GameObjectInfo const* trapInfo = sGOStorage.LookupEntry<GameObjectInfo>(trapEntry);
+                        if (!trapInfo || trapInfo->type != GAMEOBJECT_TYPE_TRAP)
+                            return;
 
-						float radius = (float)(goInfo->trap.radius) * 0.5f;
+                        float radius = (float)(goInfo->trap.radius) * 0.5f;
 
-						Player* player = NULL;
-						Trinity::AnyPlayerInObjectRangeCheck checker(this, radius);
-						Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, player, checker);
-						VisitNearbyWorldObject(radius, searcher);
-						ok = player;
+                        Player* player = NULL;
+                        Trinity::AnyPlayerInObjectRangeCheck checker(this, radius);
+                        Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, player, checker);
+                        VisitNearbyWorldObject(radius, searcher);
+                        ok = player;
 
-						if (ok)
-						{
-							// some traps do not have spell but should be triggered
-							if(trapInfo->trap.spellId)
-								CastSpell(ok, trapInfo->trap.spellId);
+                        if (ok)
+                        {
+                            // some traps do not have spell but should be triggered
+                            if(trapInfo->trap.spellId)
+                                CastSpell(ok, trapInfo->trap.spellId);
 
-							m_cooldownTime = time(NULL) + 4;		// 4 seconds
+                            m_cooldownTime = time(NULL) + 4;        // 4 seconds
 
-							if (trapInfo->trap.charges == 1)
-								SetLootState(GO_JUST_DEACTIVATED);							
-						}
-					}
-				}
+                            if (trapInfo->trap.charges == 1)
+                                SetLootState(GO_JUST_DEACTIVATED);                            
+                        }
+                    }
+                }
                 else if (uint32 max_charges = goInfo->GetCharges())
                 {
                     if (m_usetimes >= max_charges)
@@ -1669,7 +1676,10 @@ void GameObject::CastSpell(Unit* target, uint32 spellId)
     if (Unit *owner = GetOwner())
     {
         trigger->setFaction(owner->getFaction());
-        trigger->CastSpell(target ? target : trigger, spellInfo, true, 0, 0, owner->GetGUID());
+        if(spellId == 49065)
+            owner->CastSpell(target ? target : trigger, spellInfo, true, 0, 0, owner->GetGUID());
+        else 
+            trigger->CastSpell(target ? target : trigger, spellInfo, true, 0, 0, owner->GetGUID());
     }
     else
     {
