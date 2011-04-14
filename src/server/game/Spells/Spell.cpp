@@ -7969,6 +7969,9 @@ bool Spell::CheckForPowerfullAura(Unit * target)
         Unit::VisibleAuraMap const *visibleAuras = target->GetVisibleAuras();
         for (Unit::VisibleAuraMap::const_iterator itr = visibleAuras->begin(); itr != visibleAuras->end(); ++itr)
             if (AuraEffect * auraeff = itr->second->GetBase()->GetEffect(0))
+            {
+                if (auraeff->GetSpellProto()->SpellFamilyFlags == SPELLFAMILY_POTION)
+                    continue;
                 if (auraeff->GetAuraType() == m_spellInfo->EffectApplyAuraName[0] && auraeff->GetMiscValue() == m_spellInfo->EffectMiscValue[0])
                 {
                     uint32 dmg = abs(CalculateDamage(0, target));
@@ -7979,6 +7982,7 @@ bool Spell::CheckForPowerfullAura(Unit * target)
                         continue;
                     return true;
                 }
+            }
     }
     return false;
 }
