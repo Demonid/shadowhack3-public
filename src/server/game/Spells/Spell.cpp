@@ -2250,6 +2250,19 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                     m_caster->GetNearPosition(pos, dist, angle);
                     break;
             }
+
+            if (cur == TARGET_DEST_CASTER_FRONT_LEAP)
+            {
+                m_caster->GetPosition(&pos);
+                if (m_caster->GetMotionMaster())
+                {
+                    float x, y, z;
+                    if (m_caster->GetMotionMaster()->GetDestination(x, y, z))
+                        pos.m_positionX = x, pos.m_positionY = y, pos.m_positionZ = z;
+                }
+                m_caster->MovePositionToFirstCollision(pos, dist, angle);
+            }
+
             m_targets.setDst(*m_caster);
             m_targets.modDst(pos);
             break;
