@@ -329,7 +329,7 @@ uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell * spell)
         if (Unit * caster = spell->GetCaster())
         {
             caster->ModSpellCastTime(spellInfo, castTime, spell);
-            if (IsChanneledSpell(spellInfo))
+            if (IsChanneledSpell(spellInfo) && (spellInfo->AttributesEx5 & SPELL_ATTR5_HASTE_AFFECTS_CHANNEL_TIME))
                 if (Player* modOwner = caster->GetSpellModOwner())
                     modOwner->ApplySpellMod(spellInfo->Id, SPELLMOD_CASTING_TIME, castTime, spell);
         }
