@@ -1667,7 +1667,7 @@ void Unit::CalcAbsorbResist(Unit *pVictim, SpellSchoolMask schoolMask, DamageEff
         float baseVictimResistance = float(pVictim->GetResistance(GetFirstSchoolInMask(schoolMask)));
         float ignoredResistance = float(GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, schoolMask));
         if (Player* player = ToPlayer())
-            ignoredResistance += float(player->GetSpellPenetrationItemMod());
+            ignoredResistance -= float(player->GetSpellPenetrationItemMod());
         float victimResistance = baseVictimResistance + ignoredResistance;
 
         static const uint32 BOSS_LEVEL = 83;
@@ -2607,7 +2607,7 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell, 
             if(resist)
             	resist += float(GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, schoolMask));
                 if (Player* player = ToPlayer())
-                	resist += float(player->GetSpellPenetrationItemMod());
+                	resist -= float(player->GetSpellPenetrationItemMod());
             if(resist<0)
                 resist=0;
             uint32 level = getLevel();
@@ -14937,6 +14937,9 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit * pTarget, uint32 procFlag,
                 case SPELL_AURA_MOD_ROOT:
                 case SPELL_AURA_TRANSFORM:
                 {
+                    // Dragon Breath & Living Bomb
+                    if (spellInfo->Category == 1215 && procSpell->SpellFamilyName == SPELLFAMILY_MAGE && procSpell->SpellFamilyFlags[1] == 0x00010000)
+                        break;
                     damage+=abosrb;
                     // chargeable mods are breaking on hit
                     if (useCharges)
