@@ -19209,7 +19209,7 @@ void Player::UpdateContestedPvP(uint32 diff)
 
 void Player::UpdatePvPFlag(time_t currTime)
 {
-    if (!IsPvP())
+    if (!IsPvP() || InBattleground() || InArena())
         return;
     if (pvpInfo.endTimer == 0 || currTime < (pvpInfo.endTimer + 300))
         return;
@@ -20586,7 +20586,7 @@ void Player::UpdatePvPState(bool onlyFFA)
                 (*itr)->SetByteValue(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
         }
     }
-    else if (HasByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP))
+    else if (HasByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP) && !InArena())
     {
         RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
         for (ControlList::iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
@@ -20610,7 +20610,7 @@ void Player::UpdatePvPState(bool onlyFFA)
 
 void Player::UpdatePvP(bool state, bool override)
 {
-    if (!state || override)
+    if ((!state || override) && !InBattleground())
     {
         SetPvP(state);
         pvpInfo.endTimer = 0;
