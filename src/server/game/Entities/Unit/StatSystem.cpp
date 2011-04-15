@@ -1187,11 +1187,6 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
         val = 2 * GetStat(STAT_STRENGTH) - 20.0f;
 
     Unit* owner = GetOwner();
-    //in BASE_VALUE of UNIT_MOD_ATTACK_POWER for creatures we store data of meleeattackpower field in DB
-    float base_attPower  = GetModifierValue(unitMod, BASE_VALUE) * GetModifierValue(unitMod, BASE_PCT);
-    float attPowerMod = GetModifierValue(unitMod, TOTAL_VALUE);
-    float attPowerMultiplier = GetModifierValue(unitMod, TOTAL_PCT) - 1.0f;
-
     if (owner && owner->GetTypeId() == TYPEID_PLAYER)
     {
         if (isHunterPet())                      //hunter pets benefit from owner's attack power
@@ -1237,7 +1232,7 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
             {
                 if(AuraEffect * aur = GetOwner()->GetAuraEffect(56246, 0))
                 {
-                    base_attPower *=(1.0f+aur->GetAmount()/100.0f);
+                    val *=(1.0f+aur->GetAmount()/100.0f);
                     bonusAP*=(1.0f+aur->GetAmount()/100.0f);
                 }
                 break;
@@ -1280,6 +1275,10 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
     }
 
     SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, val + bonusAP);
+    //in BASE_VALUE of UNIT_MOD_ATTACK_POWER for creatures we store data of meleeattackpower field in DB
+    float base_attPower  = GetModifierValue(unitMod, BASE_VALUE) * GetModifierValue(unitMod, BASE_PCT);
+    float attPowerMod = GetModifierValue(unitMod, TOTAL_VALUE);
+    float attPowerMultiplier = GetModifierValue(unitMod, TOTAL_PCT) - 1.0f;
 
     //UNIT_FIELD_(RANGED)_ATTACK_POWER field
     SetInt32Value(UNIT_FIELD_ATTACK_POWER, (int32)base_attPower);
