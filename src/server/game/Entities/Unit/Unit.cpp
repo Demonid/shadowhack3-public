@@ -14938,7 +14938,8 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit * pTarget, uint32 procFlag,
                 case SPELL_AURA_TRANSFORM:
                 {
                     // Dragon Breath & Living Bomb
-                    if (spellInfo->Category == 1215 && procSpell->SpellFamilyName == SPELLFAMILY_MAGE && procSpell->SpellFamilyFlags[1] == 0x00010000)
+                    if (spellInfo->Category == 1215 && procSpell && 
+                        procSpell->SpellFamilyName == SPELLFAMILY_MAGE && procSpell->SpellFamilyFlags[1] == 0x00010000)
                         break;
                     damage+=abosrb;
                     // chargeable mods are breaking on hit
