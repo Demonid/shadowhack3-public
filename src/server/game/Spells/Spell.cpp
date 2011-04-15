@@ -1029,8 +1029,8 @@ void Spell::AddUnitTarget(Unit* pVictim, uint32 effIndex)
     }
     else if(m_caster->GetTypeId() == TYPEID_PLAYER && m_caster != pVictim && IsCCSpell(m_spellInfo))
     {
-        target.timeDelay = 100LL;
-        m_delayMoment = 100LL;
+        target.timeDelay = 200LL;
+        m_delayMoment = 200LL;
     }
     else
         target.timeDelay = 0LL;
@@ -1173,7 +1173,12 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         return;
 
     if (getState() == SPELL_STATE_DELAYED && !IsPositiveSpell(m_spellInfo->Id) && (getMSTime() - target->timeDelay) <= unit->m_lastSanctuaryTime)
-        return;                                             // No missinfo in that case
+    {
+        target->missCondition = SPELL_MISS_IMMUNE;
+        m_caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_IMMUNE);
+        if (IsCCSpell(m_spellInfo))
+            unit->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
+    }
 
     // Get original caster (if exist) and calculate damage/healing from him data
     Unit *caster = m_originalCaster ? m_originalCaster : m_caster;
@@ -1373,6 +1378,22 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
             m_caster->ToPlayer()->ApplySpellMod(17962, SPELLMOD_DAMAGE, tmp);
             newdamage/=(tmp/100.0f);
             aurEff->SetAmount(uint32(newdamage));
+        }
+        if (m_spellInfo->Effect[0] == SPELL_EFFECT_HEALTH_LEECH && damageInfo.damage)
+        {
+            float healMultiplier = SpellMgr::CalculateSpellEffectValueMultiplier(m_spellInfo, 0, m_originalCaster, this);
+
+            // get max possible damage, don't count overkill for heal
+            uint32 healthGain = uint32(-unitTarget->GetHealthGain(-damageInfo.damage) * healMultiplier);
+
+            if (m_caster->isAlive())
+            {
+                // Death Coil heal not affected by Spell Power
+                if (!(m_spellInfo->SpellFamilyFlags[0] & 0x80000))
+                    healthGain = m_caster->SpellHealingBonus(m_caster, m_spellInfo, healthGain, HEAL);
+
+                m_caster->HealBySpell(m_caster, m_spellInfo, uint32(healthGain));
+            }
         }
         m_damage = damageInfo.damage;
     }

@@ -3972,6 +3972,12 @@ void SpellMgr::LoadSpellCustomAttr()
 
         switch (i)
         {
+        // Living Bomb
+        case 44457:
+        case 55359:
+        case 55360:
+            spellInfo->Attributes = SPELL_ATTR0_NOT_SHAPESHIFT;
+            break;
         case 58683: // Savage Combat 
         case 58684:
         case 30069: // Blood Frenzy
@@ -5037,6 +5043,13 @@ bool IsCCSpell(SpellEntry const *spellProto, uint8 EffMask)
     {
         if (EffMask && !(EffMask & (1<<effIndex)))
             continue;
+        switch(spellProto->Effect[effIndex])
+        {
+            case SPELL_EFFECT_HEALTH_LEECH:
+            case SPELL_EFFECT_SCHOOL_DAMAGE:
+            //case SPELL_EFFECT_SCHOOL_DAMAGE:
+                return false;
+        }
         switch(spellProto->EffectApplyAuraName[effIndex])
         {
             case SPELL_AURA_MOD_CONFUSE:
