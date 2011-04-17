@@ -4065,7 +4065,8 @@ void Unit::RemoveAurasWithMechanic(uint32 mechanic_mask, AuraRemoveMode removemo
         {
             if (GetAllSpellMechanicMask(aura->GetSpellProto()) & mechanic_mask)
             {
-                if (aura->HasEffectType(SPELL_AURA_PERIODIC_DAMAGE))
+                // Only 4 slowing spells
+                if (aura->HasEffectType(SPELL_AURA_PERIODIC_DAMAGE) && aura->HasEffectType(SPELL_AURA_MOD_DECREASE_SPEED))
                 {
                     for (uint8 i=0; i<3; ++i)
                     {
