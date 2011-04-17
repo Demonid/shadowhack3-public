@@ -70,7 +70,6 @@ class instance_trial_of_the_crusader : public InstanceMapScript
             uint64 TributeChestGUID;
 
             uint64 MainGateDoorGUID;
-            uint64 EastPortcullisGUID;
             uint64 WestPortcullisGUID;
             uint64 WebDoorGUID;
 
@@ -93,7 +92,7 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                 DataDamageTwin = 0;
 
                 MainGateDoorGUID = 0;
-                EastPortcullisGUID = 0;
+                WestPortcullisGUID = 0;
                 WebDoorGUID = 0;
 
                 NorthrendBeasts = NOT_STARTED;
@@ -217,9 +216,6 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                         break;
                     case GO_MAIN_GATE_DOOR:
                         MainGateDoorGUID = go->GetGUID();
-                        break;
-                    case GO_EAST_PORTCULLIS:
-                        EastPortcullisGUID = go->GetGUID();
                         break;
                     case GO_WEST_PORTCULLIS:
                         WestPortcullisGUID = go->GetGUID();
@@ -394,18 +390,6 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                         TributeToImmortalityElegible = false;
                         break;
                 }
-                if (IsEncounterInProgress())
-                {
-                    CloseDoor(GetData64(GO_EAST_PORTCULLIS));
-                    CloseDoor(GetData64(GO_WEB_DOOR));
-                    CloseDoor(GetData64(GO_WEST_PORTCULLIS));
-                }
-                else
-                {
-                    OpenDoor(GetData64(GO_EAST_PORTCULLIS));
-                    OpenDoor(GetData64(GO_WEB_DOOR));
-                    OpenDoor(GetData64(GO_WEST_PORTCULLIS));
-                }
 
                 if (type < MAX_ENCOUNTERS)
                 {
@@ -425,6 +409,17 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                         if (Unit* announcer = instance->GetCreature(GetData64(NPC_BARRENT)))
                             announcer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                         Save();
+                    }
+
+                    if (IsEncounterInProgress())
+                    {
+                        CloseDoor(GetData64(GO_WEB_DOOR));
+                        CloseDoor(GetData64(GO_WEST_PORTCULLIS));
+                    }
+                    else
+                    {
+                        OpenDoor(GetData64(GO_WEB_DOOR));
+                        OpenDoor(GetData64(GO_WEST_PORTCULLIS));
                     }
                 }
             }
@@ -467,8 +462,8 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                         return FloorGUID;
                     case GO_MAIN_GATE_DOOR:
                         return MainGateDoorGUID;
-                    case GO_EAST_PORTCULLIS:
-                        return EastPortcullisGUID;
+                    case GO_WEST_PORTCULLIS:
+                        return WestPortcullisGUID;
                     case GO_WEB_DOOR:
                         return WebDoorGUID;
                     default:
