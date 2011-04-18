@@ -710,7 +710,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         }
     }
 
-    if (!damage && !cleanDamage->absorbed_damage)
+    if (!damage && (!cleanDamage || !cleanDamage->absorbed_damage))
     {
         // Rage from absorbed damage
         if (cleanDamage && cleanDamage->absorbed_damage && pVictim->getPowerType() == POWER_RAGE)
@@ -820,7 +820,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
             }
         }
 
-        if (!splited && damagetype != NODAMAGE && (damage || cleanDamage->absorbed_damage) && pVictim != this && damagetype != DOT && 
+        if (!splited && damagetype != NODAMAGE && (damage || (cleanDamage && cleanDamage->absorbed_damage)) && pVictim != this && damagetype != DOT && 
             (!spellProto || !(spellProto->AttributesEx4 & SPELL_ATTR4_NOT_BREAK_CC))) // does not support creature push_back
         {
             if (pVictim->GetTypeId() == TYPEID_PLAYER)
