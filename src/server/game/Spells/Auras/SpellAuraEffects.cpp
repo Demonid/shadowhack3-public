@@ -3327,6 +3327,8 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const * aurApp, uint8 m
                 target->RemoveMovementImpairingAuras();
             }
         }
+        else if (target->HasAura(51713))
+            target->SetShapeshiftForm(FORM_SHADOW_DANCE);
 
         if (modelid > 0)
             target->RestoreDisplayId();
