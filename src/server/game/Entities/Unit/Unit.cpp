@@ -710,7 +710,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         }
     }
 
-    if (!damage)
+    if (!damage && !cleanDamage->absorbed_damage)
     {
         // Rage from absorbed damage
         if (cleanDamage && cleanDamage->absorbed_damage && pVictim->getPowerType() == POWER_RAGE)
@@ -820,7 +820,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
             }
         }
 
-        if (!splited && damagetype != NODAMAGE && damage && pVictim != this && damagetype != DOT && 
+        if (!splited && damagetype != NODAMAGE && (damage || cleanDamage->absorbed_damage) && pVictim != this && damagetype != DOT && 
             (!spellProto || !(spellProto->AttributesEx4 & SPELL_ATTR4_NOT_BREAK_CC))) // does not support creature push_back
         {
             if (pVictim->GetTypeId() == TYPEID_PLAYER)
@@ -830,7 +830,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
                         uint32 interruptFlags = spell->m_spellInfo->InterruptFlags;
                         if (interruptFlags & SPELL_INTERRUPT_FLAG_ABORT_ON_DMG)
                             pVictim->InterruptNonMeleeSpells(false);
-                        else if (interruptFlags & SPELL_INTERRUPT_FLAG_PUSH_BACK)
+                        else if (interruptFlags & SPELL_INTERRUPT_FLAG_PUSH_BACK && damage)
                             spell->Delayed();
                     }
 
@@ -2568,6 +2568,11 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell, 
         modOwner->ApplySpellMod(spell->Id, SPELLMOD_RESIST_MISS_CHANCE, modHitChance);
     // Increase from attacker SPELL_AURA_MOD_INCREASES_SPELL_PCT_TO_HIT auras
     modHitChance += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_INCREASES_SPELL_PCT_TO_HIT, schoolMask);
+
+    // Shoot
+    if (spell->Id == 5019)
+        schoolMask = SPELL_SCHOOL_MASK_MAGIC;
+
     // Chance hit from victim SPELL_AURA_MOD_ATTACKER_SPELL_HIT_CHANCE auras
     modHitChance += pVictim->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_ATTACKER_SPELL_HIT_CHANCE, CanSpellPierceImmuneAura(spell, NULL)?1:schoolMask);
     // Reduce spell hit chance for Area of effect spells from victim SPELL_AURA_MOD_AOE_AVOIDANCE aura
@@ -16666,12 +16671,7 @@ void Unit::GetRaidMember(std::list<Unit*> &nearMembers, float radius)
     Player *owner = GetCharmerOrOwnerPlayerOrPlayerItself();
     if (!owner)
         return;
-    Group *pGroup = NULL;
-    if (GetTypeId() == TYPEID_PLAYER)
-        pGroup = ToPlayer()->GetGroup();
-    else if(isTotem() && GetOwner() && GetOwner()->GetTypeId() == TYPEID_PLAYER)
-        pGroup = GetOwner()->ToPlayer()->GetGroup();
-    if (pGroup)
+    if (Group *pGroup = owner->GetGroup())
     {
         for (GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
         {
@@ -16679,7 +16679,7 @@ void Unit::GetRaidMember(std::list<Unit*> &nearMembers, float radius)
 
             if (Target && !IsHostileTo(Target))
             {
-                if (Target->IsInWorld() && Target->isAlive() && IsWithinDistInMap(Target, radius))
+                if (Target->IsInWorld() && Target->isAlive() && owner->IsWithinDistInMap(Target, radius))
                     nearMembers.push_back(Target);
             /*if(badaura)
             {
@@ -16689,7 +16689,7 @@ void Unit::GetRaidMember(std::list<Unit*> &nearMembers, float radius)
             }
             else */if (Target && !IsHostileTo(Target) && !Target->m_Controlled.empty())
                 for (ControlList::const_iterator itr = Target->m_Controlled.begin(); itr != Target->m_Controlled.end(); ++itr)
-                    if((*itr)->IsInWorld() && IsWithinDistInMap((*itr), radius))
+                    if((*itr)->IsInWorld() && owner->IsWithinDistInMap((*itr), radius))
                         nearMembers.push_back(*itr);
             }
         }
