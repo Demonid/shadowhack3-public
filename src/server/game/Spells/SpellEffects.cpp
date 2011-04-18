@@ -5725,6 +5725,7 @@ void Spell::EffectSanctuary(SpellEffIndex /*effIndex*/)
 
     unitTarget->m_lastSanctuaryTime = getMSTime();
 
+    EffectForceDeselect(SpellEffIndex(0));
     // Vanish allows to remove all threat and cast regular stealth so other spells can be used
     if (m_caster->GetTypeId() == TYPEID_PLAYER
         && m_spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE
