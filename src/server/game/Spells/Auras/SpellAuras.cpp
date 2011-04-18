@@ -935,6 +935,11 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
     // mods at aura apply
     if (apply)
     {
+        if (GetSpellAuraState(GetSpellProto()) == AURA_STATE_FAERIE_FIRE)
+        {
+            target->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
+            target->RemoveAurasByType(SPELL_AURA_MOD_INVISIBILITY);
+        }
         // Apply linked auras (On first aura apply)
         if (sSpellMgr->GetSpellCustomAttr(GetId()) & SPELL_ATTR0_CU_LINK_AURA)
         {
