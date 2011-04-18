@@ -318,11 +318,12 @@ bool WorldSession::HandleClearTargetOpcode(WorldPacket& recvPacket, Unit* sender
     Unit* mover = _player->m_mover;
     if(!mover || !_player->IsHostileTo(sender))
         return false;
-    /*if(mover == _player && mover->GetTypeId() == TYPEID_PLAYER && _player->HasUnitState(UNIT_STAT_CASTING))
+//    _player->InterruptNonMeleeSpells(false);
+    if(mover == _player && mover->GetTypeId() == TYPEID_PLAYER && _player->HasUnitState(UNIT_STAT_CASTING))
         for (uint32 i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
             if((_player)->GetCurrentSpell(i) && (_player)->GetCurrentSpell(i)->m_targets.getUnitTargetGUID() == sender->GetGUID())
                 (_player)->InterruptSpell(CurrentSpellTypes(i), false);
-*/
+
     return true;
 }
 

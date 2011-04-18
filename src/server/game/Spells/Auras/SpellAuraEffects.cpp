@@ -3009,6 +3009,11 @@ void AuraEffect::HandleModStealth(AuraApplication const * aurApp, uint8 mode, bo
         target->SetStandFlags(UNIT_STAND_FLAGS_CREEP);
         if (target->GetTypeId() == TYPEID_PLAYER)
             target->SetByteFlag(PLAYER_FIELD_BYTES2, 3, PLAYER_FIELD_BYTE2_STEALTH);
+
+        WorldPacket data(SMSG_CLEAR_TARGET, 8);
+        data << uint64(target->GetGUID());
+        target->SendMessageToSet(&data, true);
+
         Unit::AttackerSet const& attackers = target->getAttackers();
         for (Unit::AttackerSet::const_iterator itr = attackers.begin(); itr != attackers.end();)
         {
