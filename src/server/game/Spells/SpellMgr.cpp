@@ -884,6 +884,7 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
                     return false;
                 case 31719: // Suspension
                 case 30877: // Tag Murloc
+                case 200002: // Vanish - Immunity
                     return true;
                 default:
                     break;
@@ -4857,11 +4858,11 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->Effect[1] = 0;
             count++;
             break;
-        case 7922:
+        /*case 7922:
         case 20253:
             spellInfo->DmgClass = SPELL_DAMAGE_CLASS_NONE;
             count++;
-            break;
+            break;*/
         case 51590: // Toss Ice Boulder
             spellInfo->MaxAffectedTargets = 1;
             count++;
