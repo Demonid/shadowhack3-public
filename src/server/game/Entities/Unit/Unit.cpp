@@ -5943,10 +5943,11 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                     if (AuraEffect* aurEff = pVictim->GetAuraEffect(64413, 0, GetGUID()))
                     {
                         // The shield can grow to a maximum size of 20,000 damage absorbtion
-                        aurEff->SetAmount(std::max<int32>(aurEff->GetAmount() + basepoints0, 20000));
+                        aurEff->SetAmount(std::min<int32>(aurEff->GetAmount() + basepoints0, 20000));
 
                         // Refresh and return to prevent replacing the aura
                         aurEff->GetBase()->RefreshDuration();
+                        sLog->outError("current absorb = %i", aurEff->GetAmount());
                         return true;
                     }
                     target = pVictim;
@@ -12618,7 +12619,7 @@ void Unit::SetInCombatState(bool PvP, Unit* enemy)
             || enemy->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE) || enemy->IsVehicle();
         
     if (PvP)
-        m_CombatTimer = 5000;
+        m_CombatTimer = 6000;
 
     if (isInCombat() || HasUnitState(UNIT_STAT_EVADE))
         return;
