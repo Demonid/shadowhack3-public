@@ -5947,7 +5947,6 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
 
                         // Refresh and return to prevent replacing the aura
                         aurEff->GetBase()->RefreshDuration();
-                        sLog->outError("current absorb = %i", aurEff->GetAmount());
                         return true;
                     }
                     target = pVictim;
