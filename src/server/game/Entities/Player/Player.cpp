@@ -8183,6 +8183,10 @@ void Player::ApplyEquipSpell(SpellEntry const* spellInfo, Item* item, bool apply
                 return;                                     // and remove only not compatible at form change
         }
 
+         // Relic swap buff remove
+        if (spellInfo->EffectTriggerSpell[0])
+            RemoveAurasDueToSpell(spellInfo->EffectTriggerSpell[0]);
+
         if (item)
             RemoveAurasDueToItemSpell(item,spellInfo->Id);  // un-apply all spells, not only at-equipped
         else

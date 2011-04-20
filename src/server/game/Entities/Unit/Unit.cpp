@@ -10043,9 +10043,10 @@ Unit* Unit::SelectMagnetTarget(Unit *victim, SpellEntry const *spellInfo)
     if (!victim)
         return NULL;
 
-    bool isdeathgrip = spellInfo && (spellInfo->Id == 49560 || spellInfo->Id == 49576 || spellInfo->Id == 49575); 
+    bool isexception = spellInfo && (spellInfo->Id == 49560 || spellInfo->Id == 49576 || spellInfo->Id == 49575 // Death Grip
+        || spellInfo->Id == 60210 || spellInfo->Id == 3355 || spellInfo->Id == 14308 || spellInfo->Id == 14309);// Freezing Arrow, Freezing Trap
     // Magic case
-    if (spellInfo && ( isdeathgrip || (spellInfo->SchoolMask != SPELL_SCHOOL_MASK_NORMAL && spellInfo->Dispel !=DISPEL_POISON && 
+    if (spellInfo && (isexception || (spellInfo->SchoolMask != SPELL_SCHOOL_MASK_NORMAL && spellInfo->Dispel != DISPEL_POISON && 
         !sSpellMgr->_isPositiveSpell(spellInfo->Id, true) && !IsAreaOfEffectSpell(spellInfo) && IsHostileTo(victim))))
     {
         //I am not sure if this should be redirected.

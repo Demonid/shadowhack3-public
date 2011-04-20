@@ -23,8 +23,8 @@
 #include "DestinationHolderImp.h"
 #include "ObjectAccessor.h"
 
-#define MIN_QUIET_DISTANCE 28.0f
-#define MAX_QUIET_DISTANCE 43.0f
+#define MIN_QUIET_DISTANCE 20.0f
+#define MAX_QUIET_DISTANCE 30.0f
 
 template<class T>
 void
@@ -172,6 +172,9 @@ FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float &z)
             float new_z = _map->GetHeight(temp_x,temp_y,z,true);
 
             if (new_z <= INVALID_HEIGHT)
+                continue;
+
+            if (fabs(new_z - z) > 3.0f)
                 continue;
 
             bool is_water_next = _map->IsInWater(temp_x,temp_y,new_z);

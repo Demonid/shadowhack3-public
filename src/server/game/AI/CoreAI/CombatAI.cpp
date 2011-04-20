@@ -108,7 +108,8 @@ void CombatAI::UpdateAI(const uint32 diff)
 
     if (uint32 spellId = events.ExecuteEvent())
     {
-        DoCast(spellId);
+        if (!me->HasSpellCooldown(spellId))
+            DoCast(spellId);
         events.ScheduleEvent(spellId, AISpellInfo[spellId].cooldown + rand()%AISpellInfo[spellId].cooldown);
     }
     else

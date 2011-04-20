@@ -2915,7 +2915,10 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
             return DIMINISHING_NONE;
         case SPELLFAMILY_GENERIC:
             // some generic arena related spells have by some strange reason MECHANIC_TURN
-            if  (spellproto->Mechanic == MECHANIC_TURN)
+            if (spellproto->Mechanic == MECHANIC_TURN)
+                return DIMINISHING_NONE;
+            // Glyph of Hamstring
+            else if (spellproto->Id == 58373)
                 return DIMINISHING_NONE;
             break;
         case SPELLFAMILY_MAGE:
@@ -4470,9 +4473,15 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->Effect[1] = 0;
             count++;
             break;
+        // Charge Stun
         case 7922:
+            spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MELEE;
+            spellInfo->rangeIndex = 3;
+            count++;
+            break;
+        // Intercept Stun
         case 20253:
-            spellInfo->DmgClass = SPELL_DAMAGE_CLASS_NONE;
+            spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
             spellInfo->rangeIndex = 3;
             count++;
             break;

@@ -53,7 +53,7 @@ ConfusedMovementGenerator<T>::Initialize(T &unit)
         Trinity::NormalizeMapCoord(wanderY);
 
         float new_z = map->GetHeight(wanderX, wanderY, z, true);
-        if (new_z > INVALID_HEIGHT && unit.IsWithinLOS(wanderX, wanderY, new_z))
+        if (new_z > INVALID_HEIGHT && unit.IsWithinLOS(wanderX, wanderY, new_z) && fabs(new_z - z) <= 3.0f)
         {
             // Don't move in water if we're not already in
             // Don't move on land if we're not already on it either
