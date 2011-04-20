@@ -24734,3 +24734,62 @@ void Player::_SaveInstanceTimeRestrictions(SQLTransaction& trans)
         trans->Append(stmt);
     }
 }
+
+bool Player::sendItemViaMail(const std::string subject, const std::string message, uint32 itemEntry, uint32 itemCount)
+{
+    MailSender sender(MAIL_NORMAL, 0, MAIL_STATIONERY_GM);
+    MailDraft draft(subject, message);
+
+    Item* ToMailItem = NULL;
+    ItemPrototype const* item_proto = NULL;
+
+    if (!itemEntry)
+    {
+        sLog->outDetail("sendItemViaMail: error: no item entry!");
+        return false;
+    }
+
+    item_proto = sObjectMgr->GetItemPrototype(itemEntry);
+
+    if (!item_proto)
+    {
+        sLog->outDetail("sendItemViaMail: error: invalid item %u", itemEntry);
+        return false;
+    }
+
+     if ( itemCount < 1 || (item_proto->MaxCount > 0 && itemCount > uint32(item_proto->MaxCount)) )
+    {
+        sLog->outDetail("sendItemViaMail: Warning: invalid ItemCount of %u, setting to 1", itemCount);
+        itemCount = 1;
+    }
+
+    if ( itemCount > 1 && itemCount > item_proto->GetMaxStackSize() )
+    {
+        sLog->outDetail("sendItemViaMail: Warning: invalid ItemCount of %u, setting to %u.", itemCount, item_proto->GetMaxStackSize());
+        itemCount = item_proto->GetMaxStackSize();
+    }
+
+    ToMailItem = Item::CreateItem(itemEntry, itemCount, this);
+
+    if (ToMailItem)
+    {
+        SQLTransaction trans = CharacterDatabase.BeginTransaction();
+
+        ToMailItem->SaveToDB(trans);
+        draft.AddItem(ToMailItem);
+
+        sLog->outString("sendItemViaMail: Sending mail to player %s. Attached item: %u", GetName(), itemEntry);	
+
+        draft.SendMailTo(trans, MailReceiver(this), sender);
+
+        CharacterDatabase.CommitTransaction(trans);
+    }
+    else
+    {
+        sLog->outError("sendItemViaMail: item %u can't be created", itemEntry);
+        return false;
+    }
+
+    return true;
+}
+
