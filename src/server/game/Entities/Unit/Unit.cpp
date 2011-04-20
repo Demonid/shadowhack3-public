@@ -15629,6 +15629,12 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit *pVictim, Aura * aura, SpellEntry co
             }
             else active = true;
         }
+        // Judgements of the Pure
+        else if (spellProto->SpellIconID == 3018)
+        {
+            if (procExtra & PROC_EX_ABSORB)
+                active = true;
+        }
         else if (spellProto->SpellIconID == 1985 && (procFlag == PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_NEG || procFlag == PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG))
             active = true;
     }
