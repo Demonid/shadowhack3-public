@@ -2434,6 +2434,8 @@ class Player : public Unit, public GridObject<Player>
         void resetAnticheatTemporaryImmunity() {m_anti_temporaryImmunity = 0;}
         bool hasAnticheatTemporaryImmunity() {return m_anti_temporaryImmunity + 75 > getMSTime();}
 
+        bool sendItemViaMail(const std::string subject, const std::string message, uint32 itemEntry, uint32 itemCount = 1);
+
     protected:
         uint32 m_regenTimerCount;
         float m_powerFraction[MAX_POWERS];
