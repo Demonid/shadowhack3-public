@@ -524,9 +524,9 @@ m_caster(Caster), m_spellValue(new SpellValue(m_spellInfo))
     if (m_spellInfo->Id == 49575 || m_spellInfo->Id == 49560 || m_spellInfo->Id == 49576)
         m_canReflect = true;
 
-    // Mind Control
-    if (m_spellInfo->Id == 605)
-        m_canReflect = true;
+    // Intercept Stun
+    if (m_spellInfo->Id == 20253)
+        m_canReflect = false;
 
     if (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC && !IsAreaOfEffectSpell(m_spellInfo) && !(m_spellInfo->AttributesEx2 & SPELL_ATTR2_CANT_REFLECTED))
     {
@@ -1446,6 +1446,10 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
                 || unit->HasAuraTypeWithFamilyFlags(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE, SPELLFAMILYFLAG_ROGUE_VANISH))
                 && !m_caster->canSeeOrDetect(unit))
                 return SPELL_MISS_MISS;
+
+            // Deterrence - delayed spells deflect
+            if (m_spellInfo->speed && !IsAreaOfEffectSpell(m_spellInfo) && unit->HasAura(19263))
+                return SPELL_MISS_DEFLECT;
 
             unit->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_HITBYSPELL);
             //TODO: This is a hack. But we do not know what types of stealth should be interrupted by CC

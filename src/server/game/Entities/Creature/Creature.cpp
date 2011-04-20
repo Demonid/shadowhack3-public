@@ -2502,3 +2502,70 @@ bool Creature::IsDungeonBoss() const
     return cinfo && (cinfo->flags_extra & CREATURE_FLAG_EXTRA_DUNGEON_BOSS);
 }
 
+void Creature::ProhibitSpellScholl(SpellSchoolMask idSchoolMask, uint32 unTimeMs)
+{
+    time_t curTime = time(NULL);
+    for (uint8 i=0; i<8; ++i)
+    {
+        uint32 unSpellId = m_spells[i];
+        if (!unSpellId)
+            continue;
+        SpellEntry const *spellInfo = sSpellStore.LookupEntry(unSpellId);
+        if (!spellInfo)
+        {
+            ASSERT(spellInfo);
+            continue;
+        }
+
+        // Not send cooldown for this spells
+        if (spellInfo->Attributes & SPELL_ATTR0_DISABLED_WHILE_ACTIVE)
+            continue;
+
+        if (spellInfo->PreventionType != SPELL_PREVENTION_TYPE_SILENCE)
+            continue;
+
+        if ((idSchoolMask & GetSpellSchoolMask(spellInfo)) && GetSpellCooldownDelay(unSpellId) < unTimeMs)
+            // in m.secs
+            _AddCreatureSpellCooldown(unSpellId, curTime + unTimeMs/IN_MILLISECONDS);
+    }
+    if (isPet())
+    {
+        Player * owner = GetOwner() && GetOwner()->GetTypeId() == TYPEID_PLAYER ? GetOwner()->ToPlayer(): NULL;
+        Pet * pet = this->ToPet();
+        WorldPacket data(SMSG_SPELL_COOLDOWN, 8+1+pet->m_spells.size()*8);
+        if (owner)
+        {
+            data << uint64(GetGUID());
+            data << uint8(0x0);                                     // flags (0x1, 0x2)
+        }
+        for (PetSpellMap::iterator itr = pet->m_spells.begin(); itr!=pet->m_spells.end(); ++itr)
+        {
+            uint32 unSpellId = itr->first;
+            if(!unSpellId)
+                continue;
+                
+            SpellEntry const *spellInfo = sSpellStore.LookupEntry(unSpellId);
+            if (!spellInfo)
+            {
+                ASSERT(spellInfo);
+                continue;
+            }
+
+            // Not send cooldown for this spells
+            if (spellInfo->Attributes & SPELL_ATTR0_DISABLED_WHILE_ACTIVE)
+                continue;
+
+            if (spellInfo->PreventionType != SPELL_PREVENTION_TYPE_SILENCE)
+                continue;
+
+            if ((idSchoolMask & GetSpellSchoolMask(spellInfo)) && GetSpellCooldownDelay(unSpellId) < unTimeMs)
+            {
+                // in m.secs
+                _AddCreatureSpellCooldown(unSpellId, curTime + unTimeMs/IN_MILLISECONDS);
+                data << uint32(unSpellId);
+                data << uint32(unTimeMs);
+            }
+        }
+        owner->GetSession()->SendPacket(&data);
+    }
+}

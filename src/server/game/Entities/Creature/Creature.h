@@ -682,6 +682,15 @@ class Creature : public Unit, public GridObject<Creature>
         bool IsTargetReachabilityCheckFailed(Unit* target);
 
         void FarTeleportTo(Map* map, float X, float Y, float Z, float O);
+        
+        void ProhibitSpellScholl(SpellSchoolMask idSchoolMask, uint32 unTimeMs);
+        uint32 GetSpellCooldownDelay(uint32 spell_id) const
+        {
+            CreatureSpellCooldowns::const_iterator itr = m_CreatureSpellCooldowns.find(spell_id);
+            time_t t = time(NULL);
+            return uint32(itr != m_CreatureSpellCooldowns.end() && itr->second > t ? itr->second - t : 0);
+        }
+
     protected:
         bool CreateFromProto(uint32 guidlow, uint32 Entry, uint32 vehId, uint32 team, const CreatureData *data = NULL);
         bool InitEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=NULL);
