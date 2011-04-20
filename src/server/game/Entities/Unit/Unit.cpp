@@ -4054,7 +4054,22 @@ void Unit::RemoveMovementImpairingAuras()
                 ++iter;
                 continue;
             }
-            RemoveAura(iter, AURA_REMOVE_BY_DEFAULT);
+            // Only 4 slowing spells
+            if (aura->HasEffectType(SPELL_AURA_PERIODIC_DAMAGE) && aura->HasEffectType(SPELL_AURA_MOD_DECREASE_SPEED))
+            {
+                for (uint8 i=0; i<3; ++i)
+                {
+                    if(AuraEffect * AuraEff = aura->GetEffect(i))
+                    {
+                        if (AuraEff->GetAuraType() == SPELL_AURA_PERIODIC_DAMAGE)
+                            continue;
+                        AuraEff->SetAmount(0);
+                        AuraEff->HandleEffect(iter->second, AURA_REMOVE_BY_DEFAULT, false);
+                    }
+                }
+                ++iter;
+            }
+            else RemoveAura(iter, AURA_REMOVE_BY_DEFAULT);
             continue;
         }
         ++iter;
