@@ -218,19 +218,9 @@ struct boss_twin_baseAI : public ScriptedAI
         {
             case NPC_LIGHT_ESSENCE:
             case NPC_DARK_ESSENCE:
-                Map* pMap = me->GetMap();
-                Map::PlayerList const &lPlayers = pMap->GetPlayers();
-                for (Map::PlayerList::const_iterator itr = lPlayers.begin(); itr != lPlayers.end(); ++itr)
-                {
-                    Unit* pPlayer = itr->getSource();
-                    if (!pPlayer) continue;
-                    if (pPlayer->isAlive())
-                        if (pSummoned->GetEntry() == NPC_LIGHT_ESSENCE)
-                            pPlayer->RemoveAurasDueToSpell(SPELL_LIGHT_ESSENCE);
-                        if (pSummoned->GetEntry() == NPC_DARK_ESSENCE)
-                            pPlayer->RemoveAurasDueToSpell(SPELL_DARK_ESSENCE);
-                }
-                break;
+                if (!pSummoned->AI()) break;
+                uint32 aura_id = pSummoned->AI()->GetData(0);
+                m_pInstance->DoRemoveAurasDueToSpellOnPlayers(aura_id);
         }
         Summons.Despawn(pSummoned);
     }
@@ -548,20 +538,57 @@ class mob_essence_of_twin : public CreatureScript
 public:
     mob_essence_of_twin() : CreatureScript("mob_essence_of_twin") { }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    CreatureAI* GetAI(Creature* pCreature) const
     {
-        switch (creature->GetEntry())
+        return new mob_essence_of_twinAI(pCreature);
+    };
+
+    struct mob_essence_of_twinAI : public Scripted_NoMovementAI
+    {
+        mob_essence_of_twinAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
         {
+            aura_cast = 0; aura_dispel = 0;
+            switch (pCreature->GetEntry())
+            {
             case NPC_LIGHT_ESSENCE:
-                player->RemoveAura(SPELL_DARK_ESSENCE,(uint64)0,(uint8)7);
-                player->CastSpell(player, SPELL_LIGHT_ESSENCE, true);
+                aura_cast = SPELL_LIGHT_ESSENCE;
+                aura_dispel = SPELL_DARK_ESSENCE;
                 break;
             case NPC_DARK_ESSENCE:
-                player->RemoveAura(SPELL_LIGHT_ESSENCE,(uint64)0,(uint8)7);
-                player->CastSpell(player, SPELL_DARK_ESSENCE, true);
+                aura_cast = SPELL_DARK_ESSENCE;
+                aura_dispel = SPELL_LIGHT_ESSENCE;
                 break;
             default:
-                break;
+                return;
+            }
+            const SpellEntry* aura; // TODO: mutual exclusivity of auras should be realized by spell flags, not here
+            aura = sSpellStore.LookupEntry(aura_dispel);
+            aura = sSpellMgr->GetSpellForDifficultyFromSpell(aura, pCreature);
+            aura_dispel = aura->Id;
+        }
+
+        uint32 aura_cast, aura_dispel;
+
+        uint32 GetData(uint32 id)
+        {
+            switch (id)
+            {
+            case 0:
+                return aura_dispel;
+            case 1:
+                return aura_cast;
+            }
+            return 0;
+        }
+    };
+
+    bool OnGossipHello(Player* player, Creature* creature)
+    {
+        uint32 new_aura_id = creature->AI()->GetData(1);
+        if (new_aura_id)
+        {
+            player->RemoveAurasDueToSpell(creature->AI()->GetData(0)); // TODO: mutual exclusivity of auras should be realized by spell flags, not here
+            player->CastSpell(player, new_aura_id, true);
         }
         player->CLOSE_GOSSIP_MENU();
         return true;
