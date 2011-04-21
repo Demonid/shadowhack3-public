@@ -1499,12 +1499,12 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
 
         if (!m_caster->IsFriendlyTo(unit))
         {
-            // spell misses if target has Invisibility or Vanish or Shadowmeld and isn't visible for caster
+            /* spell misses if target has Invisibility or Vanish or Shadowmeld and isn't visible for caster
             if (m_spellInfo->speed > 0.0f && unit == m_targets.getUnitTarget()
                 && ((unit->HasAura(58984) || unit->HasInvisibilityAura() || m_caster->HasInvisibilityAura())
                 || unit->HasAuraTypeWithFamilyFlags(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE, SPELLFAMILYFLAG_ROGUE_VANISH))
                 && !m_caster->canSeeOrDetect(unit))
-                return SPELL_MISS_MISS;
+                return SPELL_MISS_MISS;*/
 
             unit->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_HITBYSPELL);
             //TODO: This is a hack. But we do not know what types of stealth should be interrupted by CC
@@ -1583,17 +1583,23 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
         {
             if(unit->IsImmunedToSpell(aurSpellInfo))
             {
-                if(IsNondamageAuraSpell(aurSpellInfo))
+                /*if(IsNondamageAuraSpell(aurSpellInfo))
                 {
                     // cc's break vanish/stealth
                     if(aurSpellInfo->Mechanic && (1<<(aurSpellInfo->Mechanic-1)) & IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK )
                         unit->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
-                }
+                }*/
                 return SPELL_MISS_IMMUNE;
             }
-            else if(irand(0, 100) >= unit->GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_DEBUFF_RESISTANCE, int32(aurSpellInfo->Dispel)))
+            else 
+            {
+                // It's for vanish and has to be here
+                if (m_spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE && m_spellInfo->SpellFamilyFlags[0] == SPELLFAMILYFLAG_ROGUE_VANISH)
+                    m_caster->CastSpell(m_caster, 200005, true);
+                if(irand(0, 100) >= unit->GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_DEBUFF_RESISTANCE, int32(aurSpellInfo->Dispel)))
                 m_spellAura = Aura::TryCreate(aurSpellInfo, effectMask, unit,
                     m_originalCaster,(aurSpellInfo == m_spellInfo)? &m_spellValue->EffectBasePoints[0] : &basePoints[0], m_CastItem);
+            }
             if (m_spellAura)
             {
                 // Now Reduce spell duration using data received at spell hit
@@ -2824,6 +2830,17 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                 case SPELLFAMILY_GENERIC:
                     switch (m_spellInfo->Id)
                     {
+                        /*case 58984:
+                        {
+                            
+                            for (std::list<Unit*>::iterator itr = unitList.begin() ; itr != unitList.end();)
+                            {
+                                if (m_caster->m_attackers.find()
+                                    itr = unitList.erase(itr);
+                                else
+                                    ++itr;
+                            }
+                        }*/
                         case 52759: // Ancestral Awakening
                         case 71610: // Echoes of Light (Althor's Abacus normal version)
                         case 71641: // Echoes of Light (Althor's Abacus heroic version)

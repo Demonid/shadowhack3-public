@@ -5724,8 +5724,6 @@ void Spell::EffectSanctuary(SpellEffIndex /*effIndex*/)
     }
 
     unitTarget->m_lastSanctuaryTime = getMSTime();
-
-    EffectForceDeselect(SpellEffIndex(0));
     // Vanish allows to remove all threat and cast regular stealth so other spells can be used
     if (m_caster->GetTypeId() == TYPEID_PLAYER
         && m_spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE
@@ -5735,6 +5733,12 @@ void Spell::EffectSanctuary(SpellEffIndex /*effIndex*/)
         // Overkill
         if (m_caster->ToPlayer()->HasSpell(58426))
            m_caster->CastSpell(m_caster, 58427, true);
+        unitTarget->CombatStop();
+    }
+    else 
+    {
+        EffectForceDeselect(SpellEffIndex(0));
+        unitTarget->ClearInCombat();
     }
 }
 
@@ -6405,8 +6409,8 @@ void Spell::EffectKnockBack(SpellEffIndex effIndex)
         return;
 
     // Instantly interrupt non melee spells being casted
-    if (unitTarget->IsNonMeleeSpellCasted(true))
-        unitTarget->InterruptNonMeleeSpells(true);
+    if (unitTarget->IsNonMeleeSpellCasted(false))
+        unitTarget->InterruptNonMeleeSpells(false);
 
     // Typhoon
     if (m_spellInfo->SpellFamilyName == SPELLFAMILY_DRUID && m_spellInfo->SpellFamilyFlags[1] & 0x01000000)
