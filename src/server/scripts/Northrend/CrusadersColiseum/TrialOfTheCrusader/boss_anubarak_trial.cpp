@@ -565,32 +565,18 @@ public:
         {
         }
 
-        bool   m_bFall, m_bActive;
+        bool   m_bFall;
         uint32 m_uiPermafrostTimer;
 
         void Reset()
         {
             m_bFall = false;
-            m_bActive = false;
             m_uiPermafrostTimer = 0;
-            me->SetReactState(REACT_PASSIVE);
+            me->SetReactState(REACT_DEFENSIVE);
             me->SetFlying(true);
             me->SetSpeed(MOVE_RUN, 0.5, false);
             me->GetMotionMaster()->MoveRandom(20.0f);
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_6);
-            me->SetDisplayId(11686);
             DoCast(SPELL_FROST_SPHERE);
-        }
-
-        void MoveInLineOfSight(Unit * who)
-        {
-            if (m_bActive || !who || !who->ToPlayer()) return;
-// the next codeline requires that players discover invisible mob approaching it by 20 yards (20^2=400)
-// maybe then MoveRandom(20.0f); in Reset() should be changed
-//            if (who->ToPlayer()->GetDistanceSqr(me->GetPositionX(),me->GetPositionY(),me->GetPositionZ()) > 400.0f) return;
-            m_bActive = true;
-            me->SetDisplayId(25144);
-            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_UNK_6 | UNIT_FLAG_NON_ATTACKABLE);
         }
 
         void DamageTaken(Unit* /*pWho*/, uint32& uiDamage)
@@ -604,8 +590,11 @@ public:
                     me->SetFlying(false);
                     me->GetMotionMaster()->MoveIdle();
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                    me->AttackStop();
+                    me->DeleteThreatList();
                     //At hit the ground
-                    me->GetMotionMaster()->MoveFall(142.2f, 0);
+                    float const floorZ = me->GetMap()->GetHeight(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), true, 30.0f);
+                    me->GetMotionMaster()->MovePoint(0, me->GetPositionX(), me->GetPositionY(), floorZ+0.01f, false);
                     //me->FallGround(); //need correct vmap use (i believe it isn't working properly right now)
                 }
             }
@@ -618,6 +607,8 @@ public:
             switch (uiId)
             {
                 case 0:
+                    me->GetMotionMaster()->Clear();
+                    me->StopMoving();
                     m_uiPermafrostTimer = IN_MILLISECONDS;
                     break;
             }
@@ -635,6 +626,7 @@ public:
                     me->SetFloatValue(OBJECT_FIELD_SCALE_X, 2.0f);
                     DoCast(SPELL_PERMAFROST_VISUAL);
                     DoCast(SPELL_PERMAFROST);
+                    me->setDeathState(JUST_DIED);
                 } else m_uiPermafrostTimer -= uiDiff;
             }
         }
