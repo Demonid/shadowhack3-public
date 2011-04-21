@@ -2989,6 +2989,10 @@ void AuraEffect::HandleModStealth(AuraApplication const * aurApp, uint8 mode, bo
         return;
 
     Unit * target = aurApp->GetTarget();
+    // temp nothide vanish
+    if (target->HasAura(200005))
+        return;
+
     StealthType type = StealthType(GetMiscValue());
 
     if (apply)
@@ -6111,6 +6115,17 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                 case SPELLFAMILY_GENERIC:
                     switch(GetId())
                     {
+                        case 200005: // Vanish - hide
+                            if (AuraEffect* auraeff = target->GetAuraEffect(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE, SPELLFAMILYFLAG_ROGUE_VANISH, 0, 0))
+                            {
+                                auraeff->HandleModStealth(auraeff->GetBase()->GetApplicationOfTarget(target->GetGUID()), AURA_EFFECT_HANDLE_SEND_FOR_CLIENT_MASK, true);
+                            }
+                            break;
+                        case 58984: // Shadowmeld 
+                        {
+                            caster->SetInCombatState(false, target);
+                            break;
+                        }
                         case 2584: // Waiting to Resurrect
                             // Waiting to resurrect spell cancel, we must remove player from resurrect queue
                             if (target->GetTypeId() == TYPEID_PLAYER)

@@ -885,6 +885,7 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
                 case 31719: // Suspension
                 case 30877: // Tag Murloc
                 case 200002: // Vanish - Immunity
+                case 200005: // Vanish - Hide time
                     return true;
                 default:
                     break;
@@ -3973,6 +3974,13 @@ void SpellMgr::LoadSpellCustomAttr()
 
         switch (i)
         {
+        // Test Shrink
+        case 18210:
+            spellInfo->SpellVisual[0] = 0;
+            spellInfo->StackAmount = 0;
+            spellInfo->Attributes |= SPELL_ATTR0_PASSIVE;
+            spellInfo->EffectBasePoints[0] = -50;
+            break;
         // Living Bomb
         case 44457:
         case 55359:
@@ -3984,6 +3992,11 @@ void SpellMgr::LoadSpellCustomAttr()
         case 30069: // Blood Frenzy
         case 30070:
             spellInfo->DurationIndex = 18;
+            break;
+        case 58984:    // Shadowmeld
+            spellInfo->AuraInterruptFlags&= ~ AURA_INTERRUPT_FLAG_TAKE_DAMAGE;
+            spellInfo->EffectImplicitTargetA[0] = TARGET_DST_CASTER;
+            spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_AREA_ENEMY_DST;
             break;
         case 72423:
             spellInfo->EffectImplicitTargetA[0] = TARGET_DST_CASTER;
@@ -4551,8 +4564,6 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 5215:     // Prowl
         case 1784:     // Stealth
-        case 58984:    // Shadowmeld
-            spellInfo->AuraInterruptFlags&= ~ AURA_INTERRUPT_FLAG_TAKE_DAMAGE;
             count++;
             break;
         case 47201:    // Everlasting Affliction
