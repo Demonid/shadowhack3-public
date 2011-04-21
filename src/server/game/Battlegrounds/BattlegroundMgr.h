@@ -34,10 +34,9 @@ typedef UNORDERED_MAP<uint32, BattlegroundTypeId> BattleMastersMap;
 
 class BattlegroundMgr
 {
-    // Thread safety is implemented badly (excessive protection) because many Get..() methods are thread-safe by itself
-    // maybe move them to another singleton with ACE_Null_Mutex?
+    /// Todo: Thread safety?
     /* Construction */
-    friend class ACE_Singleton<BattlegroundMgr, ACE_Thread_Mutex>;
+    friend class ACE_Singleton<BattlegroundMgr, ACE_Null_Mutex>;
     BattlegroundMgr();
 
     public:
@@ -129,6 +128,6 @@ class BattlegroundMgr
         bool   m_Testing;
 };
 
-#define sBattlegroundMgr ACE_Singleton<BattlegroundMgr, ACE_Thread_Mutex>::instance()
+#define sBattlegroundMgr ACE_Singleton<BattlegroundMgr, ACE_Null_Mutex>::instance()
 #endif
 

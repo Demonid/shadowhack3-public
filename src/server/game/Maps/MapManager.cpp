@@ -307,8 +307,8 @@ void MapManager::UnloadAll()
     {
         iter->second->UnloadAll();
         delete iter->second;
+        i_maps.erase(iter++);
     }
-    i_maps.clear();
 
     if (m_updater.activated())
         m_updater.deactivate();
