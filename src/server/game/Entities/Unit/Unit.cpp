@@ -11934,6 +11934,10 @@ bool Unit::IsImmunedToSpell(SpellEntry const* spellInfo)
                 return true;
     }
 
+    // amsh
+    if (HasAura(48707))
+        return false;
+
     if (spellInfo->Mechanic)
     {
         SpellImmuneList const& mechanicList = m_spellImmune[IMMUNITY_MECHANIC];
