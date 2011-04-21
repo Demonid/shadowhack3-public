@@ -3008,7 +3008,7 @@ void AuraEffect::HandleModStealth(AuraApplication const * aurApp, uint8 mode, bo
             return;
 
         target->m_stealth.AddFlag( type);
-        target->m_stealth.AddValue(type, GetAmount());
+        target->m_stealth.SetValue(type, target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH));
 
         target->SetStandFlags(UNIT_STAND_FLAGS_CREEP);
         if (target->GetTypeId() == TYPEID_PLAYER)
@@ -3029,7 +3029,7 @@ void AuraEffect::HandleModStealth(AuraApplication const * aurApp, uint8 mode, bo
     }
     else
     {
-        target->m_stealth.AddValue(type, -GetAmount());
+        target->m_stealth.SetValue(type, target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH));
 
         if (!target->HasAuraType(SPELL_AURA_MOD_STEALTH)) // if last SPELL_AURA_MOD_STEALTH
         {
