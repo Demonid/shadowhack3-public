@@ -5813,7 +5813,7 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                 if (target->GetTypeId() != TYPEID_PLAYER)
                     return;
                 //  ..while they are casting
-                if (target->IsNonMeleeSpellCasted(false, false, true, false, false))
+                if (target->IsNonMeleeSpellCasted(false, false, true))
                     if (AuraEffect * aurEff = caster->GetAuraEffect(SPELL_AURA_ADD_FLAT_MODIFIER, SPELLFAMILY_WARRIOR, 2775, 0))
                         switch (aurEff->GetId())
                         {
@@ -6114,6 +6114,14 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                     // Summon Gargoyle (will start feeding gargoyle)
                     if (GetId() == 61777)
                         target->CastSpell(target,m_spellProto->EffectTriggerSpell[m_effIndex],true);
+                    break;
+                case SPELLFAMILY_PALADIN:
+                    // Sacred Shield
+                    if(GetId() == 58597 && caster && caster->GetTypeId() == TYPEID_PLAYER)
+                    {
+                        caster->ToPlayer()->AddSpellCooldown(58597,0,time(NULL) + 6);
+                        break;
+                    }
                     break;
                 default:
                     break;
