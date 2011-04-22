@@ -8203,6 +8203,19 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
                         if (GetStat(STAT_AGILITY)  > stat) { trigger_spell_id = 67772;                               }
                         break;
                     }
+                    case 46867: // Wrecking Crew
+                    case 56611: case 56612:
+                    case 56613: case 56614:
+                    case 12317: // Enrage
+                    case 13045: case 13046:
+                    case 13047: case 13048:
+                    case 29593: // Improved Defensive Stance
+                    case 29594:
+                    {
+                        if (pVictim && pVictim->HasAura(12292)) // Death Wish
+                            return false;
+                        break;
+                    }
                     // Mana Drain Trigger
                     case 27522:
                     case 40336:

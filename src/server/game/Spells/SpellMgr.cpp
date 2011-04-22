@@ -4251,6 +4251,10 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->DurationIndex = 21;
             count++;
             break;
+        case 45529: // Blood Tap
+            spellInfo->EffectMiscValue[0] = 0;
+            count++;
+            break;
         case 51735: // Ebon Plague
         case 51734:
         case 51726:

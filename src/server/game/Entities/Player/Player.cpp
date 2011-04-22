@@ -23097,10 +23097,10 @@ void Player::ResyncRunes(uint8 count)
     GetSession()->SendPacket(&data);
 }
 
-void Player::AddRunePower(uint8 index)
+void Player::AddRunePower(uint8 mask)
 {
     WorldPacket data(SMSG_ADD_RUNE_POWER, 4);
-    data << uint32(1 << index);                             // mask (0x00-0x3F probably)
+    data << uint32(mask);                                   // mask (0x00-0x3F probably)
     GetSession()->SendPacket(&data);
 }
 
