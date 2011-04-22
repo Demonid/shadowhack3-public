@@ -35,7 +35,11 @@ void ChargeMovementGenerator<T>::_setTargetPosition(T &unit)
     // get the path to the destination
     PathInfo path(&unit, x, y, z, m_straightPath);
     i_path = path.getFullPath();
-
+    if (i_path.GetTotalLength() > 40)
+    {
+        path.BuildShortcut();
+        i_path = path.getFullPath();
+    }
     // start movement
     Traveller<T> traveller(unit);
     MoveToNextNode(traveller);
