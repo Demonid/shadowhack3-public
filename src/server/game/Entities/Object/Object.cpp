@@ -1661,9 +1661,9 @@ void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z) const
             {
                 bool CanSwim = ToCreature()->canSwim();
                 float ground_z = z;
-                float max_z = CanSwim
+                float max_z = /*CanSwim
                     ? GetBaseMap()->GetWaterOrGroundLevel(x, y, z, &ground_z, !((Unit const*)this)->HasAuraType(SPELL_AURA_WATER_WALK))
-                    : ((ground_z = GetBaseMap()->GetHeight(x, y, z, true)));
+                    :*/ ((ground_z = GetBaseMap()->GetHeight(x, y, z, true)));
 
                 if (max_z > INVALID_HEIGHT)
                 {
@@ -2765,6 +2765,8 @@ void WorldObject::GetNearPoint(WorldObject const* searcher, float &x, float &y, 
 
 void WorldObject::MovePosition(Position &pos, float dist, float angle)
 {
+    MovePositionToFirstCollision(pos, dist, angle);
+    return;
     angle += m_orientation;
     pos.m_positionX += dist * cos(angle);
     pos.m_positionY += dist * sin(angle);

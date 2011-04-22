@@ -3979,7 +3979,8 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->SpellVisual[0] = 0;
             spellInfo->StackAmount = 0;
             spellInfo->Attributes |= SPELL_ATTR0_PASSIVE;
-            spellInfo->EffectBasePoints[0] = -50;
+            spellInfo->EffectBasePoints[0] = -30;
+            spellInfo->DurationIndex = 9;
             break;
         // Living Bomb
         case 44457:
