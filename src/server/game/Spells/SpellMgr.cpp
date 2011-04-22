@@ -3996,8 +3996,8 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 58984:    // Shadowmeld
             spellInfo->AuraInterruptFlags&= ~ AURA_INTERRUPT_FLAG_TAKE_DAMAGE;
-            spellInfo->EffectImplicitTargetA[0] = TARGET_DST_CASTER;
-            spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_AREA_ENEMY_DST;
+            /*spellInfo->EffectImplicitTargetA[0] = TARGET_DST_CASTER;
+            spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_AREA_ENEMY_DST;*/
             break;
         case 72423:
             spellInfo->EffectImplicitTargetA[0] = TARGET_DST_CASTER;
