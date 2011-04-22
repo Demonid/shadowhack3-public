@@ -638,6 +638,10 @@ SpellSpecific GetSpellSpecific(SpellEntry const * spellInfo)
             if (spellInfo->Id == 30069 || spellInfo->Id == 30070)
                 return SPELL_SPECIFIC_TARGET_DAMAGE_BOOST;
 
+            // Trauma
+            if (spellInfo->SpellIconID == 2968)
+                return SPELL_SPECIFIC_TRAUMA_MANGLE;
+
             break;
         }
         case SPELLFAMILY_ROGUE:
