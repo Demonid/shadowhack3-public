@@ -4881,11 +4881,11 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->Effect[1] = 0;
             count++;
             break;
-        /*case 7922:
+        case 7922:
         case 20253:
-            spellInfo->DmgClass = SPELL_DAMAGE_CLASS_NONE;
+            spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MELEE;
             count++;
-            break;*/
+            break;
         case 51590: // Toss Ice Boulder
             spellInfo->MaxAffectedTargets = 1;
             count++;
