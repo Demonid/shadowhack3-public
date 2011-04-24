@@ -1436,6 +1436,17 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
         case SPELLFAMILY_GENERIC:
             switch (GetId())
             {
+                // Deathbringer's will
+                case 71485:
+                {
+                    if (apply)
+                    {
+                        int32 bp = -50;
+                        target->CastCustomSpell(target, 18210, &bp, 0, 0, true);
+                    }
+                    else 
+                        target->RemoveAura(18210);
+                }
                 case 50720: // Vigilance
                     if (apply)
                         target->CastSpell(caster, 59665, true, 0, 0, caster->GetGUID());
