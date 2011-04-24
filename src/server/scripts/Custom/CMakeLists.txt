@@ -10,6 +10,13 @@ set(scripts_STAT_SRCS
   Custom/teleguy.cpp
   Custom/titlevendor.cpp
   Custom/flyer.cpp
+  Custom/Exaile_temple/godzilla.cpp
+  Custom/Exaile_temple/hypnotoad.cpp
+  Custom/Exaile_temple/hypnotoad_deadman.cpp
+  Custom/Exaile_temple/instance.cpp
+  Custom/Exaile_temple/nazaryan.cpp
+  Custom/Exaile_temple/nazaryans_blood.cpp
+  Custom/Exaile_temple/semargl.cpp
 )
 
 message("  -> Prepared: Custom")

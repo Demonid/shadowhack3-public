@@ -1027,10 +1027,18 @@ void Spell::AddUnitTarget(Unit* pVictim, uint32 effIndex)
         if (m_delayMoment == 0 || m_delayMoment>target.timeDelay)
             m_delayMoment = target.timeDelay;
     }
-    else if(m_caster->GetTypeId() == TYPEID_PLAYER && m_caster != pVictim && IsCCSpell(m_spellInfo))
+    else if(m_caster->GetTypeId() == TYPEID_PLAYER && m_caster != pVictim)
     {
-        target.timeDelay = 200LL;
-        m_delayMoment = 200LL;
+        if (IsCCSpell(m_spellInfo))
+        {
+            target.timeDelay = 200LL;
+            m_delayMoment = 200LL;
+        }
+        else if (!IsPositiveSpell(m_spellInfo->Id))
+        {
+            target.timeDelay = 50LL;
+            m_delayMoment = 50LL;
+        }
     }
     else
         target.timeDelay = 0LL;

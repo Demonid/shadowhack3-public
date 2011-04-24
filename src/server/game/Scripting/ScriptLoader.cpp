@@ -30,6 +30,15 @@ void AddSC_prof_master();
 void AddSC_renamer();
 void AddSC_flyer();
 
+// exaile temple
+void AddSC_instance_my_instance();
+void AddSC_boss_nazaryan();
+void AddSC_boss_nazaryans_blood();
+void AddSC_boss_hypnotoad_deadman();
+void AddSC_boss_hypnotoad();
+void AddSC_boss_godzilla();
+void AddSC_boss_semargl();
+
 //examples
 void AddSC_example_creature();
 void AddSC_example_escort();
@@ -466,7 +475,7 @@ void AddSC_boss_trollgore();             //Drak'Tharon Keep
 void AddSC_boss_novos();
 void AddSC_boss_dred();
 void AddSC_boss_tharon_ja();
-void AddSC_instance_drak_tharon();
+//void AddSC_instance_drak_tharon();
 void AddSC_boss_cyanigosa();             //Violet Hold
 void AddSC_boss_erekem();
 void AddSC_boss_ichoron();
@@ -1171,7 +1180,7 @@ void AddNorthrendScripts()
     AddSC_boss_novos();
     AddSC_boss_dred();
     AddSC_boss_tharon_ja();
-    AddSC_instance_drak_tharon();
+//    AddSC_instance_drak_tharon();
     AddSC_boss_cyanigosa();             //Violet Hold
     AddSC_boss_erekem();
     AddSC_boss_ichoron();
@@ -1260,5 +1269,13 @@ void AddCustomScripts()
     AddSC_renamer();
     AddSC_prof_master();
     AddSC_flyer();
+    // exaile temple
+    AddSC_instance_my_instance();
+    AddSC_boss_nazaryan();
+    AddSC_boss_nazaryans_blood();
+    AddSC_boss_hypnotoad_deadman();
+    AddSC_boss_hypnotoad();
+    AddSC_boss_godzilla();
+    AddSC_boss_semargl();
 #endif
 }

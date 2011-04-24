@@ -192,6 +192,38 @@ Creature* ScriptedAI::DoSpawnCreature(uint32 entry, float offsetX, float offsetY
     return me->SummonCreature(entry, me->GetPositionX() + offsetX, me->GetPositionY() + offsetY, me->GetPositionZ() + offsetZ, angle, TempSummonType(type), despawntime);
 }
 
+Unit* ScriptedAI::SelectUnit(SelectAggroTarget pTarget, uint32 uiPosition)
+{
+    //ThreatList m_threatlist;
+    std::list<HostileReference*>& threatlist = me->getThreatManager().getThreatList();
+    std::list<HostileReference*>::iterator itr = threatlist.begin();
+    std::list<HostileReference*>::reverse_iterator ritr = threatlist.rbegin();
+
+    if (uiPosition >= threatlist.size() || !threatlist.size())
+        return NULL;
+
+    switch (pTarget)
+    {
+    case SELECT_TARGET_RANDOM:
+        advance (itr , uiPosition +  (rand() % (threatlist.size() - uiPosition)));
+        return Unit::GetUnit((*me),(*itr)->getUnitGuid());
+        break;
+
+    case SELECT_TARGET_TOPAGGRO:
+        advance (itr , uiPosition);
+        return Unit::GetUnit((*me),(*itr)->getUnitGuid());
+        break;
+
+    case SELECT_TARGET_BOTTOMAGGRO:
+        advance (ritr , uiPosition);
+        return Unit::GetUnit((*me),(*ritr)->getUnitGuid());
+        break;
+
+    default:
+        return UnitAI::SelectTarget(pTarget, uiPosition);
+    }
+}
+
 SpellEntry const* ScriptedAI::SelectSpell(Unit* target, uint32 school, uint32 mechanic, SelectTargetType targets, uint32 powerCostMin, uint32 powerCostMax, float rangeMin, float rangeMax, SelectEffect effects)
 {
     //No target so we can't cast
