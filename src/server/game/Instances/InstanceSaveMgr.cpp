@@ -163,6 +163,7 @@ InstanceSave::~InstanceSave()
 */
 void InstanceSave::SaveToDB()
 {
+    ACE_GUARD(ACE_Thread_Mutex, Guard, lock);    // here we have to ensure that no more than 1 thread does this
     // save instance data too
     std::string data;
     uint32 completedEncounters = 0;
@@ -199,7 +200,7 @@ time_t InstanceSave::GetResetTimeForDB()
 }
 
 // to cache or not to cache, that is the question
-InstanceTemplate const* InstanceSave::GetTemplate()
+InstanceTemplate const* InstanceSave::GetTemplate() // thread safety is maintained one level down, by sInstanceTemplate
 {
     return ObjectMgr::GetInstanceTemplate(m_mapid);
 }
@@ -209,9 +210,9 @@ MapEntry const* InstanceSave::GetMapEntry()
     return sMapStore.LookupEntry(m_mapid);
 }
 
-void InstanceSave::DeleteFromDB()
+void InstanceSave::DeleteFromDB()   //and WTF purpose of this after turning it into a thread-safe code?
 {
-    InstanceSaveManager::DeleteInstanceFromDB(GetInstanceId());
+    sInstanceSaveMgr->DeleteInstanceFromDB(GetInstanceId());
 }
 
 /* true if the instance save is still valid */

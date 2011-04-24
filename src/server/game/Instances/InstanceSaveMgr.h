@@ -55,8 +55,8 @@ class InstanceSave
            or when the instance is reset */
         ~InstanceSave();
 
-        uint8 GetPlayerCount() { return m_playerList.size(); }
-        uint8 GetGroupCount() { return m_groupList.size(); }
+        uint8 GetPlayerCount() { ACE_READ_GUARD(ACE_RW_Thread_Mutex, Guard, lockp); return m_playerList.size(); }
+        uint8 GetGroupCount() { ACE_READ_GUARD(ACE_RW_Thread_Mutex, Guard, lockg); return m_groupList.size(); }
 
         /* A map corresponding to the InstanceId/MapId does not always exist.
         InstanceSave objects may be created on player logon but the maps are
@@ -73,18 +73,17 @@ class InstanceSave
            for raid/heroic instances this caches the global respawn time for the map */
         time_t GetResetTime() const { return m_resetTime; }
         void SetResetTime(time_t resetTime) { m_resetTime = resetTime; }
-        time_t GetResetTimeForDB();
 
         InstanceTemplate const* GetTemplate();
         MapEntry const* GetMapEntry();
 
         /* online players bound to the instance (perm/solo)
            does not include the members of the group unless they have permanent saves */
-        void AddPlayer(Player *player) { m_playerList.push_back(player); }
-        bool RemovePlayer(Player *player) { m_playerList.remove(player); return UnloadIfEmpty(); }
+        void AddPlayer(Player *player) { ACE_WRITE_GUARD(ACE_RW_Thread_Mutex, Guard, lockp); m_playerList.push_back(player); }
+        bool RemovePlayer(Player *player) { ACE_WRITE_GUARD(ACE_RW_Thread_Mutex, Guard, lockp); m_playerList.remove(player); return UnloadIfEmpty(); }
         /* all groups bound to the instance */
-        void AddGroup(Group *group) { m_groupList.push_back(group); }
-        bool RemoveGroup(Group *group) { m_groupList.remove(group); return UnloadIfEmpty(); }
+        void AddGroup(Group *group) { ACE_WRITE_GUARD(ACE_RW_Thread_Mutex, Guard, lockg); m_groupList.push_back(group); }
+        bool RemoveGroup(Group *group) { ACE_WRITE_GUARD(ACE_RW_Thread_Mutex, Guard, lockg); m_groupList.remove(group); return UnloadIfEmpty(); }
 
         /* instances cannot be reset (except at the global reset time)
            if there are players permanently bound to it
@@ -99,6 +98,7 @@ class InstanceSave
         typedef std::list<Player*> PlayerListType;
         typedef std::list<Group*> GroupListType;
     private:
+        time_t GetResetTimeForDB();
         bool UnloadIfEmpty();
         /* the only reason the instSave-object links are kept is because
            the object-instSave links need to be broken at reset time
@@ -110,13 +110,15 @@ class InstanceSave
         uint32 m_mapid;
         Difficulty m_difficulty;
         bool m_canReset;
+        ACE_RW_Thread_Mutex lockp, lockg;
+        ACE_Thread_Mutex lock;
 };
 
 typedef UNORDERED_MAP<uint32 /*PAIR32(map,difficulty)*/,time_t /*resetTime*/> ResetTimeByMapDifficultyMap;
 
 class InstanceSaveManager
 {
-    friend class ACE_Singleton<InstanceSaveManager, ACE_Null_Mutex>;
+    friend class ACE_Singleton<InstanceSaveManager, ACE_Thread_Mutex>;
     friend class InstanceSave;
     public:
         InstanceSaveManager() : lock_instLists(false) {};
