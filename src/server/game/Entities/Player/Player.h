@@ -1034,6 +1034,7 @@ class Player : public Unit, public GridObject<Player>
         ~Player ();
 
         void CleanupsBeforeDelete(bool finalCleanup = true);
+        void CleanupsBeforeDelete_test(Player *player, bool finalCleanup = true);
 
         static UpdateMask updateVisualBits;
         static void InitVisibleBits();
