@@ -30,6 +30,7 @@ enum DeathKnightSpells
     DK_SPELL_ANTI_MAGIC_SHELL_TALENT            = 51052,
     DK_SPELL_SUMMON_GARGOYLE                    = 50514,
     DK_SPELL_CORPSE_EXPLOSION_TRIGGERED         = 43999,
+    DK_SPELL_GHOUL_EXPLODE                      = 47496,
     DISPLAY_GHOUL_CORPSE                        = 25537,
     DK_SPELL_SCOURGE_STRIKE_TRIGGERED           = 70890,
     DK_SPELL_WILL_OF_THE_NECROPOLIS_TALENT_R1   = 49189,
@@ -209,13 +210,18 @@ class spell_dk_corpse_explosion : public SpellScriptLoader
                     int32 bp = 0;
                     // Living ghoul as a target
                     if (unitTarget->isAlive())
+                    {
                         bp = int32(unitTarget->CountPctFromMaxHealth(25));
+                        unitTarget->CastCustomSpell(unitTarget, DK_SPELL_GHOUL_EXPLODE, &bp, NULL, NULL, false);
+                    }
                     // Some corpse
-                    else
+					else
+                    {
                         bp = GetEffectValue();
-                    GetCaster()->CastCustomSpell(unitTarget, SpellMgr::CalculateSpellEffectAmount(GetSpellInfo(), 1), &bp, NULL, NULL, true);
-                    // Corpse Explosion (Suicide)
-                    unitTarget->CastCustomSpell(unitTarget, DK_SPELL_CORPSE_EXPLOSION_TRIGGERED, &bp, NULL, NULL, true);
+                        GetCaster()->CastCustomSpell(unitTarget, SpellMgr::CalculateSpellEffectAmount(GetSpellInfo(), 1), &bp, NULL, NULL, true);
+                        // Corpse Explosion (Suicide)
+                        unitTarget->CastCustomSpell(unitTarget, DK_SPELL_CORPSE_EXPLOSION_TRIGGERED, &bp, NULL, NULL, true);
+                    }
                     // Set corpse look
                     unitTarget->SetDisplayId(DISPLAY_GHOUL_CORPSE + urand(0, 3));
                 }

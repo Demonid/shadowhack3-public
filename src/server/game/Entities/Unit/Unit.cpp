@@ -6695,32 +6695,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
             // Sacred Shield
             if (dummySpell->SpellFamilyFlags[1] & 0x80000)
             {
-                if (procFlag & PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_POS)
-                {
-                    Player* caster = ToPlayer();
-                    if (!caster)
-                        return false;
-
-                    if ((procSpell->SpellFamilyName == SPELLFAMILY_PALADIN) && (procSpell->SpellFamilyFlags[0] & 0x40000000) 
-                    && (caster->HasAura(53569) || caster->HasAura(53576))) // Infusion of Light
-                    {
-                        if (caster->HasAura(53569)) // Rank 1
-                            basepoints0 = damage / 24;
-                        else // Rank 2
-                            basepoints0 = damage / 12;
-
-                        if (Aura * aur = caster->GetAura(67191)) // Item - Paladin T9 Holy 4P
-                            basepoints0 *= (100.0f + aur->GetSpellProto()->EffectBasePoints[0]) / 100.0f;
-
-                        if (basepoints0)
-                            CastCustomSpell(this, 66922, &basepoints0, NULL, NULL, true, 0, triggeredByAura, pVictim->GetGUID());
-
-                        return true;
-                    }
-                    else
-                        return false;
-                }
-                else if (damage > 0)
+                if (damage > 0 && !(procFlag & PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_POS))
                     triggered_spell_id = 58597;
 
                 target = this;
@@ -7997,6 +7972,8 @@ bool Unit::HandleAuraProc(Unit * pVictim, uint32 damage, Aura * triggeredByAura,
                     if (pVictim->HasAura(53601))
                     {
                         int32 bp0 = CalculatePctN(int32(damage / 12), SpellMgr::CalculateSpellEffectAmount(dummySpell, 2));
+                        if (HasAura(67191)) // Item - Paladin T9 Holy 4P Bonus (Flash of Light)
+                            bp0 *= 2;
                         CastCustomSpell(pVictim, 66922, &bp0, NULL, NULL, true);
                         return true;
                     }

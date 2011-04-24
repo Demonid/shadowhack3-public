@@ -4029,13 +4029,6 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectSpellClassMask[0][1]=0x20400800;
             count++;
             break; 
-        case 47496:     // Ghoul's Explosion 
-            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_AREA_ENEMY_DST;
-            spellInfo->EffectImplicitTargetB[0] = 0;
-            spellInfo->Effect[1] = SPELL_EFFECT_INSTAKILL;
-            spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_CASTER;
-            count++;
-            break;
         case 30557:     // Wrath of the Titans (only usable in Karazhan)
         case 30550:     // Redemption of the Fallen (only usable in Karazhan)
         case 30567:     // Torment of the Worgen (only usable in Karazhan)
@@ -4187,6 +4180,22 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 51852:    // The Eye of Acherus (no spawn in phase 2 in db)
             spellInfo->EffectMiscValue[0] |= 1;
+            count++;
+            break;
+        case 47496:    // Explode
+            spellInfo->Effect[1] = SPELL_EFFECT_INSTAKILL;
+            count++;
+            break;
+        case 58597:    // Sacred Shield
+            spellInfo->AttributesEx5 |= SPELL_ATTR5_SINGLE_TARGET_SPELL;
+            count++;
+            break;
+        case 53569:    // Infusion of Light (Rank 1)
+            spellInfo->EffectBasePoints[2] = 50;
+            count++;
+            break;
+        case 53576:     // Infusion of Light (Rank 2)
+            spellInfo->EffectBasePoints[2] = 100;
             count++;
             break;
         case 6474:     // Earthbind Totem

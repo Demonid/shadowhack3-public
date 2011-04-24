@@ -1447,10 +1447,6 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
                 && !m_caster->canSeeOrDetect(unit))
                 return SPELL_MISS_MISS;
 
-            // Deterrence - delayed spells deflect
-            if (m_spellInfo->speed && !IsAreaOfEffectSpell(m_spellInfo) && unit->HasAura(19263))
-                return SPELL_MISS_DEFLECT;
-
             unit->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_HITBYSPELL);
             //TODO: This is a hack. But we do not know what types of stealth should be interrupted by CC
             if ((m_customAttr & SPELL_ATTR0_CU_AURA_CC) && unit->IsControlledByPlayer())
