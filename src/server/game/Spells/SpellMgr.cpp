@@ -3975,9 +3975,16 @@ void SpellMgr::LoadSpellCustomAttr()
         // Mind Flay
         if (spellInfo->SpellIconID == 548 && spellInfo->SpellFamilyFlags[2] == 0x00000440)
             spellInfo->AttributesEx |= SPELL_ATTR1_NEGATIVE; 
-
+        if (spellInfo->SpellFamilyName == SPELLFAMILY_POTION)
+        {
+            spellInfo->StartRecoveryTime = 10000;
+        }
         switch (i)
         {
+        // Blink
+        case 1953:
+            spellInfo->DurationIndex = 407;
+            break;
         // Test Shrink
         case 18210:
             spellInfo->SpellVisual[0] = 0;
