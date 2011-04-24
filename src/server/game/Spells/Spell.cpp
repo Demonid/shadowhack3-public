@@ -5782,19 +5782,6 @@ SpellCastResult Spell::CheckCast(bool strict)
                             return SPELL_FAILED_TRY_AGAIN;
                 break;
             }
-            case SPELL_EFFECT_TRANS_DOOR:
-            {
-                bool dobreak = false;
-                switch(m_spellInfo->Id)
-                {
-                    case 698:   // Ritual of Summoning
-                    case 50977: // Death Gate
-                        break;
-                    default: dobreak = true;
-                }
-                if(dobreak)
-                    break;
-            }
             // This is generic summon effect
             case SPELL_EFFECT_SUMMON:
             {
@@ -5885,6 +5872,19 @@ SpellCastResult Spell::CheckCast(bool strict)
                         return SPELL_FAILED_BAD_TARGETS;
                 }
                 break;
+            }
+            case SPELL_EFFECT_TRANS_DOOR:
+            {
+                bool dobreak = false;
+                switch(m_spellInfo->Id)
+                {
+                    case 698:   // Ritual of Summoning
+                    case 50977: // Death Gate
+                        break;
+                    default: dobreak = true;
+                }
+                if(dobreak)
+                    break;
             }
             case SPELL_EFFECT_LEAP:
             case SPELL_EFFECT_TELEPORT_UNITS_FACE_CASTER:
