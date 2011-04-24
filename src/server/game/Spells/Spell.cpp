@@ -5265,6 +5265,8 @@ SpellCastResult Spell::CheckCast(bool strict)
                     else
                         return SPELL_FAILED_NO_PET;
                 }
+                else if (!target->IsWithinLOSInMap(m_caster))
+                    return SPELL_FAILED_LINE_OF_SIGHT;
                 break;
             }
         }
