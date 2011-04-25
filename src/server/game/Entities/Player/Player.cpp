@@ -921,27 +921,6 @@ void Player::CleanupsBeforeDelete(bool finalCleanup)
     }
 }
 
-void Player::CleanupsBeforeDelete_test(Player *player, bool finalCleanup)
-{
-    TradeCancel(false);
-    DuelComplete(DUEL_INTERUPTED);
-
-    Unit::CleanupsBeforeDelete(finalCleanup);
-
-    if (m_transport)
-        m_transport->RemovePassenger(player);
-
-    // clean up player-instance binds, may unload some instance saves
-    for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
-    {
-        if (m_boundInstances[i].empty())
-            continue;
-
-        for (BoundInstancesMap::iterator itr = m_boundInstances[i].begin(); itr != m_boundInstances[i].end(); ++itr)
-            itr->second.save->RemovePlayer(player);
-    }
-}
-
 bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 class_, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair, uint8 /*outfitId*/)
 {
     //FIXME: outfitId not used in player creating
