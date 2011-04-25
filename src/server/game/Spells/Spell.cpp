@@ -8034,6 +8034,9 @@ bool Spell::CheckForPowerfullAura(Unit * target)
                 for (Unit::VisibleAuraMap::const_iterator itr = visibleAuras->begin(); itr != visibleAuras->end(); ++itr)
                     if (AuraEffect * auraeff = itr->second->GetBase()->GetEffect(0))
                     {
+                        if (auraeff->GetBase()->GetDuration() <= 2*MINUTE*IN_MILLISECONDS)
+                            continue;
+
                         if (auraeff->GetSpellProto()->SpellFamilyName == SPELLFAMILY_POTION)
                             continue;
                         if (auraeff->GetAuraType() == m_spellInfo->EffectApplyAuraName[0] &&
