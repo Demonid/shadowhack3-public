@@ -1132,6 +1132,7 @@ void Battleground::RemovePlayerAtLeave(const uint64& guid, bool Transport, bool 
         sLog->outDetail("BATTLEGROUND: Removed player %s from Battleground.", plr->GetName());
         plr->GetAchievementMgr().ResetAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, ACHIEVEMENT_CRITERIA_CONDITION_MAP, GetMapId(), true);
         plr->Unmount();
+        plr->RemoveAurasByType(SPELL_AURA_MOUNTED);
     }
 
     if (plr && !plr->isAlive())                              // resurrect on exit
