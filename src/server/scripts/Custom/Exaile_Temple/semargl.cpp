@@ -64,7 +64,7 @@ public:
             {
                 _caster=cur_caster;
                 uint32 entry[4]={400002, 400003, 400004, 400005};
-                damage=1000;
+                damage=30000;
 
                 for (uint8 i=0; i!=faze_num; i++)
                 {
@@ -72,10 +72,7 @@ public:
                     for(std::list<Creature*>::iterator itr = victim_list.begin(); itr != victim_list.end(); ++itr)
                     {
                         if((*itr)->GetEntry()==entry[_caster])
-                        {
                             (*itr)->CastCustomSpell((*itr), 30941, &damage, 0, 0, true);
-                            break;
-                        }
                     }
                     _caster++;
                     if(_caster>3)
