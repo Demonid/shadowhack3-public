@@ -279,7 +279,7 @@ class petguy : public CreatureScript
         }
         if(pet_id)
         {
-            Creature *Pet=creature->SummonCreature(pet_id,creature->GetPositionX(),creature->GetPositionY(),creature->GetPositionZ(), 0.0f, (TempSummonType)TEMPSUMMON_DEAD_DESPAWN, 10000);
+            Creature *Pet=creature->SummonCreature(pet_id,creature->GetPositionX(),creature->GetPositionY(),creature->GetPositionZ(), 0.0f, (TempSummonType)TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 10000);
             uint8 level = player->getLevel();
             Pet->SetLevel(level);
             player->CastSpell(Pet, 13481, true);
