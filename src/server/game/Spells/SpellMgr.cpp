@@ -4881,9 +4881,10 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->Effect[1] = 0;
             count++;
             break;
-        case 7922:
-        case 20253:
+        case 7922:  // charge stun
+        case 20253: // intercept stun
             spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MELEE;
+            spellInfo->Attributes |= SPELL_ATTR0_IMPOSSIBLE_DODGE_PARRY_BLOCK;
             count++;
             break;
         case 51590: // Toss Ice Boulder
