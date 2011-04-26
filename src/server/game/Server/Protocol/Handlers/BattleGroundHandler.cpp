@@ -320,7 +320,7 @@ void WorldSession::HandlePVPLogDataOpcode(WorldPacket & /*recv_data*/)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recvd MSG_PVP_LOG_DATA Message");
 
     Battleground *bg = _player->GetBattleground();
-    if (!bg)
+    if (!bg || (bg->isArena() && bg->GetStatus() != STATUS_IN_PROGRESS))
         return;
 
     WorldPacket data;
