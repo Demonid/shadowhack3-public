@@ -189,7 +189,7 @@ void InstanceSave::SaveToDB()
     CharacterDatabase.Execute(stmt);
 }
 
-time_t InstanceSave::GetResetTimeForDB()
+time_t InstanceSave::GetResetTimeForDB()    // TODO: this is not thread-safe still
 {
     // only save the reset time for normal instances
     const MapEntry *entry = sMapStore.LookupEntry(GetMapId());
