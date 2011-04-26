@@ -2482,9 +2482,11 @@ bool ChatHandler::HandleListAurasCommand (const char * /*args*/)
 
             std::ostringstream ss_name;
             ss_name << "|cffffffff|Hspell:" << (*itr)->GetId() << "|h[" << name << "]|h|r";
-
+            Item* castItem = (*itr)->GetBase()->GetCastItemGUID() && (*itr)->GetCaster() == unit && unit->GetTypeId() == TYPEID_PLAYER
+                ? unit->ToPlayer()->GetItemByGuid((*itr)->GetBase()->GetCastItemGUID()) : NULL;
             PSendSysMessage(LANG_COMMAND_TARGET_AURASIMPLE, (*itr)->GetId(), (*itr)->GetEffIndex(),
-                (*itr)->GetAmount());
+                (*itr)->GetAmount(), (*itr)->GetCaster() ? (*itr)->GetCaster()->GetName() : NULL, (*itr)->GetBase()->GetCastItemGUID(),
+                castItem ? castItem->GetProto()->Name1: NULL);
         }
     }
     return true;
