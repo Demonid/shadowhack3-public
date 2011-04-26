@@ -13621,7 +13621,7 @@ void Player::RemoveArenaEnchantments(EnchantmentSlot slot)
     // in inventory
     for (uint8 i = INVENTORY_SLOT_ITEM_START; i < INVENTORY_SLOT_ITEM_END; ++i)
         if (Item* pItem = GetItemByPos(INVENTORY_SLOT_BAG_0, i))
-            if (pItem->GetEnchantmentId(slot))
+            if (pItem->GetEnchantmentId(slot) && !sSpellMgr->IsArenaAllowedEnchancment(pItem->GetEnchantmentId(slot)))
                 pItem->ClearEnchantment(slot);
 
     // in inventory bags
@@ -13629,7 +13629,7 @@ void Player::RemoveArenaEnchantments(EnchantmentSlot slot)
         if (Bag* pBag = GetBagByPos(i))
             for (uint32 j = 0; j < pBag->GetBagSize(); j++)
                 if (Item* pItem = pBag->GetItemByPos(j))
-                    if (pItem->GetEnchantmentId(slot))
+                    if (pItem->GetEnchantmentId(slot) && !sSpellMgr->IsArenaAllowedEnchancment(pItem->GetEnchantmentId(slot)))
                         pItem->ClearEnchantment(slot);
 }
 
