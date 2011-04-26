@@ -8058,6 +8058,11 @@ bool Unit::HandleModDamagePctTakenAuraProc(Unit *pVictim, uint32 /*damage*/, Aur
             }
             break;
         }
+        case SPELLFAMILY_WARRIOR:
+            // Recklessness
+            if(dummySpell->Id == 1719)
+                return false;
+            break;
         case SPELLFAMILY_PALADIN:
         {
             // Blessing of Sanctuary
@@ -11220,10 +11225,11 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
         case SPELL_DAMAGE_CLASS_NONE:  // Exception for Earth Shield and Lifebloom Final Bloom
             switch(spellProto->Id)
             {
-                case 379:
-                case 33778:
-                case 64844:
-                case 19658:
+                case 379:   // earth shield
+                case 33778: // lifebloom
+                case 64844: // Divine Hymn
+                case 19658: // Devour Magic Effect
+                case 71607: // Bauble of True Blood
                     break;
                 default: if(spellProto->SpellIconID != 500) return false;
             }
