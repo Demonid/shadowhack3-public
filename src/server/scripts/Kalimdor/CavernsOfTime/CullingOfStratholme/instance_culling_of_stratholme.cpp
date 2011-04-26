@@ -322,7 +322,10 @@ public:
     			return m_auiEncounter[5];
     		case TYPE_MALGANIS:
     			return m_auiEncounter[6];
-    		}
+    		case TYPE_DIFF:
+    			return Difficulty(instance->GetSpawnMode());
+
+			}
     		return 0;
     	}
 
