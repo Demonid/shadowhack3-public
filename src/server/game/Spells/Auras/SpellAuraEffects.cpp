@@ -6236,6 +6236,7 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                         {
                             int32 damage = aurEff->GetBaseAmount()*8;
                             // backfire damage
+                            caster = caster ? caster: target;
                             caster->CastCustomSpell(target, 64085, &damage, NULL, NULL, true, NULL, NULL,GetCasterGUID());
                         }
                     }
