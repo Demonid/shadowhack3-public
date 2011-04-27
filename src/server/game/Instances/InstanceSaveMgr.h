@@ -121,10 +121,11 @@ class InstanceSaveManager
 {
     friend class ACE_Singleton<InstanceSaveManager, ACE_Thread_Mutex>;
     friend class InstanceSave;
-    public:
-        InstanceSaveManager() : lock_instLists(false) {};
-        ~InstanceSaveManager();
 
+    InstanceSaveManager() : lock_instLists(false) {};
+    ~InstanceSaveManager();
+
+    public:
         typedef UNORDERED_MAP<uint32 /*InstanceId*/, InstanceSave*> InstanceSaveHashMap;
 
         /* resetTime is a global propery of each (raid/heroic) map
