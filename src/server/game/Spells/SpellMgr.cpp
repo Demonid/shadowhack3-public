@@ -884,6 +884,7 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
                 case 61988: // Divine Shield exclude aura
                 case 34709: // Shadow Sigh
                 case 40477: // Forceful Strike
+                case 200013: // EY trigger
                 case 2479:
                     return false;
                 case 31719: // Suspension

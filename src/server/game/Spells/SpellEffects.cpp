@@ -833,6 +833,14 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
         {
             switch (m_spellInfo->Id)
             {
+                case 200013: // EY - AreaTrigger
+                {
+                    if(unitTarget->GetTypeId() == TYPEID_PLAYER)
+                        if(Battleground * bg = unitTarget->ToPlayer()->GetBattleground())
+                            if(bg->GetTypeID() == BATTLEGROUND_EY)
+                                bg->HandleAreaTrigger(unitTarget->ToPlayer(), TR_FEL_REAVER_POINT);
+                    return;
+                }
                 case 2950: // Teleport Self(Undercity Deathmatch)
                 {
                     const WorldSafeLocsEntry *loc = sWorldSafeLocsStore.LookupEntry(urand(1725, 1729));
