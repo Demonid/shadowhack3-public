@@ -95,7 +95,7 @@ ConfusedMovementGenerator<T>::Initialize(T &unit)
 
 template<class T>
 void
-ConfusedMovementGenerator<T>::_setTargetLocation(T & owner, float t_x, float t_y, float t_z)
+ConfusedMovementGenerator<T>::_startMovementWithPathfinding(T & owner, float t_x, float t_y, float t_z)
 {
     if (!&owner)
         return;
@@ -178,7 +178,7 @@ ConfusedMovementGenerator<T>::Update(T &unit, const uint32 &diff)
             const float x = i_waypoints[i_nextMove][0];
             const float y = i_waypoints[i_nextMove][1];
             const float z = i_waypoints[i_nextMove][2];
-            _setTargetLocation(unit, x, y, z);
+            _startMovementWithPathfinding(unit, x, y, z);
         }
     }
     return true;

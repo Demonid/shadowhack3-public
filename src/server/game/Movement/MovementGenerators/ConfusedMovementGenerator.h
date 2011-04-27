@@ -48,7 +48,7 @@ class ConfusedMovementGenerator
         MovementGeneratorType GetMovementGeneratorType() { return CONFUSED_MOTION_TYPE; }
     private:
         void _InitSpecific(T &, bool &, bool &);
-        void _setTargetLocation(T &, float t_x, float t_y, float t_z);
+        void _startMovementWithPathfinding(T &, float t_x, float t_y, float t_z);
         TimeTracker i_nextMoveTime;
         float i_waypoints[MAX_CONF_WAYPOINTS+1][3];
         DestinationHolder< Traveller<T> > i_destinationHolder;
