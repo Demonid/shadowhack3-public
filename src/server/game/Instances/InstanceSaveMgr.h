@@ -22,6 +22,7 @@
 #include "Define.h"
 #include <ace/Singleton.h>
 #include <ace/Thread_Mutex.h>
+#include <ace/RW_Thread_Mutex.h>
 #include <list>
 #include <map>
 #include "UnorderedMap.h"
