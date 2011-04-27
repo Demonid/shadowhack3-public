@@ -8319,7 +8319,7 @@ void Player::UpdateEquipSpellsAtFormChange()
         }
     }
 }
-void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx)
+void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, uint32 spellid)
 {
     if (!target || !target->isAlive() || target == this)
         return;
@@ -8350,12 +8350,12 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                             if (!IsUseEquipedWeapon(true) && !IsInFeralForm())
                                 continue;
                     }
-                    CastItemCombatSpell(target, attType, procVictim, procEx, item, proto);
+                    CastItemCombatSpell(target, attType, procVictim, procEx, item, proto, spellid);
                 }
     }
 }
 
-void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, Item *item, ItemPrototype const * proto)
+void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, Item *item, ItemPrototype const * proto, uint32 spellid)
 {
     // Can do effect if any damage done to target
     if (procVictim & PROC_FLAG_TAKEN_DAMAGE)
@@ -8462,7 +8462,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
             ApplySpellMod(pEnchant->spellid[s],SPELLMOD_CHANCE_OF_SUCCESS,chance);
 
             // Shiv has 100% chance to apply the poison
-            if (FindCurrentSpellBySpellId(5938) && e_slot == TEMP_ENCHANTMENT_SLOT)
+            if (spellid == 5940 && e_slot == TEMP_ENCHANTMENT_SLOT)
                 chance = 100.0f;
 
             if (roll_chance_f(chance))
