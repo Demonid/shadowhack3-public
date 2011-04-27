@@ -2128,6 +2128,7 @@ public:
 
         void DamageTaken(Unit* /*pKiller*/, uint32 &damage)
         {
+            me = !me ? ((CreatureAI*)this)->me: me;
             if (me->isSummon())
                 if (Unit* pOwner = CAST_SUM(me)->GetSummoner())
                 {

@@ -66,8 +66,6 @@ enum SCEquip
 class CreatureAI : public UnitAI
 {
     protected:
-        Creature* const me;
-
         bool UpdateVictim();
         bool UpdateVictimWithGaze();
 
@@ -78,6 +76,7 @@ class CreatureAI : public UnitAI
         Creature* DoSummonFlyer(uint32 entry, WorldObject* obj, float flightZ, float radius = 5.0f, uint32 despawnTime = 30000, TempSummonType summonType = TEMPSUMMON_CORPSE_TIMED_DESPAWN);
 
     public:
+        Creature* const me;
         void Talk(uint8 id, uint64 WhisperGuid = 0);
         explicit CreatureAI(Creature* creature) : UnitAI(creature), me(creature), m_MoveInLineOfSight_locked(false) {}
 
