@@ -359,7 +359,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     }
     else if (plMover && plMover->m_anti_TransportGUID != 0)       // if we were on a transport, leave
     {
-        if (plMover && plMover->GetTransport())
+        if (plMover->GetTransport())
         {
             plMover->m_transport->RemovePassenger(plMover);
             plMover->m_transport = NULL;
