@@ -4186,6 +4186,10 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->Effect[1] = SPELL_EFFECT_INSTAKILL;
             count++;
             break;
+        case 49576:    // Death Grip
+            spellInfo->AttributesEx2 |= SPELL_ATTR2_CANT_REFLECTED;
+            count++;
+            break; 
         case 58597:    // Sacred Shield
             spellInfo->AttributesEx5 |= SPELL_ATTR5_SINGLE_TARGET_SPELL;
             count++;
@@ -4488,13 +4492,10 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         // Charge Stun
         case 7922:
-            spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MELEE;
-            spellInfo->rangeIndex = 3;
-            count++;
-            break;
         // Intercept Stun
         case 20253:
-            spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
+            spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MELEE;
+            spellInfo->Attributes |= SPELL_ATTR0_IMPOSSIBLE_DODGE_PARRY_BLOCK;
             spellInfo->rangeIndex = 3;
             count++;
             break;
