@@ -148,7 +148,7 @@ void InstanceSaveManager::RemoveInstanceSave(uint32 InstanceId)
 
 InstanceSave::InstanceSave(uint16 MapId, uint32 InstanceId, Difficulty difficulty, time_t resetTime, bool canReset)
 : m_resetTime(resetTime), m_instanceid(InstanceId), m_mapid(MapId),
-  m_difficulty(difficulty), m_canReset(canReset)
+  m_difficulty(difficulty), m_canReset(canReset), active(true)
 {
 }
 
@@ -156,6 +156,7 @@ InstanceSave::~InstanceSave()
 {
     // the players and groups must be unbound before deleting the save
     ASSERT(m_playerList.empty() && m_groupList.empty());
+    active = false;
 }
 
 /*
@@ -218,6 +219,7 @@ void InstanceSave::DeleteFromDB()   //and WTF purpose of this after turning it i
 /* true if the instance save is still valid */
 bool InstanceSave::UnloadIfEmpty()
 {
+    if (!active) return true;
     if (m_playerList.empty() && m_groupList.empty())
     {
         if (!sInstanceSaveMgr->lock_instLists)
