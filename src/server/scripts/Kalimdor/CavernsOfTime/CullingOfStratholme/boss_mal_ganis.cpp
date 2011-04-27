@@ -143,8 +143,16 @@ public:
 				{
 					if(Player* pPlayer = itr->getSource())
 					{
-						pPlayer->KilledMonsterCredit(31006, me->GetGUID());
-						pPlayer->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
+						pPlayer->KilledMonsterCredit(31006, 0);
+						if (pInstance->GetData(TYPE_DIFF)==DUNGEON_DIFFICULTY_HEROIC)
+						{
+							pPlayer->KilledMonsterCredit(31217, 0);//ger
+						}
+						else
+						{
+							pPlayer->KilledMonsterCredit(26533, 0);//normal
+						};
+						//pPlayer->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
 					}
 				}
 			}
