@@ -3978,7 +3978,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->AttributesEx |= SPELL_ATTR1_NEGATIVE; 
         if (spellInfo->SpellFamilyName == SPELLFAMILY_POTION)
         {
-            spellInfo->StartRecoveryTime = 10000;
+            spellInfo->StartRecoveryTime = 500;
         }
         switch (i)
         {
