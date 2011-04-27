@@ -5177,6 +5177,12 @@ SpellCastResult Spell::CheckCast(bool strict)
         if (strict && CheckForPowerfullAura(target))
             return m_IsTriggeredSpell ? SPELL_FAILED_DONT_REPORT: SPELL_FAILED_AURA_BOUNCED;
 
+        if (strict && IsCCSpell(m_spellInfo) && target->GetTypeID() == TYPEID_PLAYER)
+        {
+            if (Aura * aur = target->GetAura(m_spellInfo->Id))
+                if (aur->GetDuration() > 5000)
+                    return SPELL_FAILED_AURA_BOUNCED;
+        }
         bool non_caster_target = target != m_caster && !sSpellMgr->IsSpellWithCasterSourceTargetsOnly(m_spellInfo);
 
         if (non_caster_target)
