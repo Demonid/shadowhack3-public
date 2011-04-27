@@ -275,9 +275,12 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     }
 
     /* extract packet */
-    uint64 guid;
+    uint64 guid = 0;
 
     recv_data.readPackGUID(guid);
+
+    if (!guid)
+        return;
 
     MovementInfo movementInfo;
     movementInfo.guid = guid;
@@ -305,7 +308,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     {
         // transports size limited
         // (also received at zeppelin leave by some reason with t_* as absolute in continent coordinates, can be safely skipped)
-        if (movementInfo.t_pos.GetPositionX() > 50 || movementInfo.t_pos.GetPositionY() > 50 || movementInfo.t_pos.GetPositionZ() > 50)
+        if( movementInfo.t_pos.GetPositionX() > 60 || movementInfo.t_pos.GetPositionY() > 60 || movementInfo.t_pos.GetPositionX() < -60 ||  movementInfo.t_pos.GetPositionY() < -60 )
         {
             recv_data.rpos(recv_data.wpos());                   // prevent warnings spam
             return;
@@ -347,17 +350,20 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
         }
         // end movement anticheat
 
-        if (!mover->GetTransport() && !mover->GetVehicle())
+        if ( (!plMover && !mover->GetTransport() && !mover->GetVehicle()) || (plMover && !plMover->GetTransport() && !plMover->GetVehicle()) )
         {
             GameObject *go = mover->GetMap()->GetGameObject(movementInfo.t_guid);
             if (!go || go->GetGoType() != GAMEOBJECT_TYPE_TRANSPORT)
                 movementInfo.flags &= ~MOVEMENTFLAG_ONTRANSPORT;
         }
     }
-    else if (plMover && plMover->m_anti_TransportGUID != 0 && plMover->GetTransport())       // if we were on a transport, leave
+    else if (plMover && plMover->m_anti_TransportGUID != 0)       // if we were on a transport, leave
     {
-        plMover->m_transport->RemovePassenger(plMover);
-        plMover->m_transport = NULL;
+        if (plMover && plMover->GetTransport())
+        {
+            plMover->m_transport->RemovePassenger(plMover);
+            plMover->m_transport = NULL;
+        }        
         movementInfo.t_pos.Relocate(0.0f, 0.0f, 0.0f, 0.0f);
         movementInfo.t_time = 0;
         movementInfo.t_seat = -1;
