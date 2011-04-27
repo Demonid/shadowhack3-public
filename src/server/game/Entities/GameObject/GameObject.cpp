@@ -1111,6 +1111,8 @@ void GameObject::Use(Unit* user)
     {
         case GAMEOBJECT_TYPE_DOOR:                          //0
         case GAMEOBJECT_TYPE_BUTTON:                        //1
+            if (this->GetGOInfo()->faction == 114 && !spellCaster->ToPlayer()->isGameMaster())
+                return;
             //doors/buttons never really despawn, only reset to default state/flags
             UseDoorOrButton();
 
