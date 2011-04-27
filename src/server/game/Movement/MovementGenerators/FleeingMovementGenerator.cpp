@@ -23,8 +23,8 @@
 #include "DestinationHolderImp.h"
 #include "ObjectAccessor.h"
 
-#define MIN_QUIET_DISTANCE 20.0f
-#define MAX_QUIET_DISTANCE 30.0f
+#define MIN_QUIET_DISTANCE 25.0f
+#define MAX_QUIET_DISTANCE 43.0f
 
 template<class T>
 void
@@ -44,8 +44,29 @@ FleeingMovementGenerator<T>::_setTargetLocation(T &owner)
         return;
 
     owner.AddUnitState(UNIT_STAT_FLEEING | UNIT_STAT_ROAMING);
+    _startMovementWithPathfinding(owner, x, y, z);
+}
+
+template<class T>
+void
+FleeingMovementGenerator<T>::_startMovementWithPathfinding(T &owner, float t_x, float t_y, float t_z)
+{
+    if (!&owner)
+        return;
+
+    if (owner.HasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED))
+        return;
+
     Traveller<T> traveller(owner);
-    i_destinationHolder.SetDestination(traveller, x, y, z);
+    i_destinationHolder.SetDestination(traveller, t_x, t_y, t_z);
+
+    PathInfo path(&owner, t_x, t_y, t_z);
+    PointPath pointPath = path.getFullPath();
+
+    float speed = traveller.Speed() * 0.001f; // in ms
+    uint32 transitTime = uint32(pointPath.GetTotalLength() / speed);
+
+    owner.SendMonsterMoveByPath(pointPath, 1, pointPath.size(), transitTime);
 }
 
 template<>
