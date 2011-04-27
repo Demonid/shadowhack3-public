@@ -56,8 +56,8 @@ class InstanceSave
            or when the instance is reset */
         ~InstanceSave();
 
-        uint8 GetPlayerCount() { lockrw.acquire_read(); uint8 s = m_playerList.size(); lockrw.release(); return s; }
-        uint8 GetGroupCount() { lockrw.acquire_read(); uint8 s = m_groupList.size(); lockrw.release(); return s; }
+        uint8 GetPlayerCount() { if(!active) return 0; lockrw.acquire_read(); uint8 s = m_playerList.size(); lockrw.release(); return s; }
+        uint8 GetGroupCount() { if(!active) return 0; lockrw.acquire_read(); uint8 s = m_groupList.size(); lockrw.release(); return s; }
 
         /* A map corresponding to the InstanceId/MapId does not always exist.
         InstanceSave objects may be created on player logon but the maps are
@@ -80,11 +80,11 @@ class InstanceSave
 
         /* online players bound to the instance (perm/solo)
            does not include the members of the group unless they have permanent saves */
-        void AddPlayer(Player *player) { lockrw.acquire_write(); m_playerList.push_back(player); lockrw.release(); }
-        bool RemovePlayer(Player *player) { lockrw.acquire_write(); m_playerList.remove(player); lockrw.release(); return UnloadIfEmpty(); }
+        void AddPlayer(Player *player) { if(!active) return; lockrw.acquire_write(); m_playerList.push_back(player); lockrw.release(); }
+        bool RemovePlayer(Player *player) { if(!active) return true; lockrw.acquire_write(); m_playerList.remove(player); lockrw.release(); return UnloadIfEmpty(); }
         /* all groups bound to the instance */
-        void AddGroup(Group *group) { lockrw.acquire_write(); m_groupList.push_back(group); lockrw.release(); }
-        bool RemoveGroup(Group *group) { lockrw.acquire_write(); m_groupList.remove(group); lockrw.release(); return UnloadIfEmpty(); }
+        void AddGroup(Group *group) { if(!active) return; lockrw.acquire_write(); m_groupList.push_back(group); lockrw.release(); }
+        bool RemoveGroup(Group *group) { if(!active) return true; lockrw.acquire_write(); m_groupList.remove(group); lockrw.release(); return UnloadIfEmpty(); }
 
         /* instances cannot be reset (except at the global reset time)
            if there are players permanently bound to it
@@ -113,6 +113,7 @@ class InstanceSave
         bool m_canReset;
         ACE_RW_Thread_Mutex lockrw;
         ACE_Thread_Mutex lock;
+        bool active;    // not deleted via this->delete;
 };
 
 typedef UNORDERED_MAP<uint32 /*PAIR32(map,difficulty)*/,time_t /*resetTime*/> ResetTimeByMapDifficultyMap;
