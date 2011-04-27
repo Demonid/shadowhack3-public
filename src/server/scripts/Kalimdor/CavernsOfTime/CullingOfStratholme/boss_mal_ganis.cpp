@@ -177,9 +177,11 @@ public:
 				}
 			}
 			else
+			{
 				me->RemoveFromWorld();
-
+			};
 			me->SetLootRecipient(NULL);
+
 		}
 
 		void EnterCombat(Unit* who)
