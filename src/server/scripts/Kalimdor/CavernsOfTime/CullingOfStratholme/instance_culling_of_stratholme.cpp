@@ -283,9 +283,14 @@ public:
     			{
     				DoRespawnGameObject(m_uiMalChestGUID, 30*MINUTE);
     				if (GameObject* pGo = instance->GetGameObject(m_uiMalChestGUID))
-    					pGo->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_UNK1);
+    					{
+							pGo->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND);
+						};
+						
     				if (Creature* pChromi2 = instance->GetCreature(m_uiChromi02GUID))
     					pChromi2->SetVisible(false);
+    				if (GameObject* pGo = instance->GetGameObject(m_uiExitGUID))
+						pGo->SetGoState(GO_STATE_ACTIVE);
     			}
     			break;
     		}
