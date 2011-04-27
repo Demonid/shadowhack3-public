@@ -104,7 +104,7 @@ ConfusedMovementGenerator<T>::_startMovementWithPathfinding(T & owner, float t_x
         return;
 
     Traveller<T> traveller(owner);
-    i_destinationHolder.SetDestination(traveller, t_x, t_y, t_z);
+    i_destinationHolder.SetDestination(traveller, t_x, t_y, t_z, false);
 
     PathInfo path(&owner, t_x, t_y, t_z);
     PointPath pointPath = path.getFullPath();
