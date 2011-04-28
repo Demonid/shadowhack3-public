@@ -916,11 +916,11 @@ void Battleground::EndBattleground(uint32 winner)
                     plr->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_ARENA, GetMapId(), GetArenaType());
                 }
 
-                winner_arena_team->MemberWon(plr, loser_team_rating, winner_matchmaker_rating, loser_matchmaker_rating, dmmr);
+                winner_arena_team->MemberWon(plr, loser_team_rating, winner_matchmaker_rating, loser_matchmaker_rating, dmmr*3/2);
             }
             else
             {
-                loser_arena_team->MemberLost(plr, winner_team_rating, loser_matchmaker_rating, winner_matchmaker_rating, -dmmr*3/2);
+                loser_arena_team->MemberLost(plr, winner_team_rating, loser_matchmaker_rating, winner_matchmaker_rating, -dmmr);
 
                 // Arena lost => reset the win_rated_arena having the "no_lose" condition
                 plr->GetAchievementMgr().ResetAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_ARENA, ACHIEVEMENT_CRITERIA_CONDITION_NO_LOSE);
