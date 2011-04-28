@@ -25,6 +25,7 @@
 #include "LootMgr.h"
 #include "QueryResult.h"
 #include "SharedDefines.h"
+#include "InstanceSaveMgr.h"
 
 class Creature;
 class GroupReference;
@@ -147,11 +148,13 @@ class Roll : public LootValidatorRef
 
 struct InstanceGroupBind
 {
-    InstanceSave const *save;
+    InstanceSave const *save() { return sInstanceSaveMgr->GetInstanceSave(instanceId); }    // InstanceSave* validity should be checked dynamically
+    InstanceSave const *save() const { return sInstanceSaveMgr->GetInstanceSave(instanceId); }    // the same for use with const_iterator
+    uint32 instanceId;
     bool perm;
     /* permanent InstanceGroupBinds exist if the leader has a permanent
        PlayerInstanceBind for the same instance. */
-    InstanceGroupBind() : save(NULL), perm(false) {}
+    InstanceGroupBind() : instanceId(0), perm(false) {}
 };
 
 /** request member stats checken **/

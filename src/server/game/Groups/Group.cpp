@@ -86,7 +86,7 @@ Group::~Group()
     // this may unload some instance saves
     for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
         for (BoundInstancesMap::iterator itr2 = m_boundInstances[i].begin(); itr2 != m_boundInstances[i].end(); ++itr2)
-            sInstanceSaveMgr->RemoveGroup(this, itr2->second.save->GetInstanceId());
+            sInstanceSaveMgr->RemoveGroup(this, itr2->second.instanceId);
 
     // Sub group counters clean up
     delete[] m_subGroupsCounts;
@@ -331,7 +331,7 @@ bool Group::AddMember(Player *player)
 
         // if the same group invites the player back, cancel the homebind timer
         InstanceGroupBind *bind = GetBoundInstance(player);
-        if (bind && bind->save->GetInstanceId() == player->GetInstanceId())
+        if (bind && bind->instanceId == player->GetInstanceId())
             player->m_InstanceValid = true;
     }
 
@@ -521,7 +521,7 @@ void Group::ChangeLeader(const uint64 &guid)
             {
                 if (itr->second.perm)
                 {
-                    sInstanceSaveMgr->RemoveGroup(this, itr->second.save->GetInstanceId());
+                    sInstanceSaveMgr->RemoveGroup(this, itr->second.instanceId);
                     m_boundInstances[i].erase(itr++);
                 }
                 else
@@ -1593,9 +1593,9 @@ void Group::ResetInstances(uint8 method, bool isRaid, Player* SendMsgTo)
 
     for (BoundInstancesMap::iterator itr = m_boundInstances[diff].begin(); itr != m_boundInstances[diff].end();)
     {
-        InstanceSave const *p = itr->second.save;
+        InstanceSave const *p = itr->second.save();
         const MapEntry *entry = sMapStore.LookupEntry(itr->first);
-        if (!entry || entry->IsRaid() != isRaid || (!p->CanReset() && method != INSTANCE_RESET_GROUP_DISBAND))
+        if (!p || !entry || entry->IsRaid() != isRaid || (!p->CanReset() && method != INSTANCE_RESET_GROUP_DISBAND))
         {
             ++itr;
             continue;
@@ -1695,17 +1695,17 @@ InstanceGroupBind* Group::BindToInstance(InstanceSave const *save, bool permanen
         return NULL;
 
     InstanceGroupBind& bind = m_boundInstances[save->GetDifficulty()][save->GetMapId()];
-    if (!load && (!bind.save || permanent != bind.perm || save != bind.save))
+    if (!load && (!bind.instanceId || permanent != bind.perm || save != bind.save()))
         CharacterDatabase.PExecute("REPLACE INTO group_instance (guid, instance, permanent) VALUES (%u, %u, %u)", m_storageId, save->GetInstanceId(), permanent);
 
-    if (bind.save != save)
+    if (bind.save() != save)
     {
-        if (bind.save)
-            sInstanceSaveMgr->RemoveGroup(this, bind.save->GetInstanceId());
+        if (bind.save())
+            sInstanceSaveMgr->RemoveGroup(this, bind.instanceId);
         sInstanceSaveMgr->AddGroup(this, save->GetInstanceId());
     }
 
-    bind.save = save;
+    bind.instanceId = save->GetInstanceId();
     bind.perm = permanent;
     if (!load)
         sLog->outDebug(LOG_FILTER_MAPS, "Group::BindToInstance: Group (guid: %u, storage id: %u) is now bound to map %d, instance %d, difficulty %d",
@@ -1720,8 +1720,8 @@ void Group::UnbindInstance(uint32 mapid, uint8 difficulty, bool unload)
     if (itr != m_boundInstances[difficulty].end())
     {
         if (!unload)
-            CharacterDatabase.PExecute("DELETE FROM group_instance WHERE guid=%u AND instance=%u", m_storageId, itr->second.save->GetInstanceId());
-        sInstanceSaveMgr->RemoveGroup(this, itr->second.save->GetInstanceId());                // save can become invalid
+            CharacterDatabase.PExecute("DELETE FROM group_instance WHERE guid=%u AND instance=%u", m_storageId, itr->second.instanceId);
+        sInstanceSaveMgr->RemoveGroup(this, itr->second.instanceId);
         m_boundInstances[difficulty].erase(itr);
     }
 }
