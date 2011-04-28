@@ -74,6 +74,7 @@ class WardenSvcHandler: public ACE_Svc_Handler <ACE_SOCK_STREAM, ACE_NULL_SYNCH>
         }WardenHandler;
 
         // Deamon replies related
+        bool _HandleDisconnect();
         bool _HandlePong();
         bool _HandleNewKeys();
 
@@ -107,6 +108,7 @@ class WardenMgr
         void SendPing();
     public:
         void Pong();
+        void SetDisconnected();
     private:
         // Structure to store checks
         struct MemoryCheckEntry

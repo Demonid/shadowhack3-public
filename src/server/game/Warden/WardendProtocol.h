@@ -34,6 +34,7 @@ enum eWardendOpcode
     //  uint8   serverKey[258];
     //  uint8   clientKey[258];
     //  uint8   seed[16];
+    WMSG_CONNECTION_END             = 0x71,
 };
 
 enum eWardenServerCmd
