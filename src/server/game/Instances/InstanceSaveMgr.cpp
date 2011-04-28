@@ -68,9 +68,9 @@ InstanceSaveManager::~InstanceSaveManager()
 - adding instance into manager
 - called from InstanceMap::Add, _LoadBoundInstances, LoadGroups
 */
-InstanceSave* InstanceSaveManager::AddInstanceSave(uint32 mapId, uint32 instanceId, Difficulty difficulty, time_t resetTime, bool canReset, bool load)
+InstanceSave const* InstanceSaveManager::AddInstanceSave(uint32 mapId, uint32 instanceId, Difficulty difficulty, time_t resetTime, bool canReset, bool load)
 {
-    if (InstanceSave *old_save = GetInstanceSave(instanceId))
+    if (InstanceSave const *old_save = GetInstanceSave(instanceId))
         return old_save;
 
     const MapEntry* entry = sMapStore.LookupEntry(mapId);
@@ -113,13 +113,13 @@ InstanceSave* InstanceSaveManager::AddInstanceSave(uint32 mapId, uint32 instance
         save->SaveToDB();
 
     m_instanceSaveById[instanceId] = save;
-    return save;
+    return const_cast<InstanceSave const *>(save);
 }
 
-InstanceSave *InstanceSaveManager::GetInstanceSave(uint32 InstanceId)
+InstanceSave const *InstanceSaveManager::GetInstanceSave(uint32 InstanceId)
 {
     InstanceSaveHashMap::iterator itr = m_instanceSaveById.find(InstanceId);
-    return itr != m_instanceSaveById.end() ? itr->second : NULL;
+    return itr != m_instanceSaveById.end() ? const_cast<InstanceSave const *>(itr->second) : NULL;
 }
 
 void InstanceSaveManager::DeleteInstanceFromDB(uint32 instanceid)
@@ -148,7 +148,7 @@ void InstanceSaveManager::RemoveInstanceSave(uint32 InstanceId)
 
 InstanceSave::InstanceSave(uint16 MapId, uint32 InstanceId, Difficulty difficulty, time_t resetTime, bool canReset)
 : m_resetTime(resetTime), m_instanceid(InstanceId), m_mapid(MapId),
-  m_difficulty(difficulty), m_canReset(canReset), active(true)
+  m_difficulty(difficulty), m_canReset(canReset)
 {
 }
 
@@ -156,7 +156,6 @@ InstanceSave::~InstanceSave()
 {
     // the players and groups must be unbound before deleting the save
     ASSERT(m_playerList.empty() && m_groupList.empty());
-    active = false;
 }
 
 /*
@@ -164,7 +163,6 @@ InstanceSave::~InstanceSave()
 */
 void InstanceSave::SaveToDB()
 {
-    ACE_GUARD(ACE_Thread_Mutex, Guard, lock);    // here we have to ensure that no more than 1 thread does this
     // save instance data too
     std::string data;
     uint32 completedEncounters = 0;
@@ -211,24 +209,54 @@ MapEntry const* InstanceSave::GetMapEntry()
     return sMapStore.LookupEntry(m_mapid);
 }
 
-void InstanceSave::DeleteFromDB()   //and WTF purpose of this after turning it into a thread-safe code?
-{
-    sInstanceSaveMgr->DeleteInstanceFromDB(GetInstanceId());
-}
-
 /* true if the instance save is still valid */
-bool InstanceSave::UnloadIfEmpty()
+bool InstanceSaveManager::_UnloadIfEmpty(InstanceSave* save)
 {
-    if (!active) return true;
-    if (m_playerList.empty() && m_groupList.empty())
+    if (!save) return false;
+    if (save->IsEmpty())
     {
-        if (!sInstanceSaveMgr->lock_instLists)
-            sInstanceSaveMgr->RemoveInstanceSave(GetInstanceId());
-
+        if (!lock_instLists) RemoveInstanceSave(save->GetInstanceId());
         return false;
     }
-    else
-        return true;
+    return true;
+}
+
+void InstanceSaveManager::AddPlayer(Player *player, uint32 instanceId)
+{
+    InstanceSave* save = _GetInstanceSave(instanceId);
+    if (save) save->AddPlayer(player);
+    else sLog->outError("ERROR: InstanceSaveMgr, adding player %s to unloaded instance %u, skipped!", player->GetName(), instanceId);
+}
+
+bool InstanceSaveManager::RemovePlayer(Player *player, uint32 instanceId)
+{
+    InstanceSave* save = _GetInstanceSave(instanceId);
+    if (!save)
+    {
+        sLog->outError("ERROR: InstanceSaveMgr, removing player %s from unloaded instance %u, skipped!", player->GetName(), instanceId);
+        return false;
+    }
+    save->RemovePlayer(player);
+    return _UnloadIfEmpty(save);
+}
+
+void InstanceSaveManager::AddGroup(Group *group, uint32 instanceId)
+{
+    InstanceSave* save = _GetInstanceSave(instanceId);
+    if (save) save->AddGroup(group);
+    else sLog->outError("ERROR: InstanceSaveMgr, adding group of %s to unloaded instance %u, skipped!", group->GetLeaderName(), instanceId);
+}
+
+bool InstanceSaveManager::RemoveGroup(Group *group, uint32 instanceId)
+{
+    InstanceSave* save = _GetInstanceSave(instanceId);
+    if (!save)
+    {
+        sLog->outError("ERROR: InstanceSaveMgr, removing group of %s from unloaded instance %u, skipped!", group->GetLeaderName(), instanceId);
+        return false;
+    }
+    save->RemoveGroup(group);
+    return _UnloadIfEmpty(save);
 }
 
 void InstanceSaveManager::_DelHelper(const char *fields, const char *table, const char *queryTail,...)
@@ -285,7 +313,8 @@ void InstanceSaveManager::LoadInstances()
     sMapMgr->InitInstanceIds();
 
     // Load reset times and clean expired instances
-    sInstanceSaveMgr->LoadResetTimes();
+//    sInstanceSaveMgr->LoadResetTimes(); WTF using singleton here?
+    LoadResetTimes();
 
     sLog->outString(">> Loaded instances in %u ms", GetMSTimeDiffToNow(oldMSTime));
     sLog->outString();
@@ -514,6 +543,13 @@ void InstanceSaveManager::Update()
             m_resetTimeQueue.erase(m_resetTimeQueue.begin());
         }
     }
+}
+
+inline
+InstanceSave* InstanceSaveManager::_GetInstanceSave(uint32 InstanceId)
+{
+    InstanceSaveHashMap::iterator itr = m_instanceSaveById.find(InstanceId);
+    return (itr != m_instanceSaveById.end()) ? itr->second : NULL;
 }
 
 void InstanceSaveManager::_ResetSave(InstanceSaveHashMap::iterator &itr)

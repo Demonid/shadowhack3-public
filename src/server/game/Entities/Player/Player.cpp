@@ -917,7 +917,7 @@ void Player::CleanupsBeforeDelete(bool finalCleanup)
             continue;
 
         for (BoundInstancesMap::iterator itr = m_boundInstances[i].begin(); itr != m_boundInstances[i].end(); ++itr)
-            itr->second.save->RemovePlayer(this);
+            sInstanceSaveMgr->RemovePlayer(this, itr->second.save->GetInstanceId());
     }
 }
 
@@ -16811,7 +16811,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
         // fix crash (because of if (Map *map = _FindMap(instanceId)) in MapInstanced::CreateInstance)
         if (instanceId)
-            if (InstanceSave * save = GetInstanceSave(mapId, mapEntry->IsRaid()))
+            if (InstanceSave const * save = GetInstanceSave(mapId, mapEntry->IsRaid()))
                 if (save->GetInstanceId() != instanceId)
                     instanceId = 0;
     }
@@ -17929,7 +17929,7 @@ void Player::_LoadBoundInstances(PreparedQueryResult result)
             }
 
             // since non permanent binds are always solo bind, they can always be reset
-            if (InstanceSave *save = sInstanceSaveMgr->AddInstanceSave(mapId, instanceId, Difficulty(difficulty), resetTime, !perm, true))
+            if (InstanceSave const *save = sInstanceSaveMgr->AddInstanceSave(mapId, instanceId, Difficulty(difficulty), resetTime, !perm, true))
                BindToInstance(save, perm, true);
         }
         while (result->NextRow());
@@ -17950,10 +17950,10 @@ InstancePlayerBind* Player::GetBoundInstance(uint32 mapid, Difficulty difficulty
         return NULL;
 }
 
-InstanceSave * Player::GetInstanceSave(uint32 mapid, bool raid)
+InstanceSave const *Player::GetInstanceSave(uint32 mapid, bool raid)
 {
     InstancePlayerBind *pBind = GetBoundInstance(mapid, GetDifficulty(raid));
-    InstanceSave *pSave = pBind ? pBind->save : NULL;
+    InstanceSave const *pSave = pBind ? pBind->save : NULL;
     if (!pBind || !pBind->perm)
         if (Group *group = GetGroup())
             if (InstanceGroupBind *groupBind = group->GetBoundInstance(this))
@@ -17974,12 +17974,12 @@ void Player::UnbindInstance(BoundInstancesMap::iterator &itr, Difficulty difficu
     {
         if (!unload)
             CharacterDatabase.PExecute("DELETE FROM character_instance WHERE guid = '%u' AND instance = '%u'", GetGUIDLow(), itr->second.save->GetInstanceId());
-        itr->second.save->RemovePlayer(this);               // save can become invalid
+        sInstanceSaveMgr->RemovePlayer(this, itr->second.save->GetInstanceId());               // save can become invalid
         m_boundInstances[difficulty].erase(itr++);
     }
 }
 
-InstancePlayerBind* Player::BindToInstance(InstanceSave *save, bool permanent, bool load)
+InstancePlayerBind* Player::BindToInstance(InstanceSave const *save, bool permanent, bool load)
 {
     if (save)
     {
@@ -17998,12 +17998,12 @@ InstancePlayerBind* Player::BindToInstance(InstanceSave *save, bool permanent, b
         if (bind.save != save)
         {
             if (bind.save)
-                bind.save->RemovePlayer(this);
-            save->AddPlayer(this);
+                sInstanceSaveMgr->RemovePlayer(this, bind.save->GetInstanceId());
+            sInstanceSaveMgr->AddPlayer(this, save->GetInstanceId());
         }
 
         if (permanent)
-            save->SetCanReset(false);
+            (const_cast<InstanceSave*>(save))->SetCanReset(false);
 
         bind.save = save;
         bind.perm = permanent;
@@ -18041,7 +18041,7 @@ void Player::SendRaidInfo()
         {
             if (itr->second.perm)
             {
-                InstanceSave *save = itr->second.save;
+                InstanceSave const *save = itr->second.save;
                 data << uint32(save->GetMapId());           // map id
                 data << uint32(save->GetDifficulty());      // difficulty
                 data << uint64(save->GetInstanceId());      // instance id
@@ -19133,7 +19133,7 @@ void Player::ResetInstances(uint8 method, bool isRaid)
 
     for (BoundInstancesMap::iterator itr = m_boundInstances[diff].begin(); itr != m_boundInstances[diff].end();)
     {
-        InstanceSave *p = itr->second.save;
+        InstanceSave const *p = itr->second.save;
         const MapEntry *entry = sMapStore.LookupEntry(itr->first);
         if (!entry || entry->IsRaid() != isRaid || !p->CanReset())
         {
@@ -19164,11 +19164,11 @@ void Player::ResetInstances(uint8 method, bool isRaid)
         if (method == INSTANCE_RESET_ALL || method == INSTANCE_RESET_CHANGE_DIFFICULTY)
             SendResetInstanceSuccess(p->GetMapId());
 
-        p->DeleteFromDB();
+        sInstanceSaveMgr->DeleteInstanceFromDB(p->GetInstanceId());
         m_boundInstances[diff].erase(itr++);
 
         // the following should remove the instance save from the manager and delete it as well
-        p->RemovePlayer(this);
+        sInstanceSaveMgr->RemovePlayer(this, p->GetInstanceId());
     }
 }
 

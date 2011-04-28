@@ -1728,7 +1728,7 @@ bool InstanceMap::Add(Player *player)
                 player->AddInstanceEnterTime(GetInstanceId(), time(NULL));
 
             // get or create an instance save for the map
-            InstanceSave *mapSave = sInstanceSaveMgr->GetInstanceSave(GetInstanceId());
+            InstanceSave const *mapSave = sInstanceSaveMgr->GetInstanceSave(GetInstanceId());
             if (!mapSave)
             {
                 sLog->outDetail("InstanceMap::Add: creating instance save for map %d spawnmode %d with instance id %d", GetId(), GetSpawnMode(), GetInstanceId());
@@ -1921,7 +1921,7 @@ void InstanceMap::PermBindAllPlayers(Player *player)
     if (!IsDungeon())
         return;
 
-    InstanceSave *save = sInstanceSaveMgr->GetInstanceSave(GetInstanceId());
+    InstanceSave const *save = sInstanceSaveMgr->GetInstanceSave(GetInstanceId());
     if (!save)
     {
         sLog->outError("Cannot bind players, no instance save available for map!");
@@ -1973,7 +1973,7 @@ void InstanceMap::SetResetSchedule(bool on)
     // it is assumed that the reset time will rarely (if ever) change while the reset is scheduled
     if (IsDungeon() && !HavePlayers() && !IsRaidOrHeroicDungeon())
     {
-        if (InstanceSave *save = sInstanceSaveMgr->GetInstanceSave(GetInstanceId()))
+        if (InstanceSave const *save = sInstanceSaveMgr->GetInstanceSave(GetInstanceId()))
             sInstanceSaveMgr->ScheduleReset(on, save->GetResetTime(), InstanceSaveManager::InstResetEvent(0, GetId(), Difficulty(GetSpawnMode()), GetInstanceId()));
         else
         {          

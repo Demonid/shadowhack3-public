@@ -232,7 +232,7 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
     if (entry->IsDungeon() && (!player->GetGroup() || (player->GetGroup() && !player->GetGroup()->isLFGGroup())))
     {
         uint32 instaceIdToCheck = 0;
-        if (InstanceSave* save = player->GetInstanceSave(mapid, entry->IsRaid()))
+        if (InstanceSave const *save = player->GetInstanceSave(mapid, entry->IsRaid()))
             instaceIdToCheck = save->GetInstanceId();
 
         // instanceId can never be 0 - will not be found

@@ -86,7 +86,7 @@ Group::~Group()
     // this may unload some instance saves
     for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
         for (BoundInstancesMap::iterator itr2 = m_boundInstances[i].begin(); itr2 != m_boundInstances[i].end(); ++itr2)
-            itr2->second.save->RemoveGroup(this);
+            sInstanceSaveMgr->RemoveGroup(this, itr2->second.save->GetInstanceId());
 
     // Sub group counters clean up
     delete[] m_subGroupsCounts;
@@ -521,7 +521,7 @@ void Group::ChangeLeader(const uint64 &guid)
             {
                 if (itr->second.perm)
                 {
-                    itr->second.save->RemoveGroup(this);
+                    sInstanceSaveMgr->RemoveGroup(this, itr->second.save->GetInstanceId());
                     m_boundInstances[i].erase(itr++);
                 }
                 else
@@ -1593,7 +1593,7 @@ void Group::ResetInstances(uint8 method, bool isRaid, Player* SendMsgTo)
 
     for (BoundInstancesMap::iterator itr = m_boundInstances[diff].begin(); itr != m_boundInstances[diff].end();)
     {
-        InstanceSave *p = itr->second.save;
+        InstanceSave const *p = itr->second.save;
         const MapEntry *entry = sMapStore.LookupEntry(itr->first);
         if (!entry || entry->IsRaid() != isRaid || (!p->CanReset() && method != INSTANCE_RESET_GROUP_DISBAND))
         {
@@ -1634,7 +1634,7 @@ void Group::ResetInstances(uint8 method, bool isRaid, Player* SendMsgTo)
         {
             // do not reset the instance, just unbind if others are permanently bound to it
             if (p->CanReset())
-                p->DeleteFromDB();
+                sInstanceSaveMgr->DeleteInstanceFromDB(p->GetInstanceId());
             else
                 CharacterDatabase.PExecute("DELETE FROM group_instance WHERE instance = '%u'", p->GetInstanceId());
 
@@ -1643,7 +1643,7 @@ void Group::ResetInstances(uint8 method, bool isRaid, Player* SendMsgTo)
             itr = m_boundInstances[diff].begin();
             // this unloads the instance save unless online players are bound to it
             // (eg. permanent binds or GM solo binds)
-            p->RemoveGroup(this);
+            sInstanceSaveMgr->RemoveGroup(this, p->GetInstanceId());
         }
         else
             ++itr;
@@ -1689,7 +1689,7 @@ InstanceGroupBind* Group::GetBoundInstance(MapEntry const* mapEntry)
         return NULL;
 }
 
-InstanceGroupBind* Group::BindToInstance(InstanceSave *save, bool permanent, bool load)
+InstanceGroupBind* Group::BindToInstance(InstanceSave const *save, bool permanent, bool load)
 {
     if (!save || isBGGroup())
         return NULL;
@@ -1701,8 +1701,8 @@ InstanceGroupBind* Group::BindToInstance(InstanceSave *save, bool permanent, boo
     if (bind.save != save)
     {
         if (bind.save)
-            bind.save->RemoveGroup(this);
-        save->AddGroup(this);
+            sInstanceSaveMgr->RemoveGroup(this, bind.save->GetInstanceId());
+        sInstanceSaveMgr->AddGroup(this, save->GetInstanceId());
     }
 
     bind.save = save;
@@ -1721,7 +1721,7 @@ void Group::UnbindInstance(uint32 mapid, uint8 difficulty, bool unload)
     {
         if (!unload)
             CharacterDatabase.PExecute("DELETE FROM group_instance WHERE guid=%u AND instance=%u", m_storageId, itr->second.save->GetInstanceId());
-        itr->second.save->RemoveGroup(this);                // save can become invalid
+        sInstanceSaveMgr->RemoveGroup(this, itr->second.save->GetInstanceId());                // save can become invalid
         m_boundInstances[difficulty].erase(itr);
     }
 }

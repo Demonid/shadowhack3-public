@@ -147,7 +147,7 @@ class Roll : public LootValidatorRef
 
 struct InstanceGroupBind
 {
-    InstanceSave *save;
+    InstanceSave const *save;
     bool perm;
     /* permanent InstanceGroupBinds exist if the leader has a permanent
        PlayerInstanceBind for the same instance. */
@@ -289,7 +289,7 @@ class Group
         void LinkMember(GroupReference *pRef);
         void DelinkMember(GroupReference* /*pRef*/) const;
 
-        InstanceGroupBind* BindToInstance(InstanceSave *save, bool permanent, bool load = false);
+        InstanceGroupBind* BindToInstance(InstanceSave const *save, bool permanent, bool load = false);
         void UnbindInstance(uint32 mapid, uint8 difficulty, bool unload = false);
         InstanceGroupBind* GetBoundInstance(Player* player);
         InstanceGroupBind* GetBoundInstance(Map* aMap);
