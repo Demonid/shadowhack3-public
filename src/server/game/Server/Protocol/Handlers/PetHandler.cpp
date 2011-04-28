@@ -320,7 +320,7 @@ void WorldSession::HandlePetActionHelper(Unit *pet, uint64 guid1, uint16 spellid
 
             //  Clear the flags as if owner clicked 'attack'. AI will reset them
             //  after AttackStart, even if spell failed
-            if (pet->GetCharmInfo())
+            if (pet->GetCharmInfo() && spellid != 47482)
             {
                 pet->GetCharmInfo()->SetIsAtStay(false);
                 pet->GetCharmInfo()->SetIsCommandAttack(true);
