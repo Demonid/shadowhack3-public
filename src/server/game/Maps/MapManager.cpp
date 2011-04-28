@@ -222,8 +222,8 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
     if (group)
     {
         InstanceGroupBind* boundInstance = group->GetBoundInstance(entry);
-        if (boundInstance && boundInstance->save)
-            if (Map* boundMap = sMapMgr->FindMap(mapid, boundInstance->save->GetInstanceId()))
+        if (boundInstance && boundInstance->save())
+            if (Map* boundMap = sMapMgr->FindMap(mapid, boundInstance->instanceId))
                 if (!loginCheck && !boundMap->CanEnter(player))
                     return false;
     }

@@ -37,6 +37,7 @@
 #include "Unit.h"
 #include "Util.h"                                           // for Tokens typedef
 #include "WorldSession.h"
+#include "InstanceSaveMgr.h"
 
 #include<string>
 #include<vector>
@@ -816,12 +817,14 @@ enum PlayerDelayedOperations
 
 struct InstancePlayerBind
 {
-    InstanceSave const *save;
+    InstanceSave const *save() { return sInstanceSaveMgr->GetInstanceSave(instanceId); } // InstanceSave* validity should be checked dynamically
+    InstanceSave const *save() const { return sInstanceSaveMgr->GetInstanceSave(instanceId); } // the same for use with const_iterator
+    uint32 instanceId;
     bool perm;
     /* permanent PlayerInstanceBinds are created in Raid/Heroic instances for players
        that aren't already permanently bound when they are inside when a boss is killed
        or when they enter an instance that the group leader is permanently bound to. */
-    InstancePlayerBind() : save(NULL), perm(false) {}
+    InstancePlayerBind() : instanceId(0), perm(false) {}
 };
 
 enum DungeonStatusFlag

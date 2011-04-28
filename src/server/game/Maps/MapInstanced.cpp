@@ -129,7 +129,7 @@ Map* MapInstanced::CreateInstance(const uint32 mapId, Player * player)
     else
     {
         InstancePlayerBind *pBind = player->GetBoundInstance(GetId(), player->GetDifficulty(IsRaid()));
-        InstanceSave const *pSave = pBind ? pBind->save : NULL;
+        InstanceSave const *pSave = pBind ? pBind->save() : NULL;
 
         // the player's permanent player bind is taken into consideration first
         // then the player's group bind and finally the solo bind.
@@ -142,7 +142,7 @@ Map* MapInstanced::CreateInstance(const uint32 mapId, Player * player)
             {
                 groupBind = group->GetBoundInstance(this);
                 if (groupBind)
-                    pSave = groupBind->save;
+                    pSave = groupBind->save();
             }
         }
         if (pSave)

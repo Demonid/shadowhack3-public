@@ -917,7 +917,7 @@ void Player::CleanupsBeforeDelete(bool finalCleanup)
             continue;
 
         for (BoundInstancesMap::iterator itr = m_boundInstances[i].begin(); itr != m_boundInstances[i].end(); ++itr)
-            sInstanceSaveMgr->RemovePlayer(this, itr->second.save->GetInstanceId());
+            sInstanceSaveMgr->RemovePlayer(this, itr->second.instanceId);
     }
 }
 
@@ -17953,11 +17953,11 @@ InstancePlayerBind* Player::GetBoundInstance(uint32 mapid, Difficulty difficulty
 InstanceSave const *Player::GetInstanceSave(uint32 mapid, bool raid)
 {
     InstancePlayerBind *pBind = GetBoundInstance(mapid, GetDifficulty(raid));
-    InstanceSave const *pSave = pBind ? pBind->save : NULL;
+    InstanceSave const *pSave = pBind ? pBind->save() : NULL;
     if (!pBind || !pBind->perm)
         if (Group *group = GetGroup())
             if (InstanceGroupBind *groupBind = group->GetBoundInstance(this))
-                pSave = groupBind->save;
+                pSave = groupBind->save();
 
     return pSave;
 }
@@ -17973,8 +17973,8 @@ void Player::UnbindInstance(BoundInstancesMap::iterator &itr, Difficulty difficu
     if (itr != m_boundInstances[difficulty].end())
     {
         if (!unload)
-            CharacterDatabase.PExecute("DELETE FROM character_instance WHERE guid = '%u' AND instance = '%u'", GetGUIDLow(), itr->second.save->GetInstanceId());
-        sInstanceSaveMgr->RemovePlayer(this, itr->second.save->GetInstanceId());               // save can become invalid
+            CharacterDatabase.PExecute("DELETE FROM character_instance WHERE guid = '%u' AND instance = '%u'", GetGUIDLow(), itr->second.instanceId);
+        sInstanceSaveMgr->RemovePlayer(this, itr->second.instanceId);
         m_boundInstances[difficulty].erase(itr++);
     }
 }
@@ -17984,28 +17984,28 @@ InstancePlayerBind* Player::BindToInstance(InstanceSave const *save, bool perman
     if (save)
     {
         InstancePlayerBind& bind = m_boundInstances[save->GetDifficulty()][save->GetMapId()];
-        if (bind.save)
+        if (bind.save())
         {
             // update the save when the group kills a boss
-            if (permanent != bind.perm || save != bind.save)
+            if (permanent != bind.perm || save->GetInstanceId() != bind.instanceId)
                 if (!load)
-                    CharacterDatabase.PExecute("UPDATE character_instance SET instance = '%u', permanent = '%u' WHERE guid = '%u' AND instance = '%u'", save->GetInstanceId(), permanent, GetGUIDLow(), bind.save->GetInstanceId());
+                    CharacterDatabase.PExecute("UPDATE character_instance SET instance = '%u', permanent = '%u' WHERE guid = '%u' AND instance = '%u'", save->GetInstanceId(), permanent, GetGUIDLow(), bind.instanceId);
         }
         else
             if (!load)
                 CharacterDatabase.PExecute("INSERT IGNORE INTO character_instance (guid, instance, permanent) VALUES ('%u', '%u', '%u')", GetGUIDLow(), save->GetInstanceId(), permanent);
 
-        if (bind.save != save)
+        if (bind.instanceId != save->GetInstanceId())
         {
-            if (bind.save)
-                sInstanceSaveMgr->RemovePlayer(this, bind.save->GetInstanceId());
+            if (bind.save())
+                sInstanceSaveMgr->RemovePlayer(this, bind.instanceId);
             sInstanceSaveMgr->AddPlayer(this, save->GetInstanceId());
         }
 
         if (permanent)
             (const_cast<InstanceSave*>(save))->SetCanReset(false);
 
-        bind.save = save;
+        bind.instanceId = save->GetInstanceId();
         bind.perm = permanent;
         if (!load)
             sLog->outDebug(LOG_FILTER_MAPS, "Player::BindToInstance: %s(%d) is now bound to map %d, instance %d, difficulty %d", GetName(), GetGUIDLow(), save->GetMapId(), save->GetInstanceId(), save->GetDifficulty());
@@ -18041,14 +18041,17 @@ void Player::SendRaidInfo()
         {
             if (itr->second.perm)
             {
-                InstanceSave const *save = itr->second.save;
-                data << uint32(save->GetMapId());           // map id
-                data << uint32(save->GetDifficulty());      // difficulty
-                data << uint64(save->GetInstanceId());      // instance id
-                data << uint8(1);                           // expired = 0
-                data << uint8(0);                           // extended = 1
-                data << uint32(save->GetResetTime() - now); // reset time
-                ++counter;
+                InstanceSave const *save = itr->second.save();
+                if (save)
+                {
+                    data << uint32(save->GetMapId());           // map id
+                    data << uint32(save->GetDifficulty());      // difficulty
+                    data << uint64(save->GetInstanceId());      // instance id
+                    data << uint8(1);                           // expired = 0
+                    data << uint8(0);                           // extended = 1
+                    data << uint32(save->GetResetTime() - now); // reset time
+                    ++counter;
+                }
             }
         }
     }
@@ -18091,7 +18094,7 @@ void Player::SendSavedInstances()
             if (itr->second.perm)
             {
                 data.Initialize(SMSG_UPDATE_LAST_INSTANCE);
-                data << uint32(itr->second.save->GetMapId());
+                data << uint32(itr->second.save()->GetMapId());
                 GetSession()->SendPacket(&data);
             }
         }
@@ -18108,7 +18111,7 @@ void Player::ConvertInstancesToGroup(Player *player, Group *group, bool switchLe
     {
         for (BoundInstancesMap::iterator itr = player->m_boundInstances[i].begin(); itr != player->m_boundInstances[i].end();)
         {
-            group->BindToInstance(itr->second.save, itr->second.perm, false);
+            group->BindToInstance(itr->second.save(), itr->second.perm, false);
             // permanent binds are not removed
             if (switchLeader && !itr->second.perm)
             {
@@ -19133,9 +19136,9 @@ void Player::ResetInstances(uint8 method, bool isRaid)
 
     for (BoundInstancesMap::iterator itr = m_boundInstances[diff].begin(); itr != m_boundInstances[diff].end();)
     {
-        InstanceSave const *p = itr->second.save;
+        InstanceSave const *p = itr->second.save();
         const MapEntry *entry = sMapStore.LookupEntry(itr->first);
-        if (!entry || entry->IsRaid() != isRaid || !p->CanReset())
+        if (!p || !entry || entry->IsRaid() != isRaid || !p->CanReset())
         {
             ++itr;
             continue;
