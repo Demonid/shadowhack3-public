@@ -143,10 +143,10 @@ enum CharterTypes
 
 enum PremiumTypes
 {
-	PREMIUM_TYPE_XP_KILL							= 0x1,
-	PREMIUM_TYPE_XP_QUEST							= 0x2,
-	PREMIUM_TYPE_XP_EXPLORE							= 0x4,
-	PREMIUM_TYPE_SKILLGAIN_CRAFTING_AND_GATHERING	= 0x8,
+    PREMIUM_TYPE_XP_KILL                            = 0x1,
+    PREMIUM_TYPE_XP_QUEST                            = 0x2,
+    PREMIUM_TYPE_XP_EXPLORE                            = 0x4,
+    PREMIUM_TYPE_SKILLGAIN_CRAFTING_AND_GATHERING    = 0x8,
 };
 
 //class to deal with packet processing
@@ -375,7 +375,7 @@ class WorldSession
         // Recruit-A-Friend Handling
         uint32 GetRecruiterId() { return recruiterId; }
 
-		bool HasPremiumByType(uint8 premiumtype) const {return m_premiumtype & premiumtype;}
+        bool HasPremiumByType(uint8 premiumtype) const {return m_premiumtype & premiumtype;}
 
     public:                                                 // opcodes handlers
 
@@ -648,6 +648,7 @@ class WorldSession
 
         void HandleUseItemOpcode(WorldPacket& recvPacket);
         void HandleOpenItemOpcode(WorldPacket& recvPacket);
+        bool HandleClearTargetOpcode(WorldPacket& recvPacket, Unit* sender);
         void HandleCastSpellOpcode(WorldPacket& recvPacket);
         void HandleCancelCastOpcode(WorldPacket& recvPacket);
         void HandleCancelAuraOpcode(WorldPacket& recvPacket);

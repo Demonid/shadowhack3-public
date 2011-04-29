@@ -38,6 +38,10 @@ void UnitAI::AttackStartCaster(Unit *victim, float dist)
 
 void UnitAI::DoMeleeAttackIfReady()
 {
+    // water elemental doesn't have melee attack
+    if (me->GetEntry() == 510)
+        return;
+
     if (me->HasUnitState(UNIT_STAT_CASTING))
         return;
 

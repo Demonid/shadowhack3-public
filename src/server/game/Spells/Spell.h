@@ -489,7 +489,7 @@ class Spell
         void SendInterrupted(uint8 result);
         void SendChannelUpdate(uint32 time);
         void SendChannelStart(uint32 duration);
-        void SendResurrectRequest(Player* target);
+        void SendResurrectRequest(Player* target, bool delayed = false);
         void SendPlaySpellVisual(uint32 SpellID);
 
         void HandleEffects(Unit *pUnitTarget,Item *pItemTarget,GameObject *pGOTarget,uint32 i);
@@ -543,6 +543,8 @@ class Spell
         void CleanupTargetList();
 
         void SetSpellValue(SpellValueMod mod, int32 value);
+
+        SpellModifier *bugged_mod;
     protected:
 
         bool HasGlobalCooldown();
@@ -633,6 +635,7 @@ class Spell
             bool   processed:1;
             bool   alive:1;
             bool   crit:1;
+            bool   isfrozen:1;
             bool   scaleAura:1;
             int32  damage;
         };
@@ -726,6 +729,8 @@ class Spell
         uint8 m_auraScaleMask;
 
         ByteBuffer * m_effectExecuteData[MAX_SPELL_EFFECTS];
+
+        bool CheckForPowerfullAura(Unit * target);
 
 #ifdef MAP_BASED_RAND_GEN
         int32 irand(int32 min, int32 max)       { return int32 (m_caster->GetMap()->mtRand.randInt(max - min)) + min; }

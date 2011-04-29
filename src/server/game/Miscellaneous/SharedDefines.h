@@ -1205,7 +1205,7 @@ enum Mechanics
 // Used for spell 42292 Immune Movement Impairment and Loss of Control (0x49967da6)
 #define IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK (\
     (1<<MECHANIC_CHARM)|(1<<MECHANIC_DISORIENTED)|(1<<MECHANIC_FEAR)| \
-    (1<<MECHANIC_ROOT)|(1<<MECHANIC_PACIFY)|(1<<MECHANIC_SLEEP)| \
+    (1<<MECHANIC_ROOT)/*|(1<<MECHANIC_PACIFY)*/|(1<<MECHANIC_SLEEP)| \
     (1<<MECHANIC_SNARE)|(1<<MECHANIC_STUN)|(1<<MECHANIC_FREEZE)| \
     (1<<MECHANIC_KNOCKOUT)|(1<<MECHANIC_POLYMORPH)|(1<<MECHANIC_BANISH)| \
     (1<<MECHANIC_SHACKLE)|(1<<MECHANIC_TURN)|(1<<MECHANIC_HORROR)| \
@@ -2684,9 +2684,14 @@ enum DiminishingGroup
     DIMINISHING_CONTROL_ROOT,                               // Immobilizing effects from casted spells
     DIMINISHING_TRIGGER_ROOT,                               // Immobilizing effects from triggered spells like Frostbite
     DIMINISHING_CHARM,
-    DIMINISHING_POLYMORPH,              // Also: Gouge, Sap, Repentance, Hungering Cold
-    DIMINISHING_KNOCKOUT,               // Sap, Knockout mechanics
-    DIMINISHING_FEAR_BLIND,             // Intimidating Shout, Howl of Terror, Blind
+    DIMINISHING_DISORIENT,                                  // Also: Gouge, Sap, Repentance, Hungering Cold
+    DIMINISHING_SLOW,                                       // Mirror Image Frostbolt and other slowing spells
+    DIMINISHING_KNOCKOUT,                                   // Sap, Knockout mechanics
+    DIMINISHING_FEAR_BLIND,                                 // Intimidating Shout, Howl of Terror, Blind
+    // Warrior Specific
+    DIMINISHING_CHARGE,                                     // 3.1.0 Warrior Charge Diminishing
+    // Hunter Specific
+    DIMINISHING_SCATTER,                                    // Hunter Scatter Shot Diminishing
     // Warlock Specific
     DIMINISHING_DEATHCOIL,                                  // Death Coil Diminish only with another Death Coil
     // Druid Specific

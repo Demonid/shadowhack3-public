@@ -1786,9 +1786,11 @@ void Group::SetLfgRoles(uint64& guid, const uint8 roles)
          SendUpdate();
 }
 
-bool Group::IsFull() const
+bool Group::IsFull(uint16 size) const
 {
-    return isRaidGroup() ? (m_memberSlots.size() >= MAXRAIDSIZE) : (m_memberSlots.size() >= MAXGROUPSIZE);
+    if (size == 0)
+        return isRaidGroup() ? (m_memberSlots.size() >= MAXRAIDSIZE) : (m_memberSlots.size() >= MAXGROUPSIZE);
+    else return isRaidGroup() ? (m_memberSlots.size() >= size) : (m_memberSlots.size() >= size);
 }
 
 bool Group::isLFGGroup() const
