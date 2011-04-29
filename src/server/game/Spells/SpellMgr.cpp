@@ -3979,10 +3979,15 @@ void SpellMgr::LoadSpellCustomAttr()
         // Mind Flay
         if (spellInfo->SpellIconID == 548 && spellInfo->SpellFamilyFlags[2] == 0x00000440)
             spellInfo->AttributesEx |= SPELL_ATTR1_NEGATIVE; 
+
         if (spellInfo->SpellFamilyName == SPELLFAMILY_POTION && spellInfo->Attributes & SPELL_ATTR0_CASTABLE_WHILE_SITTING)
         {
             spellInfo->StartRecoveryTime = 20;
         }
+
+        for (uint32 x = 0; x < MAX_SPELL_REAGENTS; ++x)
+            spellInfo->Reagent[x] = 0;
+
         switch (i)
         {
         // Blink
