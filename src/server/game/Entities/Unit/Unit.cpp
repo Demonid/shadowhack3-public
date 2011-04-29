@@ -8305,8 +8305,11 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
                             sLog->outError("Unit::HandleProcTriggerSpell: Spell %u not handled in BR", auraSpellInfo->Id);
                         return false;
                     }
-                    basepoints0 = CalculatePctN(int32(damage), triggerAmount) / 3;
                     target = this;
+                    int32 bonus = 0;
+                    if (AuraEffect * aurEff = target->GetAuraEffect(trigger_spell_id, 0))
+                        bonus += aurEff->GetAmount();
+                    basepoints0 = bonus + CalculatePctN(int32(damage), triggerAmount) / 3;
                 }
                 break;
             }

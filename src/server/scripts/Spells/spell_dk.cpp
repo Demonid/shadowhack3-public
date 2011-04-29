@@ -221,9 +221,9 @@ class spell_dk_corpse_explosion : public SpellScriptLoader
                         GetCaster()->CastCustomSpell(unitTarget, SpellMgr::CalculateSpellEffectAmount(GetSpellInfo(), 1), &bp, NULL, NULL, true);
                         // Corpse Explosion (Suicide)
                         unitTarget->CastCustomSpell(unitTarget, DK_SPELL_CORPSE_EXPLOSION_TRIGGERED, &bp, NULL, NULL, true);
+                        // Set corpse look
+                        unitTarget->SetDisplayId(DISPLAY_GHOUL_CORPSE + urand(0, 3));
                     }
-                    // Set corpse look
-                    unitTarget->SetDisplayId(DISPLAY_GHOUL_CORPSE + urand(0, 3));
                 }
             }
 
