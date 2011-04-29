@@ -23401,19 +23401,21 @@ void Player::StoreLootItem(uint8 lootSlot, Loot* loot)
         SendEquipError(EQUIP_ERR_ALREADY_LOOTED, NULL, NULL);
         return;
     }
-
+    AllowedLooterSet* looters = item->GetAllowedLooters();
     // questitems use the blocked field for other purposes
     if (!qitem && item->is_blocked)
     {
-        SendLootRelease(GetLootGUID());
-        return;
+        if (loot->loot_type != LOOT_SKINNING || item->AllowedForPlayer(this))
+        {
+            SendLootRelease(GetLootGUID());
+            return;
+        }
     }
 
     ItemPosCountVec dest;
     uint8 msg = CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, item->itemid, item->count);
     if (msg == EQUIP_ERR_OK)
     {
-        AllowedLooterSet* looters = item->GetAllowedLooters();
         Item * newitem = StoreNewItem(dest, item->itemid, true, item->randomPropertyId, (looters->size() > 1) ? looters : NULL);
 
         if (qitem)
