@@ -7298,7 +7298,7 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, int32 honor, bool pvpt
 
     honor_f *= sWorld->getRate(RATE_HONOR);
     if (GetsRecruitAFriendBonus(false))
-        honor_f *= sWorld->getRate(RATE_REPUTATION_RECRUIT_A_FRIEND_BONUS);
+        honor_f *= 1 + sWorld->getRate(RATE_REPUTATION_RECRUIT_A_FRIEND_BONUS);
 
     // Back to int now
     honor = int32(honor_f);
