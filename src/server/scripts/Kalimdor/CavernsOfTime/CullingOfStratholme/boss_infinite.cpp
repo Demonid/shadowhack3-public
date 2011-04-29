@@ -21,8 +21,8 @@
 
 enum Spells
 {
-	SPELL_COURSE      = 60588,
-	SPELL_STRIKE      = 60590
+    SPELL_COURSE      = 60588,
+    SPELL_STRIKE      = 60590
 };
 
 class boss_infinite_corruptor : public CreatureScript
@@ -45,68 +45,68 @@ public:
 
         InstanceScript* m_pInstance;
 
-		uint32 m_uiStrikeTimer;
-		uint32 m_uiCourseTimer;
+        uint32 m_uiStrikeTimer;
+        uint32 m_uiCourseTimer;
 
-		void Reset() 
-		{
-			m_uiCourseTimer = 7000;
-			m_uiStrikeTimer = 5000;
-		}
+        void Reset() 
+        {
+            m_uiCourseTimer = 7000;
+            m_uiStrikeTimer = 5000;
+        }
 
-		void EnterCombat(Unit* who)
-		{
-			if(m_pInstance)
-				m_pInstance->SetData(TYPE_BONUS, SPECIAL);
-		}
+        void EnterCombat(Unit* who)
+        {
+            if(m_pInstance)
+                m_pInstance->SetData(TYPE_BONUS, SPECIAL);
+        }
 
-		void JustDied(Unit *killer)
-		{
-			if(m_pInstance)
-				m_pInstance->SetData(TYPE_BONUS, DONE);
-		}
+        void JustDied(Unit *killer)
+        {
+            if(m_pInstance)
+                m_pInstance->SetData(TYPE_BONUS, DONE);
+        }
 
-		void EnterEvadeMode()
-		{
-			if(!m_pInstance) return;
+        void EnterEvadeMode()
+        {
+            if(!m_pInstance) return;
 
-			me->RemoveAllAuras();
-			me->DeleteThreatList();
-			me->CombatStop(true);
-			me->LoadCreaturesAddon();
-			if(m_pInstance)
-				m_pInstance->SetData(TYPE_BONUS, IN_PROGRESS);
+            me->RemoveAllAuras();
+            me->DeleteThreatList();
+            me->CombatStop(true);
+            me->LoadCreaturesAddon();
+            if(m_pInstance)
+                m_pInstance->SetData(TYPE_BONUS, IN_PROGRESS);
 
-			if(me->isAlive())
-				me->GetMotionMaster()->MoveTargetedHome();  //Q: should we avoid it? simply ScriptedAI::EnterEvadeMode
+            if(me->isAlive())
+                me->GetMotionMaster()->MoveTargetedHome();  //Q: should we avoid it? simply ScriptedAI::EnterEvadeMode
 
-			me->SetLootRecipient(NULL);
+            me->SetLootRecipient(NULL);
 
-			Reset();
-		}
+            Reset();
+        }
 
-		void UpdateAI(const uint32 diff)
-		{
-			if (!UpdateVictim())
-				return;
+        void UpdateAI(const uint32 diff)
+        {
+            if (!UpdateVictim())
+                return;
 
-			DoMeleeAttackIfReady();
+            DoMeleeAttackIfReady();
 
-			if (m_uiCourseTimer < diff)
-			{
-				if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 60.0f, true))
-					DoCast(target, SPELL_COURSE);
+            if (m_uiCourseTimer < diff)
+            {
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 60.0f, true))
+                    DoCast(target, SPELL_COURSE);
 
-				m_uiCourseTimer = 17000;
-			}else m_uiCourseTimer -= diff;
+                m_uiCourseTimer = 17000;
+            }else m_uiCourseTimer -= diff;
 
-			if (m_uiStrikeTimer < diff)
-			{
-				DoCastVictim(SPELL_STRIKE);
+            if (m_uiStrikeTimer < diff)
+            {
+                DoCastVictim(SPELL_STRIKE);
 
-				m_uiStrikeTimer = 5000;
-			}else m_uiStrikeTimer -= diff;
-		}
+                m_uiStrikeTimer = 5000;
+            }else m_uiStrikeTimer -= diff;
+        }
     };
 
 };

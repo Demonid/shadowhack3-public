@@ -29,22 +29,22 @@ Script Data End */
 
 enum Spells
 {
-	SPELL_COURSE           = 52772,
-	SPELL_TIME_STOP        = 58848,
-	SPELL_TIME_WARP        = 52766,
-	SPELL_SPIKE_N          = 52771,
-	SPELL_SPIKE_H          = 58830,  
+    SPELL_COURSE           = 52772,
+    SPELL_TIME_STOP        = 58848,
+    SPELL_TIME_WARP        = 52766,
+    SPELL_SPIKE_N          = 52771,
+    SPELL_SPIKE_H          = 58830,  
 };
 
 enum Texts
 {
-	SAY_EPOCH_DEATH        = -1594119,  
-	SAY_EPOCH_SLAY01       = -1594120, 
-	SAY_EPOCH_SLAY02       = -1594121, 
-	SAY_EPOCH_SLAY03       = -1594122,
-	SAY_EPOCH_WARP01       = -1594123, 
-	SAY_EPOCH_WARP02       = -1594124, 
-	SAY_EPOCH_WARP03       = -1594125
+    SAY_EPOCH_DEATH        = -1594119,  
+    SAY_EPOCH_SLAY01       = -1594120, 
+    SAY_EPOCH_SLAY02       = -1594121, 
+    SAY_EPOCH_SLAY03       = -1594122,
+    SAY_EPOCH_WARP01       = -1594123, 
+    SAY_EPOCH_WARP02       = -1594124, 
+    SAY_EPOCH_WARP03       = -1594125
 };
 
 
@@ -65,85 +65,85 @@ public:
             pInstance = c->GetInstanceScript();
         }
 
-		uint32 Spike_Timer;
-		uint32 Warp_Timer;
-		uint32 Stop_Timer;
-		uint32 Course_Timer;
-		uint64 m_uiArthasGUID;
+        uint32 Spike_Timer;
+        uint32 Warp_Timer;
+        uint32 Stop_Timer;
+        uint32 Course_Timer;
+        uint64 m_uiArthasGUID;
 
         InstanceScript* pInstance;
 
         void Reset()
         {
-			Course_Timer = 9300;
-			Stop_Timer = 21300;
-			Warp_Timer = 25300;
-			Spike_Timer = 5300;
+            Course_Timer = 9300;
+            Stop_Timer = 21300;
+            Warp_Timer = 25300;
+            Spike_Timer = 5300;
         }
 
-		void JustDied(Unit * /*killer*/)
-		{
-			DoScriptText(SAY_EPOCH_DEATH, me);
-		}
+        void JustDied(Unit * /*killer*/)
+        {
+            DoScriptText(SAY_EPOCH_DEATH, me);
+        }
 
-		void KilledUnit(Unit* /*pVictim*/)
-		{
-			switch(rand()%3)
-			{
-			case 0: DoScriptText(SAY_EPOCH_SLAY01, me); break;
-			case 1: DoScriptText(SAY_EPOCH_SLAY02, me); break;
-			case 2: DoScriptText(SAY_EPOCH_SLAY03, me); break;
-			}
-		}
+        void KilledUnit(Unit* /*pVictim*/)
+        {
+            switch(rand()%3)
+            {
+            case 0: DoScriptText(SAY_EPOCH_SLAY01, me); break;
+            case 1: DoScriptText(SAY_EPOCH_SLAY02, me); break;
+            case 2: DoScriptText(SAY_EPOCH_SLAY03, me); break;
+            }
+        }
 
-		void UpdateAI(const uint32 diff)
-		{
-			if (!UpdateVictim())
-				return;
+        void UpdateAI(const uint32 diff)
+        {
+            if (!UpdateVictim())
+                return;
 
-			DoMeleeAttackIfReady();
+            DoMeleeAttackIfReady();
 
-			if (Course_Timer < diff)
-			{
-				if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50, true))
-					DoCast(target, SPELL_COURSE);
+            if (Course_Timer < diff)
+            {
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50, true))
+                    DoCast(target, SPELL_COURSE);
 
-				Course_Timer = 9300;
-			}else Course_Timer -= diff;
+                Course_Timer = 9300;
+            }else Course_Timer -= diff;
 
-			if (Spike_Timer < diff)
-			{
+            if (Spike_Timer < diff)
+            {
 
-				DoCastVictim(DUNGEON_MODE(SPELL_SPIKE_N, SPELL_SPIKE_H));
+                DoCastVictim(DUNGEON_MODE(SPELL_SPIKE_N, SPELL_SPIKE_H));
 
-				Spike_Timer = 5300;
-			}else Spike_Timer -= diff;
+                Spike_Timer = 5300;
+            }else Spike_Timer -= diff;
 
-			if (Stop_Timer < diff)
-			{
-				if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
-					DoCast(target, SPELL_TIME_STOP);
+            if (Stop_Timer < diff)
+            {
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                    DoCast(target, SPELL_TIME_STOP);
 
-				Stop_Timer = 21300;
-			}else Stop_Timer -= diff;
+                Stop_Timer = 21300;
+            }else Stop_Timer -= diff;
 
-			if (Warp_Timer < diff)
-			{
-				if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
-					DoCast(target, SPELL_TIME_WARP);
+            if (Warp_Timer < diff)
+            {
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                    DoCast(target, SPELL_TIME_WARP);
 
-				switch(rand()%3)
-				{
-				case 0: DoScriptText(SAY_EPOCH_WARP01, me); break;
-				case 1: DoScriptText(SAY_EPOCH_WARP02, me); break;
-				case 2: DoScriptText(SAY_EPOCH_WARP03, me); break;
-				}
+                switch(rand()%3)
+                {
+                case 0: DoScriptText(SAY_EPOCH_WARP01, me); break;
+                case 1: DoScriptText(SAY_EPOCH_WARP02, me); break;
+                case 2: DoScriptText(SAY_EPOCH_WARP03, me); break;
+                }
 
-				Warp_Timer = 25300;
-			}else Warp_Timer -= diff;
+                Warp_Timer = 25300;
+            }else Warp_Timer -= diff;
 
-		}
-	};
+        }
+    };
 
 };
 

@@ -202,6 +202,9 @@ void WorldSession::HandleArenaTeamLeaveOpcode(WorldPacket & recv_data)
     if (!at)
         return;
 
+    if (at->IsFighting())
+        return;
+
     if (_player->GetGUID() == at->GetCaptain() && at->GetMembersSize() > 1)
     {
         // check for correctness
@@ -258,6 +261,9 @@ void WorldSession::HandleArenaTeamRemoveOpcode(WorldPacket & recv_data)
 
     ArenaTeam *at = sObjectMgr->GetArenaTeamById(ArenaTeamId);
     if (!at)                                                 // arena team not found
+        return;
+
+    if (at->IsFighting())
         return;
 
     if (at->GetCaptain() != _player->GetGUID())
