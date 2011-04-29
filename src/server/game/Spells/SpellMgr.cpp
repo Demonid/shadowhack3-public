@@ -4190,6 +4190,10 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->AttributesEx2 |= SPELL_ATTR2_CANT_REFLECTED;
             count++;
             break; 
+        case 53654: // Beacon of Light
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
+            count++;
+            break;
         case 58597:    // Sacred Shield
             spellInfo->AttributesEx5 |= SPELL_ATTR5_SINGLE_TARGET_SPELL;
             count++;
