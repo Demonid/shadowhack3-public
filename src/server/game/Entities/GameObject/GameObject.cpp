@@ -281,7 +281,7 @@ void GameObject::Update(uint32 diff)
                     if (goInfo->trap.charges == 2)
                         m_cooldownTime = 10*1000;   // Hardcoded tooltip value
                     else if (Unit* owner = GetOwner())
-                        m_cooldownTime = goInfo->trap.startDelay*1000+500;
+                        m_cooldownTime = goInfo->trap.startDelay*1000-150;
                     m_lootState = GO_READY;
                     break;
                 }
