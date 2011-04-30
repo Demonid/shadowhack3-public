@@ -158,6 +158,7 @@ public:
                         deadman=(*itr);
                         deadman->setFaction(me->getFaction());
                         deadman->AddThreat(me->getVictim(), 1.0f);
+                        deadman->GetAI()->AttackStart(me->getVictim());
                         count-=1;
                     }
                     if(!count)
