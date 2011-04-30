@@ -3458,7 +3458,7 @@ void Spell::cast(bool skipCheck)
         case SPELLFAMILY_DEATHKNIGHT:
             // Chains of Ice correct Frost Fever
             if(m_spellInfo->Id == 45524)
-                m_caster->CastSpell(unitTarget, 55095, false);
+                m_caster->CastSpell(m_targets.getUnitTarget(), 55095, false);
             break;
         default:break;
     }
