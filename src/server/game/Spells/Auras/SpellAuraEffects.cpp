@@ -3766,7 +3766,7 @@ void AuraEffect::HandleAuraModDisarm(AuraApplication const * aurApp, uint8 mode,
     {
         if (Item *pItem = target->ToPlayer()->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
         {
-            if (pItem->GetProto()->Class != ITEM_CLASS_WEAPON)
+            if (attType == RANGED_ATTACK && pItem->GetProto()->Class != ITEM_CLASS_WEAPON)
                 return;
 
             uint8 attacktype = Player::GetAttackBySlot(slot);

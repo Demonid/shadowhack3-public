@@ -17,7 +17,9 @@ class  boss_hypnotoad_deadman : public CreatureScript
             me->GetMotionMaster()->MoveTargetedHome();
         }
         void EnterCombat(Unit *who)
-        {DoCast(me, 45112);}//visual mc buff
+        {
+            DoCast(me, 45112); // visual mc buff
+        }
         void UpdateAI(const uint32 diff)
         {
             if(!UpdateVictim())
