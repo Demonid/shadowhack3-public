@@ -112,7 +112,7 @@ public:
                 {
                     for(int i=0; i!=10; i++)
                     {
-                        if(target->GetTypeId() == TYPEID_PLAYER)
+                        if(target && target->GetTypeId() == TYPEID_PLAYER)
                             break;
                         target=SelectUnit(SELECT_TARGET_RANDOM, 0);
                     }
