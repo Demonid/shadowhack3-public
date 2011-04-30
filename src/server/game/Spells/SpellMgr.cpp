@@ -3990,6 +3990,10 @@ void SpellMgr::LoadSpellCustomAttr()
 
         switch (i)
         {
+        // fire nova for boses
+        case 30941:
+            spellInfo->EffectRadiusIndex[0] = 18;
+            break;
         // Blink
         case 1953:
             spellInfo->DurationIndex = 407;
