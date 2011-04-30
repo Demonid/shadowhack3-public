@@ -500,7 +500,7 @@ int WorldSocket::handle_input_header (void)
             m_Session ? m_Session->GetAccountId() : 0,
             _player ? _player->GetGUIDLow() : 0,
             _player ? _player->GetName() : "<none>",
-            header.size, header.cmd, str);
+            header.size, header.cmd, str.c_str());
 
         errno = EINVAL;
         return -1;
