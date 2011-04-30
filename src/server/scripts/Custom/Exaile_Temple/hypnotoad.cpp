@@ -69,6 +69,7 @@ public:
             HypnotoadDoor = pInstance->instance->GetGameObject( pInstance->GetData64(1));
             if(HypnotoadDoor)
                 HypnotoadDoor->SetGoState(GO_STATE_READY);
+            deadmen=DoFindFriendlyMissingBuff(100.0f, 45112);
 
             me->MonsterYell("Quack-quack",0, who->GetGUID());
         }
@@ -128,7 +129,7 @@ public:
                         me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
                         me->ApplySpellImmune(1, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, false);
                         Jumping_dummy_timer=0;
-                        damage=13000;
+                        damage=50000;
                         me->CastCustomSpell(target, 54959, 0 , &damage, 0, false);
                         me->RemoveUnitMovementFlag(MOVEMENTFLAG_LEVITATING);
                         Jump_timer=15000;
@@ -146,7 +147,7 @@ public:
             }
             if(deadman_timer<=diff && !enraged)//deadmen
             {
-                deadmen=DoFindFriendlyMissingBuff(100.0f, 45112);
+                //deadmen=DoFindFriendlyMissingBuff(100.0f, 45112);
                 int count=3;
                 if(deadmen_count)
                     count=5;

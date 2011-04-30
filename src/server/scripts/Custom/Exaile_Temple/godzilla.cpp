@@ -51,7 +51,7 @@ public:
                     //victim_list=DoFindFriendlyMissingBuff(100.0f, 45112);
                     for(std::list<Creature*>::iterator itr = victim_list.begin(); itr != victim_list.end(); ++itr)
                     {
-                        if((*itr)->GetEntry()==100006)
+                        if((*itr)->GetEntry()==100006 && (*itr)->isAlive())
                         {
                             victim=(*itr);
                             break;
