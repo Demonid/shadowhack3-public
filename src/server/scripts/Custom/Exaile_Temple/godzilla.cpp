@@ -108,14 +108,16 @@ public:
             } else beam_timer-=diff;
             if(fear_timer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                for(int i=0; i!=10; i++)
+                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
                 {
-                    if(target->GetTypeId() == TYPEID_PLAYER)
-                        break;
-                    target=SelectUnit(SELECT_TARGET_RANDOM, 0);
+                    for(int i=0; i!=10; i++)
+                    {
+                        if(target->GetTypeId() == TYPEID_PLAYER)
+                            break;
+                        target=SelectUnit(SELECT_TARGET_RANDOM, 0);
+                    }
+                    this->DoCast(target, 6215);
                 }
-                this->DoCast(target, 6215);
                 fear_timer=15000;
             }else fear_timer-=diff;
             if(!debug)
