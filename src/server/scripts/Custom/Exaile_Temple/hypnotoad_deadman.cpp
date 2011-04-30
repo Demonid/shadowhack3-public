@@ -31,8 +31,11 @@ class  boss_hypnotoad_deadman : public CreatureScript
                 me->TauntFadeOut(me->getVictim());
             }
                 
-            if(me->GetDistance2d(me->getVictim())<=4.0f)
-                DoCast(me, 47496, true);
+            if(me->GetDistance2d(me->getVictim())<=2.0f)
+            {
+                int32 bp = me->GetHealth()/4;
+                me->CastCustomSpell(me->getVictim(), 47496, &bp, 0, 0, true);
+            }
         }
     };
 };
