@@ -135,7 +135,7 @@ public:
 //                victim->Attack(me, true);
                 debug=true;
             }
-            if(me->getVictim()!=victim && !me->HasAuraType(SPELL_AURA_MOD_TAUNT))
+            if(me->getVictim() && me->getVictim()!=victim && !me->HasAuraType(SPELL_AURA_MOD_TAUNT))
             {
                 DoResetThreat();
                 AttackStart(victim);
@@ -144,7 +144,7 @@ public:
             }
             if(vound_timer < diff)
             {
-                if((me->getVictim()->GetHealth()*100 / me->getVictim()->GetMaxHealth())<=80.0f)
+                if(me->getVictim() && (me->getVictim()->GetHealth()*100 / me->getVictim()->GetMaxHealth())<=80.0f)
                 {
                     vound_timer=20000;
                     this->DoCast(me->getVictim(), 59263);
