@@ -2842,6 +2842,94 @@ public:
     }
 };
 
+class npc_spring_rabbit : public CreatureScript
+{
+public:
+    npc_spring_rabbit() : CreatureScript("npc_spring_rabbit") {}
+
+    enum eSpringRabbit
+    {
+        // see also Spring Rabbit's spells not used here: 61723, 61726
+        SPELL_SPRING_RABBIT_JUMP    = 61724,
+        SPELL_SPRING_RABBIT_IN_LOVE = 61728,
+        SPELL_BABY_BUNNY            = 61727,
+        SPELL_SPRING_FLING          = 61875,
+        ACTION_IS_NOTICED   = 1,
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+	    return new npc_spring_rabbitAI(pCreature);
+    }
+
+    struct npc_spring_rabbitAI : public ScriptedAI
+    {
+        npc_spring_rabbitAI(Creature* pCreature) : ScriptedAI(pCreature) { }
+
+        std::list<Creature*> rabbits;
+        uint64 partnerGUID;
+        uint32 timer;
+        bool inLove, male;
+
+        void UpdateAI(const uint32 diff)
+        {
+            if (timer <= diff)
+            {
+                if (inLove)
+                {
+                    Player* master = me->GetCharmerOrOwnerPlayerOrPlayerItself();
+                    if (master && master->IsInWorld()) master->CastSpell(master, SPELL_SPRING_FLING, true);
+                    if (!male) DoCast(SPELL_BABY_BUNNY);
+                    EnterEvadeMode();
+                }
+                else
+                {
+                    me->GetCreatureListWithEntryInGrid(rabbits, me->GetEntry(), 45.0f);
+                    if (rabbits.size() > 1)
+                    {
+                        Creature* partner = NULL;
+                        std::list<Creature*>::iterator i;
+                        for (i = rabbits.begin(); i != rabbits.end(); i++)
+                            if ((*i)->GetGUID() != me->GetGUID() && !CAST_AI(npc_spring_rabbitAI, (*i)->AI())->inLove)
+                            { partner = (*i); break; }
+                        if (partner)
+                        {
+                            inLove = true; male = true;
+                            partner->AI()->DoAction(ACTION_IS_NOTICED);
+                            partner->AI()->SetGUID(me->GetGUID(), 0);
+                            DoCast(partner, SPELL_SPRING_RABBIT_JUMP);
+                            DoCast(partner, SPELL_SPRING_RABBIT_IN_LOVE, true);
+                            partner->AI()->DoCast(me, SPELL_SPRING_RABBIT_IN_LOVE, true);
+                        }
+                    }
+                    rabbits.clear();
+                    timer = 4000;
+                }
+            }
+            else timer -= diff;
+        }
+
+        void DoAction(const int32 param)
+        {
+            if (param == ACTION_IS_NOTICED)
+            {
+                inLove = true;
+                me->StopMoving();
+                timer = 4000;
+            }
+        }
+
+        void SetGUID(const uint64& guid, int32 /*which*/) { partnerGUID = guid; }
+
+        void Reset()
+        {
+            partnerGUID = 0;
+            timer = 6000;
+            inLove = male = false;
+        }
+    };
+};
+
 void AddSC_npcs_special()
 {
 // init static map foodSpells
@@ -2880,5 +2968,6 @@ void AddSC_npcs_special()
     new npc_experience;
     new npc_stranger;
     new npc_bountiful_chair;
+    new npc_spring_rabbit;
 }
 
