@@ -88,7 +88,7 @@ public:
             if (!UpdateVictim())
                 return;
 
-            if(charge_timer < diff && me->GetDistance2d(me->getVictim())>=20.0f)
+            if(me->getVictim() && charge_timer < diff && me->GetDistance2d(me->getVictim())>=20.0f)
             {
                 charge_timer=20000;
                 DoCast(me->getVictim(), 58991);
