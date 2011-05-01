@@ -1027,17 +1027,12 @@ void Spell::AddUnitTarget(Unit* pVictim, uint32 effIndex)
         if (m_delayMoment == 0 || m_delayMoment>target.timeDelay)
             m_delayMoment = target.timeDelay;
     }
-    else if(m_caster->GetTypeId() == TYPEID_PLAYER && m_caster != pVictim)
+    else if(m_caster->GetTypeId() == TYPEID_PLAYER && (m_caster != pVictim || m_spellInfo->Id == 200006))
     {
-        if (IsCCSpell(m_spellInfo))
+        if (IsCCSpell(m_spellInfo) || (!IsPositiveSpell(m_spellInfo->Id) && m_spellInfo->Effect[0] != SPELL_EFFECT_INTERRUPT_CAST))
         {
             target.timeDelay = 200LL;
             m_delayMoment = 200LL;
-        }
-        else if (!IsPositiveSpell(m_spellInfo->Id))
-        {
-            target.timeDelay = 50LL;
-            m_delayMoment = 50LL;
         }
     }
     else
@@ -1427,10 +1422,10 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     }
 
     if (missInfo != SPELL_MISS_EVADE && m_caster && !m_caster->IsFriendlyTo(unit) && !IsPositiveSpell(m_spellInfo->Id) && 
-        !IsNoCombatSpells(m_spellInfo->Id))
+        !IsNoCombatSpells(m_spellInfo->Id) && !(m_spellInfo->AttributesEx3 & SPELL_ATTR3_NO_INITIAL_AGGRO))
     {
-        m_caster->CombatStart(unit, !(m_spellInfo->AttributesEx3 & SPELL_ATTR3_NO_INITIAL_AGGRO));
-
+        //m_caster->CombatStart(unit, !(m_spellInfo->AttributesEx3 & SPELL_ATTR3_NO_INITIAL_AGGRO));
+        m_caster->CastSpell(unit, 200006, true);
         if (m_customAttr & SPELL_ATTR0_CU_AURA_CC)
             if (!unit->IsStandState())
                 unit->SetStandState(UNIT_STAND_STATE_STAND);
@@ -3537,29 +3532,10 @@ void Spell::cast(bool skipCheck)
     if(!IsChanneledSpell(m_spellInfo))
         if(Player* modOwner = m_caster->GetSpellModOwner())
             modOwner->RemovePrecastSpellMods(this);
-    if (!IsPositiveSpell(m_spellInfo->Id) && !(IsNoCombatSpells(m_spellInfo->Id)) && !(m_spellInfo->AttributesEx & SPELL_ATTR1_NO_THREAT))
+
+    if (!IsPositiveSpell(m_spellInfo->Id) && !(IsNoCombatSpells(m_spellInfo->Id)) && !(m_spellInfo->AttributesEx & SPELL_ATTR1_NO_THREAT) && m_delayMoment > 200LL)
     {
-        bool isnoaggro = !(m_spellInfo->AttributesEx3 & SPELL_ATTR3_NO_INITIAL_AGGRO);
-        if(m_UniqueTargetInfo.size())
-        {
-            for (std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
-            {
-                if(m_caster->GetGUID() == ihit->targetGUID)
-                    continue;
-                if(unitTarget && ihit->targetGUID == unitTarget->GetGUID())
-                {
-                    if(!m_caster->IsFriendlyTo(unitTarget))
-                        m_caster->CombatStart(unitTarget, isnoaggro);
-                    continue;
-                }
-                if (Unit* unit = ObjectAccessor::GetUnit(*m_caster, ihit->targetGUID))
-                    if(!m_caster->IsFriendlyTo(unit))
-                        m_caster->CombatStart(unit, isnoaggro);
-            }
-        }
-        else if(unitTarget)
-            if(!m_caster->IsFriendlyTo(unitTarget))
-                m_caster->CombatStart(unitTarget, isnoaggro);
+        m_caster->CastSpell(m_caster, 200006, true);
     }
 
     // stealth must be removed at cast starting (at show channel bar)

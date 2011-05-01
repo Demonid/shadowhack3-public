@@ -502,7 +502,7 @@ enum SpellAttr6
     SPELL_ATTR6_UNK20                            = 0x00100000, // 20
     SPELL_ATTR6_CLIENT_UI_TARGET_EFFECTS         = 0x00200000, // 21 it's only client-side attribute
     SPELL_ATTR6_UNK22                            = 0x00400000, // 22
-    SPELL_ATTR6_UNK23                            = 0x00800000, // 23 not set in 3.0.3
+    SPELL_ATTR6_NOINSTANT_DAMAGE_SPELLS          = 0x00800000, // 23 not set in 3.0.3
     SPELL_ATTR6_UNK24                            = 0x01000000, // 24 not set in 3.0.3
     SPELL_ATTR6_UNK25                            = 0x02000000, // 25 not set in 3.0.3
     SPELL_ATTR6_UNK26                            = 0x04000000, // 26 not set in 3.0.3
