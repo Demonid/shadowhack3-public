@@ -803,7 +803,7 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
             case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_DAILY_QUEST:
             {
                 // AchievementMgr::UpdateAchievementCriteria might also be called on login - skip in this case
-                if (!miscValue1)
+                if (!miscvalue1)
                     continue;
 
                 if (achievement->categoryId == CATEGORY_CHILDRENS_WEEK)
