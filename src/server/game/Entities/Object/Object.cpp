@@ -1886,9 +1886,9 @@ bool WorldObject::canDetect(WorldObject const* obj, bool ignoreStealth) const
     const WorldObject* seer = this;
 
     // Pets don't have detection, they use the detection of their masters
-    if (const Unit* thisUnit = ToUnit())
+    /*if (const Unit* thisUnit = ToUnit())
         if (Unit* controller = thisUnit->GetCharmerOrOwner())
-            seer = controller;
+            seer = controller;*/
 
     if (obj->isAlwaysDetectableFor(seer))
         return true;
@@ -1958,6 +1958,9 @@ bool WorldObject::canDetectStealthOf(WorldObject const* obj) const
     {
         if (!(obj->m_stealth.GetFlags() & (1 << i)))
             continue;
+        if (const Unit* thisUnit = ToUnit())
+            if (Unit* controller = thisUnit->GetCharmerOrOwner())
+                return controller->canDetectStealthOf(obj);
 
         if (isType(TYPEMASK_UNIT))
             if (((Unit*)this)->HasAuraTypeWithMiscvalue(SPELL_AURA_DETECT_STEALTH, i))
