@@ -886,6 +886,7 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
                 case 40477: // Forceful Strike
                 case 200013: // EY trigger
                 case 2479:
+                case 200006:
                     return false;
                 case 31719: // Suspension
                 case 30877: // Tag Murloc
@@ -3990,6 +3991,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
         switch (i)
         {
+        case 7266: // duel
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
+            break;
         // fire nova for boses
         case 30941:
             spellInfo->EffectRadiusIndex[0] = 18;
@@ -5130,6 +5134,8 @@ bool IsNoCombatSpells (uint32 spellId)
        case 70619:
        // Shadowmeld
        case 58984:
+       // Dummy spell +combat for not cycled
+       case 200006:
            return true;
        default: return false;
    }

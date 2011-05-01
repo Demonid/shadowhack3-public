@@ -649,10 +649,10 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         if (spellProto)
         {
             if (!(spellProto->AttributesEx4 & SPELL_ATTR4_DAMAGE_NOT_BREAK_AURAS))
-                pVictim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TAKE_DAMAGE, spellProto->Id);
+                pVictim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TAKE_DAMAGE, spellProto->Id, damagetype == DOT);
         }
         else
-            pVictim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TAKE_DAMAGE, 0);
+            pVictim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TAKE_DAMAGE, 0, damagetype == DOT);
 
         // We're going to call functions which can modify content of the list during iteration over it's elements
         // Let's copy the list so we can prevent iterator invalidation
@@ -4007,7 +4007,7 @@ void Unit::RemoveNotOwnSingleTargetAuras(uint32 newPhase)
     }
 }
 
-void Unit::RemoveAurasWithInterruptFlags(uint32 flag, uint32 except)
+void Unit::RemoveAurasWithInterruptFlags(uint32 flag, uint32 except, bool instant)
 {
     if (!(m_interruptMask & flag))
         return;
@@ -4019,10 +4019,15 @@ void Unit::RemoveAurasWithInterruptFlags(uint32 flag, uint32 except)
         ++iter;
         if ((aura->GetSpellProto()->AuraInterruptFlags & flag) && (!except || aura->GetId() != except))
         {
-            uint32 removedAuras = m_removedAurasCount;
-            RemoveAura(aura);
-            if (m_removedAurasCount > removedAuras + 1)
-                iter = m_interruptableAuras.begin();
+            if (instant)
+            {
+                uint32 removedAuras = m_removedAurasCount;
+                RemoveAura(aura);
+                if (m_removedAurasCount > removedAuras + 1)
+                    iter = m_interruptableAuras.begin();
+            }
+            else if(aura->GetDuration() > 200) 
+                aura->SetDuration(200);
         }
     }
 
@@ -12652,7 +12657,7 @@ void Unit::SetInCombatState(bool PvP, Unit* enemy)
             || enemy->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE) || enemy->IsVehicle();
         
     if (PvP)
-        m_CombatTimer = 6000;
+        m_CombatTimer = 4500;
 
     if (isInCombat() || HasUnitState(UNIT_STAT_EVADE))
         return;

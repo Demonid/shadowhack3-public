@@ -833,6 +833,12 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
         {
             switch (m_spellInfo->Id)
             {
+                case 200006:
+                {
+                    if (!m_caster->GetAuraEffect(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE, SPELLFAMILYFLAG_ROGUE_VANISH, 0, 0))
+                        m_caster->CombatStart(unitTarget);
+                    return;
+                }
                 case 200013: // EY - AreaTrigger
                 {
                     if(unitTarget->GetTypeId() == TYPEID_PLAYER)
