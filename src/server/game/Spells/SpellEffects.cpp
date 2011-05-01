@@ -4614,30 +4614,256 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                     unitTarget->RemoveAuraFromStack(66482);
                     }
                 break;
-                // Izbooshka AutoCharCopy (server-side)
+                // Izbooshka AutoCopy 1 (server-side)
                 case 123456:
                 {
                     if (!m_caster || m_caster->GetTypeId() != TYPEID_PLAYER || !unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
                         return;
 
-                    if (unitTarget->ToPlayer()->getLevel() < 80)
-					{
-                        unitTarget->ToPlayer()->SetLevel(80);
-                        unitTarget->ToPlayer()->UpdateSkillsToMaxSkillsForLevel(); // Max Skills
-					}
+                    Player* target = unitTarget->ToPlayer();
+                    if (!target)
+                        return;
 
-                    unitTarget->ToPlayer()->ModifyMoney(1000 * GOLD); // 1000 Gold
-                    unitTarget->ToPlayer()->learnSpell(34091, false); // Artisan Riding
-                    unitTarget->ToPlayer()->learnSpell(54197, false); // Cold Weather Flying
+                    // Levelup
+                    if (target->getLevel() < 80)
+                    {
+                        target->GiveLevel(80);
+                    }
 
+                    // Money, Riding, Bags
+                    target->ModifyMoney(1500 * GOLD); // 1500 Gold
+                    target->learnSpell(34091, false); // Artisan Riding
+                    target->learnSpell(54197, false); // Cold Weather Flying
+                    target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 41599, 1); // Frostweave Bag
+                    target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 41599, 1); // Frostweave Bag
+                    target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 41599, 1); // Frostweave Bag
+                    target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 41599, 1); // Frostweave Bag
 
-					// Items - Trinket
-                    if (unitTarget->ToPlayer()->getRace() == RACE_HUMAN)
-						unitTarget->ToPlayer()->AddItem(42990, 1); // Darkmoon Card: Death
-					else if (unitTarget->ToPlayer()->GetTeam() == TEAM_ALLIANCE)
-						unitTarget->ToPlayer()->AddItem(42123, 1); // Medallion of the Alliance
-					else if (unitTarget->ToPlayer()->GetTeam() == TEAM_HORDE)
-						unitTarget->ToPlayer()->AddItem(42122, 1); // Medallion of the Horde
+                    // Trinkets
+                    if (target->getRace() == RACE_HUMAN)
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42990, 1); // Darkmoon Card: Death
+                    if ((target->getRaceMask() & RACEMASK_ALLIANCE) && !(target->getRace() == RACE_HUMAN))
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42123, 1); // Medallion of the Alliance
+                    if (target->getRaceMask() & RACEMASK_HORDE)
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42122, 1); // Medallion of the Horde
+
+                    // Items for specializations:
+                    // Warrior - all, Paladin - retribution, Death Knight - all
+                    if (target->getClass() == CLASS_WARRIOR || target->getClass() == CLASS_PALADIN || target->getClass() == CLASS_DEATH_KNIGHT)
+                    {
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 41386, 1); // Spiked Titansteel Helm
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42645, 1); // Titanium Impact Choker
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 41351, 1); // Savage Saronite Pauldrons
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 45811, 1); // Frostguard Drape
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 41353, 1); // Savage Saronite Hauberk
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 41354, 1); // Savage Saronite Bracers
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 41349, 1); // Savage Saronite Gauntlets
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 41352, 1); // Savage Saronite Waistguard
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 41347, 1); // Savage Saronite Legplates
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 41391, 1); // Spiked Titansteel Treads
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42642, 1); // Titanium Impact Band
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 45809, 1); // Scarlet Signet
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42987, 1); // Darkmoon Card: Greatness
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 37852, 1); // Colossal Skull-Clad Cleaver
+                       if (target->getClass() == CLASS_WARRIOR)
+                           target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 40716, 1); // Lillehoff's Winged Blades
+                       else if (target->getClass() == CLASS_PALADIN)
+                           target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42851, 1); // Hateful Gladiator's Libram of Fortitude
+                       else if (target->getClass() == CLASS_DEATH_KNIGHT)
+                           target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 40716, 1); // sigil
+                    }
+                    // Hunter - all
+                    else if (target->getClass() == CLASS_HUNTER)
+                    {
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43447, 1); // Swiftarrow Helm
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42645, 1); // Titanium Impact Choker
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43449, 1); // Swiftarrow Shoulderguards
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 45811, 1); // Frostguard Drape
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43445, 1); // Swiftarrow Hauberk
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43459, 1); // Giantmaim Bracers
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43446, 1); // Swiftarrow Gauntlets
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43442, 1); // Swiftarrow Belt
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43458, 1); // Giantmaim Legguards
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43443, 1); // Swiftarrow Boots
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42642, 1); // Titanium Impact Band
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 45809, 1); // Scarlet Signet
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 44253, 1); // Darkmoon Card: Greatness
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 37852, 1); // Colossal Skull-Clad Cleaver
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 39296, 1); // Accursed Bow of the Elite
+                    }
+                    // Shaman - elemental, restoration
+                    else if (target->getClass() == CLASS_SHAMAN)
+                    {
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43455, 1); // Stormhide Crown
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42647, 1); // Titanium Spellshock Necklace
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43457, 1); // Stormhide Shoulders
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 41610, 1); // Deathchill Cloak
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43461, 1); // Revenant's Beastplate
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43452, 1); // Stormhide Wristguards
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43454, 1); // Stormhide Grips
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43450, 1); // Stormhide Belt
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43456, 1); // Stormhide Legguards
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43469, 1); // Revenant's Treads
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42644, 1); // Titanium Spellshock Ring
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 45808, 1); // Runed Mana Band
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42988, 1); // Darkmoon Card: Illusion
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 39271, 1); // Blade of Dormant Memories
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 39233, 1); // Aegis of Damnation
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42601, 1); // Hateful Gladiator's Totem of Survival
+                    }
+                    // Rogue - all, Druid - feral
+                    else if (target->getClass() == CLASS_ROGUE || target->getClass() == CLASS_DRUID)
+                    {
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43260, 1); // Eviscerator's Facemask
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42645, 1); // Titanium Impact Choker
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43481, 1); // Trollwoven Spaulders
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 45811, 1); // Frostguard Drape
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43434, 1); // Eviscerator's Chestguard
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43435, 1); // Eviscerator's Bindings
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43436, 1); // Eviscerator's Gauntlets
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43484, 1); // Trollwoven Girdle
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43438, 1); // Eviscerator's Legguards
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43439, 1); // Eviscerator's Treads
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42642, 1); // Titanium Impact Band
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 45809, 1); // Scarlet Signet
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 44253, 1); // Darkmoon Card: Greatness
+                       if (target->getClass() == CLASS_DRUID)
+                       {
+                          target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 37883, 1); // Staff of Trickery
+                          target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42587, 1); // Hateful Gladiator's Idol of Resolve
+                       }
+                       else if (target->getClass() == CLASS_ROGUE)
+                       {
+                          target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 39140, 1); // Knife of Incision
+                          target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 39140, 1); // Knife of Incision
+                          target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 40716, 1); // Lillehoff's Winged Blades
+                       }
+                    }
+                    // Mage - all, Warlock - all, Priest - all
+                    else if (target->getClass() == CLASS_MAGE || target->getClass() == CLASS_WARLOCK || target->getClass() == CLASS_PRIEST)
+                    {
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43971, 1); // Frostsavage Cowl
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42647, 1); // Titanium Spellshock Necklace
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43973, 1); // Frostsavage Shoulders
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 41610, 1); // Deathchill Cloak
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42101, 1); // Ebonweave Robe
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43974, 1); // Frostsavage Bracers
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42111, 1); // Ebonweave Gloves
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43969, 1); // Frostsavage Belt
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43975, 1); // Frostsavage Leggings
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43970, 1); // Frostsavage Boots
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42644, 1); // Titanium Spellshock Ring
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 45808, 1); // Runed Mana Band
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42988, 1); // Darkmoon Card: Illusion
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 39256, 1); // Sulfur Stave
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 37238, 1); // Rod of the Fallen Monarch
+                    }
+                    break;
+                }
+                // Izbooshka AutoCopy 2 (server-side)
+                case 123457:
+                {
+                    if (!m_caster || m_caster->GetTypeId() != TYPEID_PLAYER || !unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+                        return;
+
+                    Player* target = unitTarget->ToPlayer();
+                    if (!target)
+                        return;
+
+                    // Levelup
+                    if (target->getLevel() < 80)
+                    {
+                        target->GiveLevel(80);
+                    }
+
+                    // Money, Riding, Bags
+                    target->ModifyMoney(1500 * GOLD); // 1500 Gold
+                    target->learnSpell(34091, false); // Artisan Riding
+                    target->learnSpell(54197, false); // Cold Weather Flying
+                    target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 41599, 1); // Frostweave Bag
+                    target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 41599, 1); // Frostweave Bag
+                    target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 41599, 1); // Frostweave Bag
+                    target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 41599, 1); // Frostweave Bag
+
+                    // Trinkets
+                    if (target->getRace() == RACE_HUMAN)
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42990, 1); // Darkmoon Card: Death
+                    if ((target->getRaceMask() & RACEMASK_ALLIANCE) && !(target->getRace() == RACE_HUMAN))
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42123, 1); // Medallion of the Alliance
+                    if (target->getRaceMask() & RACEMASK_HORDE)
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42122, 1); // Medallion of the Horde
+
+                    // Items for specializations:
+                    // Paladin - holy
+                    if (target->getClass() == CLASS_PALADIN)
+                    {
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 41388, 1); // Brilliant Titansteel Helm
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42647, 1); // Titanium Spellshock Necklace
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42727, 1); // Ornate Saronite Pauldrons
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 41610, 1); // Deathchill Cloak
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42725, 1); // Ornate Saronite Hauberk
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42723, 1); // Ornate Saronite Bracers
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42724, 1); // Ornate Saronite Gauntlets
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42729, 1); // Ornate Saronite Waistguard
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42726, 1); // Ornate Saronite Legplates
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 41394, 1); // Brilliant Titansteel Treads
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42644, 1); // Titanium Spellshock Ring
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 45808, 1); // Runed Mana Band
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42988, 1); // Darkmoon Card: Illusion
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 39281, 1); // Infection Repulser
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 39233, 1); // Aegis of Damnation
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42613, 1); // Hateful Gladiator's Libram of Justice
+                    }
+                    // Shaman - enchancement
+                    else if (target->getClass() == CLASS_SHAMAN)
+                    {
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43447, 1); // Swiftarrow Helm
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42645, 1); // Titanium Impact Choker
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43449, 1); // Swiftarrow Shoulderguards
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 45811, 1); // Frostguard Drape
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43445, 1); // Swiftarrow Hauberk
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43459, 1); // Giantmaim Bracers
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43446, 1); // Swiftarrow Gauntlets
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43442, 1); // Swiftarrow Belt
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43458, 1); // Giantmaim Legguards
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43443, 1); // Swiftarrow Boots
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42642, 1); // Titanium Impact Band
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 45809, 1); // Scarlet Signet
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42990, 1); // Darkmoon Card: Death
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 40189, 1); // Angry Dread
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 40189, 1); // Angry Dread
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42606, 1); // Hateful Gladiator's Totem of Indomitability
+                    }
+                    // Druid - balance, restoration
+                    else if (target->getClass() == CLASS_DRUID)
+                    {
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43261, 1); // Overcast Headguard
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42647, 1); // Titanium Spellshock Necklace
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43262, 1); // Overcast Spaulders
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 41610, 1); // Deathchill Cloak
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43263, 1); // Overcast Chestguard
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43264, 1); // Overcast Bracers
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43265, 1); // Overcast Handwraps
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 43266, 1); // Overcast Belt
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 44931, 1); // Windripper Leggings
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 44930, 1); // Windripper Boots
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42644, 1); // Titanium Spellshock Ring
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 45808, 1); // Runed Mana Band
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42988, 1); // Darkmoon Card: Illusion
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 39256, 1); // Sulfur Stave
+                       target->sendItemViaMail("IzbooshkaCopy", "IzbooshkaCopy", 42577, 1); // Hateful Gladiator's Idol of Tenacity
+                    }
+                    break;
+                }
+                // Skill-up
+                case 123455:
+                {
+                    if(!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+                       return;
+
+                    Player* target = unitTarget->ToPlayer();
+                    target->UpdateSkillsForLevel();
+                    target->UpdateSkillsToMaxSkillsForLevel(); // Max Skills
                     break;
                 }
                 // Despawn Creature (server-side spell)
