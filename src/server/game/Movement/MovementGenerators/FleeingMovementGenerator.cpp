@@ -23,8 +23,8 @@
 #include "DestinationHolderImp.h"
 #include "ObjectAccessor.h"
 
-#define MIN_QUIET_DISTANCE 25.0f
-#define MAX_QUIET_DISTANCE 43.0f
+#define MIN_QUIET_DISTANCE 20.0f
+#define MAX_QUIET_DISTANCE 30.0f
 
 template<class T>
 void
@@ -44,29 +44,8 @@ FleeingMovementGenerator<T>::_setTargetLocation(T &owner)
         return;
 
     owner.AddUnitState(UNIT_STAT_FLEEING | UNIT_STAT_ROAMING);
-    _startMovementWithPathfinding(owner, x, y, z);
-}
-
-template<class T>
-void
-FleeingMovementGenerator<T>::_startMovementWithPathfinding(T &owner, float t_x, float t_y, float t_z)
-{
-    if (!&owner)
-        return;
-
-    if (owner.HasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED))
-        return;
-
     Traveller<T> traveller(owner);
-    i_destinationHolder.SetDestination(traveller, t_x, t_y, t_z, false);
-
-    PathInfo path(&owner, t_x, t_y, t_z);
-    PointPath pointPath = path.getFullPath();
-
-    float speed = traveller.Speed() * 0.001f; // in ms
-    uint32 transitTime = uint32(pointPath.GetTotalLength() / speed);
-
-    owner.SendMonsterMoveByPath(pointPath, 1, pointPath.size(), transitTime);
+    i_destinationHolder.SetDestination(traveller, x, y, z);
 }
 
 template<>
@@ -96,14 +75,8 @@ FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float &z)
     y = owner.GetPositionY();
     z = owner.GetPositionZ();
 
-    float angle = 0;
+    float temp_x, temp_y, angle = 0;
     const Map * _map = owner.GetBaseMap();
-
-    // wtf air bug
-    float tmpz = _map->GetHeight(x, y, z, true);
-    if (abs(z - tmpz) > 5)
-        z = tmpz;
-
     //primitive path-finding
     for (uint8 i = 0; i < 18; ++i)
     {
@@ -182,51 +155,46 @@ FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float &z)
                 distance /= 2;
                 break;
         }
-        float temp_z=z;
-        float temp_x=x;
-        float temp_y=y;
-        int iter=int(distance);
-        l:
+        temp_x = x + distance * cos(angle);
+        temp_y = y + distance * sin(angle);
         Trinity::NormalizeMapCoord(temp_x);
         Trinity::NormalizeMapCoord(temp_y);
-        if(!owner.IsWithinLOS(temp_x,temp_y,z))
-            continue;
-        bool is_water_now = _map->IsInWater(x,y,z);
-        if (is_water_now && _map->IsInWater(temp_x,temp_y,z))
+        if (owner.IsWithinLOS(temp_x,temp_y,z))
         {
-            x = temp_x;
-            y = temp_y;
-            return true;
-        }
-        float new_z = _map->GetHeight(temp_x,temp_y,z,true);
+            bool is_water_now = _map->IsInWater(x,y,z);
 
-        if (new_z <= INVALID_HEIGHT || abs(temp_z-new_z)>=1.0f)
+            if (is_water_now && _map->IsInWater(temp_x,temp_y,z))
+            {
+                x = temp_x;
+                y = temp_y;
+                return true;
+            }
+            float new_z = _map->GetHeight(temp_x,temp_y,z,true);
+
+            if (new_z <= INVALID_HEIGHT)
                 continue;
 
             if (fabs(new_z - z) > 3.0f)
-            continue;
-        temp_z=new_z;
-        bool is_water_next = _map->IsInWater(temp_x,temp_y,new_z);
+                continue;
 
-        if ((is_water_now && !is_water_next && !is_land_ok) || (!is_water_now && is_water_next && !is_water_ok))
-            continue;
+            bool is_water_next = _map->IsInWater(temp_x,temp_y,new_z);
 
-        if (!(new_z - z) || distance / fabs(new_z - z) > 1.0f)
-        {
-            float new_z_left = _map->GetHeight(temp_x + 1.0f*cos(angle+M_PI/2),temp_y + 1.0f*sin(angle+M_PI/2),z,true);
-            float new_z_right = _map->GetHeight(temp_x + 1.0f*cos(angle-M_PI/2),temp_y + 1.0f*sin(angle-M_PI/2),z,true);
-            if (fabs(new_z_left - new_z) < 1.2f && fabs(new_z_right - new_z) < 1.2f)
+            if ((is_water_now && !is_water_next && !is_land_ok) || (!is_water_now && is_water_next && !is_water_ok))
+                continue;
+
+            if (!(new_z - z) || distance / fabs(new_z - z) > 1.0f)
             {
-                if(iter>0)
+                float new_z_left = _map->GetHeight(temp_x + (float)(cos(angle+M_PI/2)),temp_y + (float)(sin(angle+M_PI/2)),z,true);
+                float new_z_right = _map->GetHeight(temp_x + (float)(cos(angle-M_PI/2)),temp_y + (float)(sin(angle-M_PI/2)),z,true);
+                if (fabs(new_z_left - new_z) < 1.2f && fabs(new_z_right - new_z) < 1.2f)
                 {
-                    temp_x+=cos(angle);temp_y+=sin(angle); --iter;
-                    goto l;
+                    x = temp_x;
+                    y = temp_y;
+                    z = new_z;
+                    return true;
                 }
-                x=temp_x;y=temp_y;z = new_z;
-                return true;
             }
         }
-
     }
     i_to_distance_from_caster = 0.0f;
     i_nextCheckTime.Reset(urand(500,1000));

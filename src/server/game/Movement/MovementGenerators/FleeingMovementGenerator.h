@@ -22,7 +22,6 @@
 #include "MovementGenerator.h"
 #include "DestinationHolder.h"
 #include "Traveller.h"
-#include "PathFinder.h"
 
 template<class T>
 class FleeingMovementGenerator
@@ -41,7 +40,6 @@ class FleeingMovementGenerator
 
     private:
         void _setTargetLocation(T &owner);
-        void _startMovementWithPathfinding(T &owner, float t_x, float t_y, float t_z);
         bool _getPoint(T &owner, float &x, float &y, float &z);
         bool _setMoveData(T &owner);
         void _Init(T &);

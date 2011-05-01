@@ -32,18 +32,13 @@ template<class T>
 void
 ConfusedMovementGenerator<T>::Initialize(T &unit)
 {
-    const float wander_distance = 4;
+    const float wander_distance = 5;
     float x,y,z;
     x = unit.GetPositionX();
     y = unit.GetPositionY();
     z = unit.GetPositionZ();
 
     Map const* map = unit.GetBaseMap();
-
-    // wtf air bug
-    float tmpz = map->GetHeight(x, y, z, true);
-    if ((z - tmpz) > 4)
-        z = tmpz;
 
     i_nextMove = 1;
 
@@ -52,8 +47,8 @@ ConfusedMovementGenerator<T>::Initialize(T &unit)
 
     for (uint8 idx = 0; idx <= MAX_CONF_WAYPOINTS; ++idx)
     {
-        float wanderX = x + wander_distance*(float)rand_norm() - wander_distance * 0.5f;
-        float wanderY = y + wander_distance*(float)rand_norm() - wander_distance * 0.5f;
+        float wanderX = x + wander_distance*(float)rand_norm() - wander_distance/2;
+        float wanderY = y + wander_distance*(float)rand_norm() - wander_distance/2;
         Trinity::NormalizeMapCoord(wanderX);
         Trinity::NormalizeMapCoord(wanderY);
 
@@ -66,7 +61,7 @@ ConfusedMovementGenerator<T>::Initialize(T &unit)
             bool is_water_next = map->IsInWater(wanderX, wanderY, new_z);
             if ((is_water_now && !is_water_next && !is_land_ok) || (!is_water_now && is_water_next && !is_water_ok))
             {
-                i_waypoints[idx][0] = idx > 0 ? i_waypoints[idx-1][0] : x;
+                i_waypoints[idx][0] = idx > 0 ? i_waypoints[idx-1][0] : x; // Back to previous location
                 i_waypoints[idx][1] = idx > 0 ? i_waypoints[idx-1][1] : y;
                 i_waypoints[idx][2] = idx > 0 ? i_waypoints[idx-1][2] : z;
                 continue;
@@ -96,28 +91,6 @@ ConfusedMovementGenerator<T>::Initialize(T &unit)
     unit.StopMoving();
     unit.RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
     unit.AddUnitState(UNIT_STAT_CONFUSED);
-}
-
-template<class T>
-void
-ConfusedMovementGenerator<T>::_startMovementWithPathfinding(T & owner, float t_x, float t_y, float t_z)
-{
-    if (!&owner)
-        return;
-
-    if (owner.HasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED))
-        return;
-
-    Traveller<T> traveller(owner);
-    i_destinationHolder.SetDestination(traveller, t_x, t_y, t_z, false);
-
-    PathInfo path(&owner, t_x, t_y, t_z);
-    PointPath pointPath = path.getFullPath();
-
-    float speed = traveller.Speed() * 0.001f; // in ms
-    uint32 transitTime = uint32(pointPath.GetTotalLength() / speed);
-
-    owner.SendMonsterMoveByPath(pointPath, 1, pointPath.size(), transitTime);
 }
 
 template<>
@@ -168,7 +141,7 @@ ConfusedMovementGenerator<T>::Update(T &unit, const uint32 &diff)
                 unit.ClearUnitState(UNIT_STAT_MOVE);
 
                 i_nextMove = urand(1,MAX_CONF_WAYPOINTS);
-                i_nextMoveTime.Reset(urand(0, 300));     // TODO: check the minimum reset time, should be probably higher
+                i_nextMoveTime.Reset(urand(0, 1500-1));     // TODO: check the minimum reset time, should be probably higher
             }
         }
     }
@@ -183,7 +156,8 @@ ConfusedMovementGenerator<T>::Update(T &unit, const uint32 &diff)
             const float x = i_waypoints[i_nextMove][0];
             const float y = i_waypoints[i_nextMove][1];
             const float z = i_waypoints[i_nextMove][2];
-            _startMovementWithPathfinding(unit, x, y, z);
+            Traveller<T> traveller(unit);
+            i_destinationHolder.SetDestination(traveller, x, y, z);
         }
     }
     return true;
