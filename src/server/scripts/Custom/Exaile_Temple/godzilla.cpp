@@ -89,6 +89,9 @@ public:
             if (!UpdateVictim())
                 return;
 
+            if (!victims_count && victim->isDead())
+                EnterEvadeMode();
+
             if(me->getVictim() && charge_timer < diff && me->GetDistance2d(me->getVictim())>=20.0f)
             {
                 charge_timer=20000;
