@@ -25,6 +25,7 @@ public:
         uint32 next_proc;
         int32 pitsot;
         uint32 FB_Timer;
+        Creature * elemental;
         void Reset()
         {
             elemental_summoned=false;
@@ -37,6 +38,8 @@ public:
                     (*itr)->RemoveFromWorld();
                     break;
                 }
+            elemental = NULL;
+            me->SetHealth(me->GetMaxHealth());
         }
         void EnterCombat(Unit* pWho)
         {
@@ -47,10 +50,10 @@ public:
             if (!UpdateVictim())
                 return;
             
-            if(!elemental_summoned && next_proc<95)
+            if((!elemental_summoned && next_proc<95) || (elemental && !elemental->isAlive()))
             {
                 me->MonsterYell("Arise, my servant!",0, me->GetGUID());
-                Creature * elemental = DoSpawnCreature(100001, 0, 0, 0, 0.0f, 5, 1000);
+                elemental = DoSpawnCreature(100001, 0, 0, 0, 0.0f, 5, 1000);
                 elemental_summoned = true;
                 elemental->AddThreat(me->getVictim(), 1.0f);
             }
@@ -86,7 +89,8 @@ public:
                     default:
                     {
                         me->MonsterYell("Poison?! Dumn wrong label!",0, me->GetGUID());
-                        DoCast(me->getVictim(), SPELL_ACID);
+                        int32 damage = 20000;
+                        me->CastCustomSpell(me->getVictim(), SPELL_ACID, &damage, 0, 0, false);
                     }
                 }
                 next_proc-=5;

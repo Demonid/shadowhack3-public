@@ -55,6 +55,7 @@ public:
             deadman_timer=45000;
             Enrage_timer=210000;
             enraged=false;
+            me->SetHealth(me->GetMaxHealth());
         }
         void EnterCombat(Unit *who) //closing door
         {
@@ -154,7 +155,7 @@ public:
                 for(std::list<Creature*>::iterator itr = deadmen.begin(); itr != deadmen.end(); ++itr)
                 {
                     /*me->Say((*itr)->GetName(), 0, me->GetGUID());*/
-                    if((*itr)->GetEntry()==100003)
+                    if((*itr)->GetEntry()==100003 && (*itr)->isAlive())
                     {
                         deadman=(*itr);
                         deadman->setFaction(me->getFaction());
