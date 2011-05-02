@@ -1873,7 +1873,7 @@ bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
     }
     else if (const Player* thisPlayer = ToPlayer())
         if (obj->ToUnit())
-            if(thisPlayer->InArena() && thisPlayer->HasAura(8326) && obj->ToUnit()->HasAura(8326))
+            if(thisPlayer->InArena() && thisPlayer->HasAura(8326) && obj->ToUnit()->HasAura(8326) && !thisPlayer->IsInPartyWith(obj->ToUnit()))
                 return false;
 
     if (!obj->isVisibleForInState(this))

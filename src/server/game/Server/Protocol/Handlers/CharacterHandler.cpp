@@ -1724,7 +1724,7 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recv_data)
         }
 
         // Leave Arena Teams
-        Player::LeaveAllArenaTeams(guid);
+        //Player::LeaveAllArenaTeams(guid);
 
         // Reset homebind and position
         trans->PAppend("DELETE FROM `character_homebind` WHERE guid = '%u'", lowGuid);
