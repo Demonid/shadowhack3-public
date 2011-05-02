@@ -12598,7 +12598,7 @@ void Unit::SetInCombatWith(Unit* enemy)
                 owner->SetInCombatWith(enemy);
         }
     Unit* eOwner = enemy->GetCharmerOrOwnerOrSelf();
-    if (eOwner->IsPvP())
+    if (eOwner->GetTypeId() == TYPEID_PLAYER)
     {
         SetInCombatState(true,enemy);
         return;
