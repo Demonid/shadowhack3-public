@@ -1858,7 +1858,7 @@ bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
         // Alive players can see dead players in some cases, but other objects can't do that
         if (const Player* thisPlayer = ToPlayer())
         {
-            if (thisPlayer->InArena() && thisPlayer->HasAura(8326) && !obj->HasAura(8326) && canDetect(obj, ignoreStealth))
+            if (thisPlayer->InArena() && thisPlayer->HasAura(8326) && !obj->ToUnit()->HasAura(8326) && canDetect(obj, ignoreStealth))
                 return true;
             if (const Player* objPlayer = obj->ToPlayer())
             {
@@ -1889,7 +1889,14 @@ bool WorldObject::canDetect(WorldObject const* obj, bool ignoreStealth) const
     /*if (const Unit* thisUnit = ToUnit())
         if (Unit* controller = thisUnit->GetCharmerOrOwner())
             seer = controller;*/
-
+    if (obj->ToUnit())
+    {
+        if (Player * own = obj->ToUnit()->GetCharmerOrOwnerPlayerOrPlayerItself())
+        {
+            if (((WorldObject*)own)->isAlwaysDetectableFor(seer))
+                return true;
+        }
+    }
     if (obj->isAlwaysDetectableFor(seer))
         return true;
 
