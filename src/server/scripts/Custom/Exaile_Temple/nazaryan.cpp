@@ -50,7 +50,7 @@ public:
             if (!UpdateVictim())
                 return;
             
-            if((!elemental_summoned && next_proc<95) || (elemental && !elemental->isAlive()))
+            if((!elemental_summoned && next_proc<95) || (elemental && elemental->isDead()))
             {
                 me->MonsterYell("Arise, my servant!",0, me->GetGUID());
                 elemental = DoSpawnCreature(100001, 0, 0, 0, 0.0f, 5, 1000);
