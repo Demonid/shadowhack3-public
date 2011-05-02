@@ -829,6 +829,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
             (!spellProto || !(spellProto->AttributesEx4 & SPELL_ATTR4_DAMAGE_NOT_BREAK_AURAS))) // does not support creature push_back
         {
             if (pVictim->GetTypeId() == TYPEID_PLAYER)
+            {
                 if (Spell* spell = pVictim->m_currentSpells[CURRENT_GENERIC_SPELL])
                     if (spell->getState() == SPELL_STATE_PREPARING)
                     {
@@ -839,13 +840,14 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
                             spell->Delayed();
                     }
 
-            if (Spell* spell = pVictim->m_currentSpells[CURRENT_CHANNELED_SPELL])
-                if (spell->getState() == SPELL_STATE_CASTING)
-                {
-                    uint32 channelInterruptFlags = spell->m_spellInfo->ChannelInterruptFlags;
-                    if (channelInterruptFlags & CHANNEL_FLAG_DELAY)
-                        spell->DelayedChannel();
-                }
+                if (Spell* spell = pVictim->m_currentSpells[CURRENT_CHANNELED_SPELL])
+                    if (spell->getState() == SPELL_STATE_CASTING)
+                    {
+                        uint32 channelInterruptFlags = spell->m_spellInfo->ChannelInterruptFlags;
+                        if (channelInterruptFlags & CHANNEL_FLAG_DELAY)
+                            spell->DelayedChannel();
+                    }
+            }
         }
 
         // last damage from duel opponent
