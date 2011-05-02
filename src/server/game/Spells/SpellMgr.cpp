@@ -3495,8 +3495,10 @@ bool SpellMgr::CanAurasStack(SpellEntry const *spellInfo_1, SpellEntry const *sp
     if((spellId_1 == 53651 && spellId_2 == 53563)|| (spellId_1 == 53563 && spellId_2== 53651))
         return true;
     // nnever replace aspects.
-    if(GetSpellSpecific(spellInfo_1)==SPELL_SPECIFIC_ASPECT || GetSpellSpecific(spellInfo_1)==SPELL_SPECIFIC_ASPECT)
-        return true;
+    SpellSpecific spec[] = {SPELL_SPECIFIC_ASPECT, SPELL_SPECIFIC_WELL_FED};
+    for (uint8 i = 0; i<sizeof(spec); ++i)
+        if(GetSpellSpecific(spellInfo_1)==spec[i] || GetSpellSpecific(spellInfo_1)==spec[i])
+            return true;
     
     if(spellInfo_1->SpellIconID == 0 ||  spellInfo_2->SpellIconID == 0)
     {
