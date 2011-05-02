@@ -34,6 +34,7 @@ public:
             vound_timer=0;
             debug=false;
             victim = NULL;
+            me->SetHealth(me->GetMaxHealth());
         }
         /*void Aggro(Unit *who)
         {

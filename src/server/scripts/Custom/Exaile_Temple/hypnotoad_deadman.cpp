@@ -33,7 +33,7 @@ class  boss_hypnotoad_deadman : public CreatureScript
                 
             if(me->GetDistance2d(me->getVictim())<=2.0f)
             {
-                int32 bp = me->GetHealth()/4;
+                int32 bp = me->GetHealth()/8;
                 me->CastCustomSpell(me->getVictim(), 47496, &bp, 0, 0, true);
             }
         }
