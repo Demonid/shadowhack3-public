@@ -8025,6 +8025,11 @@ bool Spell::CheckForPowerfullAura(Unit * target)
 {
     if (GetSpellDuration(m_spellInfo) >= 2*MINUTE*IN_MILLISECONDS)
     {
+        // nnever replace aspects.
+        SpellSpecific spec[] = {SPELL_SPECIFIC_ASPECT, SPELL_SPECIFIC_WELL_FED};
+        for (uint8 i = 0; i<sizeof(spec); ++i)
+            if(GetSpellSpecific(m_spellInfo)==spec[i])
+                return false;
         switch (m_spellInfo->EffectApplyAuraName[0])
         {
             case SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE:
@@ -8040,6 +8045,11 @@ bool Spell::CheckForPowerfullAura(Unit * target)
 
                         if (auraeff->GetSpellProto()->SpellFamilyName == SPELLFAMILY_POTION)
                             continue;
+
+                        for (uint8 i = 0; i<sizeof(spec); ++i)
+                            if(GetSpellSpecific(m_spellInfo)==spec[i])
+                                continue;
+
                         if (auraeff->GetAuraType() == m_spellInfo->EffectApplyAuraName[0] &&
                             (m_spellInfo->EffectApplyAuraName[0] == SPELL_AURA_MOD_RANGED_ATTACK_POWER ||m_spellInfo->EffectMiscValue[0] == auraeff->GetMiscValue()))
                         {
