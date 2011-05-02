@@ -5726,6 +5726,25 @@ void Spell::EffectSanctuary(SpellEffIndex /*effIndex*/)
     if (!unitTarget)
         return;
 
+    std::list<Unit*> targets;
+    Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(unitTarget, unitTarget, m_caster->GetMap()->GetVisibilityDistance());
+    Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(unitTarget, targets, u_check);
+    unitTarget->VisitNearbyObject(m_caster->GetMap()->GetVisibilityDistance(), searcher);
+    for (std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
+    {
+        if (!(*iter)->hasUnitState(UNIT_STAT_CASTING))
+            continue;
+
+        for (uint32 i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
+        {
+            if ((*iter)->GetCurrentSpell(i)
+            && (*iter)->GetCurrentSpell(i)->m_targets.getUnitTargetGUID() == unitTarget->GetGUID())
+            {
+                (*iter)->InterruptSpell(CurrentSpellTypes(i), true, true);
+            }
+        }
+    }
+
     unitTarget->getHostileRefManager().UpdateVisibility();
 
     Unit::AttackerSet const& attackers = unitTarget->getAttackers();
