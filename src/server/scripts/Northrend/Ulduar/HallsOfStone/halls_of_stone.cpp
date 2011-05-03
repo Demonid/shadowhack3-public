@@ -101,6 +101,7 @@ enum BrannCreatures
 
 enum Spells
 {
+    //see also not used here: 51288,51289, 51000,51001,51003,51004, 51050,51051, 51146,51147
     SPELL_STEALTH                       = 58506,
     //Kadrak
     SPELL_GLARE_OF_THE_TRIBUNAL         = 50988,
@@ -124,7 +125,9 @@ enum Achievements
 };
 
 #define GOSSIP_ITEM_START               "Brann, it would be our honor!"
+#define GOSSIP_ITEM_START_RU            "Бранн, мы сочтем за честь!"
 #define GOSSIP_ITEM_PROGRESS            "Let's move Brann, enough of the history lessons!"
+#define GOSSIP_ITEM_PROGRESS_RU         "Веди, Бранн, довольно уроков истории!"
 
 static Position SpawnLocations[]=
 {
@@ -287,7 +290,7 @@ public:
         if (pCreature->isQuestGiver())
             pPlayer->PrepareQuestMenu(pCreature->GetGUID());
 
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_START, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, pPlayer->isRussianLocale() ? GOSSIP_ITEM_START_RU : GOSSIP_ITEM_START, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
         pPlayer->SEND_GOSSIP_MENU(TEXT_ID_START, pCreature->GetGUID());
 
         return true;
@@ -374,7 +377,7 @@ public:
                         pInstance->HandleGameObject(pInstance->GetData64(DATA_GO_TRIBUNAL_CONSOLE),true);
                     me->SetStandState(UNIT_STAND_STATE_KNEEL);
                     SetEscortPaused(true);
-                    JumpToNextStep(8500);
+                    JumpToNextStep(8500);   // closing the gap between uiStep= 28 and 30
                     break;
                 case 18:
                     SetEscortPaused(true);
@@ -420,7 +423,6 @@ public:
         void StartWP()
         {
             me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-            SetEscortPaused(false);
             uiStep = 1;
             Start();
         }
@@ -447,6 +449,7 @@ public:
                         bIsBattle = false;
                         DoScriptText(SAY_ESCORT_START, me);
                         SetRun(true);
+                        SetEscortPaused(false);
                         JumpToNextStep(0);
                         break;
                     case 3:
@@ -587,9 +590,9 @@ public:
                             pTemp->DealDamage(pTemp, pTemp->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                         bIsBattle = true;
                         SetEscortPaused(false);
-                        JumpToNextStep(6500);   // TODO: check this for interference with 377:JumpToNextStep(8500), no available uiStep slot!
+                        JumpToNextStep(0);
                         break;
-                    case 29:
+                    case 30:
                         DoScriptText(SAY_EVENT_END_02, me);
                         if (pInstance)
                         {
@@ -605,103 +608,103 @@ public:
 
                         JumpToNextStep(5500);
                         break;
-                    case 30:
+                    case 31:
                         if (pInstance)
                             if (Creature* pTemp = Unit::GetCreature(*me, pInstance->GetData64(DATA_ABEDNEUM)))
                                 DoScriptText(SAY_EVENT_END_03_ABED, pTemp);
                         JumpToNextStep(8500);
                         break;
-                    case 31:
+                    case 32:
                         DoScriptText(SAY_EVENT_END_04, me);
                         JumpToNextStep(11500);
                         break;
-                    case 32:
+                    case 33:
                         if (pInstance)
                             if (Creature* pTemp = Unit::GetCreature(*me, pInstance->GetData64(DATA_ABEDNEUM)))
                                 DoScriptText(SAY_EVENT_END_05_ABED, pTemp);
                             JumpToNextStep(11500);
                         break;
-                    case 33:
+                    case 34:
                         DoScriptText(SAY_EVENT_END_06, me);
                         JumpToNextStep(4500);
                         break;
-                    case 34:
+                    case 35:
                         if (pInstance)
                             if (Creature* pTemp = Unit::GetCreature(*me, pInstance->GetData64(DATA_ABEDNEUM)))
                                 DoScriptText(SAY_EVENT_END_07_ABED, pTemp);
                             JumpToNextStep(22500);
                         break;
-                    case 35:
+                    case 36:
                         DoScriptText(SAY_EVENT_END_08, me);
                         JumpToNextStep(7500);
                         break;
-                    case 36:
+                    case 37:
                         if (pInstance)
                             if (Creature* pTemp = Unit::GetCreature(*me, pInstance->GetData64(DATA_KADDRAK)))
                                 DoScriptText(SAY_EVENT_END_09_KADD, pTemp);
                         JumpToNextStep(18500);
                         break;
-                    case 37:
+                    case 38:
                         DoScriptText(SAY_EVENT_END_10, me);
                         JumpToNextStep(5500);
                         break;
-                    case 38:
+                    case 39:
                         if (pInstance)
                             if (Creature* pTemp = Unit::GetCreature(*me, pInstance->GetData64(DATA_KADDRAK)))
                                 DoScriptText(SAY_EVENT_END_11_KADD, pTemp);
                             JumpToNextStep(20500);
                         break;
-                    case 39:
+                    case 40:
                         DoScriptText(SAY_EVENT_END_12, me);
                         JumpToNextStep(2500);
                         break;
-                    case 40:
+                    case 41:
                         if (pInstance)
                             if (Creature* pTemp = Unit::GetCreature(*me, pInstance->GetData64(DATA_KADDRAK)))
                                 DoScriptText(SAY_EVENT_END_13_KADD, pTemp);
                         JumpToNextStep(19500);
                         break;
-                    case 41:
+                    case 42:
                         DoScriptText(SAY_EVENT_END_14, me);
                         JumpToNextStep(10500);
                         break;
-                    case 42:
+                    case 43:
                         if (pInstance)
                             if (Creature* pTemp = Unit::GetCreature(*me, pInstance->GetData64(DATA_MARNAK)))
                                 DoScriptText(SAY_EVENT_END_15_MARN, pTemp);
                             JumpToNextStep(6500);
                         break;
-                    case 43:
+                    case 44:
                         DoScriptText(SAY_EVENT_END_16, me);
                         JumpToNextStep(6500);
                         break;
-                    case 44:
+                    case 45:
                         if (pInstance)
                             if (Creature* pTemp = Unit::GetCreature(*me, pInstance->GetData64(DATA_MARNAK)))
                                 DoScriptText(SAY_EVENT_END_17_MARN, pTemp);
                             JumpToNextStep(25500);
                         break;
-                    case 45:
+                    case 46:
                         DoScriptText(SAY_EVENT_END_18, me);
                         JumpToNextStep(23500);
                         break;
-                    case 46:
+                    case 47:
                         if (pInstance)
                             if (Creature* pTemp = Unit::GetCreature(*me, pInstance->GetData64(DATA_MARNAK)))
                                 DoScriptText(SAY_EVENT_END_19_MARN, pTemp);
                             JumpToNextStep(3500);
                         break;
-                    case 47:
+                    case 48:
                         DoScriptText(SAY_EVENT_END_20, me);
                         JumpToNextStep(8500);
                         break;
-                    case 48:
+                    case 49:
                         if (pInstance)
                             if (Creature* pTemp = Unit::GetCreature(*me, pInstance->GetData64(DATA_ABEDNEUM)))
                                 DoScriptText(SAY_EVENT_END_21_ABED, pTemp);
                             JumpToNextStep(5500);
                         break;
-                    case 49:
+                    case 50:
                     {
                         if (pInstance)
                         {
@@ -717,7 +720,7 @@ public:
                         JumpToNextStep(180000);
                         break;
                     }
-                    case 50:
+                    case 51:
                         SetEscortPaused(false);
                         break;
                 }
