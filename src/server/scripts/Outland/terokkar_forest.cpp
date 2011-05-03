@@ -44,7 +44,6 @@ EndContentData */
 #define SAY_SUBMIT                      -1000194    //DB: old  -1000351
 
 #define FACTION_HOSTILE                 45
-#define FACTION_FRIENDLY                35
 #define QUEST_DONTKILLTHEFATONE         9889
 
 #define SPELL_PULVERIZE                 2676
@@ -82,7 +81,7 @@ public:
         void DoNice()
         {
             DoScriptText(SAY_SUBMIT, me);
-            me->setFaction(FACTION_FRIENDLY);
+            me->setFaction(PD_FACTION_FRIENDLY);
             me->SetStandState(UNIT_STAND_STATE_SIT);
             me->RemoveAllAuras();
             me->DeleteThreatList();
