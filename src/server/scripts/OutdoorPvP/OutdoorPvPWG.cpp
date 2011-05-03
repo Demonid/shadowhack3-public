@@ -29,6 +29,7 @@
 #include "MapManager.h"
 #include "ScriptedCreature.h"
 #include "ScriptPCH.h"
+#include "GameEventMgr.h"
 
 Creature* FortressSpirit;
 uint32 entry;
@@ -96,37 +97,40 @@ void OutdoorPvPWG::SaveData()
 
 void OutdoorPvPWG::LoadData()
 {
-	m_wartime									= sWorld->getWorldState(WS_WINTERGRASP_ISWAR);
-	m_defender									= (TeamId)sWorld->getWorldState(WS_WINTERGRASP_DEFENDER_TEAMID);
-	m_clock[TEAM_ALLIANCE]						= sWorld->getWorldState(WS_WINTERGRASP_CLOCK_ALLY);
-	m_clock[TEAM_HORDE]							= sWorld->getWorldState(WS_WINTERGRASP_CLOCK_HORDE);	
-	m_timer										= sWorld->getWorldState(WS_WINTERGRASP_TIMER);
+    m_wartime                                     = sWorld->getWorldState(WS_WINTERGRASP_ISWAR);
+    m_defender                                    = (TeamId)sWorld->getWorldState(WS_WINTERGRASP_DEFENDER_TEAMID);
+    m_clock[TEAM_ALLIANCE]                        = sWorld->getWorldState(WS_WINTERGRASP_CLOCK_ALLY);
+    m_clock[TEAM_HORDE]                           = sWorld->getWorldState(WS_WINTERGRASP_CLOCK_HORDE);    
+    m_timer                                       = sWorld->getWorldState(WS_WINTERGRASP_TIMER);
 
-	if (m_defender == TEAM_NEUTRAL)
-	{
-		if (!isWarTime() && (TeamId)sWorld->getWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID) != TEAM_NEUTRAL)
-		{
-			m_defender = (TeamId)sWorld->getWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID);
-		}
-		else
-		{
-			m_defender = TeamId(rand()%2);
-		}
-	}
+    if (m_defender == TEAM_NEUTRAL)
+    {
+        if (!isWarTime() && (TeamId)sWorld->getWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID) != TEAM_NEUTRAL)
+        {
+            m_defender = (TeamId)sWorld->getWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID);
+        }
+        else
+        {
+            m_defender = TeamId(rand()%2);
+        }
+    }
 
-	if (m_defender != (TeamId)sWorld->getWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID))
-	{
-		if (!isWarTime())
-		{
-			if ((TeamId)sWorld->getWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID) == TEAM_NEUTRAL)
-				sWorld->setWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID, uint64(m_defender));
-		}
-	}
+    if (m_defender != (TeamId)sWorld->getWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID))
+    {
+        if (!isWarTime())
+        {
+            if ((TeamId)sWorld->getWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID) == TEAM_NEUTRAL)
+                sWorld->setWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID, uint64(m_defender));
+        }
+    }
 
-	if (isWarTime() && (TeamId)sWorld->getWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID) != TEAM_NEUTRAL)
-            sWorld->setWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID, TEAM_NEUTRAL);
+    if (isWarTime() && (TeamId)sWorld->getWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID) != TEAM_NEUTRAL)
+        sWorld->setWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID, TEAM_NEUTRAL);
 
-	m_workshopCount[TEAM_ALLIANCE] = 0;
+    sGameEventMgr->StopEvent(m_defender == TEAM_ALLIANCE ? WG_EVENT_H_DEF : WG_EVENT_A_DEF, true);
+    sGameEventMgr->StartEvent(m_defender == TEAM_ALLIANCE ? WG_EVENT_A_DEF : WG_EVENT_H_DEF, true);
+
+    m_workshopCount[TEAM_ALLIANCE] = 0;
     m_workshopCount[TEAM_HORDE] = 0;
     m_towerDestroyedCount[TEAM_ALLIANCE] = 0;
     m_towerDestroyedCount[TEAM_HORDE] = 0;
@@ -142,30 +146,29 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
         return false;
     }
 
-	LoadData();
+    LoadData();
+
     m_changeDefender = false;
 
     m_tenacityStack = 0;
     m_gate = NULL;
 
-	timer_30m = false;
-	timer_10m = false;
+    timer_30m = false;
+    timer_10m = false;
 
     std::list<uint32> engGuids;
     std::list<uint32> spiritGuids;
 
     // Store Eng, spirit guide guids and questgiver for later use
-    QueryResult result = WorldDatabase.PQuery("SELECT guid, id FROM creature WHERE creature.map=571"
-        " AND creature.id IN (%u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u);",
-        CRE_ENG_A, CRE_ENG_H, CRE_SPI_A, CRE_SPI_H, 31101, 31051, 31102, 31052,
-        31107, 31109, 31151, 31153, 31106, 31108, 31053, 31054, 31091, 31036);
+    QueryResult result = WorldDatabase.PQuery("SELECT guid, id FROM creature WHERE map = 571"
+        " AND id IN (%u, %u, %u, %u);",
+        CRE_ENG_A, CRE_ENG_H, CRE_SPI_A, CRE_SPI_H);
     if (!result)
         sLog->outError("Cannot find siege workshop master or spirit guides in creature!");
     else
     {
         do
         {
-            Position posHorde, posAlli;
             Field *fields = result->Fetch();
             switch(fields[1].GetUInt32())
             {
@@ -176,76 +179,6 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
                 case CRE_SPI_A:
                 case CRE_SPI_H:
                     spiritGuids.push_back(fields[0].GetUInt32());
-                    break;
-                case 31051:
-                    posHorde.Relocate(5081.7f, 2173.73f, 365.878f, 0.855211f);
-                    posAlli.Relocate(5296.56f, 2789.87f, 409.275f, 0.733038f);
-                    LoadQuestGiverMap(fields[0].GetUInt32(), posHorde, posAlli);
-                    break;
-                case 31101:
-                    posHorde.Relocate(5296.56f, 2789.87f, 409.275f, 0.733038f);
-                    posAlli.Relocate(5016.57f, 3677.53f, 362.982f, 5.7525f);
-                    LoadQuestGiverMap(fields[0].GetUInt32(), posHorde, posAlli);
-                    break;
-                case 31052:
-                    posHorde.Relocate(5100.07f, 2168.89f, 365.779f, 1.97222f);
-                    posAlli.Relocate(5298.43f, 2738.76f, 409.316f, 3.97174f);
-                    LoadQuestGiverMap(fields[0].GetUInt32(), posHorde, posAlli);
-                    break;
-                case 31102:
-                    posHorde.Relocate(5298.43f, 2738.76f, 409.316f, 3.97174f);
-                    posAlli.Relocate(5030.44f, 3659.82f, 363.194f, 1.83336f);
-                    LoadQuestGiverMap(fields[0].GetUInt32(), posHorde, posAlli);
-                    break;
-                case 31109:
-                    posHorde.Relocate(5080.4f, 2199.0f, 359.489f, 2.96706f);
-                    posAlli.Relocate(5234.97f, 2883.4f, 409.275f, 4.29351f);
-                    LoadQuestGiverMap(fields[0].GetUInt32(), posHorde, posAlli);
-                    break;
-                case 31107:
-                    posHorde.Relocate(5234.97f, 2883.4f, 409.275f, 4.29351f);
-                    posAlli.Relocate(5008.64f, 3659.91f, 361.07f, 4.0796f);
-                    LoadQuestGiverMap(fields[0].GetUInt32(), posHorde, posAlli);
-                    break;
-                case 31153:
-                    posHorde.Relocate(5088.49f, 2188.18f, 365.647f, 5.25344f);
-                    posAlli.Relocate(5366.13f, 2833.4f, 409.323f, 3.14159f);
-                    LoadQuestGiverMap(fields[0].GetUInt32(), posHorde, posAlli);
-                    break;
-                case 31151:
-                    posHorde.Relocate(5366.13f, 2833.4f, 409.323f, 3.14159f);
-                    posAlli.Relocate(5032.33f, 3680.7f, 363.018f, 3.43167f);
-                    LoadQuestGiverMap(fields[0].GetUInt32(), posHorde, posAlli);
-                    break;
-                case 31108:
-                    posHorde.Relocate(5095.67f, 2193.28f, 365.924f, 4.93928f);
-                    posAlli.Relocate(5295.56f, 2926.67f, 409.275f, 0.872665f);
-                    LoadQuestGiverMap(fields[0].GetUInt32(), posHorde, posAlli);
-                    break;
-                case 31106:
-                    posHorde.Relocate(5295.56f, 2926.67f, 409.275f, 0.872665f);
-                    posAlli.Relocate(5032.66f, 3674.28f, 363.053f, 2.9447f);
-                    LoadQuestGiverMap(fields[0].GetUInt32(), posHorde, posAlli);
-                    break;
-                case 31054:
-                    posHorde.Relocate(5088.61f, 2167.66f, 365.689f, 0.680678f);
-                    posAlli.Relocate(5371.4f, 3026.51f, 409.206f, 3.25003f);
-                    LoadQuestGiverMap(fields[0].GetUInt32(), posHorde, posAlli);
-                    break;
-                case 31053:
-                    posHorde.Relocate(5371.4f, 3026.51f, 409.206f, 3.25003f);
-                    posAlli.Relocate(5032.44f, 3668.66f, 363.11f, 2.87402f);
-                    LoadQuestGiverMap(fields[0].GetUInt32(), posHorde, posAlli);
-                    break;
-                case 31036:
-                    posHorde.Relocate(5078.28f, 2183.7f, 365.029f, 1.46608f);
-                    posAlli.Relocate(5359.13f, 2837.99f, 409.364f, 4.69893f);
-                    LoadQuestGiverMap(fields[0].GetUInt32(), posHorde, posAlli);
-                    break;
-                case 31091:
-                    posHorde.Relocate(5359.13f, 2837.99f, 409.364f, 4.69893f);
-                    posAlli.Relocate(5022.43f, 3659.91f, 361.61f, 1.35426f);
-                    LoadQuestGiverMap(fields[0].GetUInt32(), posHorde, posAlli);
                     break;
                 default:
                     break;
@@ -271,7 +204,7 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
     minX -= 20; minY -= 20; maxX += 20; maxY += 20;
 
     // Coords: 4290.330078, 1790.359985 - 5558.379883, 4048.889893
-    result = WorldDatabase.PQuery("SELECT guid FROM gameobject,gameobject_template"
+    result = WorldDatabase.PQuery("SELECT guid FROM gameobject, gameobject_template"
         " WHERE gameobject.map=571"
         " AND gameobject.position_x>%f AND gameobject.position_y>%f"
         " AND gameobject.position_x<%f AND gameobject.position_y<%f"
@@ -476,17 +409,17 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
     _LoadTeamPair(m_goDisplayPair, OutdoorPvPWGGODisplayPair);
     _LoadTeamPair(m_creEntryPair, OutdoorPvPWGCreEntryPair);
 
-	if (!m_timer)
+    if (!m_timer)
         m_timer = sWorld->getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_START_TIME) * MINUTE * IN_MILLISECONDS;
 
     m_saveinterval = WG_MIN_SAVE;
 
-	UpdateAllWorldObject();
+    UpdateAllWorldObject();
 
-	sWorld->SendWintergraspState();
+    sWorld->SendWintergraspState();
 
-	if (!isWarTime())
-		RemoveOfflinePlayerWGAuras();
+    if (!isWarTime())
+        RemoveOfflinePlayerWGAuras();
 
     RegisterZone(ZONE_WINTERGRASP);
 
@@ -580,7 +513,7 @@ void OutdoorPvPWG::ProcessEvent(GameObject *obj, uint32 eventId)
                     }
                     for (PlayerSet::iterator itr = m_players[getAttackerTeam()].begin(); itr != m_players[getAttackerTeam()].end(); ++itr)
                     {
-						(*itr)->PlayDirectSound(getDefenderTeam() == TEAM_ALLIANCE? OutdoorPvP_WG_SOUND_KEEP_ASSAULTED_HORDE : OutdoorPvP_WG_SOUND_KEEP_ASSAULTED_ALLIANCE) ; // Wintergrasp Fortress under Siege
+                        (*itr)->PlayDirectSound(getDefenderTeam() == TEAM_ALLIANCE? OutdoorPvP_WG_SOUND_KEEP_ASSAULTED_HORDE : OutdoorPvP_WG_SOUND_KEEP_ASSAULTED_ALLIANCE) ; // Wintergrasp Fortress under Siege
                     }
                     break;
                 case BUILDING_TOWER:
@@ -655,10 +588,10 @@ void OutdoorPvPWG::ProcessEvent(GameObject *obj, uint32 eventId)
                     sWorld->SendZoneText(ZONE_WINTERGRASP, msgStr.c_str());
                     for (PlayerSet::iterator itr = m_players[getDefenderTeam()].begin(); itr != m_players[getDefenderTeam()].end(); ++itr)
                     {
-						(*itr)->PlayDirectSound(getDefenderTeam() == TEAM_ALLIANCE? OutdoorPvP_WG_HORDE_CAPTAIN : OutdoorPvP_WG_ALLIANCE_CAPTAIN) ; // Wintergrasp Fortress under Siege
+                        (*itr)->PlayDirectSound(getDefenderTeam() == TEAM_ALLIANCE? OutdoorPvP_WG_HORDE_CAPTAIN : OutdoorPvP_WG_ALLIANCE_CAPTAIN) ; // Wintergrasp Fortress under Siege
                         // Add Support of Quests Toppling the Towers & Southern Sabotage
-						if (obj->GetEntry()==190356 || obj->GetEntry()==190357 || obj->GetEntry()==190358)
-							(*itr)->RewardPlayerAndGroupAtEvent(TOWER_PVP_DESTROYED, obj);
+                        if (obj->GetEntry()==190356 || obj->GetEntry()==190357 || obj->GetEntry()==190358)
+                            (*itr)->RewardPlayerAndGroupAtEvent(TOWER_PVP_DESTROYED, obj);
                     }
                     for (PlayerSet::iterator itr = m_players[getAttackerTeam()].begin(); itr != m_players[getAttackerTeam()].end(); ++itr)
                     {
@@ -796,9 +729,6 @@ void OutdoorPvPWG::OnCreatureCreate(Creature *creature)
             SendUpdateWorldState(VehNumWorldState[team], m_vehicles[team].size());
             break;
         }
-        case CREATURE_QUESTGIVER:
-            m_questgivers[creature->GetDBTableGUIDLow()] = creature;
-            break;
         case CREATURE_ENGINEER:
             for (OutdoorPvP::OPvPCapturePointMap::iterator itr = m_capturePoints.begin(); itr != m_capturePoints.end(); ++itr)
             {
@@ -854,9 +784,6 @@ void OutdoorPvPWG::OnCreatureRemove(Creature *creature)
             SendUpdateWorldState(VehNumWorldState[team], m_vehicles[team].size());
             break;
         }
-        case CREATURE_QUESTGIVER:
-            m_questgivers.erase(creature->GetDBTableGUIDLow());
-            break;
         case CREATURE_ENGINEER:
             for (OutdoorPvP::OPvPCapturePointMap::iterator itr = m_capturePoints.begin(); itr != m_capturePoints.end(); ++itr)
             {
@@ -941,8 +868,6 @@ void OutdoorPvPWG::UpdateAllWorldObject()
         UpdateGameObjectInfo(*itr);
     for (CreatureSet::iterator itr = m_creatures.begin(); itr != m_creatures.end(); ++itr)
         UpdateCreatureInfo(*itr);
-    for (QuestGiverMap::iterator itr = m_questgivers.begin(); itr != m_questgivers.end(); ++itr)
-        UpdateQuestGiverPosition((*itr).first, (*itr).second);
 
     // rebuild and update building states
     RebuildAllBuildings();
@@ -955,16 +880,16 @@ void OutdoorPvPWG::UpdateAllWorldObject()
 
 void OutdoorPvPWG::RebuildAllBuildings()
 {
-	m_workshopCount[TEAM_ALLIANCE] = 0;
-	m_workshopCount[TEAM_HORDE] = 0;
-	m_towerDamagedCount[TEAM_ALLIANCE] = 0;
-	m_towerDamagedCount[TEAM_HORDE] = 0;
-	m_towerDestroyedCount[TEAM_ALLIANCE] = 0;
-	m_towerDestroyedCount[TEAM_HORDE] = 0;
+    m_workshopCount[TEAM_ALLIANCE] = 0;
+    m_workshopCount[TEAM_HORDE] = 0;
+    m_towerDamagedCount[TEAM_ALLIANCE] = 0;
+    m_towerDamagedCount[TEAM_HORDE] = 0;
+    m_towerDestroyedCount[TEAM_ALLIANCE] = 0;
+    m_towerDestroyedCount[TEAM_HORDE] = 0;
     for (BuildingStateMap::const_iterator itr = m_buildingStates.begin(); itr != m_buildingStates.end(); ++itr)
     {
-		if (!itr->second)
-			continue;
+        if (!itr->second)
+            continue;
 
         if (itr->second->building && itr->second->building->GetGoType() == GAMEOBJECT_TYPE_DESTRUCTIBLE_BUILDING)
         {
@@ -975,8 +900,8 @@ void OutdoorPvPWG::RebuildAllBuildings()
         }
         else
             itr->second->health = 0;
-		if (itr->second->type == BUILDING_WORKSHOP)
-			ModifyWorkshopCount(itr->second->GetTeam(), true);
+        if (itr->second->type == BUILDING_WORKSHOP)
+            ModifyWorkshopCount(itr->second->GetTeam(), true);
         itr->second->SetTeam(getDefenderTeam() == TEAM_ALLIANCE ? OTHER_TEAM(itr->second->defaultTeam) : itr->second->defaultTeam);
     }
 }
@@ -1003,12 +928,12 @@ void OutdoorPvPWG::SendInitWorldStatesTo(Player *player) const
     data << uint32(3681) << m_workshopCount[TEAM_ALLIANCE] * MAX_VEHICLE_PER_WORKSHOP;
 
     for (BuildingStateMap::const_iterator itr = m_buildingStates.begin(); itr != m_buildingStates.end(); ++itr)
-	{
-		if (!itr->second)
-			continue;
+    {
+        if (!itr->second)
+            continue;
 
         itr->second->FillData(data);
-	}
+    }
 
     if (player)
         player->GetSession()->SendPacket(&data);
@@ -1108,38 +1033,6 @@ bool OutdoorPvPWG::UpdateCreatureInfo(Creature *creature)
     }
 }
 
-bool OutdoorPvPWG::UpdateQuestGiverPosition(uint32 guid, Creature *creature)
-{
-    assert(guid);
-    Position pos = m_qgPosMap[std::pair<uint32, bool>(guid, getDefenderTeam() == TEAM_HORDE)];
-
-    if (creature && creature->IsInWorld())
-    {
-        // if not questgiver or position is the same, do nothing
-        if (creature->GetPositionX() == pos.GetPositionX() &&
-            creature->GetPositionY() == pos.GetPositionY() &&
-            creature->GetPositionZ() == pos.GetPositionZ())
-            return false;
-
-        if (creature->isAlive() && creature->isInCombat())
-        {
-            creature->CombatStop(true);
-            creature->getHostileRefManager().deleteReferences();
-        }
-        creature->SetHomePosition(pos);
-        creature->DestroyForNearbyPlayers();
-        if (!creature->GetMap()->IsLoaded(pos.GetPositionX(), pos.GetPositionY()))
-            creature->GetMap()->LoadGrid(pos.GetPositionX(), pos.GetPositionY());
-        creature->GetMap()->CreatureRelocation(creature, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation());
-        if (!creature->isAlive())
-            creature->Respawn(true);
-    }
-    else
-        sObjectMgr->MoveCreData(guid, 571, pos);
-
-    return true;
-}
-
 // Return false = Need to rebuild at battle End/Start
 //        true  = no need to rebuild (ie: Banners or teleporters)
 bool OutdoorPvPWG::UpdateGameObjectInfo(GameObject *go) const
@@ -1203,18 +1096,18 @@ void OutdoorPvPWG::HandlePlayerEnterZone(Player * plr, uint32 zone)
             return;
         }
         else if (plr->GetTeamId() != getDefenderTeam() && plr->GetMap() && plr->GetAreaId() == 4575 && !plr->GetMap()->IsOutdoors(plr->GetPositionX(), plr->GetPositionY(), plr->GetPositionZ()))
-		{
-			if (plr->GetTeamId() == TEAM_ALLIANCE)
-			{
-				plr->CastSpell(plr, SPELL_TELEPORT_ALLIANCE_CAMP, true);
-			} 
-			else
-			{
-				plr->CastSpell(plr, SPELL_TELEPORT_HORDE_CAMP, true);
-			}
-			return;
-		}
-		else
+        {
+            if (plr->GetTeamId() == TEAM_ALLIANCE)
+            {
+                plr->CastSpell(plr, SPELL_TELEPORT_ALLIANCE_CAMP, true);
+            } 
+            else
+            {
+                plr->CastSpell(plr, SPELL_TELEPORT_HORDE_CAMP, true);
+            }
+            return;
+        }
+        else
         {
             if (!plr->HasAura(SPELL_RECRUIT) && !plr->HasAura(SPELL_CORPORAL)
                 && !plr->HasAura(SPELL_LIEUTENANT))
@@ -1228,21 +1121,21 @@ void OutdoorPvPWG::HandlePlayerEnterZone(Player * plr, uint32 zone)
                     plr->SetAuraStack(SPELL_TOWER_CONTROL, plr, m_towerDestroyedCount[getAttackerTeam()]);
         }
     }
-	else if (plr->GetTeamId() != sWorld->getWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID))
-	{
-		if (plr->GetMap() && plr->GetAreaId() == 4575 && !plr->GetMap()->IsOutdoors(plr->GetPositionX(), plr->GetPositionY(), plr->GetPositionZ()))
-		{
-			if (plr->GetTeamId() == TEAM_ALLIANCE)
-			{
-				plr->CastSpell(plr, SPELL_TELEPORT_ALLIANCE_CAMP, true);
-			} 
-			else
-			{
-				plr->CastSpell(plr, SPELL_TELEPORT_HORDE_CAMP, true);
-			}
-			return;
-		}
-	}
+    else if (plr->GetTeamId() != sWorld->getWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID))
+    {
+        if (plr->GetMap() && plr->GetAreaId() == 4575 && !plr->GetMap()->IsOutdoors(plr->GetPositionX(), plr->GetPositionY(), plr->GetPositionZ()))
+        {
+            if (plr->GetTeamId() == TEAM_ALLIANCE)
+            {
+                plr->CastSpell(plr, SPELL_TELEPORT_ALLIANCE_CAMP, true);
+            } 
+            else
+            {
+                plr->CastSpell(plr, SPELL_TELEPORT_HORDE_CAMP, true);
+            }
+            return;
+        }
+    }
 
     SendInitWorldStatesTo(plr);
     OutdoorPvP::HandlePlayerEnterZone(plr, zone);
@@ -1339,8 +1232,8 @@ void OutdoorPvPWG::HandleKill(Player *killer, Unit *victim)
     if (!sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED) || !isWarTime())
         return;
 
-	if (!killer || !victim)
-		return;
+    if (!killer || !victim)
+        return;
 
     bool ok = false;
     if (victim->GetTypeId() == TYPEID_PLAYER)
@@ -1370,16 +1263,16 @@ void OutdoorPvPWG::HandleKill(Player *killer, Unit *victim)
     if (ok)
     {
         if (Group *pGroup = killer->GetGroup())
-		{
+        {
             for (GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
                 if (itr->getSource()->IsAtGroupRewardDistance(killer) && itr->getSource()->getLevel() > 74)
                     PromotePlayer(itr->getSource());
-		}
+        }
         else
-		{
-			if (killer->getLevel() > 74)
-				PromotePlayer(killer);
-		}
+        {
+            if (killer->getLevel() > 74)
+                PromotePlayer(killer);
+        }
     }
 }
 
@@ -1405,19 +1298,19 @@ void OutdoorPvPWG::UpdateTenacityStack()
     if (allianceNum && hordeNum)
     {
         if (allianceNum < hordeNum)
-		{
-			team = TEAM_ALLIANCE;
+        {
+            team = TEAM_ALLIANCE;
             newStack = int32((float(hordeNum) / float(allianceNum) - 1)*4); // positive, should cast on alliance
-			if (newStack > 20)
-				newStack = 20;
-		}
+            if (newStack > 20)
+                newStack = 20;
+        }
         else if (allianceNum > hordeNum)
-		{
-			team = TEAM_HORDE;
+        {
+            team = TEAM_HORDE;
             newStack = int32((1 - float(allianceNum) / float(hordeNum))*4); // negative, should cast on horde
-			if (newStack < -20)
-				newStack = -20;
-		}
+            if (newStack < -20)
+                newStack = -20;
+        }
     }
  
     if (newStack == m_tenacityStack)
@@ -1425,15 +1318,15 @@ void OutdoorPvPWG::UpdateTenacityStack()
 
     m_tenacityStack = newStack;
 
-	// Remove old buff
-	for (uint8 teamID = 0; teamID < 2; ++teamID)
-	{
-		for (PlayerSet::const_iterator itr = m_players[teamID].begin(); itr != m_players[teamID].end(); ++itr)
-			(*itr)->RemoveAurasDueToSpell(SPELL_TENACITY);
+    // Remove old buff
+    for (uint8 teamID = 0; teamID < 2; ++teamID)
+    {
+        for (PlayerSet::const_iterator itr = m_players[teamID].begin(); itr != m_players[teamID].end(); ++itr)
+            (*itr)->RemoveAurasDueToSpell(SPELL_TENACITY);
 
-		for (CreatureSet::const_iterator itr = m_vehicles[teamID].begin(); itr != m_vehicles[teamID].end(); ++itr)
-			(*itr)->RemoveAurasDueToSpell(SPELL_TENACITY_VEHICLE);
-	}
+        for (CreatureSet::const_iterator itr = m_vehicles[teamID].begin(); itr != m_vehicles[teamID].end(); ++itr)
+            (*itr)->RemoveAurasDueToSpell(SPELL_TENACITY_VEHICLE);
+    }
 
     // Apply new buff
     if (team != TEAM_NEUTRAL && newStack)
@@ -1471,18 +1364,18 @@ void OutdoorPvPWG::UpdateClock()
 
     //Announce in all world, comment it if you don't like/need it
     // Announce 30 minutes left
- 	if ((m_timer < 1800000) && !timer_30m && (m_wartime == false)) 
-	{
-		timer_30m = true;
-		sWorld->SendWorldText(LANG_BG_WG_WORLD_ANNOUNCE_30);
-	}
+     if ((m_timer < 1800000) && !timer_30m && (m_wartime == false)) 
+    {
+        timer_30m = true;
+        sWorld->SendWorldText(LANG_BG_WG_WORLD_ANNOUNCE_30);
+    }
 
     // Announce 10 minutes left
-	if ((m_timer < 600000) && !timer_10m && (m_wartime == false))
-	{
-		timer_10m = true;
-		sWorld->SendWorldText(LANG_BG_WG_WORLD_ANNOUNCE_10);
-	}
+    if ((m_timer < 600000) && !timer_10m && (m_wartime == false))
+    {
+        timer_10m = true;
+        sWorld->SendWorldText(LANG_BG_WG_WORLD_ANNOUNCE_10);
+    }
 }
 
 
@@ -1773,7 +1666,7 @@ bool OutdoorPvPWG::Update(uint32 diff)
         UpdateClock();
         SendInitWorldStatesTo();
         m_sendUpdate = true;
-		SaveData();
+        SaveData();
     }
 
 
@@ -1798,8 +1691,8 @@ void OutdoorPvPWG::forceStopBattle()
     if (!isWarTime())
         m_wartime = true;
 
-	timer_30m = false;
-	timer_10m = false;
+    timer_30m = false;
+    timer_10m = false;
 
     if (m_timer != 1)
     {
@@ -1807,7 +1700,7 @@ void OutdoorPvPWG::forceStopBattle()
         sWorld->SendZoneText(ZONE_WINTERGRASP, sObjectMgr->GetTrinityStringForDBCLocale(LANG_BG_WG_BATTLE_FORCE_STOP));
     }
        sWorld->SendWintergraspState();
-	SaveData();
+    SaveData();
 }
 
 void OutdoorPvPWG::forceChangeTeam()
@@ -1828,6 +1721,7 @@ void OutdoorPvPWG::StartBattle()
     uint32 CountAtk=0;
     m_wartime = true;
     MaingateDestroyed = false;
+    sGameEventMgr->StartEvent(WG_EVENT_BATTLE, true);
     m_timer = sWorld->getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_BATTLE_TIME) * MINUTE * IN_MILLISECONDS;
     UpdateAllWorldObject();
 
@@ -1889,33 +1783,33 @@ void OutdoorPvPWG::StartBattle()
         }
     }
 
-	for (PlayerSet::iterator itr = m_players[getAttackerTeam()].begin(); itr != m_players[getAttackerTeam()].end(); ++itr)
-	{
-		if (!(*itr))
-			return;
+    for (PlayerSet::iterator itr = m_players[getAttackerTeam()].begin(); itr != m_players[getAttackerTeam()].end(); ++itr)
+    {
+        if (!(*itr))
+            return;
 
-		uint8 attackerstowerid = urand(0,2);
+        uint8 attackerstowerid = urand(0,2);
 
         float x, y, z;
         x = OutdoorPvPAttackersTower[attackerstowerid][0] + float(irand(-4, 4));
         y = OutdoorPvPAttackersTower[attackerstowerid][1] + float(irand(-4, 4));
         z = (*itr)->GetBaseMap()->GetHeight(x, y, OutdoorPvPAttackersTower[attackerstowerid][2] + 5);
 
-		(*itr)->TeleportTo(571, x, y, z, OutdoorPvPAttackersTower[attackerstowerid][3]);
-	}
+        (*itr)->TeleportTo(571, x, y, z, OutdoorPvPAttackersTower[attackerstowerid][3]);
+    }
 
-	for (PlayerSet::iterator itr = m_players[getDefenderTeam()].begin(); itr != m_players[getDefenderTeam()].end(); ++itr)
-	{
-		if (!(*itr))
-			return;
+    for (PlayerSet::iterator itr = m_players[getDefenderTeam()].begin(); itr != m_players[getDefenderTeam()].end(); ++itr)
+    {
+        if (!(*itr))
+            return;
 
         float x, y, z;
         x = 5330.0f + float(irand(-6, 6));
         y = 2842.0f + float(irand(-6, 6));
         z = (*itr)->GetBaseMap()->GetHeight(x, y, 409.939807f + 5);
 
-		(*itr)->TeleportTo(571, x, y, z, 0); 
-	}
+        (*itr)->TeleportTo(571, x, y, z, 0); 
+    }
 
     // Remove All Wintergrasp auras. Add Recruit rank and Tower Control
     for (PlayerSet::iterator itr = m_players[getAttackerTeam()].begin(); itr != m_players[getAttackerTeam()].end(); ++itr)
@@ -1951,12 +1845,16 @@ void OutdoorPvPWG::StartBattle()
 
 void OutdoorPvPWG::EndBattle()
 {
-	timer_30m = false;
-	timer_10m = false;
+    timer_30m = false;
+    timer_10m = false;
 
     // Cast Essence of Wintergrasp to all players (CheckCast will determine who to cast)
     sWorld->setWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID, getDefenderTeam());
     sWorld->UpdateAreaDependentAuras();
+
+    sGameEventMgr->StopEvent(WG_EVENT_BATTLE, true);
+    sGameEventMgr->StopEvent(getDefenderTeam() == TEAM_ALLIANCE ? WG_EVENT_H_DEF: WG_EVENT_A_DEF, true);
+    sGameEventMgr->StartEvent(getDefenderTeam() == TEAM_ALLIANCE ? WG_EVENT_A_DEF: WG_EVENT_H_DEF, true);
 
     //Sound on End Battle
     for (PlayerSet::iterator itr = m_players[getDefenderTeam()].begin(); itr != m_players[getDefenderTeam()].end(); ++itr)
@@ -2120,11 +2018,11 @@ void OutdoorPvPWG::EndBattle()
             (*itr)->RemoveAurasDueToSpell(SPELL_TOWER_CONTROL);
             (*itr)->RemoveAurasDueToSpell(SPELL_SPIRITUAL_IMMUNITY);
 
-			if (team != sWorld->getWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID))
-			{
-				if (!(*itr)->isGameMaster())
-					(*itr)->CastSpell(*itr, SPELL_TELEPORT_DALARAN, true);
-			}
+            if (team != sWorld->getWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID))
+            {
+                if (!(*itr)->isGameMaster())
+                    (*itr)->CastSpell(*itr, SPELL_TELEPORT_DALARAN, true);
+            }
         }
     }
 
@@ -2179,15 +2077,6 @@ void OutdoorPvPWG::RewardMarkOfHonor(Player *plr, uint32 count)
     if (count != 0 && !dest.empty()) // can add some
         if (Item* item = plr->StoreNewItem(dest, WG_MARK_OF_HONOR, true, 0))
             plr->SendNewItem(item, count, true, false);
-}
-
-void OutdoorPvPWG::LoadQuestGiverMap(uint32 guid, Position posHorde, Position posAlli)
-{
-    m_qgPosMap[std::pair<uint32, bool>(guid, true)] = posHorde,
-    m_qgPosMap[std::pair<uint32, bool>(guid, false)] = posAlli,
-    m_questgivers[guid] = NULL;
-    if (getDefenderTeam() == TEAM_ALLIANCE)
-        sObjectMgr->MoveCreData(guid, 571, posAlli);
 }
 
 OPvPCapturePointWG *OutdoorPvPWG::GetWorkshop(uint32 lowguid) const

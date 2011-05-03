@@ -62,8 +62,8 @@ enum OutdoorPvPWGSpell
 
     SPELL_TELEPORT_DALARAN                       = 53360,
     SPELL_VICTORY_AURA                           = 60044,
-	SPELL_ALLIANCE_FLAG                          = 14268,
-	SPELL_HORDE_FLAG                             = 14267
+    SPELL_ALLIANCE_FLAG                          = 14268,
+    SPELL_HORDE_FLAG                             = 14267
 };
 
 const uint16 GameEventWintergraspDefender[2] = {50, 51};
@@ -156,6 +156,13 @@ enum OutdoorPvPWGCreEntry
     WG_CREATURE_INVISIBLE_STALKER                = 23033
 };
 
+enum OutdoorPvPWGEvents
+{
+    WG_EVENT_A_DEF                                = 81,
+    WG_EVENT_H_DEF                                = 82,
+    WG_EVENT_BATTLE                               = 83
+};
+
 const TeamPair OutdoorPvPWGCreEntryPair[] =
 {
     {32307, 32308}, // Guards
@@ -175,9 +182,9 @@ const TeamPair OutdoorPvPWGGODisplayPair[] =
 
 const float OutdoorPvPAttackersTower [3][4] = 
 {
-	{4436.2797f, 2822.9055f, 405.672f, 6.25f},
-	{4561.2734f, 3582.0126f, 394.0f, 4.63f},
-	{4476.2143f, 1981.7625f, 433.938f, 1.11f}
+    {4436.2797f, 2822.9055f, 405.672f, 6.25f},
+    {4561.2734f, 3582.0126f, 394.0f, 4.63f},
+    {4476.2143f, 1981.7625f, 433.938f, 1.11f}
 };
 
 const uint32 AreaPOIIconId[3][3] = {{7,8,9},{4,5,6},{1,2,3}};
@@ -230,8 +237,6 @@ class OutdoorPvPWG : public OutdoorPvP
         typedef std::map<uint32, BuildingState *> BuildingStateMap;
         typedef std::set<Creature*> CreatureSet;
         typedef std::set<GameObject*> GameObjectSet;
-        typedef std::map<std::pair<uint32, bool>, Position> QuestGiverPositionMap;
-        typedef std::map<uint32, Creature*> QuestGiverMap;
 
     public:
         OutdoorPvPWG();
@@ -292,10 +297,8 @@ class OutdoorPvPWG : public OutdoorPvP
         CreatureSet m_vehicles[2];
         GameObjectSet m_gobjects;
         GameObjectSet m_gobjectsDestroyable;
-        QuestGiverMap m_questgivers;
 
         TeamPairMap m_creEntryPair, m_goDisplayPair;
-        QuestGiverPositionMap m_qgPosMap;
 
         bool m_wartime;
         bool m_changeDefender;
@@ -307,8 +310,8 @@ class OutdoorPvPWG : public OutdoorPvP
         uint32 m_saveinterval; // Minimum save interval if nothing happends - 300000 - 5 Min.
         uint32 m_checktime;
 
-		bool timer_30m;
-		bool timer_10m;
+        bool timer_30m;
+        bool timer_10m;
 
         OPvPCapturePointWG *GetWorkshop(uint32 lowguid) const;
         OPvPCapturePointWG *GetWorkshopByEngGuid(uint32 lowguid) const;
@@ -329,12 +332,9 @@ class OutdoorPvPWG : public OutdoorPvP
         void RebuildAllBuildings();
         void RemoveOfflinePlayerWGAuras();
         void RewardMarkOfHonor(Player *player, uint32 count);
-        void MoveQuestGiver(uint32 guid);
-        void LoadQuestGiverMap(uint32 guid, Position posHorde, Position posAlli);
-        bool UpdateQuestGiverPosition(uint32 guid, Creature *creature);
 
         void SaveData();
-		void LoadData();
+        void LoadData();
 };
 
 class OPvPCapturePointWG : public OPvPCapturePoint
