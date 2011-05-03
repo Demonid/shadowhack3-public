@@ -360,11 +360,13 @@ public:
                         CAST_AI(mob_tribuna_controller::mob_tribuna_controllerAI, pCreature->AI())->UpdateFacesList();
                         uiControllerGUID = pCreature->GetGUID();
                     }
+                    SetEscortPaused(true);
+                    JumpToNextStep(0);  // closing the gap between uiStep= 1 and 3
                     break;
                 case 13:
                     DoScriptText(SAY_EVENT_INTRO_1, me);
                     SetEscortPaused(true);
-                    JumpToNextStep(20000);
+                    JumpToNextStep(20000);  // closing the gap between uiStep= 3 and 5
                     break;
                 case 17:
                     DoScriptText(SAY_EVENT_INTRO_2, me);
@@ -585,7 +587,7 @@ public:
                             pTemp->DealDamage(pTemp, pTemp->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                         bIsBattle = true;
                         SetEscortPaused(false);
-                        JumpToNextStep(6500);
+                        JumpToNextStep(6500);   // TODO: check this for interference with 377:JumpToNextStep(8500), no available uiStep slot!
                         break;
                     case 29:
                         DoScriptText(SAY_EVENT_END_02, me);
