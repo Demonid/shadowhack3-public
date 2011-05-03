@@ -319,6 +319,9 @@ class OutdoorPvPWG : public OutdoorPvP
 
         void StartBattle();
         void EndBattle();
+        void StopAllWGEvents();
+        void SpawnDefenders();
+        void SpawnBattle();
         void UpdateClock();
         void UpdateClockDigit(uint32 &timer, uint32 digit, uint32 mod);
         void PromotePlayer(Player *player) const;

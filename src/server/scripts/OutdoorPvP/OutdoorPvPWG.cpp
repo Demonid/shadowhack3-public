@@ -127,8 +127,8 @@ void OutdoorPvPWG::LoadData()
     if (isWarTime() && (TeamId)sWorld->getWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID) != TEAM_NEUTRAL)
         sWorld->setWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID, TEAM_NEUTRAL);
 
-    sGameEventMgr->StopEvent(m_defender == TEAM_ALLIANCE ? WG_EVENT_H_DEF : WG_EVENT_A_DEF, true);
-    sGameEventMgr->StartEvent(m_defender == TEAM_ALLIANCE ? WG_EVENT_A_DEF : WG_EVENT_H_DEF, true);
+    StopAllWGEvents();
+    SpawnDefenders();
 
     m_workshopCount[TEAM_ALLIANCE] = 0;
     m_workshopCount[TEAM_HORDE] = 0;
@@ -1721,7 +1721,9 @@ void OutdoorPvPWG::StartBattle()
     uint32 CountAtk=0;
     m_wartime = true;
     MaingateDestroyed = false;
-    sGameEventMgr->StartEvent(WG_EVENT_BATTLE, true);
+    
+    SpawnBattle();
+
     m_timer = sWorld->getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_BATTLE_TIME) * MINUTE * IN_MILLISECONDS;
     UpdateAllWorldObject();
 
@@ -1852,9 +1854,8 @@ void OutdoorPvPWG::EndBattle()
     sWorld->setWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID, getDefenderTeam());
     sWorld->UpdateAreaDependentAuras();
 
-    sGameEventMgr->StopEvent(WG_EVENT_BATTLE, true);
-    sGameEventMgr->StopEvent(getDefenderTeam() == TEAM_ALLIANCE ? WG_EVENT_H_DEF: WG_EVENT_A_DEF, true);
-    sGameEventMgr->StartEvent(getDefenderTeam() == TEAM_ALLIANCE ? WG_EVENT_A_DEF: WG_EVENT_H_DEF, true);
+    StopAllWGEvents();
+    SpawnDefenders();
 
     //Sound on End Battle
     for (PlayerSet::iterator itr = m_players[getDefenderTeam()].begin(); itr != m_players[getDefenderTeam()].end(); ++itr)
@@ -2032,6 +2033,24 @@ void OutdoorPvPWG::EndBattle()
     // Update timer in players battlegrounds tab
     sWorld->SendWintergraspState();
 }
+
+void OutdoorPvPWG::StopAllWGEvents()
+{
+    sGameEventMgr->StopEvent(WG_EVENT_BATTLE, true);
+    sGameEventMgr->StopEvent(WG_EVENT_A_DEF, true);
+    sGameEventMgr->StopEvent(WG_EVENT_H_DEF, true);
+}
+
+void OutdoorPvPWG::SpawnDefenders()
+{
+    sGameEventMgr->StartEvent(getDefenderTeam() == TEAM_ALLIANCE ? WG_EVENT_A_DEF: WG_EVENT_H_DEF, true);
+}
+
+void OutdoorPvPWG::SpawnBattle()
+{
+    sGameEventMgr->StartEvent(WG_EVENT_BATTLE, true);
+}
+
 
 bool OutdoorPvPWG::CanBuildVehicle(OPvPCapturePointWG *workshop) const
 {
