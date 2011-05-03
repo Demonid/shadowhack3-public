@@ -15650,6 +15650,9 @@ void Unit::SetFeared(bool apply)
         {
             if (GetMotionMaster()->GetCurrentMovementGeneratorType() == FLEEING_MOTION_TYPE)
                 GetMotionMaster()->MovementExpired();
+
+            StopMoving();
+
             if (getVictim())
                 SetUInt64Value(UNIT_FIELD_TARGET, getVictim()->GetGUID());
         }
@@ -15672,6 +15675,9 @@ void Unit::SetConfused(bool apply)
         {
             if (GetMotionMaster()->GetCurrentMovementGeneratorType() == CONFUSED_MOTION_TYPE)
                 GetMotionMaster()->MovementExpired();
+
+            StopMoving();
+
             if (getVictim())
                 SetUInt64Value(UNIT_FIELD_TARGET, getVictim()->GetGUID());
         }
