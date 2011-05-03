@@ -3533,7 +3533,8 @@ void Spell::cast(bool skipCheck)
         if(Player* modOwner = m_caster->GetSpellModOwner())
             modOwner->RemovePrecastSpellMods(this);
 
-    if (!IsPositiveSpell(m_spellInfo->Id) && !(IsNoCombatSpells(m_spellInfo->Id)) && !(m_spellInfo->AttributesEx & SPELL_ATTR1_NO_THREAT) && m_delayMoment > 200LL)
+    if (!IsPositiveSpell(m_spellInfo->Id) && !(IsNoCombatSpells(m_spellInfo->Id)) && 
+        !(m_spellInfo->AttributesEx & SPELL_ATTR1_NO_THREAT) && m_delayMoment > 200LL && m_targets.getUnitTarget())
     {
         m_caster->CastSpell(m_caster, 200006, true);
     }
