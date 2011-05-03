@@ -550,8 +550,26 @@ SpellSpecific GetSpellSpecific(SpellEntry const * spellInfo)
 {
     switch(spellInfo->SpellFamilyName)
     {
+        case SPELLFAMILY_WARRIOR:
         case SPELLFAMILY_GENERIC:
         {
+            if (spellInfo->SpellFamilyFlags[1] & 0x000080 || spellInfo->SpellFamilyFlags[0] & 0x00010000)
+                return SPELL_SPECIFIC_POSITIVE_SHOUT;
+
+            if (spellInfo->Id == 12292) // Death Wish
+                return SPELL_SPECIFIC_WARRIOR_ENRAGE;
+
+            // Blood Frenzy
+            if (spellInfo->Id == 30069 || spellInfo->Id == 30070)
+                return SPELL_SPECIFIC_TARGET_DAMAGE_BOOST;
+
+            // Trauma
+            if (spellInfo->SpellIconID == 2968)
+                return SPELL_SPECIFIC_TRAUMA_MANGLE;
+
+            if (spellInfo->SpellIconID == 95)
+                return SPELL_SPECIFIC_WARRIOR_ENRAGE;
+
             // Food / Drinks (mostly)
             if (spellInfo->AuraInterruptFlags & AURA_INTERRUPT_FLAG_NOT_SEATED)
             {
@@ -598,9 +616,6 @@ SpellSpecific GetSpellSpecific(SpellEntry const * spellInfo)
                     case 8115: // Agility
                     case 8091: // Armor
                         return SPELL_SPECIFIC_SCROLL;
-                    case 12880: // Enrage (Enrage)
-                    case 57518: // Enrage (Wrecking Crew)
-                        return SPELL_SPECIFIC_WARRIOR_ENRAGE;
                 }
             }
             if (spellInfo->Id == 74410 || spellInfo->Id == 74411)
@@ -624,24 +639,6 @@ SpellSpecific GetSpellSpecific(SpellEntry const * spellInfo)
             // Frost Nova and Shattered Barrier
             if (spellInfo->SpellIconID == 193)
                 return SPELL_SPECIFIC_MAGE_NOVA;
-            break;
-        }
-        case SPELLFAMILY_WARRIOR:
-        {
-            if (spellInfo->SpellFamilyFlags[1] & 0x000080 || spellInfo->SpellFamilyFlags[0] & 0x00010000)
-                return SPELL_SPECIFIC_POSITIVE_SHOUT;
-
-            if (spellInfo->Id == 12292) // Death Wish
-                return SPELL_SPECIFIC_WARRIOR_ENRAGE;
-
-            // Blood Frenzy
-            if (spellInfo->Id == 30069 || spellInfo->Id == 30070)
-                return SPELL_SPECIFIC_TARGET_DAMAGE_BOOST;
-
-            // Trauma
-            if (spellInfo->SpellIconID == 2968)
-                return SPELL_SPECIFIC_TRAUMA_MANGLE;
-
             break;
         }
         case SPELLFAMILY_ROGUE:
