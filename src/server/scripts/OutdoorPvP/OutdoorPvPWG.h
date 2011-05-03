@@ -163,23 +163,6 @@ enum OutdoorPvPWGEvents
     WG_EVENT_BATTLE                               = 83
 };
 
-const TeamPair OutdoorPvPWGCreEntryPair[] =
-{
-    {32307, 32308}, // Guards
-    {30739, 30740}, // Champions
-    {32296, 32294}, // Quartermaster
-    {39173, 39172}, // Ros'slai & Marshal Magruder
-    {32615, 32626}, // Warbringer & Brigadier General
-    {0,0} // Do not delete Used in LoadTeamPair
-};
-
-const TeamPair OutdoorPvPWGGODisplayPair[] =
-{
-    {5651, 5652},
-    {8256, 8257},
-    {0,0} // Do not delete Used in LoadTeamPair
-};
-
 const float OutdoorPvPAttackersTower [3][4] = 
 {
     {4436.2797f, 2822.9055f, 405.672f, 6.25f},
@@ -297,8 +280,6 @@ class OutdoorPvPWG : public OutdoorPvP
         CreatureSet m_vehicles[2];
         GameObjectSet m_gobjects;
         GameObjectSet m_gobjectsDestroyable;
-
-        TeamPairMap m_creEntryPair, m_goDisplayPair;
 
         bool m_wartime;
         bool m_changeDefender;

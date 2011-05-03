@@ -46,16 +46,6 @@ OutdoorPvPWG::OutdoorPvPWG()
     m_LastResurrectTime = 0; // Temporal copy of BG system till 3.2
 }
 
-void _LoadTeamPair(TeamPairMap &pairMap, const TeamPair *pair)
-{
-    while((*pair)[0])
-    {
-        pairMap[(*pair)[0]] = (*pair)[1];
-        pairMap[(*pair)[1]] = (*pair)[0];
-        ++pair;
-    }
-}
-
 void _RespawnCreatureIfNeeded(Creature *cr, uint32 entry)
 {
     if (cr)
@@ -406,9 +396,6 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
     //Titan Relic
     sObjectMgr->AddGOData(192829, 571, 5440.0f, 2840.8f, 420.43f + 10.0f, 0);
 
-    _LoadTeamPair(m_goDisplayPair, OutdoorPvPWGGODisplayPair);
-    _LoadTeamPair(m_creEntryPair, OutdoorPvPWGCreEntryPair);
-
     if (!m_timer)
         m_timer = sWorld->getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_START_TIME) * MINUTE * IN_MILLISECONDS;
 
@@ -630,15 +617,6 @@ void OutdoorPvPWG::ModifyWorkshopCount(TeamId team, bool add)
 
 uint32 OutdoorPvPWG::GetCreatureEntry(uint32 guidlow, const CreatureData *data)
 {
-    if (getDefenderTeam() == TEAM_ALLIANCE)
-    {
-        TeamPairMap::const_iterator itr = m_creEntryPair.find(data->id);
-        if (itr != m_creEntryPair.end())
-        {
-            const_cast<CreatureData*>(data)->displayid = 0;
-            return itr->second;
-        }
-    }
     return data->id;
 }
 
@@ -1017,17 +995,6 @@ bool OutdoorPvPWG::UpdateCreatureInfo(Creature *creature)
                 creature->DisappearAndDie();
             }
             return false;
-        case CREATURE_GUARD:
-        case CREATURE_SPECIAL:
-        {
-            TeamPairMap::const_iterator itr = m_creEntryPair.find(creature->GetCreatureData()->id);
-            if (itr != m_creEntryPair.end())
-            {
-                entry = getDefenderTeam() == TEAM_ALLIANCE ? itr->second : itr->first;
-                _RespawnCreatureIfNeeded(creature, entry);
-            }
-            return false;
-        }
         default:
             return false;
     }
@@ -1072,14 +1039,6 @@ bool OutdoorPvPWG::UpdateGameObjectInfo(GameObject *go) const
             return false;
     }
 
-    // Note: this is only for test, still need db support
-    TeamPairMap::const_iterator itr = m_goDisplayPair.find(go->GetGOInfo()->displayId);
-    if (itr != m_goDisplayPair.end())
-    {
-        go->SetUInt32Value(GAMEOBJECT_DISPLAYID, getDefenderTeam() == TEAM_ALLIANCE ?
-            itr->second : itr->first);
-        return true;
-    }
     return false;
 }
 
