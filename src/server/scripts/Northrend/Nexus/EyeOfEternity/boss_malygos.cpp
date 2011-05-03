@@ -111,7 +111,6 @@ enum Seats
 
 enum Factions
 {
-    FACTION_FRIENDLY = 35,
     FACTION_HOSTILE = 14
 };
 
@@ -914,7 +913,7 @@ public:
                     if (me->GetPositionZ() > GROUND_Z)
                         me->NearTeleportTo(me->GetPositionX(),me->GetPositionY(),GROUND_Z,0);
                     me->SetHomePosition(me->GetPositionX(),me->GetPositionY(),me->GetPositionZ(),me->GetOrientation());
-                    me->setFaction(FACTION_FRIENDLY);
+                    me->setFaction(PD_FACTION_FRIENDLY);
                     me->AI()->EnterEvadeMode();
                 }
             }

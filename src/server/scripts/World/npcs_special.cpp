@@ -309,7 +309,6 @@ public:
 #define EMOTE_CLUCK_TEXT    -1070006
 
 #define QUEST_CLUCK         3861
-#define FACTION_FRIENDLY    35
 #define FACTION_CHICKEN     31
 
 class npc_chicken_cluck : public CreatureScript
@@ -356,7 +355,7 @@ public:
                     if (pPlayer->GetQuestStatus(QUEST_CLUCK) == QUEST_STATUS_NONE && rand()%30 == 1)
                     {
                         me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
-                        me->setFaction(FACTION_FRIENDLY);
+                        me->setFaction(PD_FACTION_FRIENDLY);
                         DoScriptText(EMOTE_HELLO, me);
                     }
                     break;
@@ -364,7 +363,7 @@ public:
                     if (pPlayer->GetQuestStatus(QUEST_CLUCK) == QUEST_STATUS_COMPLETE)
                     {
                         me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
-                        me->setFaction(FACTION_FRIENDLY);
+                        me->setFaction(PD_FACTION_FRIENDLY);
                         DoScriptText(EMOTE_CLUCK_TEXT, me);
                     }
                     break;

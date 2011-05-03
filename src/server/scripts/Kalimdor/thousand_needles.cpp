@@ -288,7 +288,6 @@ public:
 
 enum ePlucky
 {
-    FACTION_FRIENDLY        = 35,
     QUEST_SCOOP             = 1950,
     SPELL_PLUCKY_HUMAN      = 9192,
     SPELL_PLUCKY_CHICKEN    = 9220
@@ -352,7 +351,7 @@ public:
             {
                 if (uiTextEmote == TEXTEMOTE_BECKON)
                 {
-                    me->setFaction(FACTION_FRIENDLY);
+                    me->setFaction(PD_FACTION_FRIENDLY);
                     me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                     DoCast(me, SPELL_PLUCKY_HUMAN, false);
                 }
@@ -364,7 +363,7 @@ public:
                     return;
                 else
                 {
-                    me->setFaction(FACTION_FRIENDLY);
+                    me->setFaction(PD_FACTION_FRIENDLY);
                     me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                     DoCast(me, SPELL_PLUCKY_HUMAN, false);
                     me->HandleEmoteCommand(EMOTE_ONESHOT_WAVE);

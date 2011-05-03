@@ -117,7 +117,6 @@ void OutdoorPvPWG::LoadData()
     if (isWarTime() && (TeamId)sWorld->getWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID) != TEAM_NEUTRAL)
         sWorld->setWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID, TEAM_NEUTRAL);
 
-    StopAllWGEvents();
     SpawnDefenders();
 
     m_workshopCount[TEAM_ALLIANCE] = 0;
@@ -130,10 +129,12 @@ void OutdoorPvPWG::LoadData()
 
 bool OutdoorPvPWG::SetupOutdoorPvP()
 {
+    StopAllWGEvents();
+
     if (!sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
     {
         sWorld->setWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID, TEAM_NEUTRAL);
-        return false;
+        return true;
     }
 
     LoadData();
@@ -154,7 +155,10 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
         " AND id IN (%u, %u, %u, %u);",
         CRE_ENG_A, CRE_ENG_H, CRE_SPI_A, CRE_SPI_H);
     if (!result)
+    {
         sLog->outError("Cannot find siege workshop master or spirit guides in creature!");
+        return false;
+    }
     else
     {
         do
@@ -202,8 +206,10 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
         " AND gameobject.id=gameobject_template.entry",
         minX, minY, maxX, maxY);
     if (!result)
+    {
+        sLog->outError("Cannot find WG gameobjects!");
         return false;
-
+    }
     do
     {
         Field *fields = result->Fetch();
@@ -318,7 +324,6 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
                 continue;
 
             workshop->m_engEntry = const_cast<uint32*>(&creData->id);
-            const_cast<CreatureData*>(creData)->displayid = 0;
             workshop->m_engGuid = engGuid;
 
             // Back spirit is linked to one of the inside workshops, 1 workshop wont have spirit
@@ -331,7 +336,6 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
                     continue;
 
                 workshop->m_spiEntry = const_cast<uint32*>(&spiritData->id);
-                const_cast<CreatureData*>(spiritData)->displayid = 0;
                 workshop->m_spiGuid = spiritGuid;
             }
             else
@@ -948,14 +952,14 @@ bool OutdoorPvPWG::UpdateCreatureInfo(Creature *creature)
                 if (creature->IsVehicle() && creature->GetVehicleKit())
                     creature->GetVehicleKit()->RemoveAllPassengers();
                 creature->SetVisible(false);
-                creature->setFaction(35);
+                creature->setFaction(PD_FACTION_FRIENDLY);
             }
             return false;
         case CREATURE_OTHER:
             if (isWarTime())
             {
                 creature->SetVisible(false);
-                creature->setFaction(35);
+                creature->setFaction(PD_FACTION_FRIENDLY);
             }
             else
             {
@@ -1004,8 +1008,8 @@ bool OutdoorPvPWG::UpdateCreatureInfo(Creature *creature)
 //        true  = no need to rebuild (ie: Banners or teleporters)
 bool OutdoorPvPWG::UpdateGameObjectInfo(GameObject *go) const
 {
-    uint32 attFaction = 35;
-    uint32 defFaction = 35;
+    uint32 attFaction = PD_FACTION_FRIENDLY;
+    uint32 defFaction = PD_FACTION_FRIENDLY;
 
     if (isWarTime())
     {
@@ -2009,7 +2013,6 @@ void OutdoorPvPWG::SpawnBattle()
 {
     sGameEventMgr->StartEvent(WG_EVENT_BATTLE, true);
 }
-
 
 bool OutdoorPvPWG::CanBuildVehicle(OPvPCapturePointWG *workshop) const
 {
