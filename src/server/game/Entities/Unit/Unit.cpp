@@ -15755,7 +15755,7 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const * a
 
     // Set charmed
     Map* pMap = GetMap();
-    if (!IsVehicle() || (IsVehicle() && pMap && !pMap->IsBattleground()))
+    if (!IsVehicle() || (IsVehicle() && pMap && !pMap->IsBattleground() && !IsWGVehicle()))
         setFaction(charmer->getFaction());
 
     charmer->SetCharm(this, true);
@@ -15862,7 +15862,7 @@ void Unit::RemoveCharmedBy(Unit *charmer)
     getHostileRefManager().deleteReferences();
     DeleteThreatList();
     Map* pMap = GetMap();
-    if (!IsVehicle() || (IsVehicle() && pMap && !pMap->IsBattleground()))
+    if (!IsVehicle() || (IsVehicle() && pMap && !pMap->IsBattleground() && !IsWGVehicle()))
         RestoreFaction();
     GetMotionMaster()->InitDefault();
 
