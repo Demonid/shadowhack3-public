@@ -16377,7 +16377,7 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const * a
         return false;
     }
 
-    //if (HasUnitState(UNIT_STAT_UNATTACKABLE))
+    //if (hasUnitState(UNIT_STAT_UNATTACKABLE))
     //    return false;
 
     if (GetTypeId() == TYPEID_PLAYER && this->ToPlayer()->GetTransport())
@@ -16418,11 +16418,6 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const * a
         return false;
     }
 
-    // charm is set by aura, and aura effect remove handler was called during apply handler execution
-    // prevent undefined behaviour
-    if (aurApp && aurApp->GetRemoveMode())
-        return false;
-
     // Set charmed
     Map* pMap = GetMap();
     if (!IsVehicle() || (IsVehicle() && pMap && !pMap->IsBattleground()))
@@ -16442,11 +16437,6 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const * a
         this->ToPlayer()->SetClientControl(this, 0);
     }
 
-    // charm is set by aura, and aura effect remove handler was called during apply handler execution
-    // prevent undefined behaviour
-    if (aurApp && aurApp->GetRemoveMode())
-        return false;
-
     // Pets already have a properly initialized CharmInfo, don't overwrite it.
     if (type != CHARM_TYPE_VEHICLE && !GetCharmInfo())
     {
@@ -16463,7 +16453,6 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const * a
         {
             case CHARM_TYPE_VEHICLE:
                 SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
-                charmer->ToPlayer()->SetClientControl(charmer, 0);
                 charmer->ToPlayer()->SetClientControl(this, 1);
                 charmer->ToPlayer()->SetViewpoint(this, true);
                 charmer->ToPlayer()->VehicleSpellInitialize();
@@ -16472,7 +16461,6 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const * a
                 AddUnitState(UNIT_STAT_POSSESSED);
                 SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
                 charmer->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
-                charmer->ToPlayer()->SetClientControl(charmer, 0);
                 charmer->ToPlayer()->SetClientControl(this, 1);
                 charmer->ToPlayer()->SetViewpoint(this, true);
                 charmer->ToPlayer()->PossessSpellInitialize();
