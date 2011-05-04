@@ -90,7 +90,7 @@ enum Texts
 
 enum BrannCreatures
 {
-    CREATURE_TRIBUNAL_OF_THE_AGES       = 28234,
+//    CREATURE_TRIBUNAL_OF_THE_AGES       = 28234,
     CREATURE_BRANN_BRONZEBEARD          = 28070,
     CREATURE_DARK_MATTER_TARGET         = 28237,
     CREATURE_SEARING_GAZE_TARGET        = 28265,
@@ -329,7 +329,7 @@ public:
                 bHasBeenDamaged = false;
                 uiStep = 0;
                 uiPhaseTimer = 0;
-                uiControllerGUID = 0;
+//                uiControllerGUID = 0;
 
                 DespawnDwarf();
 
@@ -356,12 +356,12 @@ public:
             switch(uiPointId)
             {
                 case 7:
-                    if (Creature* pCreature = GetClosestCreatureWithEntry(me, CREATURE_TRIBUNAL_OF_THE_AGES, 100.0f))
+                    if (Creature* pCreature = Unit::GetCreature(*me, pInstance->GetData64(DATA_TRIBUNAL_OF_AGES)))
                     {
                         if (!pCreature->isAlive())
                             pCreature->Respawn();
                         CAST_AI(mob_tribuna_controller::mob_tribuna_controllerAI, pCreature->AI())->UpdateFacesList();
-                        uiControllerGUID = pCreature->GetGUID();
+//                        uiControllerGUID = pCreature->GetGUID();
                     }
                     SetEscortPaused(true);
                     JumpToNextStep(0);  // closing the gap between uiStep= 1 and 3
@@ -476,7 +476,7 @@ public:
                         DoScriptText(SAY_EVENT_A_3, me);
                         if (pInstance)
                             pInstance->HandleGameObject(pInstance->GetData64(DATA_GO_KADDRAK),true);
-                        if (Creature* pTemp = Unit::GetCreature(*me, uiControllerGUID))
+                        if (Creature* pTemp = Unit::GetCreature(*me, pInstance->GetData64(DATA_TRIBUNAL_OF_AGES)))
                             CAST_AI(mob_tribuna_controller::mob_tribuna_controllerAI, pTemp->AI())->bKaddrakActivated = true;
                         JumpToNextStep(5000);
                         break;
@@ -500,7 +500,7 @@ public:
                         DoScriptText(SAY_EVENT_B_3, me);
                         if (pInstance)
                             pInstance->HandleGameObject(pInstance->GetData64(DATA_GO_MARNAK),true);
-                        if (Creature* pTemp = Unit::GetCreature(*me, uiControllerGUID))
+                        if (Creature* pTemp = Unit::GetCreature(*me, pInstance->GetData64(DATA_TRIBUNAL_OF_AGES)))
                             CAST_AI(mob_tribuna_controller::mob_tribuna_controllerAI, pTemp->AI())->bMarnakActivated = true;
                         JumpToNextStep(10000);
                         break;
@@ -532,7 +532,7 @@ public:
                         DoScriptText(SAY_EVENT_C_3, me);
                         if (pInstance)
                             pInstance->HandleGameObject(pInstance->GetData64(DATA_GO_ABEDNEUM),true);
-                        if (Creature* pTemp = Unit::GetCreature(*me, uiControllerGUID))
+                        if (Creature* pTemp = Unit::GetCreature(*me, pInstance->GetData64(DATA_TRIBUNAL_OF_AGES)))
                             CAST_AI(mob_tribuna_controller::mob_tribuna_controllerAI, pTemp->AI())->bAbedneumActivated = true;
                         JumpToNextStep(5000);
                         break;
@@ -577,6 +577,8 @@ public:
                         if (pInstance)
                             if (Creature* pTemp = Unit::GetCreature(*me, pInstance->GetData64(DATA_ABEDNEUM)))
                                 DoScriptText(SAY_EVENT_D_4_ABED, pTemp);
+// here the Tribunal of Ages has to stop attack players and to start attack spawned mobs
+// when they all are gone, it be passive
                         SpawnDwarf(1);
                         JumpToNextStep(10000);
                         break;
@@ -586,7 +588,8 @@ public:
                         me->SetStandState(UNIT_STAND_STATE_STAND);
                         if (pInstance)
                             pInstance->HandleGameObject(pInstance->GetData64(DATA_GO_SKY_FLOOR),true);
-                        if (Creature* pTemp = Unit::GetCreature(*me, uiControllerGUID))
+// after case 27 is corrected, the next is not needed
+                        if (Creature* pTemp = Unit::GetCreature(*me, pInstance->GetData64(DATA_TRIBUNAL_OF_AGES)))
                             pTemp->DealDamage(pTemp, pTemp->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                         bIsBattle = true;
                         SetEscortPaused(false);
