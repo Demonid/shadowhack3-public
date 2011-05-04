@@ -5398,7 +5398,11 @@ SpellCastResult Spell::CheckCast(bool strict)
         if (m_caster->isInFlight())
             return SPELL_FAILED_NOT_ON_TAXI;
         else
-            return SPELL_FAILED_NOT_MOUNTED;
+        {
+            if (m_spellInfo->Id != 46598)
+                return SPELL_FAILED_NOT_MOUNTED;
+            else m_caster->Unmount();
+        }
     }
 
     SpellCastResult castResult = SPELL_CAST_OK;
