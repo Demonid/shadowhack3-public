@@ -23,6 +23,7 @@
 
 #include "OutdoorPvP.h"
 #include "BattlegroundMgr.h"
+#include "World.h"
 #include "Player.h"
 
 #define ZONE_DALARAN             4395
@@ -319,6 +320,9 @@ class OutdoorPvPWG : public OutdoorPvP
 
         void SaveData();
         void LoadData();
+
+        TeamId const GetControllingTeamID() const {return (TeamId)sWorld->getWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID);}
+        void SetControllingTeamId(TeamId team) {sWorld->setWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID, (uint64)team);}
 };
 
 class OPvPCapturePointWG : public OPvPCapturePoint
