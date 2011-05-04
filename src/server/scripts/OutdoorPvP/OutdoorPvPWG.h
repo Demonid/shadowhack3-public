@@ -321,6 +321,8 @@ class OutdoorPvPWG : public OutdoorPvP
         void SaveData();
         void LoadData();
 
+        void DoVehicleTeleport();
+
         TeamId const GetControllingTeamID() const {return (TeamId)sWorld->getWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID);}
         void SetControllingTeamId(TeamId team) {sWorld->setWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID, (uint64)team);}
 };
