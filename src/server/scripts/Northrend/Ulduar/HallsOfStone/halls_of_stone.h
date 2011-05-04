@@ -32,6 +32,7 @@ enum Data64
     DATA_KADDRAK,
     DATA_MARNAK,
     DATA_ABEDNEUM,
+    DATA_TRIBUNAL_OF_AGES,
     DATA_GO_TRIBUNAL_CONSOLE,
     DATA_GO_KADDRAK,
     DATA_GO_MARNAK,
@@ -48,7 +49,8 @@ enum Creatures
     CREATURE_MARNAK                                        = 30897,
     CREATURE_KADDRAK                                       = 30898,
     CREATURE_ABEDNEUM                                      = 30899,
-    CREATURE_BRANN                                         = 28070
+    CREATURE_BRANN                                         = 28070,
+    CREATURE_TRIBUNAL                                      = 28234
 };
 enum GameObjects
 {
@@ -60,6 +62,7 @@ enum GameObjects
     GO_SJONNIR_DOOR                                        = 191296,
     GO_TRIBUNAL_CONSOLE                                    = 193907,
     GO_TRIBUNAL_CHEST                                      = 190586,
-    GO_TRIBUNAL_CHEST_HERO                                 = 193996
+    GO_TRIBUNAL_CHEST_HERO                                 = 193996,
+    GO_TRIBUNAL_SKY_FLOOR                                  = 191527
 };
 #endif

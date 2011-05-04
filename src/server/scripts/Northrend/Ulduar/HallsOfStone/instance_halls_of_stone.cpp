@@ -49,6 +49,7 @@ public:
         uint64 uiAbedneum;
         uint64 uiMarnak;
         uint64 uiBrann;
+        uint64 uiTribunalOfAges;
 
         uint64 uiMaidenOfGriefDoor;
         uint64 uiSjonnirDoor;
@@ -74,6 +75,7 @@ public:
             uiMarnak = 0;
             uiAbedneum = 0;
             uiBrann = 0;
+            uiTribunalOfAges = 0;
 
             uiMaidenOfGriefDoor = 0;
             uiSjonnirDoor = 0;
@@ -100,6 +102,7 @@ public:
                 case CREATURE_KADDRAK: uiKaddrak = creature->GetGUID(); break;
                 case CREATURE_ABEDNEUM: uiAbedneum = creature->GetGUID(); break;
                 case CREATURE_BRANN: uiBrann = creature->GetGUID(); break;
+                case CREATURE_TRIBUNAL: uiTribunalOfAges = creature->GetGUID(); break;
             }
         }
 
@@ -148,7 +151,7 @@ public:
                     else
                         go->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND);
                     break;
-                case 191527:
+                case GO_TRIBUNAL_SKY_FLOOR:
                     uiTribunalSkyFloor = go->GetGUID();
                     break;
             }
@@ -210,6 +213,7 @@ public:
                 case DATA_KADDRAK:                         return uiKaddrak;
                 case DATA_MARNAK:                          return uiMarnak;
                 case DATA_ABEDNEUM:                        return uiAbedneum;
+                case DATA_TRIBUNAL_OF_AGES:                return uiTribunalOfAges;
                 case DATA_GO_TRIBUNAL_CONSOLE:             return uiTribunalConsole;
                 case DATA_GO_KADDRAK:                      return uiKaddrakGo;
                 case DATA_GO_ABEDNEUM:                     return uiAbedneumGo;
