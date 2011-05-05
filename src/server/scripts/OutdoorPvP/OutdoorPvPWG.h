@@ -339,6 +339,8 @@ class OPvPCapturePointWG : public OPvPCapturePoint
         void ChangeTeam(TeamId oldteam);
         uint32 *m_spiEntry;
         uint32 m_spiGuid;
+        uint32 m_spiGuid_A;
+        uint32 m_spiGuid_H;
         Creature *m_spiritguide;
         Creature *m_spiritguide_horde;
         Creature *m_spiritguide_alliance;

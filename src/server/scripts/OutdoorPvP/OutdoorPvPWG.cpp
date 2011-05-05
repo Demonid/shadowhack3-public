@@ -270,7 +270,8 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
         {
             uint32 engGuid_A = 0;
             uint32 engGuid_H = 0;
-            uint32 spiritGuid = 0;
+            uint32 spiritGuid_A = 0;
+            uint32 spiritGuid_H = 0;
 
             // Find closest Eng to Workshop
             float minDist = 100;
@@ -311,10 +312,13 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
                 if (const CreatureData *creData = sObjectMgr->GetCreatureData(*itr))
                 {
                     float dist = (abs(creData->posX - x) + abs(creData->posY - y));
-                    if (minDist > dist)
+                    if (minDist >= dist)
                     {
                         minDist = dist;
-                        spiritGuid = *itr;
+                        if (creData->id == CRE_SPI_A)
+                            spiritGuid_A = *itr;
+                        else
+                            spiritGuid_H = *itr;
                     }
                 }
             }
@@ -354,19 +358,30 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
             
 
             // Back spirit is linked to one of the inside workshops, 1 workshop wont have spirit
-            if (spiritGuid)
+            if (spiritGuid_A)
             {
-                spiritGuids.remove(spiritGuid);
+                spiritGuids.remove(spiritGuid_A);
 
-                const CreatureData *spiritData = sObjectMgr->GetCreatureData(spiritGuid);
+                const CreatureData *spiritData = sObjectMgr->GetCreatureData(spiritGuid_A);
                 if (!spiritData)
                     continue;
 
                 workshop->m_spiEntry = const_cast<uint32*>(&spiritData->id);
-                workshop->m_spiGuid = spiritGuid;
+                workshop->m_spiGuid_A = spiritGuid_A;
             }
-            else
-                workshop->m_spiGuid = 0;
+
+            if (spiritGuid_H)
+            {
+                spiritGuids.remove(spiritGuid_H);
+
+                const CreatureData *spiritData = sObjectMgr->GetCreatureData(spiritGuid_H);
+                if (!spiritData)
+                    continue;
+
+                workshop->m_spiEntry = const_cast<uint32*>(&spiritData->id);
+                workshop->m_spiGuid_A = spiritGuid_H;
+            }
+
 
             workshop->m_workshopGuid = guid;
             AddCapturePoint(workshop);
@@ -760,8 +775,9 @@ void OutdoorPvPWG::OnCreatureCreate(Creature *creature)
             for (OutdoorPvP::OPvPCapturePointMap::iterator itr = m_capturePoints.begin(); itr != m_capturePoints.end(); ++itr)
             {
                 if (OPvPCapturePointWG *workshop = dynamic_cast<OPvPCapturePointWG*>(itr->second))
-                    if (workshop->m_spiGuid == creGUIDLow)
+                    if (workshop->m_spiGuid_A == creGUIDLow || workshop->m_spiGuid_H == creGUIDLow)
                     {
+                        workshop->m_spiGuid = creGUIDLow;
                         workshop->m_spiritguide = creature;
                         break;
                     }
@@ -821,6 +837,7 @@ void OutdoorPvPWG::OnCreatureRemove(Creature *creature)
                 if (OPvPCapturePointWG *workshop = dynamic_cast<OPvPCapturePointWG*>(itr->second))
                     if (workshop->m_spiGuid == creGUIDLow)
                     {
+                        workshop->m_spiGuid = 0;
                         workshop->m_spiritguide = NULL;
                         break;
                     }
@@ -2121,7 +2138,10 @@ void OutdoorPvPWG::RelocateHordeDeadPlayers(Creature *cr)
     }
 }
 
-OPvPCapturePointWG::OPvPCapturePointWG(OutdoorPvPWG *opvp, BuildingState *state) : OPvPCapturePoint(opvp), m_buildingState(state), m_wintergrasp(opvp), m_engineer(NULL), m_engGuid(0), m_engGuid_A(0), m_engGuid_H(0), m_spiritguide(NULL), m_spiritguide_horde(NULL), m_spiritguide_alliance(NULL), m_spiGuid(0) { }
+OPvPCapturePointWG::OPvPCapturePointWG(OutdoorPvPWG *opvp, BuildingState *state) : 
+    OPvPCapturePoint(opvp), m_buildingState(state), m_wintergrasp(opvp), m_engineer(NULL), 
+    m_engGuid(0), m_engGuid_A(0), m_engGuid_H(0), m_spiritguide(NULL), m_spiritguide_horde(NULL), m_spiritguide_alliance(NULL), 
+    m_spiGuid(0), m_spiGuid_A(0), m_spiGuid_H(0) { }
 
 void OPvPCapturePointWG::SetTeamByBuildingState()
 {
