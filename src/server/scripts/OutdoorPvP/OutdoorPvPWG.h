@@ -344,6 +344,8 @@ class OPvPCapturePointWG : public OPvPCapturePoint
         Creature *m_spiritguide_alliance;
         uint32 *m_engEntry;
         uint32 m_engGuid;
+        uint32 m_engGuid_A;
+        uint32 m_engGuid_H;
         Creature *m_engineer;
         uint32 m_workshopGuid;
         BuildingState *m_buildingState;

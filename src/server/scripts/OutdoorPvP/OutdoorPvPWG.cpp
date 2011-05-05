@@ -198,11 +198,11 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
 
     // Coords: 4290.330078, 1790.359985 - 5558.379883, 4048.889893
     result = WorldDatabase.PQuery("SELECT guid FROM gameobject, gameobject_template"
-        " WHERE gameobject.map=571"
-        " AND gameobject.position_x>%f AND gameobject.position_y>%f"
-        " AND gameobject.position_x<%f AND gameobject.position_y<%f"
-        " AND gameobject_template.type=33"
-        " AND gameobject.id=gameobject_template.entry",
+        " WHERE gameobject.map = 571"
+        " AND gameobject.position_x > %f AND gameobject.position_y > %f"
+        " AND gameobject.position_x < %f AND gameobject.position_y < %f"
+        " AND gameobject_template.type = 33"
+        " AND gameobject.id = gameobject_template.entry",
         minX, minY, maxX, maxY);
 
     if (!result)
@@ -268,8 +268,10 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
 
         if (capturePointEntry)
         {
-            uint32 engGuid = 0;
+            uint32 engGuid_A = 0;
+            uint32 engGuid_H = 0;
             uint32 spiritGuid = 0;
+
             // Find closest Eng to Workshop
             float minDist = 100;
             for (std::list<uint32>::iterator itr = engGuids.begin(); itr != engGuids.end(); ++itr)
@@ -277,21 +279,30 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
                 if (const CreatureData *creData = sObjectMgr->GetCreatureData(*itr))
                 {
                     float dist = (abs(creData->posX - x) + abs(creData->posY - y));
-                    if (minDist > dist)
+                    if (minDist >= dist)
                     {
                         minDist = dist;
-                        engGuid = *itr;
+                        if (creData->id == CRE_ENG_A)
+                            engGuid_A = *itr;
+                        else
+                            engGuid_H = *itr;
                     }
                 }
             }
 
-            if (!engGuid)
+            if (!engGuid_A && !engGuid_H)
             {
                 sLog->outError("Cannot find nearby siege workshop master!");
                 continue;
             }
             else
-                engGuids.remove(engGuid);
+            {
+                if (engGuid_A)
+                    engGuids.remove(engGuid_A);
+
+                if (engGuid_H)
+                    engGuids.remove(engGuid_H);
+            }
 
             // Find closest Spirit Guide to Workshop
             minDist = 255;
@@ -323,12 +334,24 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
             if(goData->id == 192028 || goData->id == 192029)
                 workshop->m_capturePointGUID = goData->id;
 
-            const CreatureData *creData = sObjectMgr->GetCreatureData(engGuid);
-            if (!creData)
-                continue;
-
-            workshop->m_engEntry = const_cast<uint32*>(&creData->id);
-            workshop->m_engGuid = engGuid;
+            if (engGuid_A)
+            {
+                if (const CreatureData *creData = sObjectMgr->GetCreatureData(engGuid_A))
+                {
+                    workshop->m_engEntry = const_cast<uint32*>(&creData->id);
+                    workshop->m_engGuid_A = engGuid_A;
+                }
+            }
+            
+            if (engGuid_H)
+            {
+                if (const CreatureData *creData = sObjectMgr->GetCreatureData(engGuid_H))
+                {
+                    workshop->m_engEntry = const_cast<uint32*>(&creData->id);
+                    workshop->m_engGuid_H = engGuid_H;
+                } 
+            }
+            
 
             // Back spirit is linked to one of the inside workshops, 1 workshop wont have spirit
             if (spiritGuid)
@@ -682,6 +705,8 @@ OutdoorPvPWGCreType OutdoorPvPWG::GetCreatureType(uint32 entry) const
 void OutdoorPvPWG::OnCreatureCreate(Creature *creature)
 {
     uint32 entry = creature->GetEntry();
+    uint32 creGUIDLow = creature->GetDBTableGUIDLow();
+
     switch(GetCreatureType(entry))
     {
         case CREATURE_SIEGE_VEHICLE:
@@ -721,10 +746,11 @@ void OutdoorPvPWG::OnCreatureCreate(Creature *creature)
         }
         case CREATURE_ENGINEER:
             for (OutdoorPvP::OPvPCapturePointMap::iterator itr = m_capturePoints.begin(); itr != m_capturePoints.end(); ++itr)
-            {
+            {                
                 if (OPvPCapturePointWG *workshop = dynamic_cast<OPvPCapturePointWG*>(itr->second))
-                    if (workshop->m_engGuid == creature->GetDBTableGUIDLow())
+                    if (workshop->m_engGuid_A == creGUIDLow || workshop->m_engGuid_H == creGUIDLow)
                     {
+                        workshop->m_engGuid = creGUIDLow;
                         workshop->m_engineer = creature;
                         break;
                     }
@@ -734,7 +760,7 @@ void OutdoorPvPWG::OnCreatureCreate(Creature *creature)
             for (OutdoorPvP::OPvPCapturePointMap::iterator itr = m_capturePoints.begin(); itr != m_capturePoints.end(); ++itr)
             {
                 if (OPvPCapturePointWG *workshop = dynamic_cast<OPvPCapturePointWG*>(itr->second))
-                    if (workshop->m_spiGuid == creature->GetDBTableGUIDLow())
+                    if (workshop->m_spiGuid == creGUIDLow)
                     {
                         workshop->m_spiritguide = creature;
                         break;
@@ -754,6 +780,8 @@ void OutdoorPvPWG::OnCreatureCreate(Creature *creature)
 void OutdoorPvPWG::OnCreatureRemove(Creature *creature)
 {
     uint32 entry = creature->GetEntry();
+    uint32 creGUIDLow = creature->GetDBTableGUIDLow();
+
     switch(GetCreatureType(entry))
     {
         case CREATURE_SIEGE_VEHICLE:
@@ -778,8 +806,9 @@ void OutdoorPvPWG::OnCreatureRemove(Creature *creature)
             for (OutdoorPvP::OPvPCapturePointMap::iterator itr = m_capturePoints.begin(); itr != m_capturePoints.end(); ++itr)
             {
                 if (OPvPCapturePointWG *workshop = dynamic_cast<OPvPCapturePointWG*>(itr->second))
-                    if (workshop->m_engGuid == creature->GetDBTableGUIDLow())
+                    if (workshop->m_engGuid == creGUIDLow)
                     {
+                        workshop->m_engGuid = 0;
                         workshop->m_engineer = NULL;
                         break;
                     }
@@ -790,7 +819,7 @@ void OutdoorPvPWG::OnCreatureRemove(Creature *creature)
             for (OutdoorPvP::OPvPCapturePointMap::iterator itr = m_capturePoints.begin(); itr != m_capturePoints.end(); ++itr)
             {
                 if (OPvPCapturePointWG *workshop = dynamic_cast<OPvPCapturePointWG*>(itr->second))
-                    if (workshop->m_spiGuid == creature->GetDBTableGUIDLow())
+                    if (workshop->m_spiGuid == creGUIDLow)
                     {
                         workshop->m_spiritguide = NULL;
                         break;
@@ -1972,18 +2001,24 @@ OPvPCapturePointWG *OutdoorPvPWG::GetWorkshop(uint32 lowguid) const
 OPvPCapturePointWG *OutdoorPvPWG::GetWorkshopByEngGuid(uint32 lowguid) const
 {
     for (OutdoorPvP::OPvPCapturePointMap::const_iterator itr = m_capturePoints.begin(); itr != m_capturePoints.end(); ++itr)
+    {
         if (OPvPCapturePointWG *workshop = dynamic_cast<OPvPCapturePointWG*>(itr->second))
             if (workshop->m_engGuid == lowguid)
                 return workshop;
+    }
+
     return NULL;
 }
 
 OPvPCapturePointWG *OutdoorPvPWG::GetWorkshopByGOGuid(uint64 lowguid) const
 {
     for (OutdoorPvP::OPvPCapturePointMap::const_iterator itr = m_capturePoints.begin(); itr != m_capturePoints.end(); ++itr)
+    {
         if (OPvPCapturePointWG *workshop = dynamic_cast<OPvPCapturePointWG*>(itr->second))
             if (workshop->m_workshopGuid == lowguid)
                 return workshop;
+    }
+
     return NULL;
 }
 
@@ -2086,7 +2121,7 @@ void OutdoorPvPWG::RelocateHordeDeadPlayers(Creature *cr)
     }
 }
 
-OPvPCapturePointWG::OPvPCapturePointWG(OutdoorPvPWG *opvp, BuildingState *state) : OPvPCapturePoint(opvp), m_buildingState(state), m_wintergrasp(opvp), m_engineer(NULL), m_engGuid(0), m_spiritguide(NULL), m_spiritguide_horde(NULL), m_spiritguide_alliance(NULL), m_spiGuid(0) { }
+OPvPCapturePointWG::OPvPCapturePointWG(OutdoorPvPWG *opvp, BuildingState *state) : OPvPCapturePoint(opvp), m_buildingState(state), m_wintergrasp(opvp), m_engineer(NULL), m_engGuid(0), m_engGuid_A(0), m_engGuid_H(0), m_spiritguide(NULL), m_spiritguide_horde(NULL), m_spiritguide_alliance(NULL), m_spiGuid(0) { }
 
 void OPvPCapturePointWG::SetTeamByBuildingState()
 {
