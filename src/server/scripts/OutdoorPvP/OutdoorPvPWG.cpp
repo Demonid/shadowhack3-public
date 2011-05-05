@@ -722,6 +722,9 @@ void OutdoorPvPWG::OnCreatureCreate(Creature *creature)
     uint32 entry = creature->GetEntry();
     uint32 creGUIDLow = creature->GetDBTableGUIDLow();
 
+    if (!creature->isSummon() && !creature->isAlive())
+        _RespawnCreatureIfNeeded(creature, creature->GetEntry());
+
     switch(GetCreatureType(entry))
     {
         case CREATURE_SIEGE_VEHICLE:
