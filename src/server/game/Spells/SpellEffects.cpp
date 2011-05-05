@@ -4600,6 +4600,9 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                     if (!target)
                         return;
 
+                    if (target->HasItemCount(123456, 1, false))
+                        target->DestroyItemCount(123456, 1, true, false);
+
                     // Levelup
                     if (target->getLevel() < 80)
                     {
@@ -4746,6 +4749,9 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                     if (!target)
                         return;
 
+                    if (target->HasItemCount(123457, 1, false))
+                        target->DestroyItemCount(123457, 1, true, false);
+
                     // Levelup
                     if (target->getLevel() < 80)
                     {
@@ -4838,6 +4844,9 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                        return;
 
                     Player* target = unitTarget->ToPlayer();
+                    if (!target)
+                        return;
+
                     target->UpdateSkillsForLevel();
                     target->UpdateSkillsToMaxSkillsForLevel(); // Max Skills
                     break;
