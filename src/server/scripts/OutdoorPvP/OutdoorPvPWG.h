@@ -26,11 +26,12 @@
 #include "World.h"
 #include "Player.h"
 
-#define ZONE_DALARAN             4395
-#define ZONE_WINTERGRASP         4197
-#define POS_X_CENTER             5100
+#define ZONE_DALARAN                4395
+#define ZONE_WINTERGRASP            4197
+#define POS_X_CENTER                5100
 #define MAX_VEHICLE_PER_WORKSHOP    4
 #define WG_MIN_SAVE                 300000
+#define WG_MIN_LEVEL                75
 
 const uint32 WintergraspFaction[3] = {1802, 1801, 35};
 const uint32 WG_MARK_OF_HONOR = 43589;
@@ -60,6 +61,8 @@ enum OutdoorPvPWGSpell
     SPELL_TELEPORT_ALLIANCE_CAMP                 = 58632,
     SPELL_TELEPORT_HORDE_CAMP                    = 58633,
     SPELL_TELEPORT_FORTRESS                      = 59096,
+
+    SPELL_PARACHUTE_WG                           = 45472,
 
     SPELL_TELEPORT_DALARAN                       = 53360,
     SPELL_VICTORY_AURA                           = 60044,

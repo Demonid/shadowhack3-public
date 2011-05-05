@@ -58,7 +58,6 @@ void _RespawnCreatureIfNeeded(Creature *cr, uint32 entry)
 
 void OutdoorPvPWG::SaveData()
 {
-
     SetControllingTeamId(isWarTime() ? TEAM_NEUTRAL : m_defender);
     sWorld->setWorldState(WS_WINTERGRASP_DEFENDER_TEAMID, uint64(m_defender));
     sWorld->setWorldState(WS_WINTERGRASP_CLOCK_ALLY, m_clock[TEAM_ALLIANCE]);
@@ -567,13 +566,13 @@ void OutdoorPvPWG::ProcessEvent(GameObject *obj, uint32 eventId)
                         uint32 attStack = 3 - m_towerDestroyedCount[getAttackerTeam()];
                         if (m_towerDestroyedCount[getAttackerTeam()])
                             for (PlayerSet::iterator itr = m_players[getDefenderTeam()].begin(); itr != m_players[getDefenderTeam()].end(); ++itr)
-                                if ((*itr)->getLevel() > 74)
+                                if ((*itr)->getLevel() >= WG_MIN_LEVEL)
                                     (*itr)->SetAuraStack(SPELL_TOWER_CONTROL, (*itr), m_towerDestroyedCount[getAttackerTeam()]);
 
                         if (attStack)
                         {
                             for (PlayerSet::iterator itr = m_players[getAttackerTeam()].begin(); itr != m_players[getAttackerTeam()].end(); ++itr)
-                                if ((*itr)->getLevel() > 74)
+                                if ((*itr)->getLevel() >= WG_MIN_LEVEL)
                                     (*itr)->SetAuraStack(SPELL_TOWER_CONTROL, (*itr), attStack);
                         }
                          else
@@ -1067,7 +1066,7 @@ void OutdoorPvPWG::HandlePlayerEnterZone(Player * plr, uint32 zone)
 
     if (isWarTime())
     {
-        if (plr->getLevel() < 75)
+        if (plr->getLevel() < WG_MIN_LEVEL)
         {
             plr->CastSpell(plr, SPELL_TELEPORT_DALARAN, true);
             return;
@@ -1127,7 +1126,7 @@ void OutdoorPvPWG::HandlePlayerResurrects(Player * plr, uint32 zone)
 
     if (isWarTime())
     {
-        if (plr->getLevel() > 74)
+        if (plr->getLevel() >= WG_MIN_LEVEL)
         {
             // Tenacity
             if (plr->GetTeamId() == TEAM_ALLIANCE && m_tenacityStack > 0 ||
@@ -1215,7 +1214,7 @@ void OutdoorPvPWG::HandleKill(Player *killer, Unit *victim)
     bool ok = false;
     if (victim->GetTypeId() == TYPEID_PLAYER)
     {
-        if (victim->getLevel() >= 74)
+        if (victim->getLevel() >= WG_MIN_LEVEL)
             ok = true;
 
         killer->RewardPlayerAndGroupAtEvent(CRE_PVP_KILL, victim);
@@ -1243,12 +1242,12 @@ void OutdoorPvPWG::HandleKill(Player *killer, Unit *victim)
         if (Group *pGroup = killer->GetGroup())
         {
             for (GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
-                if (itr->getSource()->IsAtGroupRewardDistance(killer) && itr->getSource()->getLevel() > 74)
+                if (itr->getSource()->IsAtGroupRewardDistance(killer) && itr->getSource()->getLevel() >= WG_MIN_LEVEL)
                     PromotePlayer(itr->getSource());
         }
         else
         {
-            if (killer->getLevel() > 74)
+            if (killer->getLevel() >= WG_MIN_LEVEL)
                 PromotePlayer(killer);
         }
     }
@@ -1266,11 +1265,11 @@ void OutdoorPvPWG::UpdateTenacityStack()
     int32 newStack = 0;
 
     for (PlayerSet::iterator itr = m_players[TEAM_ALLIANCE].begin(); itr != m_players[TEAM_ALLIANCE].end(); ++itr)
-        if ((*itr)->getLevel() > 74)
+        if ((*itr)->getLevel() >= WG_MIN_LEVEL)
             ++allianceNum;
 
     for (PlayerSet::iterator itr = m_players[TEAM_HORDE].begin(); itr != m_players[TEAM_HORDE].end(); ++itr)
-        if ((*itr)->getLevel() > 74)
+        if ((*itr)->getLevel() >= WG_MIN_LEVEL)
             ++hordeNum;
 
     if (allianceNum && hordeNum)
@@ -1313,7 +1312,7 @@ void OutdoorPvPWG::UpdateTenacityStack()
             newStack = -newStack;
 
         for (PlayerSet::const_iterator itr = m_players[team].begin(); itr != m_players[team].end(); ++itr)
-            if ((*itr)->getLevel() > 74)
+            if ((*itr)->getLevel() >= WG_MIN_LEVEL)
                 (*itr)->SetAuraStack(SPELL_TENACITY, (*itr), newStack);
 
         for (CreatureSet::const_iterator itr = m_vehicles[team].begin(); itr != m_vehicles[team].end(); ++itr)
@@ -1371,7 +1370,7 @@ void OutdoorPvPWG::DoVehicleTeleport()
                 {
                     if (Creature* Old = i->getSource()->GetVehicleCreatureBase())
                     {
-                        if (Old->GetEntry() == 28319 || Old->GetEntry() == 32629) //Turret
+                        if (Old->GetEntry() == WG_CREATURE_SIEGE_TURRET_A || Old->GetEntry() == WG_CREATURE_SIEGE_TURRET_H) //Turret
                         {
                             i->getSource()->ExitVehicle();
                             i->getSource()->NearTeleportTo(5141.191406f, 2841.045410f, 408.703217f, 3.163321f, true); // Out of the Fortress Gate
@@ -1489,7 +1488,7 @@ bool OutdoorPvPWG::Update(uint32 diff)
                     if(Player *plr = sObjectMgr->GetPlayer(*itr))
                     {
                         plr->ResurrectPlayer(1.0f);
-                        plr->CastSpell(plr, 6962, true);
+                        plr->CastSpell(plr, 6962, true); //http://info.izbooshka.net/?spell=6962 - wtf?
                         plr->CastSpell(plr, SPELL_SPIRIT_HEAL_MANA, true);
                         sObjectAccessor->ConvertCorpseForPlayer(*itr);
                     }                    
@@ -1592,28 +1591,28 @@ void OutdoorPvPWG::StartBattle()
 
     for (PlayerSet::iterator itr = m_players[getDefenderTeam()].begin(); itr != m_players[getDefenderTeam()].end(); ++itr)
     {
-        if ((*itr)->getLevel() < 75)
+        if ((*itr)->getLevel() < WG_MIN_LEVEL)
             (*itr)->CastSpell((*itr), SPELL_TELEPORT_DALARAN, true);
         else
         {
             CountDef++;
             (*itr)->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
             (*itr)->RemoveAurasByType(SPELL_AURA_FLY);
-            (*itr)->CastSpell((*itr), 45472, true); //prevent die if fall
+            (*itr)->CastSpell((*itr), SPELL_PARACHUTE_WG, true); //prevent die if fall
             (*itr)->PlayDirectSound(OutdoorPvP_WG_SOUND_START_BATTLE); // START Battle
         }
     }
 
     for (PlayerSet::iterator itr = m_players[getAttackerTeam()].begin(); itr != m_players[getAttackerTeam()].end(); ++itr)
     {
-        if ((*itr)->getLevel() < 75)
+        if ((*itr)->getLevel() < WG_MIN_LEVEL)
             (*itr)->CastSpell((*itr), SPELL_TELEPORT_DALARAN, true);
         else
         {
             CountAtk++;
             (*itr)->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
             (*itr)->RemoveAurasByType(SPELL_AURA_FLY);
-            (*itr)->CastSpell((*itr), 45472, true); //prevent die if fall
+            (*itr)->CastSpell((*itr), SPELL_PARACHUTE_WG, true); //prevent die if fall
             (*itr)->PlayDirectSound(OutdoorPvP_WG_SOUND_START_BATTLE); // START Battle
         }
     }
@@ -1684,7 +1683,7 @@ void OutdoorPvPWG::StartBattle()
         (*itr)->RemoveAurasDueToSpell(SPELL_LIEUTENANT);
         (*itr)->RemoveAurasDueToSpell(SPELL_TOWER_CONTROL);
         (*itr)->RemoveAurasDueToSpell(SPELL_SPIRITUAL_IMMUNITY);
-        if ((*itr)->getLevel() > 74)
+        if ((*itr)->getLevel() >= WG_MIN_LEVEL)
         {
             (*itr)->SetAuraStack(SPELL_TOWER_CONTROL, (*itr), 3);
             (*itr)->CastSpell(*itr, SPELL_RECRUIT, true);
@@ -1699,7 +1698,7 @@ void OutdoorPvPWG::StartBattle()
         (*itr)->RemoveAurasDueToSpell(SPELL_LIEUTENANT);
         (*itr)->RemoveAurasDueToSpell(SPELL_TOWER_CONTROL);
         (*itr)->RemoveAurasDueToSpell(SPELL_SPIRITUAL_IMMUNITY);
-        if ((*itr)->getLevel() > 74)
+        if ((*itr)->getLevel() >= WG_MIN_LEVEL)
             (*itr)->CastSpell(*itr, SPELL_RECRUIT, true);
     }
     UpdateTenacityStack();
@@ -1793,7 +1792,7 @@ void OutdoorPvPWG::EndBattle()
         {
             // Calculate Level 70+ with Corporal or Lieutenant rank
             for (PlayerSet::iterator itr = m_players[team].begin(); itr != m_players[team].end(); ++itr)
-                if ((*itr)->getLevel() > 74 && ((*itr)->HasAura(SPELL_LIEUTENANT) || (*itr)->HasAura(SPELL_CORPORAL)))
+                if ((*itr)->getLevel() >= WG_MIN_LEVEL && ((*itr)->HasAura(SPELL_LIEUTENANT) || (*itr)->HasAura(SPELL_CORPORAL)))
                     ++playersWithRankNum;
 
             baseHonor = team == getDefenderTeam() ? sWorld->getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_WIN_BATTLE) : sWorld->getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_LOSE_BATTLE);
@@ -1807,7 +1806,7 @@ void OutdoorPvPWG::EndBattle()
 
         for (PlayerSet::iterator itr = m_players[team].begin(); itr != m_players[team].end(); ++itr)
         {
-            if ((*itr)->getLevel() < 75)
+            if ((*itr)->getLevel() < WG_MIN_LEVEL)
                 continue; // No rewards for level <75
 
             // give rewards
