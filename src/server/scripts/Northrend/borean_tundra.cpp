@@ -1071,27 +1071,27 @@ public:
             {
                 if (Player* pHarpooner = Unit::GetPlayer(*me,HarpoonerGUID))
                 {
-			        if (!me->HasAura(SPELL_RED_DRAGONBLOOD))
-			        {			
-				        if (WithRedDragonBlood)
-				        {
+                    if (!me->HasAura(SPELL_RED_DRAGONBLOOD))
+                    {            
+                        if (WithRedDragonBlood)
+                        {
                             me->DeleteThreatList();
                             me->CombatStop(true);
-					        StartFollow(pHarpooner, 35, NULL);
+                            StartFollow(pHarpooner, 35, NULL);
 
-					        DoCast(me, SPELL_SUBDUED, true);
-					        pHarpooner->CastSpell(pHarpooner, SPELL_DRAKE_HATCHLING_SUBDUED, true);
+                            DoCast(me, SPELL_SUBDUED, true);
+                            pHarpooner->CastSpell(pHarpooner, SPELL_DRAKE_HATCHLING_SUBDUED, true);
 
-					        WithRedDragonBlood = false;
-					        me->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
-				        }
-				        else if (!me->HasAura(SPELL_SUBDUED) && !pHarpooner->HasAura(SPELL_DRAKE_HATCHLING_SUBDUED))
-				        {
-					        SetFollowComplete();
-					        HarpoonerGUID = 0;
-					        me->DisappearAndDie();
-				        }
-			        }
+                            WithRedDragonBlood = false;
+                            me->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
+                        }
+                        else if (!me->HasAura(SPELL_SUBDUED) && !pHarpooner->HasAura(SPELL_DRAKE_HATCHLING_SUBDUED))
+                        {
+                            SetFollowComplete();
+                            HarpoonerGUID = 0;
+                            me->DisappearAndDie();
+                        }
+                    }
                 }
             }
             else
@@ -2750,24 +2750,24 @@ public:
 enum eHordeSiegeTank
 {
     SPELL_RESCUE_INJURED_SOLDIER = 47962,
-	SPELL_SOLDIER_RESCUED		 = 47967,
-	SPELL_TUNE_UP				 = 47969,
-	SPELL_WARLORDS_BULWARK		 = 47975,
+    SPELL_SOLDIER_RESCUED         = 47967,
+    SPELL_TUNE_UP                 = 47969,
+    SPELL_WARLORDS_BULWARK         = 47975,
 
-	NPC_HORDE_SIEGE_TANK		 = 25334,
-	NPC_ABANDONED_FUEL_TANK		 = 27064,
+    NPC_HORDE_SIEGE_TANK         = 25334,
+    NPC_ABANDONED_FUEL_TANK         = 27064,
     NPC_INJURED_WARSONG_WARRIOR  = 27106,
     NPC_INJURED_WARSONG_MAGE     = 27107,
     NPC_INJURED_WARSONG_SHAMAN   = 27108,
     NPC_INJURED_WARSONG_ENGINEER = 27110,
 
-	QUEST_THE_PLAINS_OF_NASAM    = 11652,
+    QUEST_THE_PLAINS_OF_NASAM    = 11652,
 
-	AREAID_PLAINS_OF_NASAM		 = 4130
+    AREAID_PLAINS_OF_NASAM         = 4130
 };
 
-#define TEXTID_HSG_NO_QUEST		10078
-#define TEXTID_HSG_WRONG_ZONE	10079
+#define TEXTID_HSG_NO_QUEST        10078
+#define TEXTID_HSG_WRONG_ZONE    10079
 
 class npc_horde_siege_tank : public CreatureScript
 {
@@ -2776,138 +2776,138 @@ public:
 
     CreatureAI* GetAI_npc_horde_siege_tank(Creature* pCreature)
     {
-	    return new npc_horde_siege_tankAI(pCreature);
+        return new npc_horde_siege_tankAI(pCreature);
     }
 
     struct npc_horde_siege_tankAI : public ScriptedAI
     {
-	    npc_horde_siege_tankAI(Creature* pCreature) : ScriptedAI(pCreature){ Reset(); }
+        npc_horde_siege_tankAI(Creature* pCreature) : ScriptedAI(pCreature){ Reset(); }
 
-	    uint64 m_DriverGUID;
-	    uint32 m_uiTimer;	// alarm = to check nearest neighbours for supply NPC_ABANDONED_FUEL_TANK
-	    int8 m_toUnsummon;	// number of m_uiTimer alarms in wrong zone before unsummon self
-	    bool m_zoneOK;
-	    uint8 rescuedSoldiers;
+        uint64 m_DriverGUID;
+        uint32 m_uiTimer;    // alarm = to check nearest neighbours for supply NPC_ABANDONED_FUEL_TANK
+        int8 m_toUnsummon;    // number of m_uiTimer alarms in wrong zone before unsummon self
+        bool m_zoneOK;
+        uint8 rescuedSoldiers;
 
-	    void Reset() 
-	    { 
-		    if (!me->GetVehicleKit())
-		    {
-			    me->ForcedDespawn();
-		    }
-    		
-		    m_toUnsummon = 13;
-		    m_zoneOK = true; 
-		    m_uiTimer = 2000;
-		    m_DriverGUID = 0;
-		    rescuedSoldiers = 0;
-	    }
+        void Reset() 
+        { 
+            if (!me->GetVehicleKit())
+            {
+                me->ForcedDespawn();
+            }
+            
+            m_toUnsummon = 13;
+            m_zoneOK = true; 
+            m_uiTimer = 2000;
+            m_DriverGUID = 0;
+            rescuedSoldiers = 0;
+        }
 
         void EnterCombat(Unit* /*pWho*/) {}
 
         void AttackStart(Unit* /*pWho*/) {}
 
-	    void UpdateAI(const uint32 uiDiff)
-	    {
-		    if (Player *m_Driver = Unit::GetPlayer(*me, m_DriverGUID))
-		    {
-			    if (m_uiTimer <= uiDiff)
-			    {
-				    if (Creature* supply = me->FindNearestCreature(NPC_ABANDONED_FUEL_TANK, INTERACTION_DISTANCE))
-				    {  // CheckMe: values of bonus mana/health
-					    me->ModifyHealth(6000);
-					    me->ModifyPower(POWER_MANA, 2000);
-					    supply->ForcedDespawn();
-				    }
-				    m_uiTimer = 2000;
+        void UpdateAI(const uint32 uiDiff)
+        {
+            if (Player *m_Driver = Unit::GetPlayer(*me, m_DriverGUID))
+            {
+                if (m_uiTimer <= uiDiff)
+                {
+                    if (Creature* supply = me->FindNearestCreature(NPC_ABANDONED_FUEL_TANK, INTERACTION_DISTANCE))
+                    {  // CheckMe: values of bonus mana/health
+                        me->ModifyHealth(6000);
+                        me->ModifyPower(POWER_MANA, 2000);
+                        supply->ForcedDespawn();
+                    }
+                    m_uiTimer = 2000;
 
-				    m_zoneOK = me->GetAreaId() == AREAID_PLAINS_OF_NASAM;
+                    m_zoneOK = me->GetAreaId() == AREAID_PLAINS_OF_NASAM;
 
-				    if (m_zoneOK) 
-					    m_toUnsummon = 13;
-				    else if (--m_toUnsummon > 0) 
-					    me->Say(TEXTID_HSG_WRONG_ZONE, LANG_UNIVERSAL, m_DriverGUID);
-				    else if (Vehicle * siegeTank = m_Driver->GetVehicle())
-				    {
-					    if (me == m_Driver->GetVehicleCreatureBase())
-					    {
-						    siegeTank->Dismiss();
-					    }										
-				    }
-			    }
-			    else m_uiTimer -= uiDiff;
-		    }
+                    if (m_zoneOK) 
+                        m_toUnsummon = 13;
+                    else if (--m_toUnsummon > 0) 
+                        me->Say(TEXTID_HSG_WRONG_ZONE, LANG_UNIVERSAL, m_DriverGUID);
+                    else if (Vehicle * siegeTank = m_Driver->GetVehicle())
+                    {
+                        if (me == m_Driver->GetVehicleCreatureBase())
+                        {
+                            siegeTank->Dismiss();
+                        }                                        
+                    }
+                }
+                else m_uiTimer -= uiDiff;
+            }
 
             return;
-	    }
+        }
 
-	    void PassengerBoarded(Unit *who, int8 seatId, bool apply)
-	    {
-		    if (apply)
-		    {
-			    if (Player *m_Driver = who->ToPlayer())
-			    {
-				    if (m_Driver->GetQuestStatus(QUEST_THE_PLAINS_OF_NASAM) != QUEST_STATUS_INCOMPLETE)
-				    {
-					    me->Say(TEXTID_HSG_NO_QUEST, LANG_UNIVERSAL, m_DriverGUID);
-					    me->RemoveCharmedBy(m_Driver);
-				    }
-				    else 
-				    {
-					    me->InitCharmInfo();
-					    me->SetReactState(REACT_PASSIVE);
-					    m_DriverGUID = who->GetGUID();
-				    }
-			    }
-		    }
-		    else m_DriverGUID = 0;
-	    }
+        void PassengerBoarded(Unit *who, int8 seatId, bool apply)
+        {
+            if (apply)
+            {
+                if (Player *m_Driver = who->ToPlayer())
+                {
+                    if (m_Driver->GetQuestStatus(QUEST_THE_PLAINS_OF_NASAM) != QUEST_STATUS_INCOMPLETE)
+                    {
+                        me->Say(TEXTID_HSG_NO_QUEST, LANG_UNIVERSAL, m_DriverGUID);
+                        me->RemoveCharmedBy(m_Driver);
+                    }
+                    else 
+                    {
+                        me->InitCharmInfo();
+                        me->SetReactState(REACT_PASSIVE);
+                        m_DriverGUID = who->GetGUID();
+                    }
+                }
+            }
+            else m_DriverGUID = 0;
+        }
 
-	    void OnCharmed(bool apply) {}
+        void OnCharmed(bool apply) {}
 
-	    void SpellHitTarget(Unit *pTarget, const SpellEntry *spell)
-	    {
-		    if (spell->Id != SPELL_RESCUE_INJURED_SOLDIER)
-			    return;
+        void SpellHitTarget(Unit *pTarget, const SpellEntry *spell)
+        {
+            if (spell->Id != SPELL_RESCUE_INJURED_SOLDIER)
+                return;
 
-		    if (!pTarget || !pTarget->ToCreature())
-			    return;
+            if (!pTarget || !pTarget->ToCreature())
+                return;
 
-		    if (Player *m_Driver = Unit::GetPlayer(*me, m_DriverGUID))
-		    {
-			    if (m_Driver->GetQuestStatus(QUEST_THE_PLAINS_OF_NASAM) != QUEST_STATUS_INCOMPLETE)
-				    return;
+            if (Player *m_Driver = Unit::GetPlayer(*me, m_DriverGUID))
+            {
+                if (m_Driver->GetQuestStatus(QUEST_THE_PLAINS_OF_NASAM) != QUEST_STATUS_INCOMPLETE)
+                    return;
 
-			    if (rescuedSoldiers > 2)
-				    return; 
+                if (rescuedSoldiers > 2)
+                    return; 
 
-			    // first rescued applies a mod to the Tank
-			    if (rescuedSoldiers == 0)
-			    {	
-				    switch (pTarget->GetEntry())
-				    {
-				    case NPC_INJURED_WARSONG_WARRIOR:
-					    DoCast(me, SPELL_WARLORDS_BULWARK);
-					    break;
-				    case NPC_INJURED_WARSONG_MAGE:
-				    case NPC_INJURED_WARSONG_SHAMAN:
-					    break;
-				    case NPC_INJURED_WARSONG_ENGINEER:
-					    DoCast(me, SPELL_TUNE_UP);
-					    break;
-				    default:
-					    return;
-				    }
-			    }
+                // first rescued applies a mod to the Tank
+                if (rescuedSoldiers == 0)
+                {    
+                    switch (pTarget->GetEntry())
+                    {
+                    case NPC_INJURED_WARSONG_WARRIOR:
+                        DoCast(me, SPELL_WARLORDS_BULWARK);
+                        break;
+                    case NPC_INJURED_WARSONG_MAGE:
+                    case NPC_INJURED_WARSONG_SHAMAN:
+                        break;
+                    case NPC_INJURED_WARSONG_ENGINEER:
+                        DoCast(me, SPELL_TUNE_UP);
+                        break;
+                    default:
+                        return;
+                    }
+                }
 
-			    rescuedSoldiers++;
-			    DoCast(m_Driver, SPELL_SOLDIER_RESCUED);
-			    pTarget->HandleEmoteCommand(EMOTE_STATE_STAND);
-			    pTarget->EnterVehicle(me);
-		    }
+                rescuedSoldiers++;
+                DoCast(m_Driver, SPELL_SOLDIER_RESCUED);
+                pTarget->HandleEmoteCommand(EMOTE_STATE_STAND);
+                pTarget->EnterVehicle(me);
+            }
 
-		    return;
-	    }
+            return;
+        }
     };
 };
 

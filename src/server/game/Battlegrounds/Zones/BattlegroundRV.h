@@ -38,6 +38,10 @@ enum BattlegroundRVObjectTypes
     BG_RV_OBJECT_PILAR_4,
     BG_RV_OBJECT_PULLEY_1,
     BG_RV_OBJECT_PULLEY_2,
+    BG_RV_OBJECT_PILAR_5,
+    BG_RV_OBJECT_PILAR_7,
+    BG_RV_OBJECT_PILAR_6,
+    BG_RV_OBJECT_PILAR_8,
 /*
     BG_RV_OBJECT_PILAR_COLLISION_1,
     BG_RV_OBJECT_PILAR_COLLISION_2,
@@ -46,6 +50,8 @@ enum BattlegroundRVObjectTypes
 */
     BG_RV_OBJECT_ELEVATOR_1,
     BG_RV_OBJECT_ELEVATOR_2,
+    BG_RV_OBJECT_ELEVATOR_3,
+    BG_RV_OBJECT_ELEVATOR_4,
     BG_RV_OBJECT_FENCE_1,
     BG_RV_OBJECT_FENCE_2,
     BG_RV_OBJECT_MAX,
@@ -54,7 +60,7 @@ enum BattlegroundRVObjectTypes
 enum BattlegroundRVObjects
 {
     BG_RV_OBJECT_TYPE_BUFF_1                     = 184663,
-    BG_RV_OBJECT_TYPE_BUFF_2                     = 184664,
+    BG_RV_OBJECT_TYPE_BUFF_2                     = 184663,
     BG_RV_OBJECT_TYPE_FIRE_1                     = 192704,
     BG_RV_OBJECT_TYPE_FIRE_2                     = 192705,
 
@@ -68,12 +74,14 @@ enum BattlegroundRVObjects
     BG_RV_OBJECT_TYPE_GEAR_2                     = 192394,
     BG_RV_OBJECT_TYPE_ELEVATOR_1                 = 194582,
     BG_RV_OBJECT_TYPE_ELEVATOR_2                 = 194586,
-/*
+    BG_RV_OBJECT_TYPE_ELEVATOR_3                 = 194030,
+    BG_RV_OBJECT_TYPE_ELEVATOR_4                 = 194031,
+
     BG_RV_OBJECT_TYPE_PILAR_COLLISION_1          = 194580, // axe
     BG_RV_OBJECT_TYPE_PILAR_COLLISION_2          = 194579, // arena
     BG_RV_OBJECT_TYPE_PILAR_COLLISION_3          = 194581, // lightning
     BG_RV_OBJECT_TYPE_PILAR_COLLISION_4          = 194578, // ivory
-*/
+
     BG_RV_OBJECT_TYPE_PILAR_1                    = 194583, // axe
     BG_RV_OBJECT_TYPE_PILAR_2                    = 194584, // arena
     BG_RV_OBJECT_TYPE_PILAR_3                    = 194585, // lightning
@@ -123,6 +131,8 @@ class BattlegroundRV : public Battleground
         bool SetupBattleground();
         void HandleKillPlayer(Player* player, Player *killer);
         bool HandlePlayerUnderMap(Player * plr);
+        bool pillarsopened;
+        bool fencesopened;
 
     private:
         uint32 Timer;
@@ -134,5 +144,6 @@ class BattlegroundRV : public Battleground
 
         uint32 getState() { return State; };
         void setState(uint32 state) { State = state; };
+        uint32 fencestimer;
 };
 #endif

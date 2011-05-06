@@ -121,7 +121,7 @@ Map* MapInstanced::CreateInstance(const uint32 mapId, Player * player)
         // instantiate or find existing bg map for player
         // the instance id is set in battlegroundid
         NewInstanceId = player->GetBattlegroundId();
-        if (!NewInstanceId) return NULL;
+        if (!NewInstanceId || !player->GetBattleground()) return NULL;
         map = _FindMap(NewInstanceId);
         if (!map)
             map = CreateBattleground(NewInstanceId, player->GetBattleground());

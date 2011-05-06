@@ -444,7 +444,7 @@ public:
                     me->RemoveAurasDueToSpell(SPELL_OVERLOAD_CIRCUIT);
                     me->InterruptNonMeleeSpells(true);
                 }
-				break;
+                break;
             }
         }
 
@@ -575,39 +575,39 @@ public:
 
         void DoAction(const int32 uiAction)
         {
-			switch(uiAction)
-			{
-			case ACTION_TOWER_OF_STORMS:
-				towerOfStorms = false;
-				break;
-			case ACTION_TOWER_OF_FLAMES:
-				towerOfFlames = false;
-				break;
-			case ACTION_TOWER_OF_FROST:
-				towerOfFrost = false;
-				break;
-			case ACTION_TOWER_OF_LIFE:
-				towerOfLife = false;
-				break;
-			case ACTION_COLOSSUS_COUNT:
-				{
-					++ColossusCount;
-					if (ColossusCount >= 2)
-					{
-						// Event starts
-						if (instance)
-							instance->SetData(DATA_LEVIATHAN_DOOR, GO_STATE_ACTIVE_ALTERNATIVE);
+            switch(uiAction)
+            {
+            case ACTION_TOWER_OF_STORMS:
+                towerOfStorms = false;
+                break;
+            case ACTION_TOWER_OF_FLAMES:
+                towerOfFlames = false;
+                break;
+            case ACTION_TOWER_OF_FROST:
+                towerOfFrost = false;
+                break;
+            case ACTION_TOWER_OF_LIFE:
+                towerOfLife = false;
+                break;
+            case ACTION_COLOSSUS_COUNT:
+                {
+                    ++ColossusCount;
+                    if (ColossusCount >= 2)
+                    {
+                        // Event starts
+                        if (instance)
+                            instance->SetData(DATA_LEVIATHAN_DOOR, GO_STATE_ACTIVE_ALTERNATIVE);
 
-						me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_STUNNED);
-						me->SetReactState(REACT_AGGRESSIVE);
-						me->SetHomePosition(318.74f, -13.75f, 409.803f, 3.14f); // new Home Position
-						me->GetMotionMaster()->MoveCharge(354.8771f, -12.90240f, 409.803f);
-					}
-					break;
-				}
-			default:
-				break;
-			}
+                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_STUNNED);
+                        me->SetReactState(REACT_AGGRESSIVE);
+                        me->SetHomePosition(318.74f, -13.75f, 409.803f, 3.14f); // new Home Position
+                        me->GetMotionMaster()->MoveCharge(354.8771f, -12.90240f, 409.803f);
+                    }
+                    break;
+                }
+            default:
+                break;
+            }
         }
     };
 
@@ -652,29 +652,29 @@ public:
             if (!me->GetVehicle())
                 return;
 
-			if (seatId == SEAT_PLAYER)
-			{
-				if (apply)
-				{
-					DoScriptText(SAY_PLAYER_RIDING, me);
-					who->ApplySpellImmune(0, IMMUNITY_ID, SPELL_MISSILE_BARRAGE, true);
-				}
-				else
-					return;
+            if (seatId == SEAT_PLAYER)
+            {
+                if (apply)
+                {
+                    DoScriptText(SAY_PLAYER_RIDING, me);
+                    who->ApplySpellImmune(0, IMMUNITY_ID, SPELL_MISSILE_BARRAGE, true);
+                }
+                else
+                    return;
 
-				if (Creature* pTurret = vehicle->GetPassenger(SEAT_TURRET)->ToCreature())
-				{
-					pTurret->setFaction(me->GetVehicleBase()->getFaction());
-					pTurret->SetUInt32Value(UNIT_FIELD_FLAGS, 0); // unselectable
-					pTurret->AI()->AttackStart(who);
-				}
+                if (Creature* pTurret = vehicle->GetPassenger(SEAT_TURRET)->ToCreature())
+                {
+                    pTurret->setFaction(me->GetVehicleBase()->getFaction());
+                    pTurret->SetUInt32Value(UNIT_FIELD_FLAGS, 0); // unselectable
+                    pTurret->AI()->AttackStart(who);
+                }
 
-				if (Unit* pDevice = vehicle->GetPassenger(SEAT_DEVICE)->ToCreature())
-				{
-					pDevice->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
-					pDevice->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-				}
-			}
+                if (Unit* pDevice = vehicle->GetPassenger(SEAT_DEVICE)->ToCreature())
+                {
+                    pDevice->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
+                    pDevice->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                }
+            }
         }
     };
 
@@ -701,20 +701,20 @@ public:
 
         uint32 NapalmTimer;
 
-		void UpdateAI(const uint32 diff)
-		{
-			if (!UpdateVictim())
-				return;
+        void UpdateAI(const uint32 diff)
+        {
+            if (!UpdateVictim())
+                return;
 
-			if (NapalmTimer <= diff)
-			{
-				if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
-					if (!me->IsWithinDist(pTarget, 20))
-						DoCast(pTarget, SPELL_NAPALM);
-				NapalmTimer = urand(10000, 15000);
-			}
-			else NapalmTimer -= diff;
-		}
+            if (NapalmTimer <= diff)
+            {
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                    if (!me->IsWithinDist(pTarget, 20))
+                        DoCast(pTarget, SPELL_NAPALM);
+                NapalmTimer = urand(10000, 15000);
+            }
+            else NapalmTimer -= diff;
+        }
 
         bool CanAIAttack(const Unit *who) const
         {
@@ -1024,58 +1024,58 @@ public:
 class npc_mimirons_inferno : public CreatureScript
 {
 public:
-	npc_mimirons_inferno() : CreatureScript("npc_mimirons_inferno") { }
+    npc_mimirons_inferno() : CreatureScript("npc_mimirons_inferno") { }
 
-	CreatureAI* GetAI(Creature* pCreature) const
-	{
-		return new  npc_mimirons_infernoAI(pCreature);
-	}
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new  npc_mimirons_infernoAI(pCreature);
+    }
 
-	struct npc_mimirons_infernoAI : public ScriptedAI
-	{
-		npc_mimirons_infernoAI(Creature* pCreature) : ScriptedAI(pCreature)
-		{
-			me->AddAura(RED_SKYBEAM, me);
-			me->SetReactState(REACT_PASSIVE);
-			me->SetDisplayId(11686);
-			me->GetMotionMaster()->MoveRandom(100);
-			infernoTimer = 2000;
-			pause = false;
-			infernoCount = 0;
-		}
+    struct npc_mimirons_infernoAI : public ScriptedAI
+    {
+        npc_mimirons_infernoAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            me->AddAura(RED_SKYBEAM, me);
+            me->SetReactState(REACT_PASSIVE);
+            me->SetDisplayId(11686);
+            me->GetMotionMaster()->MoveRandom(100);
+            infernoTimer = 2000;
+            pause = false;
+            infernoCount = 0;
+        }
 
-		bool pause;
-		uint8 infernoCount;
-		uint32 pauseTimer;
-		uint32 infernoTimer;
+        bool pause;
+        uint8 infernoCount;
+        uint32 pauseTimer;
+        uint32 infernoTimer;
 
-		void UpdateAI(const uint32 diff)
-		{
-			if (pauseTimer <= diff && pause)
-			{
-				pause = false;
-				infernoTimer = 0;
-				infernoCount = 0;
-			}
-			else pauseTimer -= diff;
+        void UpdateAI(const uint32 diff)
+        {
+            if (pauseTimer <= diff && pause)
+            {
+                pause = false;
+                infernoTimer = 0;
+                infernoCount = 0;
+            }
+            else pauseTimer -= diff;
 
-			if (infernoTimer <= diff && !pause)
-			{
-				if (Creature* pTrigger = DoSummonFlyer(NPC_MIMIRON_TARGET_BEACON, me, 80, 0, 20000, TEMPSUMMON_TIMED_DESPAWN))
-					pTrigger->CastSpell(me, SPELL_MIMIRON_S_INFERNO, true);
+            if (infernoTimer <= diff && !pause)
+            {
+                if (Creature* pTrigger = DoSummonFlyer(NPC_MIMIRON_TARGET_BEACON, me, 80, 0, 20000, TEMPSUMMON_TIMED_DESPAWN))
+                    pTrigger->CastSpell(me, SPELL_MIMIRON_S_INFERNO, true);
 
-				infernoTimer = 2000;
+                infernoTimer = 2000;
 
-				infernoCount++;
-				if (infernoCount == 3)
-				{
-					pause = true;
-					pauseTimer = 6000;
-				}
-			}
-			else infernoTimer -= diff;
-		}
-	};
+                infernoCount++;
+                if (infernoCount == 3)
+                {
+                    pause = true;
+                    pauseTimer = 6000;
+                }
+            }
+            else infernoTimer -= diff;
+        }
+    };
 
 };
 
@@ -1083,154 +1083,154 @@ public:
 class npc_hodirs_fury : public CreatureScript
 {
 public:
-	npc_hodirs_fury() : CreatureScript("npc_hodirs_fury") { }
+    npc_hodirs_fury() : CreatureScript("npc_hodirs_fury") { }
 
-	CreatureAI* GetAI(Creature* pCreature) const
-	{
-		return new  npc_hodirs_furyAI(pCreature);
-	}
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new  npc_hodirs_furyAI(pCreature);
+    }
 
-	struct npc_hodirs_furyAI : public ScriptedAI
-	{
-		npc_hodirs_furyAI(Creature* pCreature) : ScriptedAI (pCreature)
-		{
-			me->AddAura(BLUE_SKYBEAM, me);
-			me->SetReactState(REACT_PASSIVE);
-			me->SetDisplayId(11686);
-			me->GetMotionMaster()->MoveRandom(100);
-			chaseTimer = 1000;
-			freezeTimer = 5000;
-			pause = false;
-		}
+    struct npc_hodirs_furyAI : public ScriptedAI
+    {
+        npc_hodirs_furyAI(Creature* pCreature) : ScriptedAI (pCreature)
+        {
+            me->AddAura(BLUE_SKYBEAM, me);
+            me->SetReactState(REACT_PASSIVE);
+            me->SetDisplayId(11686);
+            me->GetMotionMaster()->MoveRandom(100);
+            chaseTimer = 1000;
+            freezeTimer = 5000;
+            pause = false;
+        }
 
-		uint32 pauseTimer;
-		uint32 freezeTimer;
-		uint32 chaseTimer;
-		bool pause;
+        uint32 pauseTimer;
+        uint32 freezeTimer;
+        uint32 chaseTimer;
+        bool pause;
 
-		void UpdateAI(const uint32 diff)
-		{
-			if (pause)
-			{
-				if (freezeTimer <= diff)
-				{
-					me->GetMotionMaster()->Initialize();
-					pause = false;
-					chaseTimer = 20000;
-					freezeTimer = 5000;
-					pauseTimer = 4000;
+        void UpdateAI(const uint32 diff)
+        {
+            if (pause)
+            {
+                if (freezeTimer <= diff)
+                {
+                    me->GetMotionMaster()->Initialize();
+                    pause = false;
+                    chaseTimer = 20000;
+                    freezeTimer = 5000;
+                    pauseTimer = 4000;
 
-					if (Creature* pTrigger = DoSummonFlyer(NPC_HODIR_TARGET_BEACON, me, 80, 0, 1000, TEMPSUMMON_TIMED_DESPAWN))
-						pTrigger->CastSpell(me, SPELL_HODIR_S_FURY, true);
-				}
-				else freezeTimer -= diff;
+                    if (Creature* pTrigger = DoSummonFlyer(NPC_HODIR_TARGET_BEACON, me, 80, 0, 1000, TEMPSUMMON_TIMED_DESPAWN))
+                        pTrigger->CastSpell(me, SPELL_HODIR_S_FURY, true);
+                }
+                else freezeTimer -= diff;
 
-			}
-			else
-			{
-				if (chaseTimer <= diff)
-				{
-					if (Unit* pTarget = me->SelectNearestTarget(20))
-					{
-						pause = true;
-						freezeTimer = 6000;
-						me->GetMotionMaster()->MoveFollow(pTarget, 0, 0);
-					}
-					chaseTimer = 1000;
-				}
-				else chaseTimer -= diff;
+            }
+            else
+            {
+                if (chaseTimer <= diff)
+                {
+                    if (Unit* pTarget = me->SelectNearestTarget(20))
+                    {
+                        pause = true;
+                        freezeTimer = 6000;
+                        me->GetMotionMaster()->MoveFollow(pTarget, 0, 0);
+                    }
+                    chaseTimer = 1000;
+                }
+                else chaseTimer -= diff;
 
-				if (pauseTimer <= diff)
-				{
-					me->GetMotionMaster()->MoveRandom(100);
-					pauseTimer = 60000;
-				}
-				else pauseTimer -= diff;
-			}
-		}
-	};
+                if (pauseTimer <= diff)
+                {
+                    me->GetMotionMaster()->MoveRandom(100);
+                    pauseTimer = 60000;
+                }
+                else pauseTimer -= diff;
+            }
+        }
+    };
 
 };
 
 class npc_freyas_ward : public CreatureScript
 {
 public:
-	npc_freyas_ward() : CreatureScript("npc_freyas_ward") { }
+    npc_freyas_ward() : CreatureScript("npc_freyas_ward") { }
 
-	CreatureAI* GetAI(Creature* pCreature) const
-	{
-		return new  npc_freyas_wardAI(pCreature);
-	}
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new  npc_freyas_wardAI(pCreature);
+    }
 
-	struct npc_freyas_wardAI : public ScriptedAI
-	{
-		npc_freyas_wardAI(Creature* pCreature) : ScriptedAI(pCreature)
-		{
-			me->AddAura(GREEN_SKYBEAM, me);
-			me->SetReactState(REACT_PASSIVE);
-			me->SetDisplayId(11686);
-			summonTimer = urand(15000, 20000);
-		}
+    struct npc_freyas_wardAI : public ScriptedAI
+    {
+        npc_freyas_wardAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            me->AddAura(GREEN_SKYBEAM, me);
+            me->SetReactState(REACT_PASSIVE);
+            me->SetDisplayId(11686);
+            summonTimer = urand(15000, 20000);
+        }
 
-		uint32 summonTimer ;
+        uint32 summonTimer ;
 
-		void UpdateAI(const uint32 diff)
-		{
-			if (summonTimer <= diff)
-			{
-				if (Creature* pTrigger = DoSummonFlyer(NPC_FREYA_TARGET_BEACON, me, 80, 0, 3000, TEMPSUMMON_TIMED_DESPAWN))
-					pTrigger->CastSpell(me, SPELL_FREYA_S_WARD, true);
+        void UpdateAI(const uint32 diff)
+        {
+            if (summonTimer <= diff)
+            {
+                if (Creature* pTrigger = DoSummonFlyer(NPC_FREYA_TARGET_BEACON, me, 80, 0, 3000, TEMPSUMMON_TIMED_DESPAWN))
+                    pTrigger->CastSpell(me, SPELL_FREYA_S_WARD, true);
 
-				summonTimer = urand(25000, 35000);
-			}
-			else summonTimer -= diff ;
-		}
-	};
+                summonTimer = urand(25000, 35000);
+            }
+            else summonTimer -= diff ;
+        }
+    };
 
 };
 
 class npc_freya_ward_summon : public CreatureScript
 {
 public:
-	npc_freya_ward_summon() : CreatureScript("npc_freya_ward_summon") { }
+    npc_freya_ward_summon() : CreatureScript("npc_freya_ward_summon") { }
 
-	CreatureAI* GetAI(Creature* pCreature) const
-	{
-		return new npc_freya_ward_summonAI (pCreature);
-	}
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_freya_ward_summonAI (pCreature);
+    }
 
-	struct npc_freya_ward_summonAI : public ScriptedAI
-	{
-		npc_freya_ward_summonAI(Creature* pCreature) : ScriptedAI(pCreature)
-		{
-			//for (uint32 i = 0; i < 4; ++i)
-			//DoCast(me, SPELL_FREYA_SUMMONS, true);
-			pInstance = pCreature->GetInstanceScript();
-			me->GetMotionMaster()->MovePoint(0, 259.56f, -17.45f, 409.65f);
-			lashTimer = 5000 ;
-		}
+    struct npc_freya_ward_summonAI : public ScriptedAI
+    {
+        npc_freya_ward_summonAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            //for (uint32 i = 0; i < 4; ++i)
+            //DoCast(me, SPELL_FREYA_SUMMONS, true);
+            pInstance = pCreature->GetInstanceScript();
+            me->GetMotionMaster()->MovePoint(0, 259.56f, -17.45f, 409.65f);
+            lashTimer = 5000 ;
+        }
 
-		InstanceScript* pInstance;
-		uint32 lashTimer ;
+        InstanceScript* pInstance;
+        uint32 lashTimer ;
 
-		void UpdateAI(const uint32 diff)
-		{
-			if (pInstance && pInstance->GetBossState(BOSS_LEVIATHAN) != IN_PROGRESS)
-				me->DespawnOrUnsummon();
+        void UpdateAI(const uint32 diff)
+        {
+            if (pInstance && pInstance->GetBossState(BOSS_LEVIATHAN) != IN_PROGRESS)
+                me->DespawnOrUnsummon();
 
-			if (!UpdateVictim())
-				return;
+            if (!UpdateVictim())
+                return;
 
-			if (lashTimer <= diff)
-			{
-				DoCast(SPELL_LASH);
-				lashTimer = 5000;
-			}
-			else lashTimer -= diff;
+            if (lashTimer <= diff)
+            {
+                DoCast(SPELL_LASH);
+                lashTimer = 5000;
+            }
+            else lashTimer -= diff;
 
-			DoMeleeAttackIfReady();
-		}
-	};
+            DoMeleeAttackIfReady();
+        }
+    };
 };
 
 //npc lore keeper

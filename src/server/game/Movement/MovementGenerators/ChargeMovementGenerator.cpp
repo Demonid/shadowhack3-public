@@ -35,7 +35,11 @@ void ChargeMovementGenerator<T>::_setTargetPosition(T &unit)
     // get the path to the destination
     PathInfo path(&unit, x, y, z, m_straightPath);
     i_path = path.getFullPath();
-
+    if (i_path.GetTotalLength() > 40)
+    {
+        path.BuildShortcut();
+        i_path = path.getFullPath();
+    }
     // start movement
     Traveller<T> traveller(unit);
     MoveToNextNode(traveller);
@@ -55,7 +59,7 @@ void ChargeMovementGenerator<T>::MoveToNextNode(T &unit)
 {
     Traveller<T> traveller(unit);
     PathNode &node = i_path[i_currentNode];
-    i_destinationHolder.SetDestination(traveller, node.x, node.y, node.z, false);
+    i_destinationHolder.SetDestination(traveller, node.x, node.y, node.z + 0.05f, false);
 }
 
 template<class T>
@@ -86,50 +90,6 @@ bool ChargeMovementGenerator<T>::Update(T &unit, const uint32 &diff)
     Traveller<T> traveller(unit);
 
     i_destinationHolder.UpdateTraveller(traveller, diff, false);
-
-    if (!casted && IsChargeTriggerSpell(m_chargeSpell) && m_target && m_target->IsInWorld() && m_target->isAlive())
-    {
-        const float melee_distance = unit.GetMeleeReach() + sWorld->getRate(RATE_MAX_CHARGE_PROC_RANGE);
-
-        float x, y, z;
-
-        m_target->GetPosition(x, y, z);
-        bool canCastTrigger = (unit.IsWithinDist3d(x, y, z, melee_distance) 
-            && m_target->IsWithinLOSInMap(&unit));
-
-        SpellEntry const *spellInfo = sSpellStore.LookupEntry(m_chargeSpell);
-        if (!spellInfo)
-        {
-            sLog->outError("EffectCharge: unknown spell %u", m_chargeSpell);
-            canCastTrigger = false;
-            casted = true;
-        }                
-
-        if (canCastTrigger)
-        {
-            casted = true;
-            for (uint8 j = 0; j < MAX_SPELL_EFFECTS; ++j)
-            {
-                if (spellInfo->Effect[j] != SPELL_EFFECT_TRIGGER_SPELL)
-                    continue;
-
-                uint32 triggered_spell_id = spellInfo->EffectTriggerSpell[j];
-
-                SpellEntry const *trigger_spellInfo = sSpellStore.LookupEntry(triggered_spell_id);
-                if (!trigger_spellInfo)
-                {
-                    sLog->outError("EffectTriggerSpell of spell %u: triggering unknown spell id %i", spellInfo->Id, triggered_spell_id);
-                    continue;
-                }
-
-                if (unit.GetTypeId() == TYPEID_PLAYER && spellInfo->CategoryRecoveryTime && trigger_spellInfo->CategoryRecoveryTime
-                    && spellInfo->Category == trigger_spellInfo->Category)
-                    unit.ToPlayer()->RemoveSpellCooldown(trigger_spellInfo->Id);
-
-                unit.CastSpell(m_target, trigger_spellInfo, true, 0, 0, 0);
-            }
-        }
-    }
 
     if (i_destinationHolder.HasArrived())
     {

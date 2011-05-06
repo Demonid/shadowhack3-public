@@ -34,7 +34,7 @@ enum Encounter
     BOSS_VEZAX,
     BOSS_YOGGSARON,
     BOSS_ALGALON,
-	BOSS_MINIBOSS,
+    BOSS_MINIBOSS,
     MAX_ENCOUNTER
 };
 

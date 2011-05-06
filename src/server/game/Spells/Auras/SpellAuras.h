@@ -79,6 +79,7 @@ class AuraApplication
 class Aura
 {
     public:
+        void SetAuraTimer(int32 time, uint64 guid=0);
         typedef std::map<uint64, AuraApplication *> ApplicationMap;
 
         static Aura * TryCreate(SpellEntry const* spellproto, uint8 effMask, WorldObject * owner, Unit * caster, int32 *baseAmount = NULL, Item * castItem = NULL, uint64 casterGUID = 0);
@@ -144,6 +145,7 @@ class Aura
         bool IsSingleTarget() const {return m_isSingleTarget;}
         void SetIsSingleTarget(bool val) { m_isSingleTarget = val;}
         void UnregisterSingleTarget();
+        void RegisterSingleTarget();
 
         void SetLoadedState(int32 maxduration, int32 duration, int32 charges, uint8 stackamount, uint8 recalculateMask, int32 * amount);
 
@@ -165,6 +167,7 @@ class Aura
         void HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster, bool apply);
         bool CanBeAppliedOn(Unit *target);
         bool CheckAreaTarget(Unit *target);
+        bool IsUniqueVisibleAuraBuff();
 
         // AuraScript
         void LoadScripts();

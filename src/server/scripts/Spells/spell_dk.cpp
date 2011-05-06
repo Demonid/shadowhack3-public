@@ -165,7 +165,7 @@ class spell_dk_anti_magic_zone : public SpellScriptLoader
                 amount = SpellMgr::CalculateSpellEffectAmount(talentSpell, EFFECT_0, GetCaster());
                 // assume caster is a player here
                 if (Unit * caster = GetCaster())
-                     amount += int32(2 * caster->ToPlayer()->GetTotalAttackPowerValue(BASE_ATTACK));
+                     amount += int32(2 * caster->ToPlayer()->GetTotalAttackPowerValue(BASE_ATTACK, NULL));
             }
 
             void Absorb(AuraEffect * /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
@@ -212,17 +212,17 @@ class spell_dk_corpse_explosion : public SpellScriptLoader
                     if (unitTarget->isAlive())
                     {
                         bp = int32(unitTarget->CountPctFromMaxHealth(25));
-                        unitTarget->CastCustomSpell(unitTarget, DK_SPELL_GHOUL_EXPLODE, &bp, NULL, NULL, false);
+                        int32 bp2 = unitTarget->GetHealth();
+                        unitTarget->CastCustomSpell(unitTarget,47496,&bp,&bp2,NULL,false);
                     }
                     // Some corpse
-					else
+                    else
                     {
                         bp = GetEffectValue();
-                        GetCaster()->CastCustomSpell(unitTarget, SpellMgr::CalculateSpellEffectAmount(GetSpellInfo(), 1), &bp, NULL, NULL, true);
-                        // Corpse Explosion (Suicide)
-                        unitTarget->CastCustomSpell(unitTarget, DK_SPELL_CORPSE_EXPLOSION_TRIGGERED, &bp, NULL, NULL, true);
-                        // Set corpse look
-                        unitTarget->SetDisplayId(DISPLAY_GHOUL_CORPSE + urand(0, 3));
+                        bp += GetCaster()->GetTotalAttackPowerValue(BASE_ATTACK, NULL)*0.126;
+                        GetCaster()->CastCustomSpell(unitTarget, SpellMgr::CalculateSpellEffectAmount(GetSpellInfo(), 1), &bp,NULL,NULL,true);
+                        unitTarget->SetDisplayId(25537+urand(0,3));
+                    }
                     }
                 }
             }
@@ -385,19 +385,19 @@ class spell_dk_scourge_strike : public SpellScriptLoader
                 return true;
             }
 
-            void HandleDummy(SpellEffIndex /*effIndex*/)
+            void HandleTrigger()
             {
                 Unit* caster = GetCaster();
                 if (Unit* unitTarget = GetHitUnit())
                 {
-                    int32 bp = CalculatePctN(GetHitDamage(), GetEffectValue() * unitTarget->GetDiseasesByCaster(caster->GetGUID()));
+                    int32 bp = CalculatePctN(GetHitDamage(), GetSpellInfo()->EffectBasePoints[2] * unitTarget->GetDiseasesByCaster(caster->GetGUID()));
                     caster->CastCustomSpell(unitTarget, DK_SPELL_SCOURGE_STRIKE_TRIGGERED, &bp, NULL, NULL, true);
                 }
             }
 
             void Register()
             {
-                OnEffect += SpellEffectFn(spell_dk_scourge_strike_SpellScript::HandleDummy, EFFECT_2, SPELL_EFFECT_DUMMY);
+                AfterHit += SpellHitFn(spell_dk_scourge_strike_SpellScript::HandleTrigger);
             }
         };
 
