@@ -12424,6 +12424,11 @@ void Player::MoveItemToInventory(ItemPosCountVec const& dest, Item* pItem, bool 
 
     if (pLastItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_BOP_TRADEABLE))
         m_itemSoulboundTradeable.push_back(pLastItem);
+
+    const ItemPrototype *proto = pLastItem->GetProto();
+    for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
+        if (proto->Spells[i].SpellTrigger == ITEM_SPELLTRIGGER_ON_NO_DELAY_USE && proto->Spells[i].SpellId > 0) // On obtain trigger
+            CastSpell(this, proto->Spells[i].SpellId, true, pItem);
 }
 
 void Player::DestroyItem(uint8 bag, uint8 slot, bool update)
