@@ -678,7 +678,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             }            
 
             //Water-Walk checks
-            if (((movementInfo.flags & MOVEMENTFLAG_WATERWALKING) != 0)
+            /*if (((movementInfo.flags & MOVEMENTFLAG_WATERWALKING) != 0)
                   && !plMover->isGameMaster()
                   && !(plMover->HasAuraType(SPELL_AURA_WATER_WALK) | plMover->HasAuraType(SPELL_AURA_GHOST)))
             {
@@ -686,7 +686,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                     sLog->outCheater("IAC: %s, waterwalk alert. ", plMover->GetName());
                 #endif
                 check_passed = false;
-            }
+            }*/
 
             //Teleport To Plane checks
             if (movementInfo.pos.m_positionZ < 0.0001f && movementInfo.pos.m_positionZ > -0.0001f
