@@ -1413,11 +1413,11 @@ void OutdoorPvPWG::DoVehicleTeleport()
         {
             if (i->getSource()->ToPlayer()->GetTeamId() == getDefenderTeam())
             {
-                if (i->getSource()->isAlive() 
-                    && i->getSource()->IsOnVehicle(i->getSource()->GetVehicleCreatureBase())
-                    &&(i->getSource()->GetDistance2d(5314.51f, 2703.69f) <= 5 || i->getSource()->GetDistance2d(5316.25f, 2977.04f) <= 5))
+                if (Creature* Old = i->getSource()->GetVehicleCreatureBase())
                 {
-                    if (Creature* Old = i->getSource()->GetVehicleCreatureBase())
+                    if (i->getSource()->isAlive() 
+                        && i->getSource()->IsOnVehicle(Old)
+                        &&(i->getSource()->GetDistance2d(5314.51f, 2703.69f) <= 5 || i->getSource()->GetDistance2d(5316.25f, 2977.04f) <= 5))
                     {
                         if (Old->GetEntry() == WG_CREATURE_SIEGE_TURRET_A || Old->GetEntry() == WG_CREATURE_SIEGE_TURRET_H) //Turret
                         {
