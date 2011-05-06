@@ -294,7 +294,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     InitTalentForLevel();                                   // set original talents points before spell loading
 
     uint32 timediff = uint32(time(NULL) - fields[14].GetUInt32());
-    _LoadAuras(timediff);
+    CastPetAuras(current);
 
     // load action bar, if data broken will fill later by default spells.
     if (!is_temporary_summoned)
@@ -306,7 +306,6 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
         _LoadSpellCooldowns();
         LearnPetPassives();
         InitLevelupSpellsForLevel();
-        CastPetAuras(current);
     }
 
     CleanupActionBar();                                     // remove unknown spells from action bar after load
