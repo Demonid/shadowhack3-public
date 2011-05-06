@@ -1579,12 +1579,12 @@ bool Creature::FallGround()
     // use larger distance for vmap height search than in most other cases
     float ground_Z = GetMap()->GetHeight(x, y, z, true, MAX_FALL_DISTANCE);
 
-	if (ground_Z <= INVALID_HEIGHT)
-	{
-		sLog->outStaticDebug("FallGround: creature %u at map %u (x: %f, y: %f, z: %f), not able to retrive a proper GetHeight (z: %f).",
-			GetEntry(), GetMap()->GetId(), GetPositionX(), GetPositionX(), GetPositionZ(), ground_Z);
-		return false;
-	}
+    if (ground_Z <= INVALID_HEIGHT)
+    {
+        sLog->outStaticDebug("FallGround: creature %u at map %u (x: %f, y: %f, z: %f), not able to retrive a proper GetHeight (z: %f).",
+            GetEntry(), GetMap()->GetId(), GetPositionX(), GetPositionX(), GetPositionZ(), ground_Z);
+        return false;
+    }
 
     if (fabs(ground_Z - z) < 0.1f)
         return false;
@@ -2434,66 +2434,66 @@ void Creature::FarTeleportTo(Map* map, float X, float Y, float Z, float O)
 
 bool Creature::IsTargetReachabilityCheckFailed(Unit* target)
 {
-	if (!target)
-		return true;
+    if (!target)
+        return true;
 
     if (HasUnitState(UNIT_STAT_IGNORE_PATHFINDING))
         return false;
 
-	// check if currently selected target is reachable
+    // check if currently selected target is reachable
     if((GetMotionMaster()->GetCurrentMovementGeneratorType() == TARGETED_MOTION_TYPE && !GetMotionMaster()->top()->IsReachable()) || 
-		(GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE && !IsTargetReachable(target)))
-	{
-		// remove all taunts
-		RemoveAurasByType(SPELL_AURA_MOD_TAUNT);
+        (GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE && !IsTargetReachable(target)))
+    {
+        // remove all taunts
+        RemoveAurasByType(SPELL_AURA_MOD_TAUNT);
 
-		if(m_ThreatManager.getThreatList().size() < 2)
-		{
-			uint32 curr_time = time(NULL);
+        if(m_ThreatManager.getThreatList().size() < 2)
+        {
+            uint32 curr_time = time(NULL);
 
-			if (singleAndUnreachableTarget)
-			{
-				singleAndUnreachableTarget = false;
-				m_lastEvadeCheck = curr_time;
-				AddUnitState(UNIT_STAT_TIMED_EVADE);
-			}
+            if (singleAndUnreachableTarget)
+            {
+                singleAndUnreachableTarget = false;
+                m_lastEvadeCheck = curr_time;
+                AddUnitState(UNIT_STAT_TIMED_EVADE);
+            }
 
-			if (m_lastEvadeCheck == 0 || ((curr_time - m_lastEvadeCheck) > EVADE_WAIT_TIME))
-			{
-				m_lastEvadeCheck = 0;
-				// only one target in list, we have to evade after timer
-				AI()->EnterEvadeMode();
-				singleAndUnreachableTarget = true;
-				ClearUnitState(UNIT_STAT_TIMED_EVADE);
-				return true;
-			}
+            if (m_lastEvadeCheck == 0 || ((curr_time - m_lastEvadeCheck) > EVADE_WAIT_TIME))
+            {
+                m_lastEvadeCheck = 0;
+                // only one target in list, we have to evade after timer
+                AI()->EnterEvadeMode();
+                singleAndUnreachableTarget = true;
+                ClearUnitState(UNIT_STAT_TIMED_EVADE);
+                return true;
+            }
 
-			if (!IsStopped())
-				StopMoving();
+            if (!IsStopped())
+                StopMoving();
 
-			GetMotionMaster()->MoveIdle();
+            GetMotionMaster()->MoveIdle();
 
-			return false;
-		}
-		else
-		{
-			// remove unreachable target from our threat list
-			// next iteration we will select next possible target
-			getHostileRefManager().deleteReference(target);
-			m_ThreatManager.modifyThreatPercent(target, -101);
-			_removeAttacker(target);
-			ClearUnitState(UNIT_STAT_TIMED_EVADE);
-			return true;
-		}		
-	}
+            return false;
+        }
+        else
+        {
+            // remove unreachable target from our threat list
+            // next iteration we will select next possible target
+            getHostileRefManager().deleteReference(target);
+            m_ThreatManager.modifyThreatPercent(target, -101);
+            _removeAttacker(target);
+            ClearUnitState(UNIT_STAT_TIMED_EVADE);
+            return true;
+        }        
+    }
 
-	if (GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE)
-		GetMotionMaster()->MoveChase(target);
+    if (GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE)
+        GetMotionMaster()->MoveChase(target);
 
-	singleAndUnreachableTarget = false;
-	ClearUnitState(UNIT_STAT_TIMED_EVADE);	
-	m_lastEvadeCheck = 0;
-	return false;
+    singleAndUnreachableTarget = false;
+    ClearUnitState(UNIT_STAT_TIMED_EVADE);    
+    m_lastEvadeCheck = 0;
+    return false;
 }
 
 bool Creature::IsDungeonBoss() const

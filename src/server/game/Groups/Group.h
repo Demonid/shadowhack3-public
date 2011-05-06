@@ -200,7 +200,7 @@ class Group
         void   SetLfgRoles(uint64& guid, const uint8 roles);
 
         // properties accessories
-        bool IsFull() const;
+        bool IsFull(uint16 size=0) const;
         bool isLFGGroup()  const;
         bool isRaidGroup() const;
         bool isBGGroup()   const;

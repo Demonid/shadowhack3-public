@@ -96,7 +96,8 @@ enum EYBattlegroundObjectEntry
     BG_OBJECT_BE_TOWER_CAP_EY_ENTRY     = 184080,           //BE Tower Cap Pt
     BG_OBJECT_FR_TOWER_CAP_EY_ENTRY     = 184081,           //Fel Reaver Cap Pt
     BG_OBJECT_HU_TOWER_CAP_EY_ENTRY     = 184082,           //Human Tower Cap Pt
-    BG_OBJECT_DR_TOWER_CAP_EY_ENTRY     = 184083            //Draenei Tower Cap Pt
+    BG_OBJECT_DR_TOWER_CAP_EY_ENTRY     = 184083,           //Draenei Tower Cap Pt
+    BG_OBJECT_EY_AREATRIGGER            = 350000
 };
 
 enum EYBattlegroundPointsTrigger
@@ -211,7 +212,8 @@ enum EYBattlegroundObjectTypes
     BG_EY_OBJECT_SPEEDBUFF_MAGE_TOWER           = 56,
     BG_EY_OBJECT_REGENBUFF_MAGE_TOWER           = 57,
     BG_EY_OBJECT_BERSERKBUFF_MAGE_TOWER         = 58,
-    BG_EY_OBJECT_MAX                            = 59
+    BG_EY_OBJECT_AREA_TRIGGER                   = 59,
+    BG_EY_OBJECT_MAX                            = 60
 };
 
 #define BG_EY_NotEYWeekendHonorTicks    330

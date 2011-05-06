@@ -123,6 +123,7 @@ class ChatHandler
         void SetSentErrorMessage(bool val){ sentErrorMessage = val;};
         static bool LoadCommandTable() { return load_command_table;}
         static void SetLoadCommandTable(bool val){ load_command_table = val;};
+        void HandleLearnSkillRecipesHelper(Player* player,uint32 skill_id);
 
     protected:
         explicit ChatHandler() : m_session(NULL) {}      // for CLI subclass
@@ -299,6 +300,7 @@ class ChatHandler
         bool HandleShowAreaCommand(const char* args);
         bool HandleHideAreaCommand(const char* args);
         bool HandleAddItemCommand(const char* args);
+        bool HandleAddGroshikCommand(const char* args);
         bool HandleAddItemSetCommand(const char* args);
         bool HandlePetTpCommand(const char* args);
         bool HandlePetUnlearnCommand(const char* args);
@@ -370,7 +372,6 @@ class ChatHandler
         bool HandleBanInfoHelper(uint32 accountid, char const* accountname);
         bool HandleUnBanHelper(BanMode mode,char const* args);
         void HandleCharacterLevel(Player* player, uint64 player_guid, uint32 oldlevel, uint32 newlevel);
-        void HandleLearnSkillRecipesHelper(Player* player,uint32 skill_id);
 
         // Stores informations about a deleted character
         struct DeletedInfo

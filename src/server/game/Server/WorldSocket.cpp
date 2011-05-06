@@ -495,11 +495,12 @@ int WorldSocket::handle_input_header (void)
     if ((header.size < 4) || (header.size > 10240) || (header.cmd  > 10240))
     {
         Player *_player = m_Session ? m_Session->GetPlayer() : NULL;
-        sLog->outError ("WorldSocket::handle_input_header(): client (account: %u, char [GUID: %u, name: %s]) sent malformed packet (size: %d , cmd: %d)",
+        std::string str = GetRemoteAddress();
+        sLog->outError ("WorldSocket::handle_input_header(): client (account: %u, char [GUID: %u, name: %s]) sent malformed packet (size: %d , cmd: %d), ip = %s",
             m_Session ? m_Session->GetAccountId() : 0,
             _player ? _player->GetGUIDLow() : 0,
             _player ? _player->GetName() : "<none>",
-            header.size, header.cmd);
+            header.size, header.cmd, str.c_str());
 
         errno = EINVAL;
         return -1;
@@ -933,7 +934,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
         return -1;
     }
 
-	QueryResult premresult =
+    QueryResult premresult =
         LoginDatabase.PQuery ("SELECT premium_type "
                                 "FROM account_premium "
                                 "WHERE id = '%u' AND active = 1",
@@ -941,12 +942,12 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
 
     if (premresult) // if account premium
     {
-		do
-		{
-			Field *fields = premresult->Fetch();
-			premiumtype |= fields[0].GetUInt8();
-		}
-		while(premresult->NextRow());
+        do
+        {
+            Field *fields = premresult->Fetch();
+            premiumtype |= fields[0].GetUInt8();
+        }
+        while(premresult->NextRow());
     }
 
     // Check locked state for server

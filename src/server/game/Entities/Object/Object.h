@@ -229,9 +229,19 @@ class Object
 
         void ApplyPercentModFloatValue(uint16 index, float val, bool apply)
         {
-            float value = GetFloatValue(index);
-            ApplyPercentModFloatVar(value, val, apply);
-            SetFloatValue(index, value);
+            if(index == UNIT_MOD_CAST_SPEED)
+            {
+                val /=100.0f;
+                if(!apply)
+                    val=-val;
+                SetFloatValue(index, 1.0f/(1.0f/GetFloatValue(index)-val));
+            }
+            else
+            {
+                float value = GetFloatValue(index);
+                ApplyPercentModFloatVar(value, val, apply);
+                SetFloatValue(index, value);
+            }
         }
 
         void SetFlag(uint16 index, uint32 newFlag);

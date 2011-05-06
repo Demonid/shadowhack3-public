@@ -305,6 +305,13 @@ TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
     if (!owner.HasUnitState(UNIT_STAT_FOLLOW) && owner.getVictim() != i_target.getTarget())
         return true;
 
+    if (!owner.HasAuraType(SPELL_AURA_MOD_INVISIBILITY) && !owner.canSeeOrDetect(i_target.getTarget()))
+    {
+        owner.StopMoving();
+        owner.AttackStop();
+        return true;
+    }
+
     if(m_usePathfinding)
     {
         if (i_path && (i_path->getPathType() & PATHFIND_NOPATH))

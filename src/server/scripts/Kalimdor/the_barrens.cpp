@@ -265,7 +265,7 @@ public:
             me->SetFacingToObject(pPlayer);
             me->HandleEmoteCommand(EMOTE_ONESHOT_SALUTE);
             if(pPlayer->GetQuestStatus(QUEST_DEEP_COVER) == QUEST_STATUS_INCOMPLETE)
-		        pPlayer->AreaExploredOrEventHappens(QUEST_DEEP_COVER);
+                pPlayer->AreaExploredOrEventHappens(QUEST_DEEP_COVER);
         }
 
         void SpellHit(Unit* caster, const SpellEntry *spell)
