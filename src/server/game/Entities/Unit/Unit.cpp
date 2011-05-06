@@ -17997,10 +17997,10 @@ bool Unit::IsWithinLOSInMap(const WorldObject* obj) const
             if(GetMapId() == 618 && ((BattlegroundRV*)plr->GetBattleground())->fencesopened)
             {
                 const float bochki[4][2]=
-                    {{BG_RV_OBJECT_PILAR_1, 2.90f},
-                    {BG_RV_OBJECT_PILAR_2, 6.40f},
-                    {BG_RV_OBJECT_PILAR_3, 2.90f},
-                    {BG_RV_OBJECT_PILAR_4, 6.40f}};
+                    {{BG_RV_OBJECT_PILAR_1, 2.50f},
+                    {BG_RV_OBJECT_PILAR_2, 4.5f},
+                    {BG_RV_OBJECT_PILAR_3, 2.50f},
+                    {BG_RV_OBJECT_PILAR_4, 4.5f}};
                 for (uint8 i=0; i<4; ++i)
                 {
                     BattlegroundRV* bg =((BattlegroundRV*)plr->GetBattleground());
