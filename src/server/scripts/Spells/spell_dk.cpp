@@ -223,7 +223,6 @@ class spell_dk_corpse_explosion : public SpellScriptLoader
                         GetCaster()->CastCustomSpell(unitTarget, SpellMgr::CalculateSpellEffectAmount(GetSpellInfo(), 1), &bp,NULL,NULL,true);
                         unitTarget->SetDisplayId(25537+urand(0,3));
                     }
-                    }
                 }
             }
 
