@@ -1486,7 +1486,7 @@ void Position::GetSinCos(const float x, const float y, float &vsin, float &vcos)
     float dx = GetPositionX() - x;
     float dy = GetPositionY() - y;
 
-    if (dx < 0.001f && dy < 0.001f)
+    if (abs(dx) < 0.001f && abs(dy) < 0.001f)
     {
         float angle = (float)rand_norm()*static_cast<float>(2*M_PI);
         vcos = cos(angle);

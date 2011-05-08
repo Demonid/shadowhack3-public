@@ -842,7 +842,12 @@ void Spell::SelectSpellTargets()
 
     if (m_targets.HasDst())
     {
-        if (m_targets.HasTraj())
+        if (m_spellInfo->Effect[0] == SPELL_EFFECT_KNOCK_BACK)
+        {
+            m_delayMoment = 1;
+//            target.timeDelay = 0;
+        }
+        else if (m_targets.HasTraj())
         {
             float speed = m_targets.GetSpeedXY();
             if (speed > 0.0f)
@@ -1014,7 +1019,12 @@ void Spell::AddUnitTarget(Unit* pVictim, uint32 effIndex)
 
     // Spell have speed - need calculate incoming time
     // Incoming time is zero for self casts. At least I think so.
-    if (m_spellInfo->speed > 0.0f && m_caster != pVictim)
+    if (m_spellInfo->Effect[0] == SPELL_EFFECT_KNOCK_BACK)
+    {
+        m_delayMoment = 1;
+        target.timeDelay = 0;
+    }
+    else if (m_spellInfo->speed > 0.0f && m_caster != pVictim)
     {
         // calculate spell incoming interval
         // TODO: this is a hack
@@ -1029,10 +1039,37 @@ void Spell::AddUnitTarget(Unit* pVictim, uint32 effIndex)
     }
     else if(m_caster->GetTypeId() == TYPEID_PLAYER && (m_caster != pVictim || m_spellInfo->Id == 200006))
     {
-        if (IsCCSpell(m_spellInfo) || (!IsPositiveSpell(m_spellInfo->Id) && m_spellInfo->Effect[0] != SPELL_EFFECT_INTERRUPT_CAST))
+        if (IsCCSpell(m_spellInfo))
         {
             target.timeDelay = 200LL;
             m_delayMoment = 200LL;
+        }
+        if (!IsPositiveSpell(m_spellInfo->Id) && (!m_IsTriggeredSpell || m_spellInfo->SpellIconID == 156) && m_spellInfo->Targets != 0x40)
+        {
+            switch(m_spellInfo->Effect[0])
+            {
+                case SPELL_EFFECT_INTERRUPT_CAST:
+                    break;
+                case SPELL_EFFECT_SCHOOL_DAMAGE:
+                case SPELL_EFFECT_APPLY_AURA:
+                case SPELL_EFFECT_POWER_BURN:
+                case SPELL_EFFECT_WEAPON_DAMAGE_NOSCHOOL:
+                case SPELL_EFFECT_WEAPON_PERCENT_DAMAGE:
+                case SPELL_EFFECT_WEAPON_DAMAGE:
+                case SPELL_EFFECT_NORMALIZED_WEAPON_DMG:
+                case SPELL_EFFECT_DISPEL:
+                {
+                    target.timeDelay = 200LL;
+                    m_delayMoment = 200LL;
+                }
+                default: break;
+            }
+            // Shadowstep
+            if (m_spellInfo->Id == 36563)
+            {
+                target.timeDelay = 100LL;
+                m_delayMoment = 100LL;
+            }
         }
     }
     else
