@@ -1267,7 +1267,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                     }
                 }
                 // Improved Fear
-                else if (GetSpellProto()->SpellFamilyFlags[1] & 0x00000400)
+                else if (GetMaxDuration() && GetSpellProto()->SpellFamilyFlags[1] & 0x00000400)
                 {
                     if (AuraEffect* aurEff = caster->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_WARLOCK, 98, 0))
                     {
