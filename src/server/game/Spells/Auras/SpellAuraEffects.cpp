@@ -4485,6 +4485,7 @@ void AuraEffect::HandleAuraModIncreaseSpeed(AuraApplication const * aurApp, uint
     Unit * target = aurApp->GetTarget();
 
     target->UpdateSpeed(MOVE_RUN, true);
+    target->UpdateSpeed(MOVE_WALK, true);
 }
 
 void AuraEffect::HandleAuraModIncreaseMountedSpeed(AuraApplication const * aurApp, uint8 mode, bool apply) const
@@ -4552,6 +4553,7 @@ void AuraEffect::HandleAuraModDecreaseSpeed(AuraApplication const * aurApp, uint
     Unit * target = aurApp->GetTarget();
 
     target->UpdateSpeed(MOVE_RUN, true);
+    target->UpdateSpeed(MOVE_WALK, true);
     target->UpdateSpeed(MOVE_SWIM, true);
     target->UpdateSpeed(MOVE_FLIGHT, true);
     target->UpdateSpeed(MOVE_RUN_BACK, true);
@@ -4567,6 +4569,7 @@ void AuraEffect::HandleAuraModUseNormalSpeed(AuraApplication const * aurApp, uin
     Unit * target = aurApp->GetTarget();
 
     target->UpdateSpeed(MOVE_RUN,  true);
+    target->UpdateSpeed(MOVE_WALK, true);
     target->UpdateSpeed(MOVE_SWIM, true);
     target->UpdateSpeed(MOVE_FLIGHT,  true);
 }
