@@ -3992,7 +3992,11 @@ void SpellMgr::LoadSpellCustomAttr()
 
         switch (i)
         {
-        case 7266: // duel
+        case 605:   // Mind Control
+            spellInfo->ChannelInterruptFlags -= AURA_INTERRUPT_FLAG_MOVE;
+            spellInfo->InterruptFlags -= SPELL_INTERRUPT_FLAG_MOVEMENT;
+            break;
+        case 7266:  // duel
             spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
             break;
         // fire nova for boses
