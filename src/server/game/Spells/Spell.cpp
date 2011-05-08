@@ -5177,6 +5177,8 @@ SpellCastResult Spell::CheckCast(bool strict)
                 case 7266:   // Duel
                 case 10909:  // Mind Vision
                 case 31789:  // Righteous Defense
+                case 61717:  // Blossoming Branch
+                case 61716:  // Rabbit Costume
                     break;
                 default: return SPELL_FAILED_BAD_TARGETS;
             }
