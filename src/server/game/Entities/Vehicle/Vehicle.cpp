@@ -80,9 +80,9 @@ Vehicle::Vehicle(Unit *unit, VehicleEntry const *vehInfo, uint32 creatureEntry)
             me->ApplySpellImmune(0, IMMUNITY_ID, 49575, true); // Death Grip
             me->ApplySpellImmune(0, IMMUNITY_ID, 49576, true); // Death Grip
             me->ApplySpellImmune(0, IMMUNITY_ID, 19753, true); // Divine Intervention
-            me->ApplySpellImmune(0, IMMUNITY_ID, 55741, apply);// Desecration Rank 1
-            me->ApplySpellImmune(0, IMMUNITY_ID, 68766, apply);// Desecration Rank 2
-            me->ApplySpellImmune(0, IMMUNITY_ID, 13810, apply);// Frost Trap
+            me->ApplySpellImmune(0, IMMUNITY_ID, 55741, true);// Desecration Rank 1
+            me->ApplySpellImmune(0, IMMUNITY_ID, 68766, true);// Desecration Rank 2
+            me->ApplySpellImmune(0, IMMUNITY_ID, 13810, true);// Frost Trap
             break;
         case 335:
         case 345:
