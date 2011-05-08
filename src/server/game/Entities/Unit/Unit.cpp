@@ -5761,50 +5761,6 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                     basepoints0 = CalculatePctN(int32(damage), triggerAmount);
                     break;
                 }
-                // Item - Icecrown 25 Normal Dagger Proc
-                case 71880:
-                {
-                    switch (getPowerType())
-                    {
-                        case POWER_MANA:
-                            triggered_spell_id = 71881;
-                            break;
-                        case POWER_RAGE:
-                            triggered_spell_id = 71883;
-                            break;
-                        case POWER_ENERGY:
-                            triggered_spell_id = 71882;
-                            break;
-                        case POWER_RUNIC_POWER:
-                            triggered_spell_id = 71884;
-                            break;
-                        default:
-                            return false;
-                    }
-                    break;
-                }
-                // Item - Icecrown 25 Heroic Dagger Proc
-                case 71892:
-                {
-                    switch (getPowerType())
-                    {
-                        case POWER_MANA:
-                            triggered_spell_id = 71888;
-                            break;
-                        case POWER_RAGE:
-                            triggered_spell_id = 71886;
-                            break;
-                        case POWER_ENERGY:
-                            triggered_spell_id = 71887;
-                            break;
-                        case POWER_RUNIC_POWER:
-                            triggered_spell_id = 71885;
-                            break;
-                        default:
-                            return false;
-                    }
-                    break;
-                }
             }
             break;
         }
@@ -6901,26 +6857,50 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                     break;
                 // Item - Icecrown 25 Normal Dagger Proc
                 case 71880:
-                // Item - Icecrown 25 Heroic Dagger Proc
-                case 71892:
-                {    
-                    if(ToPlayer()->HasSpellCooldown(dummySpell->Id))
-                        return true;        
-
-                    int32 triggeredSpellId = 0;
-                    switch(getPowerType())
+                {
+                    if (!roll_chance_f(triggeredByAura->GetAmount()))
+                        return false;
+                    switch (getPowerType())
                     {
-                        case POWER_MANA:        triggeredSpellId = 71888; break;
-                        case POWER_ENERGY:      triggeredSpellId = 71887; break;
-                        case POWER_RAGE:        triggeredSpellId = 71886; break;
-                        default: break;
+                        case POWER_MANA:
+                            triggered_spell_id = 71881;
+                            break;
+                        case POWER_RAGE:
+                            triggered_spell_id = 71883;
+                            break;
+                        case POWER_ENERGY:
+                            triggered_spell_id = 71882;
+                            break;
+                        case POWER_RUNIC_POWER:
+                            triggered_spell_id = 71884;
+                            break;
+                        default: return false;
                     }
-                    if (triggeredSpellId)
-                        CastSpell(this, triggeredSpellId, true);
-                    ToPlayer()->AddSpellCooldown(dummySpell->Id, 0, time(NULL) + 40);
                     break;
                 }
-
+                // Item - Icecrown 25 Heroic Dagger Proc
+                case 71892:
+                {
+                    if (!roll_chance_f(triggeredByAura->GetAmount()))
+                        return false;
+                    switch (getPowerType())
+                    {
+                        case POWER_MANA:
+                            triggered_spell_id = 71888;
+                            break;
+                        case POWER_RAGE:
+                            triggered_spell_id = 71886;
+                            break;
+                        case POWER_ENERGY:
+                            triggered_spell_id = 71887;
+                            break;
+                        case POWER_RUNIC_POWER:
+                            triggered_spell_id = 71885;
+                            break;
+                        default: return false;
+                    }
+                    break;
+                }
                 // Glyph of Salvation
                 case 63225:
                     if(pVictim==this)
@@ -12934,7 +12914,8 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
         case MOVE_SWIM_BACK:
             break;
         case MOVE_WALK:
-            return;
+            if (getRace() == RACE_HUMAN)
+                return;
         case MOVE_RUN:
         {
             if (IsMounted()) // Use on mount auras
@@ -16170,6 +16151,8 @@ void Unit::SetControlled(bool apply, UnitState state)
                 if (!HasUnitState(UNIT_STAT_STUNNED))
                     SetRooted(true);
                 break;
+            if (isCharmed())
+                break;
             case UNIT_STAT_CONFUSED:
                 if (!HasUnitState(UNIT_STAT_STUNNED))
                 {
@@ -16212,10 +16195,13 @@ void Unit::SetControlled(bool apply, UnitState state)
             if (HasUnitState(UNIT_STAT_ROOT))
                 SetRooted(true);
 
-            if (HasUnitState(UNIT_STAT_CONFUSED))
-                SetConfused(true);
-            else if (HasUnitState(UNIT_STAT_FLEEING))
-                SetFeared(true);
+            if (!isCharmed())
+            {
+                if (HasUnitState(UNIT_STAT_CONFUSED))
+                    SetConfused(true);
+                else if (HasUnitState(UNIT_STAT_FLEEING))
+                    SetFeared(true);
+            }
         }
     }
 }
@@ -16337,7 +16323,7 @@ void Unit::SetFeared(bool apply)
         }
     }
 
-    if (GetTypeId() == TYPEID_PLAYER)
+    if (GetTypeId() == TYPEID_PLAYER && !isCharmed())
         this->ToPlayer()->SetClientControl(this, !apply);
 }
 
@@ -16362,7 +16348,7 @@ void Unit::SetConfused(bool apply)
         }
     }
 
-    if (GetTypeId() == TYPEID_PLAYER)
+    if (GetTypeId() == TYPEID_PLAYER && !isCharmed())
         this->ToPlayer()->SetClientControl(this, !apply);
 }
 
@@ -16443,6 +16429,9 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const * a
     {
         if (this->ToPlayer()->isAFK())
             this->ToPlayer()->ToggleAFK();
+        //if (type == CHARM_TYPE_VEHICLE)
+        SetFeared(false);
+        SetConfused(false);
         this->ToPlayer()->SetClientControl(this, 0);
     }
 
@@ -16551,7 +16540,9 @@ void Unit::RemoveCharmedBy(Unit *charmer)
                 this->ToCreature()->AI()->AttackStart(charmer);
         }
     }
-    else
+    else if (this->HasUnitState(UNIT_STAT_STUNNED | UNIT_STAT_CONFUSED | UNIT_STAT_FLEEING))
+    /*    this->SetControlled(false, UNIT_STAT_POSSESSED);
+    else*/
         this->ToPlayer()->SetClientControl(this, 1);
 
     // If charmer still exists
@@ -17057,7 +17048,6 @@ void Unit::KnockbackFrom(float x, float y, float speedXY, float speedZ)
         data << float(vsin);                                    // y direction
         data << float(speedXY);                                 // Horizontal speed
         data << float(-speedZ);                                 // Z Movement speed (vertical)
-
         player->GetSession()->SendPacket(&data);
         player->addAnticheatTemporaryImmunity(speedZ * 100 + 2 * IN_MILLISECONDS);
     }
