@@ -16540,7 +16540,7 @@ void Unit::RemoveCharmedBy(Unit *charmer)
                 this->ToCreature()->AI()->AttackStart(charmer);
         }
     }
-    else if (this->HasUnitState(UNIT_STAT_STUNNED | UNIT_STAT_CONFUSED | UNIT_STAT_FLEEING))
+    else if (!this->HasUnitState(UNIT_STAT_STUNNED | UNIT_STAT_CONFUSED | UNIT_STAT_FLEEING))
     /*    this->SetControlled(false, UNIT_STAT_POSSESSED);
     else*/
         this->ToPlayer()->SetClientControl(this, 1);
