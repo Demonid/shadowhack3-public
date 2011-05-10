@@ -1803,9 +1803,6 @@ void Spell::EffectTriggerSpell(SpellEffIndex effIndex)
                 pet->CastSpell(pet, 28305, true);
             return;
         }
-        // Empower Rune Weapon
-        case 53258:
-            return; // skip, hack-added in spell effect
         // Snake Trap
         case 57879:
             originalCaster = m_originalCaster;
