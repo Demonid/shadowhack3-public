@@ -228,7 +228,6 @@ class OutdoorPvPWG : public OutdoorPvP
     public:
         OutdoorPvPWG();
         bool SetupOutdoorPvP();
-        int TeamIDsound;
         bool MaingateDestroyed;
         uint32 GetCreatureEntry(uint32 guidlow, const CreatureData *data);
         void OnCreatureCreate(Creature *creature);
@@ -337,6 +336,13 @@ class OPvPCapturePointWG : public OPvPCapturePoint
         void SetTeamByBuildingState();
         void ChangeState() { }
         void ChangeTeam(TeamId oldteam);
+        TeamId const GetTeam() const
+        { 
+            if (m_buildingState) 
+                return m_buildingState->GetTeam();
+            else
+                return TEAM_NEUTRAL;
+        }
         uint32 *m_spiEntry;
         uint32 m_spiGuid;
         uint32 m_spiGuid_A;
