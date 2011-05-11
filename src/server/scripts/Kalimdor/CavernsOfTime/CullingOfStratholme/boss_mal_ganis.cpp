@@ -147,11 +147,13 @@ public:
 						if (pInstance->GetData(TYPE_DIFF)==DUNGEON_DIFFICULTY_HEROIC)
 						{
 							pPlayer->KilledMonsterCredit(31217, 0);//ger
+							pInstance->UpdateEncounterState(ENCOUNTER_CREDIT_KILL_CREATURE,31217,me);
 						}
 						else
 						{
 							pPlayer->KilledMonsterCredit(26533, 0);//normal
-						};
+							pInstance->UpdateEncounterState(ENCOUNTER_CREDIT_KILL_CREATURE,26533,me);
+						}
 						//pPlayer->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
 					}
 				}

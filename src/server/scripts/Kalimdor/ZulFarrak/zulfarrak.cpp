@@ -38,7 +38,6 @@ EndContentData */
 enum blyAndCrewFactions
 {
     FACTION_HOSTILE           = 14,
-    FACTION_FRIENDLY          = 35,  //while in cages (so the trolls won't attack them while they're caged)
     FACTION_FREED             = 250  //after release (so they'll be hostile towards trolls)
 };
 
@@ -119,7 +118,7 @@ public:
             ShieldBash_Timer = 5000;
             Revenge_Timer = 8000;
 
-            me->setFaction(FACTION_FRIENDLY);
+            me->setFaction(PD_FACTION_FRIENDLY);
         }
 
         void UpdateAI(const uint32 diff)
@@ -383,7 +382,7 @@ public:
         {
             if (me->isAlive())
             {
-                me->setFaction(FACTION_FRIENDLY);
+                me->setFaction(PD_FACTION_FRIENDLY);
                 me->GetMotionMaster()->MovePoint(0, 1858.57f,1146.35f,14.745f);
                 me->SetHomePosition(1858.57f,1146.35f,14.745f,3.85f); // in case he gets interrupted
                 DoScriptText(SAY_WEEGLI_OK_I_GO,me);
