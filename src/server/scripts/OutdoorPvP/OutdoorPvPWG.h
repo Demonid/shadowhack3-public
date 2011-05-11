@@ -74,19 +74,19 @@ const uint16 GameEventWintergraspDefender[2] = {50, 51};
 
 enum OutdoorPvP_WG_Sounds
 {
-    OutdoorPvP_WG_SOUND_KEEP_CLAIMED            = 8192,
-    OutdoorPvP_WG_SOUND_KEEP_CAPTURED_ALLIANCE  = 8173,
-    OutdoorPvP_WG_SOUND_KEEP_CAPTURED_HORDE     = 8213,
-    OutdoorPvP_WG_SOUND_KEEP_ASSAULTED_ALLIANCE = 8212,
-    OutdoorPvP_WG_SOUND_KEEP_ASSAULTED_HORDE    = 8174,
-    OutdoorPvP_WG_SOUND_NEAR_VICTORY            = 8456,
-    OutdoorPvP_WG_SOUND_HORDE_WINS              = 8454,
-    OutdoorPvP_WG_SOUND_ALLIANCE_WINS           = 8455,
-    OutdoorPvP_WG_SOUND_WORKSHOP_Horde          = 6205,
-    OutdoorPvP_WG_SOUND_WORKSHOP_ALLIANCE       = 6298,
-    OutdoorPvP_WG_HORDE_CAPTAIN                 = 8333,
-    OutdoorPvP_WG_ALLIANCE_CAPTAIN              = 8232,
-    OutdoorPvP_WG_SOUND_START_BATTLE            = 3439, //Standart BG Start sound
+    WG_SOUND_KEEP_CLAIMED            = 8192,
+    WG_SOUND_KEEP_CAPTURED_ALLIANCE  = 8173,
+    WG_SOUND_KEEP_CAPTURED_HORDE     = 8213,
+    WG_SOUND_KEEP_ASSAULTED_ALLIANCE = 8212,
+    WG_SOUND_KEEP_ASSAULTED_HORDE    = 8174,
+    WG_SOUND_NEAR_VICTORY            = 8456,
+    WG_SOUND_HORDE_WINS              = 8454,
+    WG_SOUND_ALLIANCE_WINS           = 8455,
+    WG_SOUND_WORKSHOP_Horde          = 6205,
+    WG_SOUND_WORKSHOP_ALLIANCE       = 6298,
+    WG_HORDE_CAPTAIN                 = 8333,
+    WG_ALLIANCE_CAPTAIN              = 8232,
+    WG_SOUND_START_BATTLE            = 3439, //Standart BG Start sound
 };
 
 enum DataId
@@ -96,13 +96,13 @@ enum DataId
 
 enum OutdoorPvP_WG_KeepStatus
 {
-    OutdoorPvP_WG_KEEP_TYPE_NEUTRAL             = 0,
-    OutdoorPvP_WG_KEEP_TYPE_CONTESTED           = 1,
-    OutdoorPvP_WG_KEEP_STATUS_ALLY_CONTESTED    = 1,
-    OutdoorPvP_WG_KEEP_STATUS_HORDE_CONTESTED   = 2,
-    OutdoorPvP_WG_KEEP_TYPE_OCCUPIED            = 3,
-    OutdoorPvP_WG_KEEP_STATUS_ALLY_OCCUPIED     = 3,
-    OutdoorPvP_WG_KEEP_STATUS_HORDE_OCCUPIED    = 4
+    WG_KEEP_TYPE_NEUTRAL             = 0,
+    WG_KEEP_TYPE_CONTESTED           = 1,
+    WG_KEEP_STATUS_ALLY_CONTESTED    = 1,
+    WG_KEEP_STATUS_HORDE_CONTESTED   = 2,
+    WG_KEEP_TYPE_OCCUPIED            = 3,
+    WG_KEEP_STATUS_ALLY_OCCUPIED     = 3,
+    WG_KEEP_STATUS_HORDE_OCCUPIED    = 4
 };
 
 enum OutdoorPvPWGCreType
