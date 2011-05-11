@@ -18,8 +18,6 @@
 #include "ScriptPCH.h"
 #include "halls_of_stone.h"
 
-#define MAX_ENCOUNTER 4
-
 /* Halls of Stone encounters:
 0- Krystallus
 1- Maiden of Grief
@@ -61,7 +59,7 @@ public:
         uint64 uiAbedneumGo;
         uint64 uiMarnakGo;
 
-        uint32 m_auiEncounter[MAX_ENCOUNTER];
+        uint32 m_auiEncounter[MAX_ENCOUNTER-1];
 
         std::string str_data;
 
@@ -121,24 +119,15 @@ public:
                     break;
                 case GO_MAIDEN_DOOR:
                     uiMaidenOfGriefDoor = go->GetGUID();
-                    if (m_auiEncounter[0] == DONE)
-                        go->SetGoState(GO_STATE_ACTIVE);
-                    else
-                        go->SetGoState(GO_STATE_READY);
+                    go->SetGoState( (m_auiEncounter[DATA_KRYSTALLUS_EVENT] == DONE) ? GO_STATE_ACTIVE : GO_STATE_READY);
                     break;
                 case GO_BRANN_DOOR:
                     uiBrannDoor = go->GetGUID();
-                    if (m_auiEncounter[1] == DONE)
-                        go->SetGoState(GO_STATE_ACTIVE);
-                    else
-                        go->SetGoState(GO_STATE_READY);
+                    go->SetGoState( (m_auiEncounter[DATA_MAIDEN_OF_GRIEF_EVENT] == DONE) ? GO_STATE_ACTIVE : GO_STATE_READY);
                     break;
                 case GO_SJONNIR_DOOR:
                     uiSjonnirDoor = go->GetGUID();
-                    if (m_auiEncounter[2] == DONE)
-                        go->SetGoState(GO_STATE_ACTIVE);
-                    else
-                        go->SetGoState(GO_STATE_READY);
+                    go->SetGoState( (m_auiEncounter[DATA_BRANN_EVENT] == DONE) ? GO_STATE_ACTIVE : GO_STATE_READY);
                     break;
                 case GO_TRIBUNAL_CONSOLE:
                     uiTribunalConsole = go->GetGUID();
@@ -146,7 +135,7 @@ public:
                 case GO_TRIBUNAL_CHEST:
                 case GO_TRIBUNAL_CHEST_HERO:
                     uiTribunalChest = go->GetGUID();
-                    if (m_auiEncounter[2] == DONE)
+                    if (m_auiEncounter[DATA_BRANN_EVENT] == DONE)
                         go->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND);
                     else
                         go->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND);
@@ -159,48 +148,32 @@ public:
 
         void SetData(uint32 type, uint32 data)
         {
-            switch(type)
-            {
-                case DATA_MAIDEN_OF_GRIEF_EVENT:
-                    m_auiEncounter[1] = data;
-                    if (m_auiEncounter[1] == DONE)
-                        HandleGameObject(uiBrannDoor,true);
-                    break;
-                case DATA_KRYSTALLUS_EVENT:
-                    m_auiEncounter[0] = data;
-                    if (m_auiEncounter[0] == DONE)
-                        HandleGameObject(uiMaidenOfGriefDoor,true);
-                    break;
-                case DATA_SJONNIR_EVENT:
-                    m_auiEncounter[3] = data;
-                    break;
-                case DATA_BRANN_EVENT:
-                    m_auiEncounter[2] = data;
-                    if (m_auiEncounter[2] == DONE)
-                    {
-                        HandleGameObject(uiSjonnirDoor,true);
-                        GameObject* go = instance->GetGameObject(uiTribunalChest);
-                        if (go)
-                            go->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND);
-                    }
-                    break;
-            }
-
+            if (type >= 0 && type < MAX_ENCOUNTER) m_auiEncounter[type] = data;
             if (data == DONE)
+            {
+                switch(type)
+                {
+                    case DATA_KRYSTALLUS_EVENT:
+                        HandleGameObject(uiMaidenOfGriefDoor, true);
+                        break;
+                    case DATA_MAIDEN_OF_GRIEF_EVENT:
+                        HandleGameObject(uiBrannDoor, true);
+                        break;
+                    case DATA_BRANN_EVENT:
+                        HandleGameObject(uiSjonnirDoor, true);
+                        if (GameObject* go = instance->GetGameObject(uiTribunalChest))
+                            go->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND);
+                        break;
+                    case DATA_SJONNIR_EVENT:
+                        break;
+                }
                 SaveToDB();
+            }
         }
 
         uint32 GetData(uint32 type)
         {
-            switch(type)
-            {
-                case DATA_KRYSTALLUS_EVENT:                return m_auiEncounter[0];
-                case DATA_MAIDEN_OF_GRIEF_EVENT:           return m_auiEncounter[1];
-                case DATA_SJONNIR_EVENT:                   return m_auiEncounter[2];
-                case DATA_BRANN_EVENT:                     return m_auiEncounter[3];
-            }
-
-            return 0;
+            return (type >= 0 && type < MAX_ENCOUNTER) ? m_auiEncounter[type] : 0;
         }
 
         uint64 GetData64(uint32 identifier)
