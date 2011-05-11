@@ -19,8 +19,8 @@
 #ifndef DEF_BRD_H
 #define DEF_BRD_H
 
-#define FACTION_NEUTRAL             734
-#define FACTION_HOSTILE             754
+#define FACTION_BRD_NEUTRAL             734
+#define FACTION_BRD_HOSTILE             754
 #define FACTION_FRIEND              35
 
 enum eTypes

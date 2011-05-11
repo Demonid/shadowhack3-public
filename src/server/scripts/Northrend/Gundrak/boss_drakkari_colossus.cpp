@@ -144,6 +144,8 @@ class boss_drakkari_colossus : public CreatureScript
                 {
                     case ACTION_SUMMON_ELEMENTAL:
                         DoCast(SPELL_EMERGE);
+						//manual creature spawn. (spell 54851)
+						me->SummonCreature(29573, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(),TEMPSUMMON_CORPSE_DESPAWN,0);
                         break;
                     case ACTION_FREEZE_COLOSSUS:
                         me->GetMotionMaster()->MoveIdle();
