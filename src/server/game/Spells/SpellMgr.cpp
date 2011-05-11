@@ -5193,5 +5193,7 @@ bool IsBreakingStealthSpells(SpellEntry const *spellProto)
             default:break;
         }
     }
+    if (spellProto->AttributesEx4 & SPELL_ATTR4_DAMAGE_NOT_BREAK_AURAS)
+        return false;
     return true;
 }
