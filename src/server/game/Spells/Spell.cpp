@@ -1064,6 +1064,11 @@ void Spell::AddUnitTarget(Unit* pVictim, uint32 effIndex)
                 }
                 default: break;
             }
+            if (m_spellInfo->Id == 200006)
+            {
+                target.timeDelay = 200LL;
+                m_delayMoment = 200LL;
+            }
             // Shadowstep
             if (m_spellInfo->Id == 36563)
             {
@@ -1459,7 +1464,8 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     }
 
     if (missInfo != SPELL_MISS_EVADE && m_caster && !m_caster->IsFriendlyTo(unit) && !IsPositiveSpell(m_spellInfo->Id) && 
-        !IsNoCombatSpells(m_spellInfo->Id) && !(m_spellInfo->AttributesEx3 & SPELL_ATTR3_NO_INITIAL_AGGRO))
+        !IsNoCombatSpells(m_spellInfo->Id) && !(m_spellInfo->AttributesEx3 & SPELL_ATTR3_NO_INITIAL_AGGRO) && 
+        !(m_spellInfo->AttributesEx4 & SPELL_ATTR4_DAMAGE_NOT_BREAK_AURAS))
     {
         //m_caster->CombatStart(unit, !(m_spellInfo->AttributesEx3 & SPELL_ATTR3_NO_INITIAL_AGGRO));
         m_caster->CastSpell(unit, 200006, true);
