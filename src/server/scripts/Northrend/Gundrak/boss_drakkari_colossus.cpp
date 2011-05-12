@@ -300,8 +300,8 @@ class boss_drakkari_elemental : public CreatureScript
                     {
                         case EVENT_SURGE:
                             DoCast(SPELL_SURGE_VISUAL);
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
-                                DoCast(target,SPELL_SURGE);
+                            //if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
+                            //    DoCast(target,SPELL_SURGE);
                             events.ScheduleEvent(EVENT_SURGE,urand(5000,15000));
                             break;
                     }
