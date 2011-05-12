@@ -803,6 +803,13 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
             if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_DRUID && GetSpellProto()->SpellFamilyFlags[2] & 0x00000008 || GetSpellProto()->Id == 17002 || GetSpellProto()->Id == 24866)
                 amount = GetBase()->GetUnitOwner()->GetShapeshiftForm() == FORM_CAT ? amount : 0;
             break;
+        case SPELL_AURA_MOD_MELEE_HASTE:
+            // Icy Talons
+            if (GetSpellProto()->Id == 50882 || GetSpellProto()->Id == 58575 || GetSpellProto()->Id == 58576 
+               || GetSpellProto()->Id == 58577 || GetSpellProto()->Id == 58578)
+               if (GetBase()->GetUnitOwner()->HasAura(55610))
+                   amount = 0;
+            break;
         default:
             break;
     }
