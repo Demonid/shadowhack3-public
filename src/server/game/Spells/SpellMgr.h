@@ -192,7 +192,7 @@ enum SpellLinkedType
 Unit * GetTriggeredSpellCaster(SpellEntry const * spellInfo, Unit * caster, Unit * target);
 SpellSpecific GetSpellSpecific(SpellEntry const * spellInfo);
 bool IsNondamageAuraSpell(SpellEntry const * spellInfo);
-bool IsCCSpell(SpellEntry const *spellProto, uint8 EffMask= 0);
+bool IsCCSpell(SpellEntry const *spellProto, uint8 EffMask= 0, bool nodamage = false);
 bool IsNoCombatSpells (uint32 spellId);
 bool IsBreakingStealthSpells (SpellEntry const *spellProto);
 bool IsNeedAdditionalLosChecks(SpellEntry const *spellProto);

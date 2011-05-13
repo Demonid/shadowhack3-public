@@ -1037,9 +1037,9 @@ void Spell::AddUnitTarget(Unit* pVictim, uint32 effIndex)
         if (m_delayMoment == 0 || m_delayMoment>target.timeDelay)
             m_delayMoment = target.timeDelay;
     }
-    else if(m_caster->GetTypeId() == TYPEID_PLAYER && (m_caster != pVictim || m_spellInfo->Id == 200006))
+    else if((m_caster->GetTypeId() == TYPEID_PLAYER || m_caster->ToCreature()->isPet()) && (m_caster != pVictim || m_spellInfo->Id == 200006))
     {
-        if (IsCCSpell(m_spellInfo))
+        if (IsCCSpell(m_spellInfo, 0, false))
         {
             target.timeDelay = 200LL;
             m_delayMoment = 200LL;
@@ -1221,7 +1221,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     {
         target->missCondition = SPELL_MISS_IMMUNE;
         m_caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_IMMUNE);
-        if (IsCCSpell(m_spellInfo))
+        if (IsCCSpell(m_spellInfo, 0, true))
             unit->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
     }
 
@@ -5210,7 +5210,7 @@ SpellCastResult Spell::CheckCast(bool strict)
         if (strict && CheckForPowerfullAura(target))
             return m_IsTriggeredSpell ? SPELL_FAILED_DONT_REPORT: SPELL_FAILED_AURA_BOUNCED;
 
-        if (!strict && IsCCSpell(m_spellInfo) && target->GetTypeId() == TYPEID_PLAYER)
+        if (!strict && IsCCSpell(m_spellInfo, 0, true) && target->GetTypeId() == TYPEID_PLAYER)
         {
             if (Aura * aur = target->GetAura(m_spellInfo->Id))
                 if (aur->GetDuration() > 5000)
