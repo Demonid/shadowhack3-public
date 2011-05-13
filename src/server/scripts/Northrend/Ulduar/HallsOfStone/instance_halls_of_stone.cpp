@@ -136,9 +136,9 @@ public:
                 case GO_TRIBUNAL_CHEST_HERO:
                     uiTribunalChest = go->GetGUID();
                     if (m_auiEncounter[DATA_BRANN_EVENT] == DONE)
-                        go->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND);
+                        go->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND | GO_FLAG_UNK1);
                     else
-                        go->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND);
+                        go->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND | GO_FLAG_UNK1);
                     break;
                 case GO_TRIBUNAL_SKY_FLOOR:
                     uiTribunalSkyFloor = go->GetGUID();
@@ -162,7 +162,10 @@ public:
                     case DATA_BRANN_EVENT:
                         HandleGameObject(uiSjonnirDoor, true);
                         if (GameObject* go = instance->GetGameObject(uiTribunalChest))
-                            go->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND);
+                        {
+                            sLog->outBasic("Brann event: found chest guid %u", go->GetGUIDLow());
+                            go->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND | GO_FLAG_UNK1);
+                        }
                         break;
                     case DATA_SJONNIR_EVENT:
                         break;

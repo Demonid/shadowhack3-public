@@ -162,7 +162,7 @@ public:
         bool bMarnakActivated;
         bool bAbedneumActivated;
 
-        std::list<uint64> KaddrakGUIDList;
+        std::list<Creature*> KaddrakList;
 
         void Reset()
         {
@@ -182,33 +182,24 @@ public:
                 pInstance->HandleGameObject(pInstance->GetData64(DATA_GO_SKY_FLOOR), false);
             }
 
-            KaddrakGUIDList.clear();
+            KaddrakList.clear();
         }
 
         void UpdateFacesList()
-       {
-            /*GetCreatureListWithEntryInGrid(lKaddrakGUIDList, me, CREATURE_KADDRAK, 50.0f);
-            if (!lKaddrakGUIDList.empty())
-            {
-                uint32 uiPositionCounter = 0;
-                for (std::list<Creature*>::const_iterator itr = lKaddrakGUIDList.begin(); itr != lKaddrakGUIDList.end(); ++itr)
-                {
-                    if ((*itr)->isAlive())
-                    {
-                        if (uiPositionCounter == 0)
-                        {
-                            (*itr)->GetMap()->CreatureRelocation((*itr), 927.265f, 333.200f, 218.780f, (*itr)->GetOrientation());
-                            (*itr)->SendMonsterMove(927.265f, 333.200f, 218.780f, 0, (*itr)->GetMovementFlags(), 1);
-                        }
-                        else
-                        {
-                            (*itr)->GetMap()->CreatureRelocation((*itr), 921.745f, 328.076f, 218.780f, (*itr)->GetOrientation());
-                            (*itr)->SendMonsterMove(921.745f, 328.076f, 218.780f, 0, (*itr)->GetMovementFlags(), 1);
-                        }
-                    }
-                    ++uiPositionCounter;
-                }
-            }*/
+        {
+           GetCreatureListWithEntryInGrid(KaddrakList, me, CREATURE_KADDRAK, 50.0f);
+           if (KaddrakList.empty() && pInstance)
+               if (Creature *p = Unit::GetCreature(*me, pInstance->GetData64(CREATURE_KADDRAK)))
+                   KaddrakList.push_back(p);
+           sLog->outBasic("UpdFaces: found %u Kaddraks", KaddrakList.size());
+        }
+
+        void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/)    // TODO: redesign when aggro to NPCs realized
+        {
+            if (!KaddrakList.empty()) KaddrakList.clear();
+            bKaddrakActivated = false;
+            bMarnakActivated = false;
+            bAbedneumActivated = false;
         }
 
         void UpdateAI(const uint32 diff)
@@ -217,16 +208,19 @@ public:
             {
                 if (uiKaddrakEncounterTimer <= diff)
                 {
+                    uint8 iskip = DUNGEON_MODE((uint8)urand(0,2), (uint8)10);   // of 3 Kaddraks 1 should be skipped at Normal, none at Heroic
                     if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))
-                        if (!KaddrakGUIDList.empty())
-                            for (std::list<uint64>::const_iterator itr = KaddrakGUIDList.begin(); itr != KaddrakGUIDList.end(); ++itr)
+                        if (!KaddrakList.empty())
+                        {
+                            uint8 i = 0;
+                            for (std::list<Creature*>::const_iterator itr = KaddrakList.begin(); itr != KaddrakList.end(); ++itr, ++i)
                             {
-                                if (Creature *pKaddrak = Unit::GetCreature(*me, *itr))
-                                {
+                                if (i == iskip) continue;
+                                if (Creature* pKaddrak = *itr)
                                     if (pKaddrak->isAlive())
                                         pKaddrak->CastSpell(pTarget, SPELL_GLARE_OF_THE_TRIBUNAL, true);
-                                }
                             }
+                        }
                     uiKaddrakEncounterTimer = 1500;
                 } else uiKaddrakEncounterTimer -= diff;
             }
@@ -289,7 +283,8 @@ public:
         if (pCreature->isQuestGiver())
             pPlayer->PrepareQuestMenu(pCreature->GetGUID());
 
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, pPlayer->isRussianLocale() ? GOSSIP_ITEM_START_RU : GOSSIP_ITEM_START, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        if (! CAST_AI(npc_brann_hos::npc_brann_hosAI, pCreature->AI())->IsEscorted())
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, pPlayer->isRussianLocale() ? GOSSIP_ITEM_START_RU : GOSSIP_ITEM_START, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
         pPlayer->SEND_GOSSIP_MENU(TEXT_ID_START, pCreature->GetGUID());
 
         return true;
@@ -356,9 +351,9 @@ public:
                 case 7:
                     if (Creature* pCreature = Unit::GetCreature(*me, pInstance->GetData64(DATA_TRIBUNAL_OF_AGES)))
                     {
-                        if (!pCreature->isAlive())
-                            pCreature->Respawn();
-//                        CAST_AI(mob_tribuna_controller::mob_tribuna_controllerAI, pCreature->AI())->UpdateFacesList();
+                        if (!pCreature->isAlive()) pCreature->Respawn();
+                        if (pCreature->AI())
+                            CAST_AI(mob_tribuna_controller::mob_tribuna_controllerAI, pCreature->AI())->UpdateFacesList();
                     }
                     SetEscortPaused(true);
                     JumpToNextStep(0);  // closing the gap between uiStep= 1 and 3
@@ -366,7 +361,7 @@ public:
                 case 13:
                     DoScriptText(SAY_EVENT_INTRO_1, me);
                     SetEscortPaused(true);
-                    JumpToNextStep(20000);  // closing the gap between uiStep= 3 and 5
+                    JumpToNextStep(10000);  // closing the gap between uiStep= 3 and 5
                     break;
                 case 17:
                     DoScriptText(SAY_EVENT_INTRO_2, me);
@@ -479,8 +474,8 @@ public:
                             pInstance->HandleGameObject(pInstance->GetData64(DATA_GO_KADDRAK), true);
                             if (Creature* pTemp = Unit::GetCreature(*me, pInstance->GetData64(DATA_TRIBUNAL_OF_AGES)))
                             {
+                                sLog->outBasic("Brann: Tribunal guid %u", pTemp->GetGUIDLow());
                                 CAST_AI(mob_tribuna_controller::mob_tribuna_controllerAI, pTemp->AI())->bKaddrakActivated = true;
-                                CAST_AI(mob_tribuna_controller::mob_tribuna_controllerAI, pTemp->AI())->KaddrakGUIDList.push_back(pInstance->GetData64(DATA_KADDRAK));
                             }
                         }
                         JumpToNextStep(5000);
