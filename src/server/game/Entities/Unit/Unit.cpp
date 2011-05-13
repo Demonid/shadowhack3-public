@@ -15028,7 +15028,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit * pTarget, uint32 procFlag,
                             {
                                 // vanish
                                 if(AuraEffect* aur = GetAuraEffect(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE, 0x00000800, 0, 0))
-                                    if(IsCCSpell(procSpell) && (damage && aur->GetBase()->GetDuration() > 9000))
+                                    if(IsCCSpell(procSpell, 0, true) && (damage && aur->GetBase()->GetDuration() > 9000))
                                         continue;
                                 RemoveAura(i->aura);
                             }
@@ -16540,7 +16540,7 @@ void Unit::RemoveCharmedBy(Unit *charmer)
                 this->ToCreature()->AI()->AttackStart(charmer);
         }
     }
-    else if (!this->HasUnitState(UNIT_STAT_STUNNED | UNIT_STAT_CONFUSED | UNIT_STAT_FLEEING))
+    else if (!this->HasUnitState(UNIT_STAT_CONFUSED | UNIT_STAT_FLEEING))
     /*    this->SetControlled(false, UNIT_STAT_POSSESSED);
     else*/
         this->ToPlayer()->SetClientControl(this, 1);

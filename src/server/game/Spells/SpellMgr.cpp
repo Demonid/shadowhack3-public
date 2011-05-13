@@ -5094,19 +5094,20 @@ void SpellMgr::LoadSpellLinked()
     sLog->outString();
 }
 
-bool IsCCSpell(SpellEntry const *spellProto, uint8 EffMask) 
+bool IsCCSpell(SpellEntry const *spellProto, uint8 EffMask, bool nodamage) 
 {
     for (uint8 effIndex = 0; effIndex<MAX_SPELL_EFFECTS; ++effIndex)
     {
         if (EffMask && !(EffMask & (1<<effIndex)))
             continue;
-        switch(spellProto->Effect[effIndex])
-        {
-            case SPELL_EFFECT_HEALTH_LEECH:
-            case SPELL_EFFECT_SCHOOL_DAMAGE:
-            //case SPELL_EFFECT_SCHOOL_DAMAGE:
-                return false;
-        }
+        if (nodamage)
+            switch(spellProto->Effect[effIndex])
+            {
+                case SPELL_EFFECT_HEALTH_LEECH:
+                case SPELL_EFFECT_SCHOOL_DAMAGE:
+                //case SPELL_EFFECT_SCHOOL_DAMAGE:
+                    return false;
+            }
         switch(spellProto->EffectApplyAuraName[effIndex])
         {
             case SPELL_AURA_MOD_CONFUSE:
