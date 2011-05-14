@@ -73,12 +73,14 @@ public:
         uint32 m_uiChampionsFailed;
         uint32 m_uiChampionsKilled;
         bool   m_bInProgress;
+        uint32 m_uiCheckTimer;
 
         void Reset()
         {
             m_uiChampionsFailed = 0;
             m_uiChampionsKilled = 0;
             m_bInProgress = false;
+            m_uiCheckTimer = 10 * IN_MILLISECONDS;
         }
 
         std::vector<uint32> SelectChampions(Team playerTeam)
@@ -242,6 +244,23 @@ public:
                     }
                     break;
             }
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            if (m_uiCheckTimer < diff)
+            {
+                for (std::list<uint64>::iterator i = Summons.begin(); i != Summons.end(); ++i)
+                {
+                    if (Creature* pTemp = Unit::GetCreature(*me, *i))
+                    {
+                        if (pTemp->isAlive() && me->GetDistanceSqr(pTemp->GetPositionX(), pTemp->GetPositionY(), pTemp->GetPositionZ()) > 4225)
+                            pTemp->NearTeleportTo(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ());
+                    }
+                }
+                m_uiCheckTimer = 10 * IN_MILLISECONDS;
+            }
+            else m_uiCheckTimer -= diff;
         }
     };
 
@@ -1003,7 +1022,7 @@ public:
             SetEquipmentSlots(false, 49992, EQUIP_NO_CHANGE, EQUIP_NO_CHANGE);
 
             m_uiSummonPetTimer = urand(15*IN_MILLISECONDS, 30*IN_MILLISECONDS);
-            DoCast(SPELL_SUMMON_FELHUNTER);
+//            DoCast(SPELL_SUMMON_FELHUNTER);
         }
 
         void UpdateAI(const uint32 uiDiff)
@@ -1223,7 +1242,7 @@ public:
             SetEquipmentSlots(false, 47156, EQUIP_NO_CHANGE, 48711);
 
             m_uiSummonPetTimer = urand(15*IN_MILLISECONDS, 30*IN_MILLISECONDS);
-            DoCast(SPELL_CALL_PET);
+//            DoCast(SPELL_CALL_PET);
         }
 
         void UpdateAI(const uint32 uiDiff)
