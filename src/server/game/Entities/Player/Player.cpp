@@ -11532,7 +11532,7 @@ uint8 Player::CanEquipItem(uint8 slot, uint16 &dest, Item *pItem, bool swap, boo
 
             ItemRequirementsMap::iterator req = sObjectMgr->item_req.find(pItem->GetProto()->ItemId);
             if (req != sObjectMgr->item_req.end() && (GetArenaPersonalRating(req->second.ratingbracket) < req->second.rating 
-                || (req->second.requitem && HasItemCount(req->second.requitem, 1, true))))
+                && (!req->second.requitem || !HasItemCount(req->second.requitem, 1, true))))
                 return EQUIP_ERR_PERSONAL_ARENA_RATING_TOO_LOW;
 
             // check count of items (skip for auto move for same player from bank)
@@ -20078,7 +20078,7 @@ void Player::UpdateArenaItemEquiped()
         {
             ItemRequirementsMap::iterator req = sObjectMgr->item_req.find(pItem->GetProto()->ItemId);
                 if (req != sObjectMgr->item_req.end() && (GetArenaPersonalRating(req->second.ratingbracket) < req->second.rating || 
-                    (req->second.requitem && HasItemCount(req->second.requitem, 1, true))))
+                    (!req->second.requitem || !HasItemCount(req->second.requitem, 1, true))))
                 {
                     uint8 srcbag, srcslot, dstbag;
                     srcbag = pItem->GetBagSlot();
