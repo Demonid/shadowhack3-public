@@ -150,9 +150,9 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
 
     // Store Eng, spirit guide guids and questgiver for later use
     QueryResult result = WorldDatabase.PQuery("SELECT guid, id FROM creature WHERE map = 571"
-        " AND id IN (%u, %u, %u, %u);",
+        " AND id IN (%u, %u, %u, %u)",
         CRE_ENG_A, CRE_ENG_H, CRE_SPI_A, CRE_SPI_H);
-    if (!result)
+    if (!result)    // || !result->GetRowCount()
     {
         sLog->outError("Cannot find siege workshop master or spirit guides in creature!");
         return false;
