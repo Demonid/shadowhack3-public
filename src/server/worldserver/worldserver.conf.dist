@@ -2902,6 +2902,14 @@ AntiDodge = 0
 AntiPereliv = 0
 
 #
+#   Prof.ConsumingReagents
+#        Professions consume reagents if enabled, or do not consume if disabled (for fun servers)
+#         Default: 1 - on (Consume - Blizzlike)
+#                  0 - off (Not consume)   
+
+Prof.ConsumingReagents = 0
+
+#
 #    NoResetTalentsCost
 #        Description: Resetting talents doesn't cost anything.
 #        Default:     0 - (Disabled)
