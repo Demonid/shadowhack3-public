@@ -255,7 +255,7 @@ public:
                     if (Creature* pTemp = Unit::GetCreature(*me, *i))
                     {
                         if (pTemp->isAlive() && me->GetDistanceSqr(pTemp->GetPositionX(), pTemp->GetPositionY(), pTemp->GetPositionZ()) > 4225)
-                            pTemp->NearTeleportTo(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ());
+                            pTemp->NearTeleportTo(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), false);
                     }
                 }
                 m_uiCheckTimer = 10 * IN_MILLISECONDS;
