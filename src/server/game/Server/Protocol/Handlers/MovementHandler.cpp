@@ -292,7 +292,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     recv_data.rpos(recv_data.wpos());                   // prevent warnings spam
 
     // prevent tampered movement data
-    if (guid != mover->GetGUID())
+    if (!mover || guid != mover->GetGUID())
         return;
 
     if (!movementInfo.pos.IsPositionValid())
