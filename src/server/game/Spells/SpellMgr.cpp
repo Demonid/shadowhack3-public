@@ -3495,7 +3495,7 @@ bool SpellMgr::CanAurasStack(SpellEntry const *spellInfo_1, SpellEntry const *sp
         return true;
     // nnever replace aspects.
     SpellSpecific spec[] = {SPELL_SPECIFIC_ASPECT, SPELL_SPECIFIC_WELL_FED};
-    for (uint8 i = 0; i<sizeof(spec); ++i)
+    for (uint8 i = 0; i<2; ++i)
         if(GetSpellSpecific(spellInfo_1)==spec[i] || GetSpellSpecific(spellInfo_1)==spec[i])
             return true;
     
