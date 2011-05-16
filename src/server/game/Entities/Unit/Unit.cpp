@@ -12552,7 +12552,10 @@ void Unit::Unmount()
                 pPet->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
         }
         else
+        {
             this->ToPlayer()->ResummonPetTemporaryUnSummonedIfAny();
+            this->ToPlayer()->GetPet()->_LoadAuras(0);
+        }
     }
     if (GetTypeId() == TYPEID_PLAYER && GetVehicleKit())
     {
