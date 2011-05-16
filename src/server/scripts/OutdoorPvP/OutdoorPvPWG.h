@@ -23,15 +23,13 @@
 
 #include "OutdoorPvP.h"
 #include "BattlegroundMgr.h"
-#include "World.h"
 #include "Player.h"
 
-#define ZONE_DALARAN                4395
-#define ZONE_WINTERGRASP            4197
-#define POS_X_CENTER                5100
+#define ZONE_DALARAN             4395
+#define ZONE_WINTERGRASP         4197
+#define POS_X_CENTER             5100
 #define MAX_VEHICLE_PER_WORKSHOP    4
 #define WG_MIN_SAVE                 300000
-#define WG_MIN_LEVEL                75
 
 const uint32 WintergraspFaction[3] = {1802, 1801, 35};
 const uint32 WG_MARK_OF_HONOR = 43589;
@@ -62,8 +60,6 @@ enum OutdoorPvPWGSpell
     SPELL_TELEPORT_HORDE_CAMP                    = 58633,
     SPELL_TELEPORT_FORTRESS                      = 59096,
 
-    SPELL_PARACHUTE_WG                           = 45472,
-
     SPELL_TELEPORT_DALARAN                       = 53360,
     SPELL_VICTORY_AURA                           = 60044,
     SPELL_ALLIANCE_FLAG                          = 14268,
@@ -74,19 +70,19 @@ const uint16 GameEventWintergraspDefender[2] = {50, 51};
 
 enum OutdoorPvP_WG_Sounds
 {
-    WG_SOUND_KEEP_CLAIMED            = 8192,
-    WG_SOUND_KEEP_CAPTURED_ALLIANCE  = 8173,
-    WG_SOUND_KEEP_CAPTURED_HORDE     = 8213,
-    WG_SOUND_KEEP_ASSAULTED_ALLIANCE = 8212,
-    WG_SOUND_KEEP_ASSAULTED_HORDE    = 8174,
-    WG_SOUND_NEAR_VICTORY            = 8456,
-    WG_SOUND_HORDE_WINS              = 8454,
-    WG_SOUND_ALLIANCE_WINS           = 8455,
-    WG_SOUND_WORKSHOP_Horde          = 6205,
-    WG_SOUND_WORKSHOP_ALLIANCE       = 6298,
-    WG_HORDE_CAPTAIN                 = 8333,
-    WG_ALLIANCE_CAPTAIN              = 8232,
-    WG_SOUND_START_BATTLE            = 3439, //Standart BG Start sound
+    OutdoorPvP_WG_SOUND_KEEP_CLAIMED            = 8192,
+    OutdoorPvP_WG_SOUND_KEEP_CAPTURED_ALLIANCE  = 8173,
+    OutdoorPvP_WG_SOUND_KEEP_CAPTURED_HORDE     = 8213,
+    OutdoorPvP_WG_SOUND_KEEP_ASSAULTED_ALLIANCE = 8212,
+    OutdoorPvP_WG_SOUND_KEEP_ASSAULTED_HORDE    = 8174,
+    OutdoorPvP_WG_SOUND_NEAR_VICTORY            = 8456,
+    OutdoorPvP_WG_SOUND_HORDE_WINS              = 8454,
+    OutdoorPvP_WG_SOUND_ALLIANCE_WINS           = 8455,
+    OutdoorPvP_WG_SOUND_WORKSHOP_Horde          = 6205,
+    OutdoorPvP_WG_SOUND_WORKSHOP_ALLIANCE       = 6298,
+    OutdoorPvP_WG_HORDE_CAPTAIN                 = 8333,
+    OutdoorPvP_WG_ALLIANCE_CAPTAIN              = 8232,
+    OutdoorPvP_WG_SOUND_START_BATTLE            = 3439, //Standart BG Start sound
 };
 
 enum DataId
@@ -96,13 +92,13 @@ enum DataId
 
 enum OutdoorPvP_WG_KeepStatus
 {
-    WG_KEEP_TYPE_NEUTRAL             = 0,
-    WG_KEEP_TYPE_CONTESTED           = 1,
-    WG_KEEP_STATUS_ALLY_CONTESTED    = 1,
-    WG_KEEP_STATUS_HORDE_CONTESTED   = 2,
-    WG_KEEP_TYPE_OCCUPIED            = 3,
-    WG_KEEP_STATUS_ALLY_OCCUPIED     = 3,
-    WG_KEEP_STATUS_HORDE_OCCUPIED    = 4
+    OutdoorPvP_WG_KEEP_TYPE_NEUTRAL             = 0,
+    OutdoorPvP_WG_KEEP_TYPE_CONTESTED           = 1,
+    OutdoorPvP_WG_KEEP_STATUS_ALLY_CONTESTED    = 1,
+    OutdoorPvP_WG_KEEP_STATUS_HORDE_CONTESTED   = 2,
+    OutdoorPvP_WG_KEEP_TYPE_OCCUPIED            = 3,
+    OutdoorPvP_WG_KEEP_STATUS_ALLY_OCCUPIED     = 3,
+    OutdoorPvP_WG_KEEP_STATUS_HORDE_OCCUPIED    = 4
 };
 
 enum OutdoorPvPWGCreType
@@ -160,11 +156,21 @@ enum OutdoorPvPWGCreEntry
     WG_CREATURE_INVISIBLE_STALKER                = 23033
 };
 
-enum OutdoorPvPWGEvents
+const TeamPair OutdoorPvPWGCreEntryPair[] =
 {
-    WG_EVENT_A_DEF                                = 81,
-    WG_EVENT_H_DEF                                = 82,
-    WG_EVENT_BATTLE                               = 83
+    {32307, 32308}, // Guards
+    {30739, 30740}, // Champions
+    {32296, 32294}, // Quartermaster
+    {39173, 39172}, // Ros'slai & Marshal Magruder
+    {32615, 32626}, // Warbringer & Brigadier General
+    {0,0} // Do not delete Used in LoadTeamPair
+};
+
+const TeamPair OutdoorPvPWGGODisplayPair[] =
+{
+    {5651, 5652},
+    {8256, 8257},
+    {0,0} // Do not delete Used in LoadTeamPair
 };
 
 const float OutdoorPvPAttackersTower [3][4] = 
@@ -224,10 +230,13 @@ class OutdoorPvPWG : public OutdoorPvP
         typedef std::map<uint32, BuildingState *> BuildingStateMap;
         typedef std::set<Creature*> CreatureSet;
         typedef std::set<GameObject*> GameObjectSet;
+        typedef std::map<std::pair<uint32, bool>, Position> QuestGiverPositionMap;
+        typedef std::map<uint32, Creature*> QuestGiverMap;
 
     public:
         OutdoorPvPWG();
         bool SetupOutdoorPvP();
+        int TeamIDsound;
         bool MaingateDestroyed;
         uint32 GetCreatureEntry(uint32 guidlow, const CreatureData *data);
         void OnCreatureCreate(Creature *creature);
@@ -283,6 +292,10 @@ class OutdoorPvPWG : public OutdoorPvP
         CreatureSet m_vehicles[2];
         GameObjectSet m_gobjects;
         GameObjectSet m_gobjectsDestroyable;
+        QuestGiverMap m_questgivers;
+
+        TeamPairMap m_creEntryPair, m_goDisplayPair;
+        QuestGiverPositionMap m_qgPosMap;
 
         bool m_wartime;
         bool m_changeDefender;
@@ -303,9 +316,6 @@ class OutdoorPvPWG : public OutdoorPvP
 
         void StartBattle();
         void EndBattle();
-        void StopAllWGEvents();
-        void SpawnDefenders();
-        void SpawnBattle();
         void UpdateClock();
         void UpdateClockDigit(uint32 &timer, uint32 digit, uint32 mod);
         void PromotePlayer(Player *player) const;
@@ -319,14 +329,12 @@ class OutdoorPvPWG : public OutdoorPvP
         void RebuildAllBuildings();
         void RemoveOfflinePlayerWGAuras();
         void RewardMarkOfHonor(Player *player, uint32 count);
+        void MoveQuestGiver(uint32 guid);
+        void LoadQuestGiverMap(uint32 guid, Position posHorde, Position posAlli);
+        bool UpdateQuestGiverPosition(uint32 guid, Creature *creature);
 
         void SaveData();
         void LoadData();
-
-        void DoVehicleTeleport();
-
-        TeamId const GetControllingTeamID() const {return (TeamId)sWorld->getWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID);}
-        void SetControllingTeamId(TeamId team) {sWorld->setWorldState(WS_WINTERGRASP_CONTROLLING_TEAMID, (uint64)team);}
 };
 
 class OPvPCapturePointWG : public OPvPCapturePoint
@@ -336,24 +344,13 @@ class OPvPCapturePointWG : public OPvPCapturePoint
         void SetTeamByBuildingState();
         void ChangeState() { }
         void ChangeTeam(TeamId oldteam);
-        TeamId const GetTeam() const
-        { 
-            if (m_buildingState) 
-                return m_buildingState->GetTeam();
-            else
-                return TEAM_NEUTRAL;
-        }
         uint32 *m_spiEntry;
         uint32 m_spiGuid;
-        uint32 m_spiGuid_A;
-        uint32 m_spiGuid_H;
         Creature *m_spiritguide;
         Creature *m_spiritguide_horde;
         Creature *m_spiritguide_alliance;
         uint32 *m_engEntry;
         uint32 m_engGuid;
-        uint32 m_engGuid_A;
-        uint32 m_engGuid_H;
         Creature *m_engineer;
         uint32 m_workshopGuid;
         BuildingState *m_buildingState;

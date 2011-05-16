@@ -668,16 +668,16 @@ public:
         npc_siltfin_murlocAI(Creature *c) : ScriptedAI(c) {}
 
         void JustDied(Unit* slayer)
-	    {
+        {
             if(Player* const killer = slayer->GetCharmerOrOwnerPlayerOrPlayerItself())
-		    {
-			    if(urand(1,100) <= 40)
-			    {
-				    if(killer->GetQuestStatus(9595) != QUEST_STATUS_NONE)
-					    killer->SummonCreature(17612,me->GetPositionX(),me->GetPositionY(),me->GetPositionZ()/*, 0.0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN*/);
-			    }
-		    }
-	    }
+            {
+                if(urand(1,100) <= 40)
+                {
+                    if(killer->GetQuestStatus(9595) != QUEST_STATUS_NONE)
+                        killer->SummonCreature(17612,me->GetPositionX(),me->GetPositionY(),me->GetPositionZ()/*, 0.0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN*/);
+                }
+            }
+        }
     };
 };
 

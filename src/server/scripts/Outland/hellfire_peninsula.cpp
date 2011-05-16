@@ -464,8 +464,8 @@ public:
 
 enum eIncandescentFelSpark
 {
-    NPC_INCANDESCENT_FEL_SPARK	= 22323,
-    NPC_LIVING_FLARE			= 24916
+    NPC_INCANDESCENT_FEL_SPARK    = 22323,
+    NPC_LIVING_FLARE            = 24916
 };
 class npc_incandescent_fel_spark : public CreatureScript
 {
@@ -505,9 +505,9 @@ public:
 
 enum eLivingFlare
 {
-    NPC_UNSTABLE_LIVING_FLARE	= 24958,
-    TEXTID_ABSORBING_FEL_ENERGY	= -1999955,
-    TEXTID_BECOMING_UNSTABLE	= -1999956
+    NPC_UNSTABLE_LIVING_FLARE    = 24958,
+    TEXTID_ABSORBING_FEL_ENERGY    = -1999955,
+    TEXTID_BECOMING_UNSTABLE    = -1999956
 };
 
 class npc_living_flare : public CreatureScript
@@ -535,7 +535,7 @@ public:
         }
 
         uint64 ownerGUID;
-        uint32 uiTimer;	// only to check if owning player is alive, each 30 sec
+        uint32 uiTimer;    // only to check if owning player is alive, each 30 sec
         int8 numCharges, maxCharges;
 
         void UpdateAI(const uint32 uiDiff)
@@ -565,9 +565,9 @@ public:
             ulf->GetMotionMaster()->MoveFollow(q, 5.0f, 0.0f);
             DoScriptText(TEXTID_BECOMING_UNSTABLE, me, q);
             me->DespawnOrUnsummon();
-	    }
+        }
 
-	    void Reset() { numCharges = 0; maxCharges = urand(6,10); uiTimer = 30000; }
+        void Reset() { numCharges = 0; maxCharges = urand(6,10); uiTimer = 30000; }
     };
 
     CreatureAI* GetAI(Creature* pCreature) const
@@ -582,14 +582,14 @@ public:
 
 enum eUnstableLivingFlare
 {
-    SPELL_UNSTABLE_LIVING_FLARE_COSMETIC	= 46196,
-    SPELL_QUEST_LIVING_FLARE_UNSTABLE		= 44943,
-    AREAID_THRONE_OF_KILJAEDEN				= 3547,
-    QUEST_BLAST_THE_GATEWAY					= 11516,
+    SPELL_UNSTABLE_LIVING_FLARE_COSMETIC    = 46196,
+    SPELL_QUEST_LIVING_FLARE_UNSTABLE        = 44943,
+    AREAID_THRONE_OF_KILJAEDEN                = 3547,
+    QUEST_BLAST_THE_GATEWAY                    = 11516,
 };
 
-#define LEGION_PORTAL_X	837.831299f
-#define LEGION_PORTAL_Y	2514.727783f
+#define LEGION_PORTAL_X    837.831299f
+#define LEGION_PORTAL_Y    2514.727783f
 
 class npc_unstable_living_flare : public CreatureScript
 {
@@ -605,9 +605,9 @@ public:
                 pCreature->DespawnOrUnsummon();
             }
             uiTimer = 5000;
-	    }
+        }
 
-        uint32 uiTimer;	// check every 5 sec, only to spare CPU time
+        uint32 uiTimer;    // check every 5 sec, only to spare CPU time
 
         void UpdateAI(const uint32 uiDiff)
         {

@@ -230,7 +230,7 @@ Aura * Aura::TryCreate(SpellEntry const* spellproto, uint8 tryEffMask, WorldObje
         case TYPEID_PLAYER:
             for (uint8 i = 0; i< MAX_SPELL_EFFECTS; ++i)
             {
-                if (IsUnitOwnedAuraEffect(spellproto->Effect[i]))
+                if (IsUnitOwnedAuraEffect(spellproto->Effect[i]) && !owner->ToUnit()->IsImmunedToSpellEffect(spellproto, i))
                     effMask |= 1 << i;
             }
             break;
@@ -559,7 +559,8 @@ void Aura::UpdateTargetMap(Unit * caster, bool apply)
                     for (Unit::AuraApplicationMap::iterator iter = itr->first->GetAppliedAuras().begin(); iter != itr->first->GetAppliedAuras().end(); ++iter)
                     {
                         Aura const * aura = iter->second->GetBase();
-                        if (!sSpellMgr->CanAurasStack(this, aura, aura->GetCasterGUID() == GetCasterGUID()))
+                        if (!sSpellMgr->CanAurasStack(GetSpellProto(), aura->GetSpellProto(), aura->GetCasterGUID() == GetCasterGUID()) 
+                            && aura->GetCastItemGUID() == GetCastItemGUID())
                         {
                             addUnit = false;
                             break;
@@ -682,6 +683,8 @@ void Aura::Update(uint32 diff, Unit * caster)
                     Powers powertype = Powers(m_spellProto->powerType);
                     if (powertype == POWER_HEALTH)
                     {
+                        if(caster == GetOwner())
+                            return;
                         if (int32(caster->GetHealth()) > manaPerSecond)
                             caster->ModifyHealth(-manaPerSecond);
                         else
@@ -841,6 +844,18 @@ void Aura::UnregisterSingleTarget()
     SetIsSingleTarget(false);
 }
 
+void Aura::RegisterSingleTarget()
+{
+    ASSERT(!m_isSingleTarget);
+    Unit * caster = GetCaster();
+    // TODO: find a better way to do this.
+    if (!caster)
+        caster = ObjectAccessor::GetObjectInOrOutOfWorld(GetCasterGUID(), (Unit*)NULL);
+    ASSERT(caster);
+    caster->GetSingleCastAuras().push_back(this);
+    SetIsSingleTarget(true);
+}
+
 void Aura::SetLoadedState(int32 maxduration, int32 duration, int32 charges, uint8 stackamount, uint8 recalculateMask, int32 * amount)
 {
     m_maxDuration = maxduration;
@@ -920,6 +935,11 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
     // mods at aura apply
     if (apply)
     {
+        if (GetSpellAuraState(GetSpellProto()) == AURA_STATE_FAERIE_FIRE)
+        {
+            target->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
+            target->RemoveAurasByType(SPELL_AURA_MOD_INVISIBILITY);
+        }
         // Apply linked auras (On first aura apply)
         if (sSpellMgr->GetSpellCustomAttr(GetId()) & SPELL_ATTR0_CU_LINK_AURA)
         {
@@ -1026,7 +1046,8 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                         if (target->GetTypeId() == TYPEID_PLAYER)
                             if (GameObject* obj = target->GetGameObject(48018))
                             {
-                              target->ToPlayer()->TeleportTo(obj->GetMapId(),obj->GetPositionX(),obj->GetPositionY(),obj->GetPositionZ(),obj->GetOrientation(), TELE_TO_NOT_LEAVE_COMBAT);
+                              target->ToPlayer()->TeleportTo(obj->GetMapId(),obj->GetPositionX(),obj->GetPositionY(),
+                                  obj->GetPositionZ(),obj->GetOrientation(), TELE_TO_NOT_LEAVE_COMBAT|TELE_TO_NOT_UNSUMMON_PET);
                               target->ToPlayer()->RemoveMovementImpairingAuras();
                             }
                         break;
@@ -1051,7 +1072,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                     // Empowered Renew
                     if (AuraEffect const * aurEff = caster->GetDummyAuraEffect(SPELLFAMILY_PRIEST, 3021, 1))
                     {
-                        int32 basepoints0 = aurEff->GetAmount() * GetEffect(0)->GetTotalTicks() * caster->SpellHealingBonus(target, GetSpellProto(), GetEffect(0)->GetAmount(), HEAL) / 100;
+                        int32 basepoints0 = aurEff->GetAmount() * GetEffect(0)->GetTotalTicks() * caster->SpellHealingBonus(target, GetSpellProto(), GetEffect(0)->GetAmount(), HEAL, 1, MOD_TARGET) / 100;
                         caster->CastCustomSpell(target, 63544, &basepoints0, NULL, NULL, true, NULL, GetEffect(0));
                     }
                 }
@@ -1185,11 +1206,13 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                         break;
                     case 74396: // Fingers of Frost
                         // Remove the IGNORE_AURASTATE aura
-                        target->RemoveAurasDueToSpell(44544);
+                        if(removeMode != AURA_REMOVE_BY_STACK)
+                            target->RemoveAurasDueToSpell(44544);
                         break;
+                    case 57761: //Fireball!
+                        target->ToPlayer()->AddSpellCooldown(57761, 0, time(NULL)+2);
                     case 44401: //Missile Barrage
                     case 48108: //Hot Streak
-                    case 57761: //Fireball!
                         if (removeMode != AURA_REMOVE_BY_EXPIRE || aurApp->GetBase()->IsExpired())
                             break;
                         if (target->HasAura(70752)) //Item - Mage T10 2P Bonus
@@ -1244,7 +1267,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                     }
                 }
                 // Improved Fear
-                else if (GetSpellProto()->SpellFamilyFlags[1] & 0x00000400)
+                else if (GetMaxDuration() && GetSpellProto()->SpellFamilyFlags[1] & 0x00000400)
                 {
                     if (AuraEffect* aurEff = caster->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_WARLOCK, 98, 0))
                     {
@@ -1414,6 +1437,17 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
         case SPELLFAMILY_GENERIC:
             switch (GetId())
             {
+                // Deathbringer's will
+                case 71485:
+                {
+                    if (apply)
+                    {
+                        int32 bp = -50;
+                        target->CastCustomSpell(target, 18210, &bp, 0, 0, true);
+                    }
+                    else 
+                        target->RemoveAura(18210);
+                }
                 case 50720: // Vigilance
                     if (apply)
                         target->CastSpell(caster, 59665, true, 0, 0, caster->GetGUID());
@@ -1429,21 +1463,21 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                 // Master of subtlety
                 if (AuraEffect const * aurEff = target->GetAuraEffectOfRankedSpell(31221, 0))
                 {
-                    if (!apply)
-                        target->CastSpell(target,31666,true);
-                    else
+                    if (apply)
                     {
                         int32 basepoints0 = aurEff->GetAmount();
                         target->CastCustomSpell(target,31665, &basepoints0, NULL, NULL ,true);
                     }
+                    else if (Aura* aur=target->GetAura(31665))
+                        aur->SetAuraTimer(6000);
                 }
                 // Overkill
                 if (target->HasAura(58426))
                 {
-                    if (!apply)
-                        target->CastSpell(target,58428,true);
-                    else
+                    if (apply)
                         target->CastSpell(target,58427,true);
+                    else if (Aura* aur=target->GetAura(58427))
+                        aur->SetAuraTimer(20000);
                 }
                 break;
             }
@@ -1489,7 +1523,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                     break;
             }
             if (GetSpellSpecific(GetSpellProto()) == SPELL_SPECIFIC_AURA)
-		{
+            {
                 // Improved devotion aura
                 if (caster->HasAura(20140) || caster->HasAura(20138) || caster->HasAura(20139))
                     if (apply)
@@ -2062,3 +2096,37 @@ void DynObjAura::FillTargetMap(std::map<Unit *, uint8> & targets, Unit * /*caste
     }
 }
 
+void Aura::SetAuraTimer(int32 time, uint64 guid)
+{
+    if(GetDuration() == -1 || GetDuration()>time)
+    {
+        SetDuration(time);
+        SetMaxDuration(time);
+        if(AuraApplication *aur= GetApplicationOfTarget(guid?guid:m_casterGuid))
+            aur->ClientUpdate();
+    }
+}
+
+bool Aura::IsUniqueVisibleAuraBuff()
+{
+    for(uint8 i=0; i<3; ++i)
+    {
+        if(!(GetEffectMask() & (1 << i)))
+            continue;
+        
+        switch(GetSpellProto()->EffectImplicitTargetA[i])
+        {
+            case TARGET_UNIT_CASTER:
+                if(!GetSpellProto()->EffectRadiusIndex[i])
+                    break;
+            case TARGET_UNIT_RAID_CASTER:
+            case TARGET_UNIT_TARGET_ALLY:
+            /*    if(!poisitve)
+                break;
+            case*/ 
+                return true;
+            default:break;
+        }
+    }
+    return false;
+}

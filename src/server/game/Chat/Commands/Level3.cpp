@@ -209,6 +209,27 @@ bool ChatHandler::HandleCooldownCommand(const char *args)
     return true;
 }
 
+bool ChatHandler::HandleAddGroshikCommand(const char *args)
+{
+    if (!*args)
+        return false;
+
+    Player* plTarget = getSelectedPlayer();
+    if(!plTarget)
+    {
+        PSendSysMessage(LANG_NO_CHAR_SELECTED);
+        SetSentErrorMessage(true);
+        return false;
+    }
+    float grosh = (float)atof((char*)args);
+    uint32 acc=plTarget->GetSession()->GetAccountId();
+    QueryResult result = LoginDatabase.PQuery("SELECT cash FROM account WHERE id = '%u'", acc);
+    grosh+=result->Fetch()->GetFloat();
+    LoginDatabase.PExecute("UPDATE account set cash = %f WHERE id = '%u'", grosh, acc);
+    PSendSysMessage("now player has %f groshiks", grosh);
+    return true;
+}
+
 bool ChatHandler::HandleAddItemCommand(const char *args)
 {
     if (!*args)
@@ -2461,9 +2482,8 @@ bool ChatHandler::HandleListAurasCommand (const char * /*args*/)
 
             std::ostringstream ss_name;
             ss_name << "|cffffffff|Hspell:" << (*itr)->GetId() << "|h[" << name << "]|h|r";
-
             PSendSysMessage(LANG_COMMAND_TARGET_AURASIMPLE, (*itr)->GetId(), (*itr)->GetEffIndex(),
-                (*itr)->GetAmount());
+                (*itr)->GetAmount(), (*itr)->GetCaster() ? (*itr)->GetCaster()->GetName() : NULL, (*itr)->GetBase()->GetCastItemGUID());
         }
     }
     return true;
@@ -2894,7 +2914,7 @@ bool ChatHandler::HandleBanCharacterCommand(const char *args)
         return false;
     }
 
-    switch (sWorld->BanCharacter(name, duration, reason, m_session ? m_session->GetPlayerName() : ""))
+    switch (sWorld->BanAccount(BAN_CHARACTER, name, duration, reason, m_session ? m_session->GetPlayerName() : ""))
     {
         case BAN_SUCCESS:
         {
@@ -3799,15 +3819,8 @@ bool ChatHandler::HandleServerPLimitCommand(const char *args)
     switch(allowedAccountType)
     {
         case SEC_PLAYER:        secName = "Player";        break;
-        case SEC_MODERATOR:     secName = "Moderator";     break;
-		case SEC_GAMEMASTER_LOW:
-		case SEC_GAMEMASTER_MED:
-        case SEC_GAMEMASTER:    
-			secName = "Gamemaster";
-			break;
-		case SEC_DEVELOPER:     secName = "Developer";     break;
-        case SEC_ADMINISTRATOR: secName = "Administrator"; break;
-        default:                secName = "<unknown>";     break;
+        case SEC_MODERATOR:     secName = "Moderator";     break;    
+        default:                secName = "Gamemaster";     break;
     }
 
     PSendSysMessage("Player limits: amount %u, min. security level %s.",pLimit,secName);
@@ -4725,7 +4738,7 @@ bool ChatHandler::HandleUnbindSightCommand(const char * /*args*/)
 
 bool ChatHandler::HandleMmap(const char* args)
 {
-	bool on;
+    bool on;
     if (strncmp(args, "on", 3) == 0)
     {
         sWorld->setBoolConfig(CONFIG_MOVEMAP_ENABLE, true);
