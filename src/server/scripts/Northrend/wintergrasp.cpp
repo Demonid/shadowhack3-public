@@ -35,44 +35,74 @@ public:
     npc_demolisher_engineerer() : CreatureScript("npc_demolisher_engineerer") { }
 
 
-bool OnGossipHello(Player* pPlayer, Creature* pCreature)
-{
-    if (pCreature->isQuestGiver())
-        pPlayer->PrepareQuestMenu(pCreature->GetGUID());
-
-    if(pPlayer->isGameMaster() || pCreature->GetZoneScript() && pCreature->GetZoneScript()->GetData(pCreature->GetDBTableGUIDLow()))
+    bool OnGossipHello(Player* pPlayer, Creature* pCreature)
     {
-if (pPlayer->HasAura(SPELL_CORPORAL))
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, (pPlayer->isRussianLocale())? GOSSIP_HELLO_DEMO1_RU:GOSSIP_HELLO_DEMO1, GOSSIP_SENDER_MAIN,   GOSSIP_ACTION_INFO_DEF);
-        else if (pPlayer->HasAura(SPELL_LIEUTENANT))
-        {
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, (pPlayer->isRussianLocale())? GOSSIP_HELLO_DEMO1_RU:GOSSIP_HELLO_DEMO1, GOSSIP_SENDER_MAIN,   GOSSIP_ACTION_INFO_DEF);
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, (pPlayer->isRussianLocale())? GOSSIP_HELLO_DEMO2_RU:GOSSIP_HELLO_DEMO2, GOSSIP_SENDER_MAIN,   GOSSIP_ACTION_INFO_DEF+1);
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, (pPlayer->isRussianLocale())? GOSSIP_HELLO_DEMO3_RU:GOSSIP_HELLO_DEMO3, GOSSIP_SENDER_MAIN,   GOSSIP_ACTION_INFO_DEF+2);
-        }
-    }
-    else
-pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, (pPlayer->isRussianLocale())? GOSSIP_HELLO_DEMO4_RU:GOSSIP_HELLO_DEMO4, GOSSIP_SENDER_MAIN,   GOSSIP_ACTION_INFO_DEF+9);
+        if (pCreature->isQuestGiver())
+            pPlayer->PrepareQuestMenu(pCreature->GetGUID());
 
-    pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
-    return true;
-}
-
-bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
-{
-    pPlayer->CLOSE_GOSSIP_MENU();
-    if(pPlayer->isGameMaster() || pCreature->GetZoneScript() && pCreature->GetZoneScript()->GetData(pCreature->GetDBTableGUIDLow()))
-    {
-        switch(uiAction - GOSSIP_ACTION_INFO_DEF)
+        if(!pCreature->IsNonMeleeSpellCasted(true) && (pPlayer->isGameMaster() || pCreature->GetZoneScript() && pCreature->GetZoneScript()->GetData(pCreature->GetDBTableGUIDLow())))
         {
-            case 0: pCreature->CastSpell(pPlayer, 56663, false, NULL, NULL, pCreature->GetGUID()); break;
-            case 1: pCreature->CastSpell(pPlayer, 56575, false, NULL, NULL, pCreature->GetGUID()); break;
-            case 2: pCreature->CastSpell(pPlayer, pPlayer->GetTeamId() ? 61408 : 56661, false, NULL, NULL, pCreature->GetGUID()); break;
+            if (pPlayer->HasAura(SPELL_CORPORAL))
+            {
+                if (!pPlayer->HasSpellCooldown(56663))
+                    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, (pPlayer->isRussianLocale()) ? GOSSIP_HELLO_DEMO1_RU : GOSSIP_HELLO_DEMO1, GOSSIP_SENDER_MAIN,   GOSSIP_ACTION_INFO_DEF);
+            }
+            else if (pPlayer->HasAura(SPELL_LIEUTENANT))
+            {
+                if (!pPlayer->HasSpellCooldown(56663))
+                    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, (pPlayer->isRussianLocale()) ? GOSSIP_HELLO_DEMO1_RU : GOSSIP_HELLO_DEMO1, GOSSIP_SENDER_MAIN,   GOSSIP_ACTION_INFO_DEF);
+
+                if (!pPlayer->HasSpellCooldown(56575))
+                    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, (pPlayer->isRussianLocale()) ? GOSSIP_HELLO_DEMO2_RU : GOSSIP_HELLO_DEMO2, GOSSIP_SENDER_MAIN,   GOSSIP_ACTION_INFO_DEF+1);
+
+                if (!pPlayer->HasSpellCooldown(pPlayer->GetTeamId() ? 61408 : 56661))
+                    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, (pPlayer->isRussianLocale()) ? GOSSIP_HELLO_DEMO3_RU : GOSSIP_HELLO_DEMO3, GOSSIP_SENDER_MAIN,   GOSSIP_ACTION_INFO_DEF+2);
+            }
         }
+        else
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, (pPlayer->isRussianLocale()) ? GOSSIP_HELLO_DEMO4_RU : GOSSIP_HELLO_DEMO4, GOSSIP_SENDER_MAIN,   GOSSIP_ACTION_INFO_DEF+9);
+
+        pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
+
+        return true;
     }
 
-    return true;
-}
+    bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
+    {
+        pPlayer->PlayerTalkClass->ClearMenus();
+
+        pPlayer->CLOSE_GOSSIP_MENU();
+        if(pPlayer->isGameMaster() || pCreature->GetZoneScript() && pCreature->GetZoneScript()->GetData(pCreature->GetDBTableGUIDLow()))
+        {
+            switch(uiAction - GOSSIP_ACTION_INFO_DEF)
+            {
+            case 0:
+                if (!pPlayer->HasSpellCooldown(56663))
+                {
+                    pCreature->CastSpell(pPlayer, 56663, false, NULL, NULL, pCreature->GetGUID());
+                    pPlayer->AddSpellCooldown(56663, NULL, time(NULL) + 60);
+                }                
+                break;
+            case 1: 
+                if (!pPlayer->HasSpellCooldown(56575))
+                {
+                    pCreature->CastSpell(pPlayer, 56575, false, NULL, NULL, pCreature->GetGUID());
+                    pPlayer->AddSpellCooldown(56575, NULL, time(NULL) + 60);
+                } 
+                break;
+            case 2:
+                uint32 spellID = pPlayer->GetTeamId() ? 61408 : 56661;
+                if (!pPlayer->HasSpellCooldown(spellID))
+                {
+                    pCreature->CastSpell(pPlayer, spellID, false, NULL, NULL, pCreature->GetGUID());
+                    pPlayer->AddSpellCooldown(spellID, NULL, time(NULL) + 60);
+                }                
+                break;
+            }
+        }
+
+        return true;
+    }
 
     CreatureAI* GetAI(Creature* pCreature) const
     {

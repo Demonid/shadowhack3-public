@@ -46,7 +46,6 @@ enum eAeranas
     SAY_FREE                = -1000139,
 
     FACTION_HOSTILE         = 16,
-    FACTION_FRIENDLY        = 35,
 
     SPELL_ENVELOPING_WINDS  = 15535,
     SPELL_SHOCK             = 12553,
@@ -79,7 +78,7 @@ public:
             Shock_Timer = 5000;
 
             me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
-            me->setFaction(FACTION_FRIENDLY);
+            me->setFaction(PD_FACTION_FRIENDLY);
 
             DoScriptText(SAY_SUMMON, me);
         }
@@ -100,7 +99,7 @@ public:
 
             if (HealthBelowPct(30))
             {
-                me->setFaction(FACTION_FRIENDLY);
+                me->setFaction(PD_FACTION_FRIENDLY);
                 me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
                 me->RemoveAllAuras();
                 me->DeleteThreatList();

@@ -687,11 +687,11 @@ public:
 enum BristlelimbCage
 {
     QUEST_THE_PROPHECY_OF_AKIDA         = 9544,
-    NPC_STILLPINE_CAPITIVE              = 17375,
+    NPC_STILLPINE_CAPTIVE               = 17375,
     GO_BRISTELIMB_CAGE                  = 181714,
-    CAPITIVE_SAY_1                      = -1000474,
-    CAPITIVE_SAY_2                      = -1000475,
-    CAPITIVE_SAY_3                      = -1000476
+    CAPTIVE_SAY_1                       = -1000474,
+    CAPTIVE_SAY_2                       = -1000475,
+    CAPTIVE_SAY_3                       = -1000476
 };
 
 class npc_stillpine_capitive : public CreatureScript
@@ -703,25 +703,12 @@ public:
     {
         npc_stillpine_capitiveAI(Creature *c) : ScriptedAI(c){}
 
-        uint32 FleeTimer;
-
         void Reset()
         {
-            FleeTimer = 0;
             GameObject* cage = me->FindNearestGameObject(GO_BRISTELIMB_CAGE, INTERACTION_DISTANCE);
-            if(cage)
-                cage->ResetDoorOrButton();
+            if (cage) cage->SetGoState(GO_STATE_READY);
         }
 
-        void UpdateAI(const uint32 diff)
-        {
-            if(FleeTimer)
-            {
-                if(FleeTimer <= diff)
-                    me->DespawnOrUnsummon();
-                else FleeTimer -= diff;
-            }
-        }
     };
 
     CreatureAI* GetAI(Creature* pCreature) const
@@ -740,17 +727,18 @@ public:
     {
         if(pPlayer->GetQuestStatus(QUEST_THE_PROPHECY_OF_AKIDA) == QUEST_STATUS_INCOMPLETE)
         {
-            Creature* pCreature = pGo->FindNearestCreature(NPC_STILLPINE_CAPITIVE, INTERACTION_DISTANCE, true);
-            if(pCreature)
+            Creature* pCreature = pGo->FindNearestCreature(NPC_STILLPINE_CAPTIVE, INTERACTION_DISTANCE, true);
+            if (pCreature)
             {
-                DoScriptText(RAND(CAPITIVE_SAY_1, CAPITIVE_SAY_2, CAPITIVE_SAY_3), pCreature, pPlayer);
+                DoScriptText(RAND(CAPTIVE_SAY_1, CAPTIVE_SAY_2, CAPTIVE_SAY_3), pCreature, pPlayer);
+                pGo->UseDoorOrButton();
                 pCreature->GetMotionMaster()->MoveFleeing(pPlayer, 3500);
-                pPlayer->KilledMonsterCredit(pCreature->GetEntry(), pCreature->GetGUID());
-                if (pCreature->AI()) CAST_AI(npc_stillpine_capitive::npc_stillpine_capitiveAI, pCreature->AI())->FleeTimer = 3500;
-                return false;
+                pCreature->DespawnOrUnsummon(3400);
+                pPlayer->KilledMonsterCredit(NPC_STILLPINE_CAPTIVE, 0);
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
 };

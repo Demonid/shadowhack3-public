@@ -119,7 +119,6 @@ public:
 ######*/
 
 #define FACTION_HOSTILE_SA              90
-#define FACTION_FRIENDLY_SA             35
 #define QUEST_10004                     10004
 
 #define SPELL_MAGNETIC_PULL             31705

@@ -525,10 +525,10 @@ m_caster(Caster), m_spellValue(new SpellValue(m_spellInfo))
         m_canReflect = true;
 
     // Intercept Stun
-    if (m_spellInfo->Id == 20253)
+    else if (m_spellInfo->Id == 20253)
         m_canReflect = false;
 
-    if (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC && !IsAreaOfEffectSpell(m_spellInfo) && !(m_spellInfo->AttributesEx2 & SPELL_ATTR2_CANT_REFLECTED))
+    else if (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC && !IsAreaOfEffectSpell(m_spellInfo) && !(m_spellInfo->AttributesEx2 & SPELL_ATTR2_CANT_REFLECTED))
     {
         for (int j = 0; j < MAX_SPELL_EFFECTS; ++j)
         {
@@ -3076,7 +3076,18 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                     unitList.remove(m_targets.getUnitTarget());
                 Trinity::RandomResizeList(unitList, maxTargets);
             }
-
+            else
+            {
+                switch (m_spellInfo->Id)
+                {
+                    case 27285: // Seed of Corruption proc spell
+                    case 49821: // Mind Sear proc spell Rank 1
+                    case 53022: // Mind Sear proc spell Rank 2
+                    case 5246:  // Intimidating Shout
+                        unitList.remove(m_targets.getUnitTarget());
+                        break;
+                }
+            }
             CallScriptAfterUnitTargetSelectHandlers(unitList, SpellEffIndex(i));
 
             for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
@@ -5482,6 +5493,8 @@ SpellCastResult Spell::CheckCast(bool strict)
                 case 7266:   // Duel
                 case 10909:  // Mind Vision
                 case 31789:  // Righteous Defense
+                case 61717:  // Blossoming Branch
+                case 61716:  // Rabbit Costume
                     break;
                 default: return SPELL_FAILED_BAD_TARGETS;
             }

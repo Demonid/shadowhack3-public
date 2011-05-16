@@ -889,6 +889,8 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
                 case 30877: // Tag Murloc
                 case 200002: // Vanish - Immunity
                 case 200005: // Vanish - Hide time
+                case 61717: // Blossomig Branch
+                case 61716: // Rabbit Costume
                     return true;
                 default:
                     break;
@@ -4922,6 +4924,10 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 51590: // Toss Ice Boulder
             spellInfo->MaxAffectedTargets = 1;
+            count++;
+            break;
+        case 61719: // Easter Lay Noblegarden Egg Aura
+            spellInfo->AuraInterruptFlags = 0;
             count++;
             break;
         default:

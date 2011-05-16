@@ -376,7 +376,7 @@ public:
             {
                 if (Creature* boss = instance->GetCreature(TombBossGUIDs[TombEventCounter]))
                 {
-                    boss->setFaction(FACTION_HOSTILE);
+                    boss->setFaction(FACTION_BRD_HOSTILE);
                     boss->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
                     if (Unit *pTarget = boss->SelectNearestTarget(500.f))
                         boss->AI()->AttackStart(pTarget);

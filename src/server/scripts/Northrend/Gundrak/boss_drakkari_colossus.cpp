@@ -144,6 +144,8 @@ class boss_drakkari_colossus : public CreatureScript
                 {
                     case ACTION_SUMMON_ELEMENTAL:
                         DoCast(SPELL_EMERGE);
+						//manual creature spawn. (spell 54851)
+						me->SummonCreature(29573, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(),TEMPSUMMON_CORPSE_DESPAWN,0);
                         break;
                     case ACTION_FREEZE_COLOSSUS:
                         me->GetMotionMaster()->MoveIdle();
@@ -298,8 +300,8 @@ class boss_drakkari_elemental : public CreatureScript
                     {
                         case EVENT_SURGE:
                             DoCast(SPELL_SURGE_VISUAL);
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
-                                DoCast(target,SPELL_SURGE);
+                            //if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
+                            //    DoCast(target,SPELL_SURGE);
                             events.ScheduleEvent(EVENT_SURGE,urand(5000,15000));
                             break;
                     }

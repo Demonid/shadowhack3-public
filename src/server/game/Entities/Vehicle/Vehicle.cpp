@@ -47,6 +47,7 @@ Vehicle::Vehicle(Unit *unit, VehicleEntry const *vehInfo, uint32 creatureEntry)
     switch (GetVehicleInfo()->m_ID)
     {
         case 160:
+        case 244:
             me->SetControlled(true, UNIT_STAT_ROOT);
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK_DEST, true);
@@ -77,7 +78,12 @@ Vehicle::Vehicle(Unit *unit, VehicleEntry const *vehInfo, uint32 creatureEntry)
             me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_SPLIT_DAMAGE_PCT, true);
             me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_230, true);
             me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
+            me->ApplySpellImmune(0, IMMUNITY_ID, 49575, true); // Death Grip
+            me->ApplySpellImmune(0, IMMUNITY_ID, 49576, true); // Death Grip
             me->ApplySpellImmune(0, IMMUNITY_ID, 19753, true); // Divine Intervention
+            me->ApplySpellImmune(0, IMMUNITY_ID, 55741, true);// Desecration Rank 1
+            me->ApplySpellImmune(0, IMMUNITY_ID, 68766, true);// Desecration Rank 2
+            me->ApplySpellImmune(0, IMMUNITY_ID, 13810, true);// Frost Trap
             break;
         case 335:
         case 345:

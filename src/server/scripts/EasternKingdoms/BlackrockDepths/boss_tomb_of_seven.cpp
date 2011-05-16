@@ -128,7 +128,7 @@ public:
             case GOSSIP_ACTION_INFO_DEF+2:
                 pPlayer->CLOSE_GOSSIP_MENU();
                 //start event here
-                pCreature->setFaction(FACTION_HOSTILE);
+                pCreature->setFaction(FACTION_BRD_HOSTILE);
                 pCreature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
                 pCreature->AI()->AttackStart(pPlayer);
                 InstanceScript* pInstance = pCreature->GetInstanceScript();

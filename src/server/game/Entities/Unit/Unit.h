@@ -1271,6 +1271,26 @@ class Unit : public WorldObject
         bool isHunterPet() const{ return m_unitTypeMask & UNIT_MASK_HUNTER_PET; }
         bool isTotem() const    { return m_unitTypeMask & UNIT_MASK_TOTEM; }
         bool IsVehicle() const  { return m_unitTypeMask & UNIT_MASK_VEHICLE; }
+
+        bool IsWGVehicle() const  
+        {
+            if (!IsVehicle()) return false;
+
+            switch(GetEntry())
+            {
+                case 27881: // Catapult
+                case 28094: // Demolisher
+                case 28312: // Alliance Siege Engine
+                case 32627: // Horde Siege Engine
+                case 28319: // Siege turret
+                case 32629: // Siege turret
+                case 28366: // Wintergrasp Tower cannon
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
         bool IsGuardianPetStuff() const { return m_unitTypeMask & (UNIT_MASK_SUMMON|UNIT_MASK_GUARDIAN|UNIT_MASK_PET|UNIT_MASK_HUNTER_PET|UNIT_MASK_TOTEM); } 
 
         uint8 getLevel() const { return uint8(GetUInt32Value(UNIT_FIELD_LEVEL)); }

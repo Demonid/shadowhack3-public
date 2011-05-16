@@ -2988,4 +2988,11 @@ enum RemoveMethod
     GROUP_REMOVEMETHOD_LEAVE   = 2,
 };
 
+enum PredefinedFactons
+{
+    PD_FACTION_FRIENDLY = 35,
+    PD_FACTION_ENEMY    = 14,
+    PD_FACTION_NEUTRAL  = 7
+};
+
 #endif
