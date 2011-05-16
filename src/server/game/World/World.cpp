@@ -917,6 +917,7 @@ void World::LoadConfigSettings(bool reload)
 
     m_bool_configs[CONFIG_INSTANCE_IGNORE_LEVEL] = sConfig->GetBoolDefault("Instance.IgnoreLevel", false);
     m_bool_configs[CONFIG_INSTANCE_IGNORE_RAID]  = sConfig->GetBoolDefault("Instance.IgnoreRaid", false);
+    m_bool_configs[CONFIG_INSTANCE_ONLY_HEROIC]  = sConfig->GetBoolDefault("Instance.OnlyHeroic", false);
 
     m_bool_configs[CONFIG_CAST_UNSTUCK] = sConfig->GetBoolDefault("CastUnstuck", true);
     m_int_configs[CONFIG_INSTANCE_RESET_TIME_HOUR]  = sConfig->GetIntDefault("Instance.ResetTimeHour", 4);
