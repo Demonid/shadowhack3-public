@@ -12554,7 +12554,8 @@ void Unit::Unmount()
         else
         {
             this->ToPlayer()->ResummonPetTemporaryUnSummonedIfAny();
-            this->ToPlayer()->GetPet()->_LoadAuras(0);
+            if (Pet *pPet = this->ToPlayer()->GetPet())
+                pPet->_LoadAuras(0);
         }
     }
     if (GetTypeId() == TYPEID_PLAYER && GetVehicleKit())
