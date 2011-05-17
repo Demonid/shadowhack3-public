@@ -37,6 +37,7 @@
 #include "Unit.h"
 #include "Util.h"                                           // for Tokens typedef
 #include "WorldSession.h"
+#include "World.h"
 
 #include<string>
 #include<vector>
@@ -1819,21 +1820,28 @@ class Player : public Unit, public GridObject<Player>
         void SetArenaTeamIdInvited(uint32 ArenaTeamId) { m_ArenaTeamIdInvited = ArenaTeamId; }
         uint32 GetArenaTeamIdInvited() { return m_ArenaTeamIdInvited; }
         static void LeaveAllArenaTeams(uint64 guid);
-
-        if (sWorld->getIntConfig(CONFIG_INSTANCE_ONLY_HEROIC))
-        {
-            Difficulty GetDifficulty(bool isRaid) const { return isRaid ? RAID_DIFFICULTY_10MAN_HEROIC: DUNGEON_DIFFICULTY_HEROIC; }
-            Difficulty GetDungeonDifficulty() const { return DUNGEON_DIFFICULTY_HEROIC; }
-            Difficulty GetRaidDifficulty() const { return RAID_DIFFICULTY_10MAN_HEROIC; }
-            Difficulty GetStoredRaidDifficulty() const { return RAID_DIFFICULTY_10MAN_HEROIC; } // only for use in difficulty packet after exiting to raid map
+        
+        Difficulty GetDifficulty(bool isRaid) const 
+        { 
+            if (isRaid)
+            {
+                if (sWorld->getBoolConfig(CONFIG_INSTANCE_ONLY_HEROIC))
+                    return RAID_DIFFICULTY_10MAN_HEROIC;
+                else
+                    return m_raidDifficulty;
+            }
+            else
+            {
+                if (sWorld->getBoolConfig(CONFIG_INSTANCE_ONLY_HEROIC))
+                    return DUNGEON_DIFFICULTY_HEROIC;
+                else
+                    return m_dungeonDifficulty;
+            }
         }
-        else
-        {
-            Difficulty GetDifficulty(bool isRaid) const { return isRaid ? m_raidDifficulty : m_dungeonDifficulty; }
-            Difficulty GetDungeonDifficulty() const { return m_dungeonDifficulty; }
-            Difficulty GetRaidDifficulty() const { return m_raidDifficulty; }
-            Difficulty GetStoredRaidDifficulty() const { return m_raidMapDifficulty; } // only for use in difficulty packet after exiting to raid map
-        }
+        Difficulty GetDungeonDifficulty() const { return sWorld->getBoolConfig(CONFIG_INSTANCE_ONLY_HEROIC) ? DUNGEON_DIFFICULTY_HEROIC : m_dungeonDifficulty; }
+        Difficulty GetRaidDifficulty() const { return sWorld->getBoolConfig(CONFIG_INSTANCE_ONLY_HEROIC) ? RAID_DIFFICULTY_10MAN_HEROIC : m_raidDifficulty; }
+        Difficulty GetStoredRaidDifficulty() const { return sWorld->getBoolConfig(CONFIG_INSTANCE_ONLY_HEROIC) ? RAID_DIFFICULTY_10MAN_HEROIC : m_raidMapDifficulty; } // only for use in difficulty packet after exiting to raid map
+        
         void SetDungeonDifficulty(Difficulty dungeon_difficulty) { m_dungeonDifficulty = dungeon_difficulty; }
         void SetRaidDifficulty(Difficulty raid_difficulty) { m_raidDifficulty = raid_difficulty; }
         void StoreRaidMapDifficulty() { m_raidMapDifficulty = GetMap()->GetDifficulty(); }
