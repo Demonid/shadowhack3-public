@@ -21313,9 +21313,10 @@ bool Player::isAlwaysDetectableFor(WorldObject const* seer) const
     if (Unit::isAlwaysDetectableFor(seer))
         return true;
 
-    if (const Player* seerPlayer = seer->ToPlayer())
-        if (IsGroupVisibleFor(seerPlayer))
-            return true;
+    if (seer->ToUnit())
+        if (const Player* seerPlayer = seer->ToUnit()->GetCharmerOrOwnerPlayerOrPlayerItself())
+            if (IsGroupVisibleFor(seerPlayer))
+                return true;
 
      return false;
  }

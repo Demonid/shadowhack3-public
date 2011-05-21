@@ -97,18 +97,13 @@ TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
 
                 if(m_usePathfinding)
                 {     
-                    bool forceDest = false;
-                    // allow pets following their master to cheat while generating paths
-                    if(owner.GetTypeId() == TYPEID_UNIT && owner.ToCreature()->isPet()
-                        && owner.HasUnitState(UNIT_STAT_FOLLOW))
-                            forceDest = true;
 
                     bool newPathCalculated = true;
 
                     if(!i_path)
-                        i_path = new PathInfo(&owner, x, y, z, false, forceDest);
+                        i_path = new PathInfo(&owner, x, y, z);
                     else
-                        newPathCalculated = i_path->Update(x, y, z, false, forceDest);
+                        newPathCalculated = i_path->Update(x, y, z);
 
                     // nothing we can do here ...
                     if(i_path->getPathType() & PATHFIND_NOPATH)
@@ -197,17 +192,12 @@ TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
 
     if(m_usePathfinding)
     {
-        bool forceDest = false;
-        // allow pets following their master to cheat while generating paths
-        if(owner.GetTypeId() == TYPEID_UNIT && owner.ToCreature()->isPet()
-            && owner.HasUnitState(UNIT_STAT_FOLLOW))
-                forceDest = true;
 
         bool newPathCalculated = true;
         if(!i_path)
-            i_path = new PathInfo(&owner, x, y, z, false, forceDest);
+            i_path = new PathInfo(&owner, x, y, z);
         else
-            newPathCalculated = i_path->Update(x, y, z, false, forceDest);
+            newPathCalculated = i_path->Update(x, y, z);
 
         // nothing we can do here ...
         if(i_path->getPathType() & PATHFIND_NOPATH)
