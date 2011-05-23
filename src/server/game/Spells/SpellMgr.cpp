@@ -3989,10 +3989,6 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->StartRecoveryTime = 20;
         }
 
-        if (!sWorld->getBoolConfig(CONFIG_CONSUMING_REAGENTS))
-            for (uint32 x = 0; x < MAX_SPELL_REAGENTS; ++x)
-                spellInfo->Reagent[x] = 0;
-
         switch (i)
         {
         case 605:   // Mind Control
