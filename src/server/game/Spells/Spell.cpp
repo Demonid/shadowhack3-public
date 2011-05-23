@@ -4962,6 +4962,8 @@ void Spell::TakeRunePower()
 
 void Spell::TakeReagents()
 {
+    if(!sWorld->getBoolConfig(CONFIG_CONSUMING_REAGENTS))
+        return;
     if (m_IsTriggeredSpell)                                  // reagents used in triggered spell removed by original spell or don't must be removed.
     {
         Item* targetItem = m_targets.getItemTarget();
