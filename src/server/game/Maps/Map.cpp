@@ -1246,6 +1246,11 @@ void Map::GetZoneAndAreaIdByAreaFlag(uint32& zoneid, uint32& areaid, uint16 area
 
     areaid = entry ? entry->ID : 0;
     zoneid = entry ? ((entry->zone != 0) ? entry->zone : entry->ID) : 0;
+    if (GetId() == 572)
+    {
+        newzone = 3968;
+        newarea = 3968;
+    }
 }
 
 bool Map::IsInWater(float x, float y, float pZ, GridMapLiquidData *data) const
