@@ -210,8 +210,13 @@ TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
          
             if (i_destinationHolder.HasArrived() && m_pathPointsSent)
                 --m_pathPointsSent;
-
-            i_path->getNextPosition(x, y, z);
+            if (i_path->getPathType() & PATHFIND_INCOMPLETE && m_pathPointsSent == 1)
+            {
+                i_path->getEndPosition(x, y, z);
+                i_path->BuildShortcut();
+            }
+            else
+                i_path->getNextPosition(x, y, z);
         }
         i_destinationHolder.SetDestination(traveller, x, y, z, false);
 
