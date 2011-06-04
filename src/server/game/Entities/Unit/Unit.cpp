@@ -6824,7 +6824,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
             // Sacred Shield
             if (dummySpell->SpellFamilyFlags[1] & 0x80000)
             {
-                if (damage > 0 && !(procFlag & PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_POS))
+                if (!HasAura(58597) && damage > 0 && !(procFlag & PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_POS))
                     triggered_spell_id = 58597;
 
                 target = this;
