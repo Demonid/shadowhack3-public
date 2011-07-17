@@ -5732,6 +5732,12 @@ SpellCastResult Spell::CheckCast(bool strict)
                 // Master's call can be used whatever time
                 if (m_caster->HasUnitState(UNIT_STAT_ROOT) && m_spellInfo->Id != 54216)
                     return SPELL_FAILED_ROOTED;
+
+                //Do not allow to cast it before BG starts.
+                if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                    if (Battleground const *bg = m_caster->ToPlayer()->GetBattleground())
+                        if (bg->GetStatus() != STATUS_IN_PROGRESS)
+                            return SPELL_FAILED_TRY_AGAIN;
                 break;
             }
             case SPELL_EFFECT_SKINNING:
@@ -5955,7 +5961,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             case SPELL_EFFECT_LEAP:
             case SPELL_EFFECT_TELEPORT_UNITS_FACE_CASTER:
             {
-              //Do not allow to cast it before BG starts.
+                //Do not allow to cast it before BG starts.
                 if (m_caster->GetTypeId() == TYPEID_PLAYER)
                     if (Battleground const *bg = m_caster->ToPlayer()->GetBattleground())
                         if (bg->GetStatus() != STATUS_IN_PROGRESS)
