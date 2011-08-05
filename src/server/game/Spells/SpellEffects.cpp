@@ -7542,7 +7542,7 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const *
             if (Unit * target = m_targets.getUnitTarget())
                 summon->GetMotionMaster()->MoveFollow(target, 3.0f, 0);
         }
-        else if (m_spellInfo->Id != 1122)
+        else
             summon->AI()->EnterEvadeMode();
         // only for gargoyle, cause bugs
         if(m_spellInfo->Id == 49206 || m_spellInfo->Id == 57879)

@@ -914,6 +914,8 @@ void CreatureEventAI::JustReachedHome()
 
 void CreatureEventAI::EnterEvadeMode()
 {
+    if (me->isGuardian())
+        return;
     CreatureAI::EnterEvadeMode();
 
     if (m_bEmptyList)
