@@ -1890,9 +1890,10 @@ bool WorldObject::canDetect(WorldObject const* obj, bool ignoreStealth) const
     const WorldObject* seer = this;
 
     // Pets don't have detection, they use the detection of their masters
-    /*if (const Unit* thisUnit = ToUnit())
+    if (const Unit* thisUnit = ToUnit())
         if (Unit* controller = thisUnit->GetCharmerOrOwner())
-            seer = controller;*/
+            if (controller->canDetect(obj, ignoreStealth))
+                return true;
     if (obj->ToUnit())
     {
         if (Player * own = obj->ToUnit()->GetCharmerOrOwnerPlayerOrPlayerItself())
@@ -1904,7 +1905,7 @@ bool WorldObject::canDetect(WorldObject const* obj, bool ignoreStealth) const
     if (obj->isAlwaysDetectableFor(seer))
         return true;
 
-    if (!seer->canDetectInvisibilityOf(obj))
+    if (!ignoreStealth && !seer->canDetectInvisibilityOf(obj))
         return false;
 
     if (!ignoreStealth && !seer->canDetectStealthOf(obj))
