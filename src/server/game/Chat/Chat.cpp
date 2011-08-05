@@ -142,6 +142,14 @@ ChatCommand * ChatHandler::getCommandTable()
         { NULL,             0,                  false, NULL,                                                "", NULL }
     };
 
+    static ChatCommand utilityCommandTable[] =
+    {
+        { "customize",      SEC_PLAYER,  true,  OldHandler<&ChatHandler::HandleUtilityCustomizeCommand>,     "", NULL },
+        { "changefaction",  SEC_PLAYER,  true,  OldHandler<&ChatHandler::HandleUtilityChangeFactionCommand>, "", NULL },
+        { "changerace",     SEC_PLAYER,  true,  OldHandler<&ChatHandler::HandleUtilityChangeRaceCommand>,    "", NULL },
+        { NULL,             0,                  false, NULL,                                              "", NULL }
+    };
+
     static ChatCommand characterCommandTable[] =
     {
         { "customize",      SEC_ADMINISTRATOR,  true,  OldHandler<&ChatHandler::HandleCharacterCustomizeCommand>,     "", NULL },
@@ -384,6 +392,7 @@ ChatCommand * ChatHandler::getCommandTable()
     static ChatCommand commandTable[] =
     {
         { "character",      SEC_GAMEMASTER,     true,  NULL,                                       "", characterCommandTable},
+        { "utility",        SEC_PLAYER,     true,  NULL,                                           "", utilityCommandTable  },
         { "list",           SEC_ADMINISTRATOR,  true,  NULL,                                       "", listCommandTable     },
         { "lookup",         SEC_ADMINISTRATOR,  true,  NULL,                                       "", lookupCommandTable   },
         { "pdump",          SEC_ADMINISTRATOR,  true,  NULL,                                       "", pdumpCommandTable    },
