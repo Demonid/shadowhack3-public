@@ -7706,6 +7706,9 @@ void Spell::EffectCastButtons(SpellEffIndex effIndex)
             continue;
 
         SpellEntry const *spellInfo = sSpellStore.LookupEntry(spell_id);
+        // prevent hacks
+        if (spellInfo->Effect[0] != SPELL_EFFECT_SUMMON || !spellInfo->TotemCategory[0] || !m_caster->ToPlayer()->HasSpell(spell_id))
+            continue;
         uint32 cost = CalculatePowerCost(spellInfo, m_caster, GetSpellSchoolMask(spellInfo));
 
         if (m_caster->GetPower(POWER_MANA) < cost)
