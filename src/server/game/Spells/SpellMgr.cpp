@@ -3989,6 +3989,11 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->StartRecoveryTime = 20;
         }
 
+        if (spellInfo->Effect[0] == SPELL_EFFECT_APPLY_GLYPH || spellInfo->Effect[0] == SPELL_EFFECT_ENCHANT_ITEM)
+        {
+            spellInfo->CastingTimeIndex = 1;
+        }
+
         switch (i)
         {
         case 605:   // Mind Control
