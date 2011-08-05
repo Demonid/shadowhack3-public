@@ -395,9 +395,26 @@ bool ChatHandler::HandleCharacterRenameCommand(const char* args)
         PSendSysMessage(LANG_RENAME_PLAYER_GUID, oldNameLink.c_str(), GUID_LOPART(target_guid));
         CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '1' WHERE guid = '%u'", GUID_LOPART(target_guid));
     }
-
     return true;
 }
+
+bool ChatHandler::HandleUtilityCustomizeCommand(const char* args)
+{
+    CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '8' WHERE guid = '%u'", GetSession()->GetPlayer()->GetGUIDLow(););
+    return true;
+}
+
+bool ChatHandler::HandleUtilityChangeFactionCommand(const char * args)
+{
+    CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '64' WHERE guid = %u", GetSession()->GetPlayer()->GetGUIDLow(););
+    return true;
+}
+bool ChatHandler::HandleUtilityChangeRaceCommand(const char * args)
+{
+    CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '128' WHERE guid = %u", GetSession()->GetPlayer()->GetGUIDLow(););
+    return true;
+}
+
 
 // customize characters
 bool ChatHandler::HandleCharacterCustomizeCommand(const char* args)
