@@ -154,9 +154,9 @@ class ChatHandler
         bool HandleCastSelfCommand(const char *args);
         bool HandleCastTargetCommand(const char *args);
 
-        bool HandleUtiltyCustomizeCommand(const char * args);
-        bool HandleUtiltyChangeFactionCommand(const char * args);
-        bool HandleUtiltyChangeRaceCommand(const char * args);
+        bool HandleUtilityCustomizeCommand(const char * args);
+        bool HandleUtilityChangeFactionCommand(const char * args);
+        bool HandleUtilityChangeRaceCommand(const char * args);
         bool HandleCharacterCustomizeCommand(const char * args);
         bool HandleCharacterChangeFactionCommand(const char * args);
         bool HandleCharacterChangeRaceCommand(const char * args);

@@ -400,18 +400,18 @@ bool ChatHandler::HandleCharacterRenameCommand(const char* args)
 
 bool ChatHandler::HandleUtilityCustomizeCommand(const char* args)
 {
-    CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '8' WHERE guid = '%u'", GetSession()->GetPlayer()->GetGUIDLow(););
+    CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '8' WHERE guid = '%u'", GetSession()->GetPlayer()->GetGUIDLow());
     return true;
 }
 
 bool ChatHandler::HandleUtilityChangeFactionCommand(const char * args)
 {
-    CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '64' WHERE guid = %u", GetSession()->GetPlayer()->GetGUIDLow(););
+    CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '64' WHERE guid = %u", GetSession()->GetPlayer()->GetGUIDLow());
     return true;
 }
 bool ChatHandler::HandleUtilityChangeRaceCommand(const char * args)
 {
-    CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '128' WHERE guid = %u", GetSession()->GetPlayer()->GetGUIDLow(););
+    CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '128' WHERE guid = %u", GetSession()->GetPlayer()->GetGUIDLow());
     return true;
 }
 
