@@ -400,18 +400,24 @@ bool ChatHandler::HandleCharacterRenameCommand(const char* args)
 
 bool ChatHandler::HandleUtilityCustomizeCommand(const char* args)
 {
+    GetSession()->GetPlayer()->SetAtLoginFlag(AT_LOGIN_CUSTOMIZE);
     CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '8' WHERE guid = '%u'", GetSession()->GetPlayer()->GetGUIDLow());
+    PSendSysMessage(LANG_CUSTOMIZE_PLAYER, GetSession()->GetPlayer()->GetName());
     return true;
 }
 
 bool ChatHandler::HandleUtilityChangeFactionCommand(const char * args)
 {
+    GetSession()->GetPlayer()->SetAtLoginFlag(AT_LOGIN_CHANGE_FACTION);
     CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '64' WHERE guid = %u", GetSession()->GetPlayer()->GetGUIDLow());
+    PSendSysMessage(LANG_CUSTOMIZE_PLAYER, GetSession()->GetPlayer()->GetName());
     return true;
 }
 bool ChatHandler::HandleUtilityChangeRaceCommand(const char * args)
 {
+    GetSession()->GetPlayer()->SetAtLoginFlag(AT_LOGIN_CHANGE_RACE);
     CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '128' WHERE guid = %u", GetSession()->GetPlayer()->GetGUIDLow());
+    PSendSysMessage(LANG_CUSTOMIZE_PLAYER, GetSession()->GetPlayer()->GetName());
     return true;
 }
 
