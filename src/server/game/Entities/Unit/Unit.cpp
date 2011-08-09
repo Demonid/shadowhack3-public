@@ -9177,10 +9177,6 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
             break;
         }
     }
-    /* Nature's Grasp 
-    if (triggeredByAura->GetSpellProto()->Category == 531 && target->HasAura(trigger_spell_id))
-        return false;*/
-
     if (cooldown && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(trigger_spell_id))
         return false;
 
@@ -9190,6 +9186,10 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
 
     // default case
     if ((!target && !sSpellMgr->IsSrcTargetSpell(triggerEntry)) || (target && target != this && !target->isAlive()))
+        return false;
+
+    // Nature's Grasp 
+    if (triggeredByAura->GetSpellProto()->Category == 531 && target->HasAura(trigger_spell_id))
         return false;
 
     if (basepoints0)
