@@ -155,6 +155,8 @@ void WorldSession::HandlePetActionHelper(Unit *pet, uint64 guid1, uint16 spellid
     switch(flag)
     {
         case ACT_COMMAND:                                   //0x07
+                if(pet->GetAI())
+                    ((PetAI*)pet->GetAI())->fakeautocast = 0;
             switch(spellid)
             {
                 case COMMAND_STAY:                          //flat=1792  //STAY
