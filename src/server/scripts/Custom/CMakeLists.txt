@@ -17,6 +17,9 @@ set(scripts_STAT_SRCS
   Custom/Exaile_Temple/nazaryan.cpp
   Custom/Exaile_Temple/nazaryans_blood.cpp
   Custom/Exaile_Temple/semargl.cpp
+  Custom/npc_renaissance.cpp
+  Custom/npc_amegawow.cpp
+  Custom/bosses_instance.cpp
 )
 
 message("  -> Prepared: Custom")

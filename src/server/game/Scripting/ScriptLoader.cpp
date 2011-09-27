@@ -29,6 +29,9 @@ void AddSC_spectator();
 void AddSC_prof_master();
 void AddSC_renamer();
 void AddSC_flyer();
+void AddSC_npc_renaissance();
+void AddSC_npc_amegawow();
+void AddSC_bosses_instance();
 
 // exaile temple
 void AddSC_instance_my_instance();
@@ -1269,6 +1272,10 @@ void AddCustomScripts()
     AddSC_renamer();
     AddSC_prof_master();
     AddSC_flyer();
+	AddSC_npc_renaissance();
+	AddSC_npc_amegawow();
+	AddSC_bosses_instance();
+	
     // exaile temple
     AddSC_instance_my_instance();
     AddSC_boss_nazaryan();
