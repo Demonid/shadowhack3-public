@@ -85,7 +85,6 @@ ConfusedMovementGenerator<T>::Initialize(T &unit)
         }
     }
 
-    unit.SetUInt64Value(UNIT_FIELD_TARGET, 0);
     unit.SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
     unit.CastStop();
     unit.StopMoving();
