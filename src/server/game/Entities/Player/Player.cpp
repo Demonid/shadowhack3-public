@@ -25027,6 +25027,13 @@ void Player::BuildArenaSpectatorUpdate()
     Trinity::AnyPlayerInObjectRangeCheck u_check(this, 80);
     Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, list, u_check);
     this->VisitNearbyObject(80, searcher);
+    for (std::list<Player*>::iterator itr = list.begin(); itr != list.end();)
+    {
+        if (!(*itr)->HasAura(110000))
+            list.erase(itr);
+        else
+            ++itr;
+    }
     SendAddonMessageToList(update.msg, "ARENASPEC", list);
 }
 
