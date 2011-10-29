@@ -2932,8 +2932,20 @@ SpellCastResult SpellMgr::GetSpellAllowedInLocationError(SpellEntry const *spell
             if (!mapEntry->IsBattleArena())
                 return SPELL_FAILED_REQUIRES_AREA;
 
-            Battleground *bg = player->GetBattleground();
-            return bg && bg->GetStatus() == STATUS_WAIT_JOIN ? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA;
+            /*Battleground *bg = player->GetBattleground();
+            return bg && bg->GetStatus() == STATUS_WAIT_JOIN ? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA;*/
+        }
+        case 110000:
+        {
+            if (!player)
+                return SPELL_FAILED_REQUIRES_AREA;
+
+            MapEntry const *mapEntry = sMapStore.LookupEntry(map_id);
+            if (!mapEntry)
+                return SPELL_FAILED_INCORRECT_AREA;
+
+            if (!mapEntry->IsBattleArena() && !player->HasAura(115000))
+                return SPELL_FAILED_REQUIRES_AREA;
         }
         case 7266: // Duel on undercity deathmatch
         {
