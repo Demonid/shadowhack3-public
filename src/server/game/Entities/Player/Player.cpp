@@ -25148,3 +25148,42 @@ bool Player::sendItemViaMail(const std::string subject, const std::string messag
     return true;
 }
 
+void Player::SetSpectatorInvisible(bool enable)
+{
+    if (enable)
+    {
+        RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+        setFaction(35);
+        SetPhaseMask(uint32(PHASEMASK_ANYWHERE), false);    // see and visible in all phases
+        m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, 3);
+        m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GM, 3);
+        getHostileRefManager().setOnlineOfflineState(false);
+        CastSpell(this, 32727, true);
+        if (Guardian * pet = this->GetGuardianPet())
+            pet->UnSummon();
+        ResetContestedPvP();
+    }
+    else
+    {
+        uint32 newPhase = 0;
+        AuraEffectList const& phases = GetAuraEffectsByType(SPELL_AURA_PHASE);
+        if (!phases.empty())
+            for (AuraEffectList::const_iterator itr = phases.begin(); itr != phases.end(); ++itr)
+                 newPhase |= (*itr)->GetMiscValue();
+
+        if (!newPhase)
+            newPhase = PHASEMASK_NORMAL;
+
+        SetPhaseMask(newPhase, false);
+        m_ExtraFlags &= ~ PLAYER_EXTRA_GM_ON;
+        setFactionForRace(getRace());
+        m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GM, 0);
+        m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, SEC_PLAYER);
+        RemoveAurasDueToSpell(32727);
+        if (Guardian * pet = this->GetGuardianPet())
+            pet->UnSummon();
+        ResetContestedPvP();
+    }
+    
+    UpdateObjectVisibility();
+}

@@ -1431,6 +1431,21 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
         }
     }
 
+    if (GetId() == 110000)
+    {
+        if (apply)
+        {
+            caster->ToPlayer()->SetSpectatorInvisible(true);
+            caster->CastSpell(caster, 32727, true);
+        }
+        else
+        {
+            caster->ToPlayer()->SetSpectatorInvisible(false);
+            caster->RemoveAurasDueToSpell(32727);
+            caster->CastSpell(caster, 32727, true);
+        }
+    }
+    
     // mods at aura apply or remove
     switch (GetSpellProto()->SpellFamilyName)
     {

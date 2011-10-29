@@ -111,9 +111,8 @@ class spectator : public CreatureScript
             player->CLOSE_GOSSIP_MENU();         
             return;
         }
-        player->KillPlayer();
-        player->SetHealth(1);
-        player->CastSpell(player, 8326, true);
+        player->CastSpell(player, 115000, true);
+        player->CastSpell(player, 110000, true);
         player->SetBattlegroundId(pl->GetBattlegroundId(), pl->GetBattlegroundTypeId());
         player->SetBattlegroundEntryPoint();
                     
@@ -127,7 +126,8 @@ class spectator : public CreatureScript
         z = pl->GetPositionZ()+0.2f;
 
         player->TeleportTo(pl->GetMapId(), x, y, z, player->GetAngle(pl), TELE_TO_GM_MODE);
-        player->CastSpell(player, 8326, true);
+        player->CastSpell(player, 115000, true);
+        player->CastSpell(player, 110000, true);
         player->SetByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
         player->ModifyHonorPoints(0-HONOR_COST);
         CleanUp(player);
