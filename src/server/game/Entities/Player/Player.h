@@ -1194,6 +1194,7 @@ class Player : public Unit, public GridObject<Player>
         void BuildArenaSpectatorUpdate();
         void SendArenaSpectatorSpell(uint32 id, uint32 time);
         void SendAddonMessage(std::string& text, char* prefix);
+        void SendAddonMessageToList(std::string& text, char* prefix, std::list<Player*> list);
 
         /*********************************************************/
         /***                    STORAGE SYSTEM                 ***/
