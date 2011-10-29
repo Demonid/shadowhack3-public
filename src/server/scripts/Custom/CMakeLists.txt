@@ -1,5 +1,6 @@
 set(scripts_STAT_SRCS
   ${scripts_STAT_SRCS}
+  Custom/ArenaSpectator.cpp
   Custom/crw_hacks.cpp
   Custom/petguy.cpp
   Custom/prof_master.cpp
