@@ -3807,7 +3807,7 @@ void AuraEffect::HandleAuraModSilence(AuraApplication const * aurApp, uint8 mode
             if (Spell* spell = target->GetCurrentSpell(CurrentSpellTypes(i)))
                 if (spell->m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE)
                     // Stop spells on prepare or casting state
-                    target->InterruptSpell(CurrentSpellTypes(i), false);
+                    target->InterruptSpell(CurrentSpellTypes(i), false, true, true);
     }
     else
     {

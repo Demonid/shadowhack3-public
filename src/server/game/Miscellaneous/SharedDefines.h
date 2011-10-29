@@ -2988,6 +2988,19 @@ enum RemoveMethod
     GROUP_REMOVEMETHOD_LEAVE   = 2,
 };
 
+enum e_ArenaSpecFlags
+{
+    ARENASPEC_HEALTH        = 0x0001,
+    ARENASPEC_MAXHEALTH     = 0x0002,
+    ARENASPEC_POWER         = 0x0004,
+    ARENASPEC_MAXPOWER      = 0x0008,
+    ARENASPEC_POWERTYPE     = 0x0010,
+    ARENASPEC_TARGET        = 0x0020,
+    ARENASPEC_STATUS        = 0x0040,
+    ARENASPEC_TEAM          = 0x0080,
+    ARENASPEC_CLASS         = 0x0100
+};
+
 enum PredefinedFactons
 {
     PD_FACTION_FRIENDLY = 35,

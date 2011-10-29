@@ -4165,6 +4165,10 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->procChance = 0;
             count++;
             break;
+        case 6277: // Bind Sight
+            spellInfo->AttributesEx |= (SPELL_ATTR1_NOT_BREAK_STEALTH | SPELL_ATTR1_STACK_FOR_DIFF_CASTERS);
+            count++;
+            break;
         case 16836:
         case 16839:
         case 16840:
