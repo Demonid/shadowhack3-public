@@ -24993,7 +24993,7 @@ void Player::BuildArenaSpectatorUpdate()
     if (!sWorld->getBoolConfig(CONFIG_ARENA_SPECTATOR_UPDATES) || !m_arenaSpectatorFlags)
         return;
 
-    if (!InArena() || GetBattleground()->GetStatus() != STATUS_IN_PROGRESS)
+    if (!InArena() || GetBattleground()->GetStatus() != STATUS_IN_PROGRESS || !HasAura(110000))
          return;
 
     ArenaSpecUpdate update(this);
@@ -25031,7 +25031,7 @@ void Player::SendArenaSpectatorSpell(uint32 id, uint32 time)
     if (!sWorld->getBoolConfig(CONFIG_ARENA_SPECTATOR_UPDATES))
         return;
 
-    if (!this || !InArena() || GetBattleground()->GetStatus() != STATUS_IN_PROGRESS)
+    if (!this || !InArena() || GetBattleground()->GetStatus() != STATUS_IN_PROGRESS || !HasAura(110000))
         return;
 
     ArenaSpecUpdate update(this);
