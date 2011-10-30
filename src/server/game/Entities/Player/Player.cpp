@@ -25026,11 +25026,12 @@ void Player::BuildArenaSpectatorUpdate()
     std::list<Player*> list;
     Trinity::AnyPlayerInObjectRangeCheck u_check(this, 80);
     Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, list, u_check);
+    searcher.i_phaseMask = PHASEMASK_ANYWHERE;
     this->VisitNearbyObject(80, searcher);
     for (std::list<Player*>::iterator itr = list.begin(); itr != list.end();)
     {
         if (!(*itr)->HasAura(110000))
-            list.erase(itr);
+            itr = list.erase(itr);
         else
             ++itr;
     }
@@ -25088,7 +25089,7 @@ void Player::SendAddonMessageToList(std::string& text, char* prefix, std::list<P
     data << uint8(0);
 
     for (std::list<Player*>::iterator itr = list.begin(); itr!= list.end();itr++)
-        (*itr)->ToPlayer()->SendMessageToSet(&data, false);
+        (*itr)->ToPlayer()->SendPacket(&data);
 }
 
 
