@@ -73,7 +73,7 @@ public:
         }
 
         Player *p = handler->GetSession()->GetPlayer();
-        if (!p || !p->InArena())
+        if (!p || !p->InArena() || !p->GetBattleground())
         {
             handler->PSendSysMessage("Need to be in arena");
             handler->SetSentErrorMessage(true);

@@ -1559,7 +1559,8 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recv_data)
     CharacterDatabase.escape_string(newname);
     Player::Customize(guid, gender, skin, face, hairStyle, hairColor, facialHair);
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
-    trans->PAppend("UPDATE `characters` SET name='%s', race='%u', at_login=at_login & ~ %u WHERE guid='%u'", newname.c_str(), race, used_loginFlag, lowGuid);
+    trans->PAppend("UPDATE `characters` SET name='%s', race='%u', playerFlags=playerFlags & ~ 16, at_login=at_login & ~ %u WHERE guid='%u'", newname.c_str(), race, used_loginFlag, lowGuid);
+    trans->PAppend("Delete from `character_aura` where guid = '%u'", lowGuid);
     trans->PAppend("DELETE FROM character_declinedname WHERE guid ='%u'", lowGuid);
 
     BattlegroundTeamId team = BG_TEAM_ALLIANCE;

@@ -26,6 +26,11 @@ public:
         {
             if (!UpdateVictim())
                 return;
+            if (!me->getVictim())
+            {
+                me->DealDamage(me, 200000, 0);
+                return;
+            }
             if(aggro_timer<diff)
             {
                 me->AttackerStateUpdate(me->getVictim());

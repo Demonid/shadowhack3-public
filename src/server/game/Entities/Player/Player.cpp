@@ -25089,7 +25089,7 @@ void Player::SendAddonMessageToList(std::string& text, char* prefix, std::list<P
     data << uint8(0);
 
     for (std::list<Player*>::iterator itr = list.begin(); itr!= list.end();itr++)
-        (*itr)->ToPlayer()->SendPacket(&data);
+        (*itr)->ToPlayer()->GetSession()->SendPacket(&data);
 }
 
 
