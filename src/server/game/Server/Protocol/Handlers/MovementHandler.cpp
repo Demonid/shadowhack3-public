@@ -1034,6 +1034,8 @@ void WorldSession::HandleSetActiveMoverOpcode(WorldPacket &recv_data)
     {
         if (Unit *mover = ObjectAccessor::GetUnit(*GetPlayer(), guid))
         {
+            if (mover->GetCharmer() != GetPlayer())
+                return;
             GetPlayer()->SetMover(mover);
             if (mover != GetPlayer() && mover->canFly())
             {
