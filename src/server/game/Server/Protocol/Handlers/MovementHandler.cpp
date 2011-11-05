@@ -256,6 +256,9 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     uint16 opcode = recv_data.GetOpcode();
     recv_data.hexlike();
 
+    if (!_player)
+        return;
+
     Unit *mover = _player->m_mover;
 
     ASSERT(mover != NULL);                                  // there must always be a mover
