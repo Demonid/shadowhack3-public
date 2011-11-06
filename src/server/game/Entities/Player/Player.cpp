@@ -19380,6 +19380,42 @@ void Player::UpdateDuelFlag(time_t currTime)
     duel->startTime  = currTime;
     duel->opponent->duel->startTimer = 0;
     duel->opponent->duel->startTime  = currTime;
+    Player * pl = duel->opponent;
+    Player * plTarget = this;
+    if (sWorld->getBoolConfig(CONFIG_DUEL_RESET_COOLDOWN))
+    {
+        pl->SetHealth(pl->GetMaxHealth());
+        plTarget->SetHealth(plTarget->GetMaxHealth());
+    
+        if (pl->getPowerType() == POWER_MANA) 
+            pl->SetPower(POWER_MANA, pl->GetMaxPower(POWER_MANA));
+        if (plTarget->getPowerType() == POWER_MANA)
+            plTarget->SetPower(POWER_MANA, plTarget->GetMaxPower(POWER_MANA));
+        if (pl->getPowerType() == POWER_RAGE) 
+            pl->SetPower(POWER_RAGE, 0);
+        if (plTarget->getPowerType() == POWER_RAGE)
+            plTarget->SetPower(POWER_RAGE, 0);
+        if (pl->getPowerType() == POWER_RUNIC_POWER) 
+            pl->SetPower(POWER_RUNIC_POWER, 0);
+        if (plTarget->getPowerType() == POWER_RUNIC_POWER)
+            plTarget->SetPower(POWER_RUNIC_POWER, 0);
+            
+        pl->RemoveArenaAuras(true);
+        plTarget->RemoveArenaAuras(true);
+        
+        // remove ice barier and fear ward
+        if (AuraEffect *aur = pl->GetAuraEffect(SPELL_AURA_SCHOOL_ABSORB, SPELLFAMILY_MAGE, 0, 1, 0))
+            pl->RemoveAurasDueToSpell(aur->GetId());
+        if (AuraEffect *aur = plTarget->GetAuraEffect(SPELL_AURA_SCHOOL_ABSORB, SPELLFAMILY_MAGE, 0, 1, 0))
+            plTarget->RemoveAurasDueToSpell(aur->GetId());
+        pl->RemoveAurasDueToSpell(6346);
+        plTarget->RemoveAurasDueToSpell(6346);
+        if (!pl->GetMap()->IsDungeon())
+        { 
+            pl->RemoveArenaSpellCooldowns();
+            plTarget->RemoveArenaSpellCooldowns(); 
+        }
+    }
 }
 
 Pet* Player::GetPet() const
