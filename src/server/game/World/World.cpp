@@ -1311,7 +1311,6 @@ void World::LoadConfigSettings(bool reload)
 
     // MySQL ping time interval
     m_int_configs[CONFIG_DB_PING_INTERVAL] = sConfig->GetIntDefault("MaxPingTime", 30);
-	m_bool_configs[CONFIG_ARENA_SPECTATOR_UPDATES] = sConfig->GetBoolDefault("ArenaSpectatorUpdates", false);
 
     m_WardenBanTime = sConfig->GetStringDefault("Wardend.BanTime", "20m");
 
