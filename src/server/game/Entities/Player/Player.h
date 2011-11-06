@@ -1189,12 +1189,6 @@ class Player : public Unit, public GridObject<Player>
         void TextEmote(const std::string& text);
         void Whisper(const std::string& text, const uint32 language,uint64 receiver);
         void BuildPlayerChat(WorldPacket *data, uint8 msgtype, const std::string& text, uint32 language) const;
-        
-        uint16 m_arenaSpectatorFlags;
-        void BuildArenaSpectatorUpdate();
-        void SendArenaSpectatorSpell(uint32 id, uint32 time);
-        void SendAddonMessage(std::string& text, char* prefix);
-        void SendAddonMessageToList(std::string& text, char* prefix, std::list<Player*> list);
 
         /*********************************************************/
         /***                    STORAGE SYSTEM                 ***/
@@ -1563,7 +1557,7 @@ class Player : public Unit, public GridObject<Player>
         const uint64& GetSelection() const { return m_curSelection; }
         Unit *GetSelectedUnit() const;
         Player *GetSelectedPlayer() const;
-        void SetSelection(const uint64 &guid) { m_curSelection = guid; SetUInt64Value(UNIT_FIELD_TARGET, guid); m_arenaSpectatorFlags |= ARENASPEC_TARGET; }
+        void SetSelection(const uint64 &guid) { m_curSelection = guid; SetUInt64Value(UNIT_FIELD_TARGET, guid); }
 
         uint8 GetComboPoints() { return m_comboPoints; }
         void ModifyComboPoints(int8 val)  {if(m_comboPoints+val<0) m_comboPoints =0; else m_comboPoints+=val;}

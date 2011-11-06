@@ -659,7 +659,6 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
     m_zoneUpdateTimer = 0;
 
     m_areaUpdateId = 0;
-    m_arenaSpectatorFlags = 0;
 
     m_nextSave = sWorld->getIntConfig(CONFIG_INTERVAL_SAVE);
 
@@ -1794,8 +1793,6 @@ void Player::Update(uint32 p_time)
 
     // group update
     SendUpdateToOutOfRangeGroupMembers();
-    
-    BuildArenaSpectatorUpdate();
 
     Pet* pet = GetPet();
     if (pet && !pet->IsWithinDistInMap(this, GetMap()->GetVisibilityRange()) && !pet->isPossessed())
@@ -1811,8 +1808,6 @@ void Player::Update(uint32 p_time)
 void Player::setDeathState(DeathState s)
 {
     uint32 ressSpellId = 0;
-    
-    m_arenaSpectatorFlags |= ARENASPEC_STATUS;
 
     bool cur = isAlive();
 
@@ -24947,130 +24942,6 @@ float Player::GetAverageItemLevel()
     return ((float)sum) / count;
 }
 
-class ArenaSpecUpdate
-{
-public:
-    std::string msg;
-
-    ArenaSpecUpdate(Player *p)
-    {
-        msg = "";
-        msg.append(p->GetName());
-        msg.push_back(';');
-    }
-
-    void Append(char* prefix, uint32 data)
-    {
-        msg.append(prefix);
-        msg.push_back('=');
-        std::ostringstream os;
-        os << data;
-        msg.append(os.str());
-        msg.push_back(';');
-    }
-
-    void Append(char* prefix, char* data)
-    {
-        msg.append(prefix);
-        msg.push_back('=');
-        msg.append(data);
-        msg.push_back(';');
-    }
-
-    void Append(char* prefix, uint32 data, uint32 extended)
-    {
-        msg.append(prefix);
-        msg.push_back('=');
-        std::ostringstream os;
-        os << data << ',' << extended;
-        msg.append(os.str());
-        msg.push_back(';');
-    }
-};
-
-void Player::BuildArenaSpectatorUpdate()
-{
-    if (!sWorld->getBoolConfig(CONFIG_ARENA_SPECTATOR_UPDATES) || !m_arenaSpectatorFlags)
-        return;
-
-    if (!InArena() || GetBattleground()->GetStatus() != STATUS_IN_PROGRESS)
-         return;
-
-    ArenaSpecUpdate update(this);
-
-    if (m_arenaSpectatorFlags & ARENASPEC_STATUS)
-        update.Append("STA", isAlive() ? 1 : 0);
-
-    if (m_arenaSpectatorFlags & ARENASPEC_MAXHEALTH)
-        update.Append("MHP", GetMaxHealth());
-    if (m_arenaSpectatorFlags & ARENASPEC_HEALTH)
-        update.Append("CHP", GetHealth());
-
-    if (m_arenaSpectatorFlags & ARENASPEC_MAXPOWER)
-        update.Append("MPW", GetMaxPower(getPowerType()));
-    if (m_arenaSpectatorFlags & ARENASPEC_POWER)
-        update.Append("CPW", GetPower(getPowerType()));
-    if (m_arenaSpectatorFlags & ARENASPEC_POWERTYPE)
-        update.Append("PWT", uint32(getPowerType()));
-
-    if (m_arenaSpectatorFlags & ARENASPEC_TARGET)
-        update.Append("TRG", ((char*)(GetSelectedPlayer() ? GetSelectedPlayer()->GetName() : "0")));
-
-    if (m_arenaSpectatorFlags & ARENASPEC_TEAM)
-        update.Append("TEM", GetBGTeam());
-
-    if (m_arenaSpectatorFlags & ARENASPEC_CLASS)
-        update.Append("CLA", uint32(getClass()));
-
-    m_arenaSpectatorFlags = 0;
-    std::list<Player*> list;
-    Trinity::AnyPlayerInObjectRangeCheck u_check(this, 80);
-    Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, list, u_check);
-    searcher.i_phaseMask = PHASEMASK_ANYWHERE;
-    this->VisitNearbyObject(80, searcher);
-    for (std::list<Player*>::iterator itr = list.begin(); itr != list.end();)
-    {
-        if (!(*itr)->HasAura(110000))
-            itr = list.erase(itr);
-        else
-            ++itr;
-    }
-    SendAddonMessageToList(update.msg, "ARENASPEC", list);
-}
-
-void Player::SendArenaSpectatorSpell(uint32 id, uint32 time)
-{
-    if (!sWorld->getBoolConfig(CONFIG_ARENA_SPECTATOR_UPDATES))
-        return;
-
-    if (!this || !InArena() || GetBattleground()->GetStatus() != STATUS_IN_PROGRESS || !HasAura(110000))
-        return;
-
-    ArenaSpecUpdate update(this);
-    update.Append("SPE", id, time);
-    SendAddonMessage(update.msg, "ARENASPEC");
-}
-
-void Player::SendAddonMessage(std::string& text, char* prefix)
-{
-    std::string message;
-    message.append(prefix);
-    message.push_back(9);
-    message.append(text);
-
-    WorldPacket data(SMSG_MESSAGECHAT, 200);
-    data << uint8(CHAT_MSG_WHISPER);
-    data << uint32(LANG_ADDON);
-    data << uint64(0); // guid
-    data << uint32(LANG_ADDON);                               //language 2.1.0 ?
-    data << uint64(0); // guid
-    data << uint32(message.length() + 1);
-    data << message;
-    data << uint8(0);
-
-    SendMessageToSetInRange(&data, MAX_VISIBILITY_DISTANCE, false, false);
-}
-
 void Player::SendAddonMessageToList(std::string& text, char* prefix, std::list<Player*> list)
 {
     std::string message;
@@ -25167,7 +25038,7 @@ bool Player::sendItemViaMail(const std::string subject, const std::string messag
         ToMailItem->SaveToDB(trans);
         draft.AddItem(ToMailItem);
 
-        sLog->outString("sendItemViaMail: Sending mail to player %s. Attached item: %u", GetName(), itemEntry);    
+        sLog->outString("sendItemViaMail: Sending mail to player %s. Attached item: %u", GetName(), itemEntry);	
 
         draft.SendMailTo(trans, MailReceiver(this), sender);
 

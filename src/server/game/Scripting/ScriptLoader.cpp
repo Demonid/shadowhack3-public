@@ -32,7 +32,6 @@ void AddSC_flyer();
 void AddSC_npc_renaissance();
 void AddSC_npc_amegawow();
 void AddSC_bosses_instance();
-void AddSC_ArenaSpectator();
 
 // exaile temple
 void AddSC_instance_my_instance();
@@ -1276,7 +1275,6 @@ void AddCustomScripts()
 	AddSC_npc_renaissance();
 	AddSC_npc_amegawow();
 	AddSC_bosses_instance();
-	AddSC_ArenaSpectator();
 	
     // exaile temple
     AddSC_instance_my_instance();

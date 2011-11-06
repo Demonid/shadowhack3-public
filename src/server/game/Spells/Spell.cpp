@@ -2977,7 +2977,7 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                         for (std::list<Unit*>::iterator itr = unitList.begin() ; itr != unitList.end();)
                         {
                             if ((*itr)->HasStealthAura() || (*itr)->HasInvisibilityAura() || !(*itr)->IsWithinLOSInMap(m_caster)
-                                || (*itr)->HasNegativeAuraWithInterruptFlag(AURA_INTERRUPT_FLAG_TAKE_DAMAGE))
+								|| (*itr)->HasNegativeAuraWithInterruptFlag(AURA_INTERRUPT_FLAG_TAKE_DAMAGE))
                                 itr = unitList.erase(itr);
                             else
                                 ++itr;
@@ -3301,9 +3301,6 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const * triggere
         SendSpellStart();
 
         TriggerGlobalCooldown();
-        
-        if (!m_IsTriggeredSpell)
-            m_caster->ToPlayer()->SendArenaSpectatorSpell(m_spellInfo->Id, GetCastTime());
 
         if (!m_casttime && !m_spellInfo->StartRecoveryTime
             && !m_castItemGUID     //item: first cast may destroy item and second cast causes crash

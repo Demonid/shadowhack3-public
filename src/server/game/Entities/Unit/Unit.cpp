@@ -2629,9 +2629,9 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell, 
         {
             int32 resist = pVictim->GetResistance(school);
             if(resist)
-                resist += float(GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, schoolMask));
+            	resist += float(GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, schoolMask));
                 if (Player* player = ToPlayer())
-                    resist -= float(player->GetSpellPenetrationItemMod());
+                	resist -= float(player->GetSpellPenetrationItemMod());
             if(resist<0)
                 resist=0;
             uint32 level = getLevel();
@@ -3085,7 +3085,7 @@ void Unit::SetCurrentCastedSpell(Spell * pSpell)
     pSpell->m_selfContainer = &(m_currentSpells[pSpell->GetCurrentContainer()]);
 }
 
-void Unit::InterruptSpell(CurrentSpellTypes spellType, bool withDelayed, bool withInstant, bool fromspell)
+void Unit::InterruptSpell(CurrentSpellTypes spellType, bool withDelayed, bool withInstant)
 {
     ASSERT(spellType < CURRENT_MAX_SPELL);
 
@@ -3106,9 +3106,6 @@ void Unit::InterruptSpell(CurrentSpellTypes spellType, bool withDelayed, bool wi
                 this->ToPlayer()->SendAutoRepeatCancel(this);
         }
 
-        if (GetTypeId() == TYPEID_PLAYER)
-            ToPlayer()->SendArenaSpectatorSpell(spell->GetSpellInfo()->Id, (fromspell ? 99999 : 99998));
-        
         if (spell->getState() != SPELL_STATE_FINISHED)
             spell->cancel();
     
@@ -9316,7 +9313,6 @@ void Unit::setPowerType(Powers new_powertype)
     {
         if (this->ToPlayer()->GetGroup())
             this->ToPlayer()->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_POWER_TYPE);
-        ToPlayer()->m_arenaSpectatorFlags |= ARENASPEC_POWERTYPE;
     }
     else if (this->ToCreature()->isPet())
     {
@@ -14096,7 +14092,6 @@ void Unit::SetMaxHealth(uint32 val)
     {
         if (this->ToPlayer()->GetGroup())
             this->ToPlayer()->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_MAX_HP);
-        ToPlayer()->m_arenaSpectatorFlags |= ARENASPEC_MAXHEALTH;
     }
     else if (this->ToCreature()->isPet())
     {
@@ -14135,7 +14130,6 @@ void Unit::SetPower(Powers power, uint32 val)
     {
         if (this->ToPlayer()->GetGroup())
             this->ToPlayer()->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_CUR_POWER);
-        ToPlayer()->m_arenaSpectatorFlags |= ARENASPEC_POWER;
     }
     else if (this->ToCreature()->isPet())
     {
@@ -14163,7 +14157,6 @@ void Unit::SetMaxPower(Powers power, uint32 val)
     {
         if (this->ToPlayer()->GetGroup())
             this->ToPlayer()->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_MAX_POWER);
-        ToPlayer()->m_arenaSpectatorFlags |= ARENASPEC_MAXPOWER;
     }
     else if (this->ToCreature()->isPet())
     {
