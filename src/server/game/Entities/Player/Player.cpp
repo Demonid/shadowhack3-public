@@ -24942,27 +24942,6 @@ float Player::GetAverageItemLevel()
     return ((float)sum) / count;
 }
 
-void Player::SendAddonMessageToList(std::string& text, char* prefix, std::list<Player*> list)
-{
-    std::string message;
-    message.append(prefix);
-    message.push_back(9);
-    message.append(text);
-
-    WorldPacket data(SMSG_MESSAGECHAT, 200);
-    data << uint8(CHAT_MSG_WHISPER);
-    data << uint32(LANG_ADDON);
-    data << uint64(0); // guid
-    data << uint32(LANG_ADDON);                               //language 2.1.0 ?
-    data << uint64(0); // guid
-    data << uint32(message.length() + 1);
-    data << message;
-    data << uint8(0);
-
-    for (std::list<Player*>::iterator itr = list.begin(); itr!= list.end();itr++)
-        (*itr)->ToPlayer()->GetSession()->SendPacket(&data);
-}
-
 
 void Player::_LoadInstanceTimeRestrictions(PreparedQueryResult result)
 {
