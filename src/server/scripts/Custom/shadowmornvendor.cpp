@@ -11,21 +11,21 @@ class shadowmorn_vendor : public CreatureScript
         switch(pCreature->GetEntry())
         {
             case 300356:
-                if(pPlayer->GetArenaPersonalRating(1)>2000)
+                if(pPlayer->GetArenaPersonalRating(1)>2500)
                     pPlayer->SEND_GOSSIP_MENU(pCreature->GetEntry(), pCreature->GetGUID());
                 else 
                 {
-                    pCreature->MonsterWhisper("You need 2000 3x3 rating to have shadowmourne", pPlayer->GetGUID(), true); 
+                    pCreature->MonsterWhisper("You need 2500 3x3 rating to have shadowmourne", pPlayer->GetGUID(), true); 
                     return true;
                 }
                 break;
                 
             case 300357:
-                if(pPlayer->GetArenaPersonalRating(1)>1800)
+                if(pPlayer->GetArenaPersonalRating(1)>2000)
                     pPlayer->SEND_GOSSIP_MENU(pCreature->GetEntry(), pCreature->GetGUID());
                 else 
                 {
-                    pCreature->MonsterWhisper("You need 1800 3x3 rating to have weapons", pPlayer->GetGUID(), true); 
+                    pCreature->MonsterWhisper("You need 2000 3x3 rating to have weapons", pPlayer->GetGUID(), true); 
                     return true;
                 }
                  break;
