@@ -51,10 +51,6 @@ void WorldSession::HandleDuelAcceptedOpcode(WorldPacket& recvPacket)
     time_t now = time(NULL);
     pl->duel->startTimer = now;
     plTarget->duel->startTimer = now;
-    if (type == DUEL_WON && sWorld->getBoolConfig(CONFIG_DUEL_RESET_COOLDOWN))
-    {
-        Player * pl = duel->opponent;
-        Player * plTarget = this;
         pl->SetHealth(pl->GetMaxHealth());
         plTarget->SetHealth(plTarget->GetMaxHealth());
 		 // remove paladin debaff
@@ -88,7 +84,6 @@ void WorldSession::HandleDuelAcceptedOpcode(WorldPacket& recvPacket)
             pl->RemoveArenaSpellCooldowns();
             plTarget->RemoveArenaSpellCooldowns(); 
         }
-    }
     pl->SendDuelCountdown(3000);
     plTarget->SendDuelCountdown(3000);
 }
