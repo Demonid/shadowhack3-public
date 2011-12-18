@@ -83,11 +83,6 @@ void WorldSession::HandleDuelAcceptedOpcode(WorldPacket& recvPacket)
         pl->RemoveArenaAuras(true);
         plTarget->RemoveArenaAuras(true);
         
-        // remove ice barier and fear ward
-        if (AuraEffect *aur = pl->GetAuraEffect(SPELL_AURA_SCHOOL_ABSORB, SPELLFAMILY_MAGE, 0, 1, 0))
-            pl->RemoveAurasDueToSpell(aur->GetId());
-        if (AuraEffect *aur = plTarget->GetAuraEffect(SPELL_AURA_SCHOOL_ABSORB, SPELLFAMILY_MAGE, 0, 1, 0))
-            plTarget->RemoveAurasDueToSpell(aur->GetId());
         if (!pl->GetMap()->IsDungeon())
         { 
             pl->RemoveArenaSpellCooldowns();
