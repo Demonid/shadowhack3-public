@@ -124,7 +124,7 @@ public:
         if (pCreature->isQuestGiver())
             pPlayer->PrepareQuestMenu(pCreature->GetGUID());
 
-        pCreature->MonsterWhisper("Добро пожаловать на AmegaWow! ", pPlayer->GetGUID(), false);
+        pCreature->MonsterWhisper("Добро пожаловать на WoWCircle ! ", pPlayer->GetGUID(), false);
 		
 		pPlayer->ADD_GOSSIP_ITEM(0, "Как начать играть ?", GOSSIP_SENDER_MAIN, 6); //как начать
 		//pPlayer->ADD_GOSSIP_ITEM(0, "Как мне зарегистрироваться на Озеро Ледяных Оков?", GOSSIP_SENDER_MAIN, 46);
