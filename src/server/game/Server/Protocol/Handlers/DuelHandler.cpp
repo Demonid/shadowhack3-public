@@ -51,18 +51,13 @@ void WorldSession::HandleDuelAcceptedOpcode(WorldPacket& recvPacket)
     time_t now = time(NULL);
     pl->duel->startTimer = now;
     plTarget->duel->startTimer = now;
+    
+    if (sWorld->getBoolConfig(CONFIG_DUEL_RESET_COOLDOWN))
+    {
         pl->SetHealth(pl->GetMaxHealth());
         plTarget->SetHealth(plTarget->GetMaxHealth());
-		 // remove paladin debaff
-        pl->RemoveAurasDueToSpell(25771);
-        plTarget->RemoveAurasDueToSpell(25771);
-		 // remove ice barier and fear ward
-        if (AuraEffect *aur = pl->GetAuraEffect(SPELL_AURA_SCHOOL_ABSORB, SPELLFAMILY_MAGE, 0, 1, 0))
-            pl->RemoveAurasDueToSpell(aur->GetId());
-        if (AuraEffect *aur = plTarget->GetAuraEffect(SPELL_AURA_SCHOOL_ABSORB, SPELLFAMILY_MAGE, 0, 1, 0))
-			plTarget->RemoveAurasDueToSpell(aur->GetId());
-		pl->RemoveAurasDueToSpell(6346);
-        plTarget->RemoveAurasDueToSpell(6346);
+        if(pl->HasAura(25771)) pl->RemoveAura(25771);
+        if(plTarget->HasAura(25771)) plTarget->RemoveAura(25771);
         if (pl->getPowerType() == POWER_MANA) 
             pl->SetPower(POWER_MANA, pl->GetMaxPower(POWER_MANA));
         if (plTarget->getPowerType() == POWER_MANA)
@@ -79,11 +74,20 @@ void WorldSession::HandleDuelAcceptedOpcode(WorldPacket& recvPacket)
         pl->RemoveArenaAuras(true);
         plTarget->RemoveArenaAuras(true);
         
+        // remove ice barier and fear ward
+        if (AuraEffect *aur = pl->GetAuraEffect(SPELL_AURA_SCHOOL_ABSORB, SPELLFAMILY_MAGE, 0, 1, 0))
+            pl->RemoveAurasDueToSpell(aur->GetId());
+        if (AuraEffect *aur = plTarget->GetAuraEffect(SPELL_AURA_SCHOOL_ABSORB, SPELLFAMILY_MAGE, 0, 1, 0))
+            plTarget->RemoveAurasDueToSpell(aur->GetId());
+        pl->RemoveAurasDueToSpell(6346);
+        plTarget->RemoveAurasDueToSpell(6346);
         if (!pl->GetMap()->IsDungeon())
         { 
             pl->RemoveArenaSpellCooldowns();
             plTarget->RemoveArenaSpellCooldowns(); 
         }
+    }
+
     pl->SendDuelCountdown(3000);
     plTarget->SendDuelCountdown(3000);
 }

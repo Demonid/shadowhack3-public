@@ -14,7 +14,7 @@ public:
         if (pCreature->isQuestGiver())
             pPlayer->PrepareQuestMenu(pCreature->GetGUID());
 
-        pCreature->MonsterWhisper("Добро пожаловать на War-gate !", pPlayer->GetGUID(), false);
+        pCreature->MonsterWhisper("Добро пожаловать на WoW-Circle!", pPlayer->GetGUID(), false);
 		
 		//pPlayer->ADD_GOSSIP_ITEM(0, "Как начать играть ?", GOSSIP_SENDER_MAIN, 6); //как начать
 		pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Покупка Сумок"   , GOSSIP_SENDER_MAIN, 2); //Сумки
@@ -513,7 +513,7 @@ public:
 		 
         case 1003:
 		pPlayer->CLOSE_GOSSIP_MENU();
-		pCreature->MonsterWhisper("Здравствуй странник, знаю для тебя - это ново, но слушай меня. Только у меня ты можешь приобрести безвозмездно снаряжение комплекта а7, Нонсет а7,  а также попасть почти в любую точку света, обучить верховую езду, обучить свои навыки защиты и оружия, превратиться в загадочного монстра, приобрести сумки. Ну и многое другое...  выбирай =)", pPlayer->GetGUID(), false);
+		pCreature->MonsterWhisper("Здравствуй странник, знаю для тебя - это новое, но слушай меня. Только у меня ты можешь приобрести безвозмездно снаряжение комплекта а7, Нонсет а7,  а также попасть почти в любую точку света, обучить верховую езду, обучить свои навыки защиты и оружия, превратиться в загадочного монстра, приобрести сумки. Ну и многое другое...  выбирай =)", pPlayer->GetGUID(), false);
 		 break;
 		 
 		 case 1005://Сет на ретри пала a7
