@@ -165,7 +165,7 @@ public:
 	   
 	   case 6:
 		pPlayer->CLOSE_GOSSIP_MENU();
-		pCreature->MonsterWhisper("Приветствую тебя, странник, на нашем сервере WoW-Circle: WoTLK Battle. Только у нас ты сможешь понять, что такое настоящая и качественная игра! У вас в рюкзаке есть небольшая инструкция, прочитайте её - она вам поможет. Приятной игры!", pPlayer->GetGUID(), false);
+		pCreature->MonsterWhisper("Приветствую тебя, странник, на нашем сервере WoW-Circle: WoTLK Battle. Только у нас ты сможешь понять, что такое настоящая и качественная игра! У тебя в рюкзаке есть небольшая инструкция, прочитай её - она тебе поможет. Приятной игры!", pPlayer->GetGUID(), true);
        break;
 /*	   case 6:
 		pPlayer->ADD_GOSSIP_ITEM(0, "Приветствие и основная информация"   , GOSSIP_SENDER_MAIN, 1003); //Сумки
@@ -1850,7 +1850,7 @@ case 723:
 break;
 
 case 724:
-    OnGossipHello(player, pCreature);
+    pPlayer->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, creature->GetGUID()); 
 break;
 
 			}
