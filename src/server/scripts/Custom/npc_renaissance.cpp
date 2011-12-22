@@ -16,63 +16,63 @@ public:
 
         pCreature->MonsterWhisper("Добро пожаловать на WoW-Circle!", pPlayer->GetGUID(), false);
 		
-		//pPlayer->ADD_GOSSIP_ITEM(0, "Как начать играть ?", GOSSIP_SENDER_MAIN, 6); //как начать
-		pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Покупка Сумок"   , GOSSIP_SENDER_MAIN, 2); //Сумки
+		pPlayer->ADD_GOSSIP_ITEM(0, "Приветствие и основная информация", GOSSIP_SENDER_MAIN, 6); //как начать
+		//pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Покупка Сумок"   , GOSSIP_SENDER_MAIN, 2); //Сумки
 		
 		if ((pPlayer->getClass() == CLASS_MAGE)){
-			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 Level (251) на Мага"  , GOSSIP_SENDER_MAIN, 1); //Сет на мага a7
-			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 Level (245) на Мага(На крит)"  , GOSSIP_SENDER_MAIN, 26); //Нонсет на мага a7
-			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 Level (245) на Мага(На скорость)"  , GOSSIP_SENDER_MAIN, 27); //Нонсет на мага a7
+			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 на Мага"  , GOSSIP_SENDER_MAIN, 1); //Сет на мага a7
+			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Мага(Крит)"  , GOSSIP_SENDER_MAIN, 26); //Нонсет на мага a7
+			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Мага(Скорость)"  , GOSSIP_SENDER_MAIN, 27); //Нонсет на мага a7
 			 }else if ((pPlayer->getClass() == CLASS_PALADIN))
            {
-		      pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 Level (251) на Паладина (Возмездие)", GOSSIP_SENDER_MAIN, 4); //Сет на пала дд a7
-	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 Level (251) на Паладина (Свет)", GOSSIP_SENDER_MAIN, 7); //Сет на холи пала a7
-			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 Level (245) на Паладина (Возмездие)", GOSSIP_SENDER_MAIN, 45); //Нонсет на ретрика пала a7
-			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 Level (245) на Паладина (Свет)", GOSSIP_SENDER_MAIN, 29); //Нонсет  на холи пала a7
+		      pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 на Паладина (Возмездие)", GOSSIP_SENDER_MAIN, 4); //Сет на пала дд a7
+	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 на Паладина (Свет)", GOSSIP_SENDER_MAIN, 7); //Сет на холи пала a7
+			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Паладина (Возмездие)", GOSSIP_SENDER_MAIN, 45); //Нонсет на ретрика пала a7
+			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Паладина (Свет)", GOSSIP_SENDER_MAIN, 29); //Нонсет  на холи пала a7
 		   }else if ((pPlayer->getClass() == CLASS_HUNTER))
            {
-	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 Level (251) на Охотника", GOSSIP_SENDER_MAIN, 8); //Нонсет Сет на ханта a7
-			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 Level (245) на Охотника", GOSSIP_SENDER_MAIN, 30); //Нонсет Сет на ханта a7
+	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 на Охотника", GOSSIP_SENDER_MAIN, 8); //Нонсет Сет на ханта a7
+			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Охотника", GOSSIP_SENDER_MAIN, 30); //Нонсет Сет на ханта a7
 		   }else if ((pPlayer->getClass() == CLASS_DRUID))
            {
-		      pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 Level (251) на Друида (Исцеление)", GOSSIP_SENDER_MAIN, 9); //Сет на друида хила a7
-		      pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 Level (251) на Друида (Сила зверя)", GOSSIP_SENDER_MAIN, 10); //Сет на друида дд a7
-	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 Level (251) на Друида (Баланс)", GOSSIP_SENDER_MAIN, 11); //Сет на друида рдд a7
-			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 Level (245) на Друида (Исцеление)", GOSSIP_SENDER_MAIN, 31); //Нонсет  на друида хила a7
-		      pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 Level (245) на Друида (Сила зверя)", GOSSIP_SENDER_MAIN, 32); //Нонсет на друида дд a7
-	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 Level (245) на Друида (Баланс)", GOSSIP_SENDER_MAIN, 33); //Нонсет на друида рдд a7
+		      pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 на Друида (Исцеление)", GOSSIP_SENDER_MAIN, 9); //Сет на друида хила a7
+		      pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 на Друида (Сила зверя)", GOSSIP_SENDER_MAIN, 10); //Сет на друида дд a7
+	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 на Друида (Баланс)", GOSSIP_SENDER_MAIN, 11); //Сет на друида рдд a7
+			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Друида (Исцеление)", GOSSIP_SENDER_MAIN, 31); //Нонсет  на друида хила a7
+		      pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Друида (Сила зверя)", GOSSIP_SENDER_MAIN, 32); //Нонсет на друида дд a7
+	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Друида (Баланс)", GOSSIP_SENDER_MAIN, 33); //Нонсет на друида рдд a7
 		   }else if ((pPlayer->getClass() == CLASS_WARRIOR))
            {
-	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 Level (251) на Война", GOSSIP_SENDER_MAIN, 12); //Сет на вара a7
-			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 Level (245) на Война", GOSSIP_SENDER_MAIN, 34); //Нонсет на вара a7
+	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 на Война", GOSSIP_SENDER_MAIN, 12); //Сет на вара a7
+			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Война", GOSSIP_SENDER_MAIN, 34); //Нонсет на вара a7
 		   }else if ((pPlayer->getClass() == CLASS_WARLOCK))
            {
-	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 Level (251) на Чернокнижника", GOSSIP_SENDER_MAIN, 13); //Сет на лока a7
-			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 Level (245) на Чернокнижника(На крит)", GOSSIP_SENDER_MAIN, 35); //Нонсет на лока a7
-			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 Level (245) на Чернокнижника(На скорость)", GOSSIP_SENDER_MAIN, 36); //Нонсет на лока a7
+	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 на Чернокнижника", GOSSIP_SENDER_MAIN, 13); //Сет на лока a7
+			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Чернокнижника(На крит)", GOSSIP_SENDER_MAIN, 35); //Нонсет на лока a7
+			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Чернокнижника(На скорость)", GOSSIP_SENDER_MAIN, 36); //Нонсет на лока a7
 		   }else if ((pPlayer->getClass() == CLASS_SHAMAN))
            {
-	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 Level (251) на Шамана (Исцеление)", GOSSIP_SENDER_MAIN, 14); //Сет на шамана хила a7
-	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 Level (251) на Шамана (Совершенствование)", GOSSIP_SENDER_MAIN, 15); //Сет на шамана рд a7
-	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 Level (251) на Шамана (Стихия)", GOSSIP_SENDER_MAIN, 16); //Сет на шамана рдд a7
-			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 Level (245) на Шамана (Исцеление)", GOSSIP_SENDER_MAIN, 37); //Нонсет на шамана хила a7
-	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 Level (245) на Шамана (Совершенствование)", GOSSIP_SENDER_MAIN, 38); //Нонсет на шамана рд a7
-	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 Level (245) на Шамана (Стихия)", GOSSIP_SENDER_MAIN, 39); //Нонсет на шамана рдд a7
+	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 на Шамана (Исцеление)", GOSSIP_SENDER_MAIN, 14); //Сет на шамана хила a7
+	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 на Шамана (Совершенствование)", GOSSIP_SENDER_MAIN, 15); //Сет на шамана рд a7
+	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 на Шамана (Стихия)", GOSSIP_SENDER_MAIN, 16); //Сет на шамана рдд a7
+			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Шамана (Исцеление)", GOSSIP_SENDER_MAIN, 37); //Нонсет на шамана хила a7
+	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Шамана (Совершенствование)", GOSSIP_SENDER_MAIN, 38); //Нонсет на шамана рд a7
+	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Шамана (Стихия)", GOSSIP_SENDER_MAIN, 39); //Нонсет на шамана рдд a7
 		   }else if ((pPlayer->getClass() == CLASS_ROGUE))
            {
-	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 Level (251) на Разбойника", GOSSIP_SENDER_MAIN, 17); //Сет на рогу a7
-			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 Level (245) на Разбойника", GOSSIP_SENDER_MAIN, 40); //Нонсет на рогу a7
+	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 на Разбойника", GOSSIP_SENDER_MAIN, 17); //Сет на рогу a7
+			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Разбойника", GOSSIP_SENDER_MAIN, 40); //Нонсет на рогу a7
 		   }else if ((pPlayer->getClass() == CLASS_PRIEST))
            {
-	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 Level (251) на Жреца (Темная магия)", GOSSIP_SENDER_MAIN, 18); //Сет на приста ШП a7
-	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 Level (251) на Жреца (Свет)", GOSSIP_SENDER_MAIN, 19); //Сет на приста свет a7
-			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 Level (245) на Жреца (На крит)", GOSSIP_SENDER_MAIN, 41); //Нонсет на приста ШП a7
-	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 Level (245) на Жреца (На скорость)", GOSSIP_SENDER_MAIN, 42); //Нонсет на приста свет a7
-			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 Level (245) на Жреца (Свет)", GOSSIP_SENDER_MAIN, 43); //Нонсет на приста свет a7
+	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 на Жреца (Темная магия)", GOSSIP_SENDER_MAIN, 18); //Сет на приста ШП a7
+	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 на Жреца (Свет)", GOSSIP_SENDER_MAIN, 19); //Сет на приста свет a7
+			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Жреца (На крит)", GOSSIP_SENDER_MAIN, 41); //Нонсет на приста ШП a7
+	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Жреца (На скорость)", GOSSIP_SENDER_MAIN, 42); //Нонсет на приста свет a7
+			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Жреца (Свет)", GOSSIP_SENDER_MAIN, 43); //Нонсет на приста свет a7
 		   }else if ((pPlayer->getClass() == CLASS_DEATH_KNIGHT))
            {
-	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 Level (251) на Рыцаря смерти", GOSSIP_SENDER_MAIN, 20); //Сет на дк a7
-			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 Level (245) на Рыцаря смерти", GOSSIP_SENDER_MAIN, 44); //Нонсет на дк a7
+	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 на Рыцаря смерти", GOSSIP_SENDER_MAIN, 20); //Сет на дк a7
+			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Рыцаря смерти", GOSSIP_SENDER_MAIN, 44); //Нонсет на дк a7
 		   }
 		   
 		   //pPlayer->ADD_GOSSIP_ITEM(9, "Вылечи меня!"                     , GOSSIP_SENDER_MAIN, 3);
@@ -164,7 +164,7 @@ public:
 	   break;
 	   
 	   case 6:
-		pPlayer->ADD_GOSSIP_ITEM(0, "Как начать играть ?"   , GOSSIP_SENDER_MAIN, 1003); //Сумки
+		pPlayer->ADD_GOSSIP_ITEM(0, "Приветствие и основная информация"   , GOSSIP_SENDER_MAIN, 1003); //Сумки
 		
 	   pPlayer->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,pCreature->GetGUID());
 	   
@@ -513,7 +513,7 @@ public:
 		 
         case 1003:
 		pPlayer->CLOSE_GOSSIP_MENU();
-		pCreature->MonsterWhisper("Здравствуй странник, знаю для тебя - это новое, но слушай меня. Только у меня ты можешь приобрести безвозмездно снаряжение комплекта а7, Нонсет а7,  а также попасть почти в любую точку света, обучить верховую езду, обучить свои навыки защиты и оружия, превратиться в загадочного монстра, приобрести сумки. Ну и многое другое...  выбирай =)", pPlayer->GetGUID(), false);
+		pCreature->MonsterWhisper("Приветствую тебя, странник, на нашем сервере WoW-Circle: WoTLK Battle. Только у нас ты сможешь понять, что такое настоящая и качественная игра! У вас в рюкзаке есть небольшая инструкция, прочитайте её - она вам поможет. Приятной игры!", pPlayer->GetGUID(), false);
 		 break;
 		 
 		 case 1005://Сет на ретри пала a7
