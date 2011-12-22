@@ -14,7 +14,7 @@ public:
         if (pCreature->isQuestGiver())
             pPlayer->PrepareQuestMenu(pCreature->GetGUID());
 
-        pCreature->MonsterWhisper("Добро пожаловать на WoW-Circle!", pPlayer->GetGUID(), false);
+        pCreature->MonsterWhisper("Добро пожаловать на WoW-Circle!", pPlayer->GetGUID(), true);
 		
 		pPlayer->ADD_GOSSIP_ITEM(0, "Приветствие и основная информация", GOSSIP_SENDER_MAIN, 6); //как начать
 		//pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Покупка Сумок"   , GOSSIP_SENDER_MAIN, 2); //Сумки
@@ -164,11 +164,15 @@ public:
 	   break;
 	   
 	   case 6:
+		pPlayer->CLOSE_GOSSIP_MENU();
+		pCreature->MonsterWhisper("Приветствую тебя, странник, на нашем сервере WoW-Circle: WoTLK Battle. Только у нас ты сможешь понять, что такое настоящая и качественная игра! У вас в рюкзаке есть небольшая инструкция, прочитайте её - она вам поможет. Приятной игры!", pPlayer->GetGUID(), false);
+       break;
+/*	   case 6:
 		pPlayer->ADD_GOSSIP_ITEM(0, "Приветствие и основная информация"   , GOSSIP_SENDER_MAIN, 1003); //Сумки
 		
 	   pPlayer->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,pCreature->GetGUID());
 	   
-	   break;
+	   break;*/
 	   
 	   case 7:
 		pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Покупка_2 Сумок"   , GOSSIP_SENDER_MAIN, 1006); //Сумки
@@ -511,10 +515,10 @@ public:
                 }
                 break;
 		 
-        case 1003:
+  /*      case 1003:
 		pPlayer->CLOSE_GOSSIP_MENU();
 		pCreature->MonsterWhisper("Приветствую тебя, странник, на нашем сервере WoW-Circle: WoTLK Battle. Только у нас ты сможешь понять, что такое настоящая и качественная игра! У вас в рюкзаке есть небольшая инструкция, прочитайте её - она вам поможет. Приятной игры!", pPlayer->GetGUID(), false);
-		 break;
+		 break;*/
 		 
 		 case 1005://Сет на ретри пала a7
 		 pPlayer->CLOSE_GOSSIP_MENU();
@@ -848,7 +852,7 @@ public:
 		
         case 1024:
 		pPlayer->CLOSE_GOSSIP_MENU();
-        pCreature->MonsterWhisper("Меня создал человек с ником <Cemak ICQ: 5645934> ", pPlayer->GetGUID(), false);		
+        pCreature->MonsterWhisper("(c)Twink, thanks to Cemak.> ", pPlayer->GetGUID(), false);		
        break;
 	   
 	   case 5550: //Instances
@@ -863,7 +867,7 @@ public:
                 pPlayer->ADD_GOSSIP_ITEM(5, "Монастырь Алого Ордена."       , GOSSIP_SENDER_MAIN, 1257);
                 pPlayer->ADD_GOSSIP_ITEM(5, "Аукиндон."                     , GOSSIP_SENDER_MAIN, 4038);
                 pPlayer->ADD_GOSSIP_ITEM(7, "[Ещё] ->"                      , GOSSIP_SENDER_MAIN, 5551);
-                pPlayer->ADD_GOSSIP_ITEM(7, "<- [Главное меню]"             , GOSSIP_SENDER_MAIN, 5552);
+                pPlayer->ADD_GOSSIP_ITEM(7, "<- [Главное меню]"             , GOSSIP_SENDER_MAIN, 724);
 
                 pPlayer->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,pCreature->GetGUID());
 
@@ -882,7 +886,7 @@ public:
                 pPlayer->ADD_GOSSIP_ITEM(5, "Ан'кираж."                  , GOSSIP_SENDER_MAIN, 4037);
                 pPlayer->ADD_GOSSIP_ITEM(7, "[Ещё] ->"                   , GOSSIP_SENDER_MAIN, 5553);
                 pPlayer->ADD_GOSSIP_ITEM(7, "<- [Назад]"                 , GOSSIP_SENDER_MAIN, 5550);
-                pPlayer->ADD_GOSSIP_ITEM(7, "<- [Главное меню]"          , GOSSIP_SENDER_MAIN, 5552);
+                pPlayer->ADD_GOSSIP_ITEM(7, "<- [Главное меню]"          , GOSSIP_SENDER_MAIN, 724);
 
                 pPlayer->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,pCreature->GetGUID());
 
@@ -901,7 +905,7 @@ public:
                 pPlayer->ADD_GOSSIP_ITEM(5, "Террасса Магистров."        , GOSSIP_SENDER_MAIN, 4017);
                 pPlayer->ADD_GOSSIP_ITEM(5, "Плато Солнечного Колодца."  , GOSSIP_SENDER_MAIN, 4018);
                 pPlayer->ADD_GOSSIP_ITEM(7, "<- [Назад]"                 , GOSSIP_SENDER_MAIN, 5550);
-                pPlayer->ADD_GOSSIP_ITEM(7, "<- [Главное меню]"          , GOSSIP_SENDER_MAIN, 5552);
+                pPlayer->ADD_GOSSIP_ITEM(7, "<- [Главное меню]"          , GOSSIP_SENDER_MAIN, 724);
 
 
                 pPlayer->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,pCreature->GetGUID());
@@ -920,7 +924,7 @@ public:
                 pPlayer->ADD_GOSSIP_ITEM(5, "Ульдуар."                                , GOSSIP_SENDER_MAIN, 4027);
                 pPlayer->ADD_GOSSIP_ITEM(7, "[Ещё] ->"                                , GOSSIP_SENDER_MAIN, 5555);
                 pPlayer->ADD_GOSSIP_ITEM(7, "<- [Назад]"                              , GOSSIP_SENDER_MAIN, 5550);
-                pPlayer->ADD_GOSSIP_ITEM(7, "<- [Главное меню]"                       , GOSSIP_SENDER_MAIN, 5552);
+                pPlayer->ADD_GOSSIP_ITEM(7, "<- [Главное меню]"                       , GOSSIP_SENDER_MAIN, 724);
 
 
                 pPlayer->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,pCreature->GetGUID());
@@ -936,7 +940,7 @@ public:
                 pPlayer->ADD_GOSSIP_ITEM(5, "Ледяная Корона: Ледяные Залы."          , GOSSIP_SENDER_MAIN, 4033);
                 pPlayer->ADD_GOSSIP_ITEM(5, "Логово Ониксии."                        , GOSSIP_SENDER_MAIN, 4036);
                 pPlayer->ADD_GOSSIP_ITEM(7, "<- [Назад]"                             , GOSSIP_SENDER_MAIN, 5554);
-                pPlayer->ADD_GOSSIP_ITEM(7, "<- [Главное меню]"                      , GOSSIP_SENDER_MAIN, 5552);
+                pPlayer->ADD_GOSSIP_ITEM(7, "<- [Главное меню]"                      , GOSSIP_SENDER_MAIN, 724);
 
 
                 pPlayer->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,pCreature->GetGUID());
@@ -1843,6 +1847,11 @@ case 723:
     pPlayer->CLOSE_GOSSIP_MENU();
 	pPlayer->SetDisplayId(4527);
 	pPlayer->SetFloatValue(OBJECT_FIELD_SCALE_X, 1.0f);
+break;
+
+case 724:
+    CleanUp(player);
+    OnGossipHello(player, pCreature);
 break;
 
 			}
