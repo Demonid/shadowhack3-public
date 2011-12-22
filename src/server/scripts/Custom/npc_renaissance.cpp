@@ -14,7 +14,7 @@ public:
         if (pCreature->isQuestGiver())
             pPlayer->PrepareQuestMenu(pCreature->GetGUID());
 
-        pCreature->MonsterWhisper("Добро пожаловать на WoW-Circle!", pPlayer->GetGUID(), true);
+        pCreature->MonsterWhisper("Добро пожаловать на WoW-Circle!", pPlayer->GetGUID(), false);
 		
 		pPlayer->ADD_GOSSIP_ITEM(0, "Приветствие и основная информация", GOSSIP_SENDER_MAIN, 6); //как начать
 		//pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Покупка Сумок"   , GOSSIP_SENDER_MAIN, 2); //Сумки
