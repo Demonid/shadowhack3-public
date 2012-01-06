@@ -5785,7 +5785,7 @@ void AuraEffect::HandleModDamagePercentDone(AuraApplication const * aurApp, uint
         return;
     }
 
-    if (target->HasItemFitToSpellRequirements(GetSpellProto()))
+    if (target->HasItemFitToSpellRequirements(GetSpellProto()) && GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL)
     {
         aurApp->GetTarget()->ApplyModSignedFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT, GetAmount()/100.0f, apply);
         aurApp->GetTarget()->UpdateDamagePhysical(BASE_ATTACK);
