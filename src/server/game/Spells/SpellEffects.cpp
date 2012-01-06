@@ -3432,12 +3432,12 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
     if (failCount)
         m_caster->SendMessageToSet(&dataFail, true);
 
-    // Mass dispel
+    /* Mass dispel
     if(m_spellInfo->SpellIconID != 2267 || m_caster->canSeeOrDetect(unitTarget))
     {
         m_caster->SetInCombatState(true,unitTarget);
         unitTarget->SetInCombatState(true,m_caster);
-    }
+    }*/
 
     if (success_list.empty())
         return;

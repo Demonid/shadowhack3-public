@@ -1463,7 +1463,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         }
     }
 
-    if (missInfo != SPELL_MISS_EVADE && m_caster && !m_caster->IsFriendlyTo(unit) && !IsPositiveSpell(m_spellInfo->Id) && 
+    if (missInfo != SPELL_MISS_EVADE && m_caster && !m_caster->IsFriendlyTo(unit) /*&& !IsPositiveSpell(m_spellInfo->Id)*/ && 
         !IsNoCombatSpells(m_spellInfo->Id) && !(m_spellInfo->AttributesEx3 & SPELL_ATTR3_NO_INITIAL_AGGRO) && 
         !(m_spellInfo->AttributesEx4 & SPELL_ATTR4_DAMAGE_NOT_BREAK_AURAS))
     {
