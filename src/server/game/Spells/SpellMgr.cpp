@@ -4691,6 +4691,7 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 45529: // Blood Tap
             spellInfo->EffectMiscValue[0] = 0;
+            spellInfo->EffectApplyAuraName[1] = SPELL_AURA_DUMMY;
             count++;
             break;
         case 51735: // Ebon Plague
