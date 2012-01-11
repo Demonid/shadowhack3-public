@@ -5917,7 +5917,7 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
 
 void ObjectMgr::SendExternalMails()
 {
-    QueryResult result = CharacterDatabase.PQuery("SELECT id, receiver, subject, message, money, item, item_count FROM mail_external");
+    QueryResult result = CharacterDatabase.PQuery("SELECT id, receiver, subject, message, money, item, item_count FROM mail_external JOIN mail_external_items ON (mail_external.id = mail_external_items.mail_id) WHERE sent=0");
     if(!result)
     {
         sLog->outString("Izb00shkaMailer: No Mails in Queue...");
@@ -5996,7 +5996,7 @@ void ObjectMgr::SendExternalMails()
 
         std::ostringstream ss;
 
-        ss << "DELETE FROM mail_external WHERE id = " << id << ";";
+        ss << "UPDATE mail_external SET sent=1 WHERE id = " << id << ";";
 
         trans->Append(ss.str().c_str());
 
