@@ -1251,6 +1251,7 @@ void World::LoadConfigSettings(bool reload)
     if (m_bool_configs[CONFIG_START_ALL_SPELLS])
         sLog->outString("WORLD: WARNING: PlayerStart.AllSpells enabled - may not function as intended!");
     m_int_configs[CONFIG_HONOR_AFTER_DUEL] = sConfig->GetIntDefault("HonorPointsAfterDuel", 0);
+	m_int_configs[CONFIG_AFTER_DUEL_RESET_COOLDOWN] = sConfig->GetIntDefault("AfterDuelResetCooldown", 0);
     m_bool_configs[CONFIG_START_ALL_EXPLORED] = sConfig->GetBoolDefault("PlayerStart.MapsExplored", false);
     m_bool_configs[CONFIG_START_ALL_REP] = sConfig->GetBoolDefault("PlayerStart.AllReputation", false);
     m_bool_configs[CONFIG_ALWAYS_MAXSKILL] = sConfig->GetBoolDefault("AlwaysMaxWeaponSkill", false);

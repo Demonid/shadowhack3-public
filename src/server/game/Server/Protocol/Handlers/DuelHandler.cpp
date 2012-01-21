@@ -109,8 +109,6 @@ void WorldSession::HandleDuelCancelledOpcode(WorldPacket& recvPacket)
 
         GetPlayer()->CastSpell(GetPlayer(), 7267, true);    // beg
         GetPlayer()->DuelComplete(DUEL_WON);
-		pl->SetHealth(pl->GetMaxHealth());
-        plTarget->SetHealth(plTarget->GetMaxHealth());
         return;
     }
 
