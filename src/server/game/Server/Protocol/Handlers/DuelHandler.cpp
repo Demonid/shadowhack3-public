@@ -110,12 +110,12 @@ void WorldSession::HandleDuelCancelledOpcode(WorldPacket& recvPacket)
         GetPlayer()->CastSpell(GetPlayer(), 7267, true);    // beg
         GetPlayer()->DuelComplete(DUEL_WON);
         return;
-	    if (sWorld->getBoolConfig(CONFIG_AFTER_DUEL_RESET_COOLDOWN))
+    }
+	if (sWorld->getBoolConfig(CONFIG_AFTER_DUEL_RESET_COOLDOWN))
 	    {
 	        pl->SetHealth(pl->GetMaxHealth());
             plTarget->SetHealth(plTarget->GetMaxHealth());
 	    }
-    }
 
     // player either discarded the duel using the "discard button"
     // or used "/forfeit" before countdown reached 0
