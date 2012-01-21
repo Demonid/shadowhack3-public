@@ -8214,14 +8214,13 @@ bool Unit::HandleAuraProc(Unit * pVictim, uint32 damage, Aura * triggeredByAura,
             // Blood of the North
             // Reaping
             // Death Rune Mastery
-            if (dummySpell->Id != 62459 && 
-                (dummySpell->SpellIconID == 3041 || dummySpell->SpellIconID == 22 || dummySpell->SpellIconID == 2622))
+            if (dummySpell->Id != 62459 && (dummySpell->SpellIconID == 3041 || dummySpell->SpellIconID == 22 || dummySpell->SpellIconID == 2622))
             {
                 *handled = true;
                 // Convert recently used Blood Rune to Death Rune
-                if (GetTypeId() == TYPEID_PLAYER)
+                if (Player* plr = ToPlayer())
                 {
-                    if (this->ToPlayer()->getClass() != CLASS_DEATH_KNIGHT)
+                    if (plr->getClass() != CLASS_DEATH_KNIGHT)
                         return false;
                     RuneType rune = this->ToPlayer()->GetLastUsedRune();
                     // can't proc from death rune use
@@ -8243,22 +8242,22 @@ bool Unit::HandleAuraProc(Unit * pVictim, uint32 damage, Aura * triggeredByAura,
                     {
                         if (dummySpell->SpellIconID == 2622)
                         {
-                            if (((Player*)this)->GetCurrentRune(i) == RUNE_DEATH ||
-                                ((Player*)this)->GetBaseRune(i) == RUNE_BLOOD)
+                            if (plr->GetCurrentRune(i) == RUNE_DEATH ||
+                                plr->GetBaseRune(i) == RUNE_BLOOD)
                                 continue;
                         }
                         else
                         {
-                            if (((Player*)this)->GetCurrentRune(i) == RUNE_DEATH ||
-                                ((Player*)this)->GetBaseRune(i) != RUNE_BLOOD)
+                            if (plr->GetCurrentRune(i) == RUNE_DEATH ||
+                                plr->GetBaseRune(i) != RUNE_BLOOD)
                                 continue;
                         }
-                        if (((Player*)this)->GetRuneCooldown(i) != ((Player*)this)->GetRuneBaseCooldown(i))
+                        if (plr->GetRuneCooldown(i)+500 < plr->GetRuneBaseCooldown(i))
                             continue;
 
                         --runesLeft;
                         // Mark aura as used
-                        ((Player*)this)->AddRuneByAuraEffect(i, RUNE_DEATH, aurEff);
+                        plr->AddRuneByAuraEffect(i, RUNE_DEATH, aurEff);
                     }
                     return true;
                 }
