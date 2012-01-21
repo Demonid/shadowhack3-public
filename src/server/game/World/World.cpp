@@ -656,7 +656,7 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_INTERVAL_DISCONNECT_TOLERANCE] = sConfig->GetIntDefault("DisconnectToleranceInterval", 0);
     m_bool_configs[CONFIG_STATS_SAVE_ONLY_ON_LOGOUT] = sConfig->GetBoolDefault("PlayerSave.Stats.SaveOnlyOnLogout", true);
     m_bool_configs[CONFIG_DUEL_RESET_COOLDOWN] = sConfig->GetBoolDefault("DuelResetCooldown", false);
-  //m_bool_configs[CONFIG_AFTER_DUEL_RESET_COOLDOWN] = sConfig->GetBoolDefault("AfterDuelResetCooldown", false);
+    //m_bool_configs[CONFIG_AFTER_DUEL_RESET_COOLDOWN] = sConfig->GetBoolDefault("AfterDuelResetCooldown", false);
 
     m_int_configs[CONFIG_MIN_LEVEL_STAT_SAVE] = sConfig->GetIntDefault("PlayerSave.Stats.MinLevel", 0);
     if (m_int_configs[CONFIG_MIN_LEVEL_STAT_SAVE] > MAX_LEVEL)
@@ -1251,7 +1251,6 @@ void World::LoadConfigSettings(bool reload)
     if (m_bool_configs[CONFIG_START_ALL_SPELLS])
         sLog->outString("WORLD: WARNING: PlayerStart.AllSpells enabled - may not function as intended!");
     m_int_configs[CONFIG_HONOR_AFTER_DUEL] = sConfig->GetIntDefault("HonorPointsAfterDuel", 0);
-	m_int_configs[CONFIG_AFTER_DUEL_RESET_COOLDOWN] = sConfig->GetIntDefault("AfterDuelResetCooldown", 0);
     m_bool_configs[CONFIG_START_ALL_EXPLORED] = sConfig->GetBoolDefault("PlayerStart.MapsExplored", false);
     m_bool_configs[CONFIG_START_ALL_REP] = sConfig->GetBoolDefault("PlayerStart.AllReputation", false);
     m_bool_configs[CONFIG_ALWAYS_MAXSKILL] = sConfig->GetBoolDefault("AlwaysMaxWeaponSkill", false);

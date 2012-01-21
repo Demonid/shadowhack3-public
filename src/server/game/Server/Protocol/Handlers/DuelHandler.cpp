@@ -108,6 +108,8 @@ void WorldSession::HandleDuelCancelledOpcode(WorldPacket& recvPacket)
             GetPlayer()->duel->opponent->CombatStopWithPets(true);
 
         GetPlayer()->CastSpell(GetPlayer(), 7267, true);    // beg
+		GetPlayer()->SetHealth(GetMaxHealth());
+		GetPlayer()->duel->opponent->SetHealth(GetMaxHealth());
         GetPlayer()->DuelComplete(DUEL_WON);
         return;
     }
