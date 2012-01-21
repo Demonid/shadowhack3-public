@@ -7749,10 +7749,6 @@ void Player::DuelComplete(DuelCompleteType type)
     // Honor points after duel (the winner) - ImpConfig
     if (uint32 amount = sWorld->getIntConfig(CONFIG_HONOR_AFTER_DUEL))
         duel->opponent->RewardHonor(NULL,1,amount);
-	// Reset HP after duel - Config
-	if (uint32 amount = sWorld->getIntConfig(CONFIG_AFTER_DUEL_RESET_COOLDOWN,))
-		pl->SetHealth(pl->GetMaxHealth());
-        plTarget->SetHealth(plTarget->GetMaxHealth());
 
     //cleanups
     SetUInt64Value(PLAYER_DUEL_ARBITER, 0);
