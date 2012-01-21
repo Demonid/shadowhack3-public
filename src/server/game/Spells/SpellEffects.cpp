@@ -1566,7 +1566,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
             break;
         case SPELLFAMILY_DEATHKNIGHT:
             // Death strike
-            if (m_spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_DK_DEATH_STRIKE)
+            if (m_spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_DK_DEATH_STRIKE && !(m_spellInfo->AttributesEx3 & SPELL_ATTR3_REQ_OFFHAND))
             {
                 uint32 count = unitTarget->GetDiseasesByCaster(m_caster->GetGUID());
                 int32 bp = int32(count * m_caster->CountPctFromMaxHealth(int32(m_spellInfo->EffectDamageMultiplier[0])));
@@ -3432,12 +3432,12 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
     if (failCount)
         m_caster->SendMessageToSet(&dataFail, true);
 
-    // Mass dispel
+    /* Mass dispel
     if(m_spellInfo->SpellIconID != 2267 || m_caster->canSeeOrDetect(unitTarget))
     {
         m_caster->SetInCombatState(true,unitTarget);
         unitTarget->SetInCombatState(true,m_caster);
-    }
+    }*/
 
     if (success_list.empty())
         return;

@@ -524,6 +524,7 @@ void World::LoadConfigSettings(bool reload)
         rate_values[RATE_MOVESPEED] = 1.0f;
     }
     for (uint8 i = 0; i < MAX_MOVE_TYPE; ++i) playerBaseMoveSpeed[i] = baseMoveSpeed[i] * rate_values[RATE_MOVESPEED];
+    rate_values[RATE_ONLINE] = sConfig->GetFloatDefault("Rate.Online", 1.47f);
     rate_values[RATE_CORPSE_DECAY_LOOTED] = sConfig->GetFloatDefault("Rate.Corpse.Decay.Looted",0.5f);
 
     rate_values[RATE_TARGET_POS_RECALCULATION_RANGE] = sConfig->GetFloatDefault("TargetPosRecalculateRange",1.5f);
@@ -1988,6 +1989,7 @@ void World::Update(uint32 diff)
         if (m_updateTimeSum > m_int_configs[CONFIG_INTERVAL_LOG_UPDATE])
         {
             sLog->outBasic("Update time diff: %u. Players online: %u.", m_updateTimeSum / m_updateTimeCount, GetActiveSessionCount());
+            LoginDatabase.PExecute("UPDATE realmlist set online=%u where id=%u", GetActiveSessionCount(), realmID);
             m_updateTimeSum = m_updateTime;
             m_updateTimeCount = 1;
         }
