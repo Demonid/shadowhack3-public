@@ -20,6 +20,7 @@ set(scripts_STAT_SRCS
   Custom/npc_renaissance.cpp
   Custom/npc_amegawow.cpp
   Custom/bosses_instance.cpp
+  Custom/duel_reset.cpp
 )
 
 message("  -> Prepared: Custom")
