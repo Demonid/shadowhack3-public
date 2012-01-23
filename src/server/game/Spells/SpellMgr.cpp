@@ -4586,8 +4586,8 @@ void SpellMgr::LoadSpellCustomAttr()
         case 1784:     // Stealth
             count++;
             break;
-		case=71607:  //Bryntroll
-        case=71838:
+		case 71607:  //Bryntroll
+        case 71838:
             spellInfo->AttributesEx2 |= SPELL_ATTR2_CANT_CRIT;
             count++;
             break;
