@@ -1584,7 +1584,7 @@ void Player::Update(uint32 p_time)
     }
 
     GetAchievementMgr().UpdateTimedAchievements(p_time);
-
+      
     if (HasUnitState(UNIT_STAT_MELEE_ATTACKING) && !HasUnitState(UNIT_STAT_CASTING))
     {
         if (Unit *pVictim = getVictim())
