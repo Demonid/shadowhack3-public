@@ -4619,6 +4619,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                 {
                     if (AuraEffect const * aurEff = unitTarget->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE,SPELLFAMILY_ROGUE,0x00100000,0,0,m_caster->GetGUID()))
                     {
+						uint32 countMin = aurEff->GetBase()->GetMaxDuration();
                         uint32 countMax = GetSpellMaxDuration(aurEff->GetSpellProto());
                         countMax += 6000;
 
