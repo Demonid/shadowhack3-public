@@ -1669,7 +1669,7 @@ void Unit::CalcAbsorbResist(Unit *pVictim, SpellSchoolMask schoolMask, DamageEff
     DamageInfo dmgInfo = DamageInfo(this, pVictim, damage, spellInfo, schoolMask, damagetype);
 
     // Magic damage, check for resists
-    if ((schoolMask & (SPELL_SCHOOL_MASK_NORMAL | SPELL_SCHOOL_MASK_HOLY)) == 0 && (spellInfo && spellInfo->Id != 54757))
+    if ((schoolMask & (SPELL_SCHOOL_MASK_NORMAL | SPELL_SCHOOL_MASK_HOLY)) == 0 && (spellInfo && spellInfo->Id != 54757 && spellInfo->Id != 47496))
     {
         float baseVictimResistance = float(pVictim->GetResistance(GetFirstSchoolInMask(schoolMask)));
         float ignoredResistance = float(GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, schoolMask));

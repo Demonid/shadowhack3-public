@@ -4610,6 +4610,8 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 47496:    // Explode
             spellInfo->Effect[1] = SPELL_EFFECT_INSTAKILL;
+			spellInfo->AttributesEx4 |= SPELL_ATTR4_FIXED_DAMAGE;
+			spellInfo->AttributesEx2 |= SPELL_ATTR2_CANT_CRIT;
             count++;
             break;
         case 49576:    // Death Grip
