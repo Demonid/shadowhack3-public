@@ -80,12 +80,6 @@ public:
 		   //pPlayer->ADD_GOSSIP_ITEM(9, "Обучить мои навыки защиты и оружия на максимум", GOSSIP_SENDER_MAIN, 23); //Навык макс.
 	       pPlayer->ADD_GOSSIP_ITEM(7, "[Меню]Телепорта", GOSSIP_SENDER_MAIN, 5); 
            pPlayer->ADD_GOSSIP_ITEM(7, "[Меню]Баффов" , GOSSIP_SENDER_MAIN, 24);//Баффер  
-		   if (pPlayer->GetTeam() == ALLIANCE ) {
-			   pPlayer->ADD_GOOSIP_ITEM(5, "Телепорт в стартовую локацию", GOOSIP_SENDER_MAIN, 9991);
-		   }  else {
-               pPlayer->ADD_GOOSIP_ITEM(5, "Телепорт в стартовую локацию", GOOSIP_SENDER_MAIN, 9992);
-		   }
-
            //pPlayer->ADD_GOSSIP_ITEM(7, "[Меню]Превращений", GOSSIP_SENDER_MAIN, 46);	   
            //pPlayer->ADD_GOSSIP_ITEM(0, "Кто тебя создал ?", GOSSIP_SENDER_MAIN, 25); //кто тебя создал ?		   
          
@@ -128,6 +122,7 @@ public:
 	   
 	   case 5:
 		if (pPlayer->GetTeam() == ALLIANCE ) {
+			pPlayer->ADD_GOOSIP_ITEM(5, "Телепорт в стартовую локацию"     , GOOSIP_SENDER_MAIN, 9991);
             pPlayer->ADD_GOSSIP_ITEM(5, "Пиратская Бухта."                 , GOSSIP_SENDER_MAIN, 4035);
             pPlayer->ADD_GOSSIP_ITEM(5, "Дарнасс."                         , GOSSIP_SENDER_MAIN, 1203);
             pPlayer->ADD_GOSSIP_ITEM(5, "Экзодар."                         , GOSSIP_SENDER_MAIN, 1216);
@@ -146,7 +141,7 @@ public:
             pPlayer->ADD_GOSSIP_ITEM(7, "[Инстансы WotLK] ->"              , GOSSIP_SENDER_MAIN, 5554);
 
         }  else {
-
+			pPlayer->ADD_GOOSIP_ITEM(5, "Телепорт в стартовую локацию"     , GOOSIP_SENDER_MAIN, 9992);
             pPlayer->ADD_GOSSIP_ITEM(5, "Пиратская Бухта."                 , GOSSIP_SENDER_MAIN, 4035);
             pPlayer->ADD_GOSSIP_ITEM(5, "Оргриммар."                       , GOSSIP_SENDER_MAIN, 1215);
             pPlayer->ADD_GOSSIP_ITEM(5, "Луносвет."                        , GOSSIP_SENDER_MAIN, 1217);
