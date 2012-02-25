@@ -122,7 +122,7 @@ public:
 	   
 	   case 5:
 		if (pPlayer->GetTeam() == ALLIANCE ) {
-			pPlayer->ADD_GOOSIP_ITEM(5, "Телепорт в стартовую локацию"     , GOOSIP_SENDER_MAIN, 9991);
+			pPlayer->ADD_GOSSIP_ITEM(5, "Телепорт в стартовую локацию"     , GOSSIP_SENDER_MAIN, 9991);
             pPlayer->ADD_GOSSIP_ITEM(5, "Пиратская Бухта."                 , GOSSIP_SENDER_MAIN, 4035);
             pPlayer->ADD_GOSSIP_ITEM(5, "Дарнасс."                         , GOSSIP_SENDER_MAIN, 1203);
             pPlayer->ADD_GOSSIP_ITEM(5, "Экзодар."                         , GOSSIP_SENDER_MAIN, 1216);
@@ -141,7 +141,7 @@ public:
             pPlayer->ADD_GOSSIP_ITEM(7, "[Инстансы WotLK] ->"              , GOSSIP_SENDER_MAIN, 5554);
 
         }  else {
-			pPlayer->ADD_GOOSIP_ITEM(5, "Телепорт в стартовую локацию"     , GOOSIP_SENDER_MAIN, 9992);
+			pPlayer->ADD_GOSSIP_ITEM(5, "Телепорт в стартовую локацию"     , GOSSIP_SENDER_MAIN, 9992);
             pPlayer->ADD_GOSSIP_ITEM(5, "Пиратская Бухта."                 , GOSSIP_SENDER_MAIN, 4035);
             pPlayer->ADD_GOSSIP_ITEM(5, "Оргриммар."                       , GOSSIP_SENDER_MAIN, 1215);
             pPlayer->ADD_GOSSIP_ITEM(5, "Луносвет."                        , GOSSIP_SENDER_MAIN, 1217);
@@ -950,6 +950,7 @@ public:
 
             case 5552: //Back To Main Menu
                 if (pPlayer->GetTeam() == ALLIANCE ) {
+					pPlayer->ADD_GOSSIP_ITEM(5, "Телепорт в стартовую локацию"           , GOSSIP_SENDER_MAIN, 9991);
                     pPlayer->ADD_GOSSIP_ITEM(5, "Пиратская Бухта."                       , GOSSIP_SENDER_MAIN, 4035);
                     pPlayer->ADD_GOSSIP_ITEM(5, "Дарнасс."                               , GOSSIP_SENDER_MAIN, 1203);
                     pPlayer->ADD_GOSSIP_ITEM(5, "Экзодар."                               , GOSSIP_SENDER_MAIN, 1216);
@@ -968,7 +969,7 @@ public:
                     pPlayer->ADD_GOSSIP_ITEM(7, "[Инстансы WotLK] ->"                    , GOSSIP_SENDER_MAIN, 5554);
 
                 }  else {
-
+					pPlayer->ADD_GOSSIP_ITEM(5, "Телепорт в стартовую локацию"           , GOSSIP_SENDER_MAIN, 9992);
                     pPlayer->ADD_GOSSIP_ITEM(5, "Пиратская Бухта."                       , GOSSIP_SENDER_MAIN, 4035);
                     pPlayer->ADD_GOSSIP_ITEM(5, "Оргриммар."                             , GOSSIP_SENDER_MAIN, 1215);
                     pPlayer->ADD_GOSSIP_ITEM(5, "Луносвет."                              , GOSSIP_SENDER_MAIN, 1217);
@@ -991,12 +992,12 @@ public:
 
                 break;
 			case 9991: //Teleport to ALLIANCE start location
-				pPlayer->CLOSE_GOOSIP_MENU();
+				pPlayer->CLOSE_GOSSIP_MENU();
 				pPlayer->TeleportTo(1, -8556.9277f, 2001.4152f, 102.2383f, 0.44f);
 				break;
 
 			case 9992: //Teleport to HORDE start location
-				pPlayer->CLOSE_GOOSIP_MENU();
+				pPlayer->CLOSE_GOSSIP_MENU();
 				pPlayer->TeleportTo(1, -2265.1008f, -305.5836f, -8.4028f, 4.0881f);
 				break;
 
