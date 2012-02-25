@@ -79,7 +79,13 @@ public:
 		   //pPlayer->ADD_GOSSIP_ITEM(5, "Обучить верховую езду на максимум", GOSSIP_SENDER_MAIN, 21); //Верховая езда
 		   //pPlayer->ADD_GOSSIP_ITEM(9, "Обучить мои навыки защиты и оружия на максимум", GOSSIP_SENDER_MAIN, 23); //Навык макс.
 	       pPlayer->ADD_GOSSIP_ITEM(7, "[Меню]Телепорта", GOSSIP_SENDER_MAIN, 5); 
-           pPlayer->ADD_GOSSIP_ITEM(7, "[Меню]Баффов" , GOSSIP_SENDER_MAIN, 24); //Баффер  
+           pPlayer->ADD_GOSSIP_ITEM(7, "[Меню]Баффов" , GOSSIP_SENDER_MAIN, 24);//Баффер  
+		   if (pPlayer->GetTeam() == ALLIANCE ) {
+			   pPlayer->ADD_GOOSIP_ITEM(5, "Телепорт в стартовую локацию", GOOSIP_SENDER_MAIN, 9991);
+		   }  else {
+               pPlayer->ADD_GOOSIP_ITEM(5, "Телепорт в стартовую локацию", GOOSIP_SENDER_MAIN, 9992);
+		   }
+
            //pPlayer->ADD_GOSSIP_ITEM(7, "[Меню]Превращений", GOSSIP_SENDER_MAIN, 46);	   
            //pPlayer->ADD_GOSSIP_ITEM(0, "Кто тебя создал ?", GOSSIP_SENDER_MAIN, 25); //кто тебя создал ?		   
          
@@ -989,6 +995,15 @@ public:
                     pPlayer->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,pCreature->GetGUID());
 
                 break;
+			case 9991: //Teleport to ALLIANCE start location
+				pPlayer->CLOSE_GOOSIP_MENU();
+				pPlayer->TeleportTo(1, -8556.9277f, 2001.4152f, 102.2383f, 0.44f);
+				break;
+
+			case 9992: //Teleport to HORDE start location
+				pPlayer->CLOSE_GOOSIP_MENU();
+				pPlayer->TeleportTo(1, -2265.1008f, -305.5836f, -8.4028f, 4.0881f);
+				break;
 
             case 1203: // Teleport to Darnassus
                 pPlayer->CLOSE_GOSSIP_MENU();
