@@ -85,7 +85,7 @@ public:
 		   }else {
 			  pPlayer->ADD_GOSSIP_ITEM(5, "Телепорт в стартовую локацию"     , GOSSIP_SENDER_MAIN, 9992);
 		   }
-		   pPlayer->ADD_GOSSIP_TEIM(0, "Телепорт в DUEL ZONE", GOSSIP_SENDER_MAIN, 9993);
+		   pPlayer->ADD_GOSSIP_ITEM(0, "Телепорт в DUEL ZONE", GOSSIP_SENDER_MAIN, 9993);
            //pPlayer->ADD_GOSSIP_ITEM(7, "[Меню]Превращений", GOSSIP_SENDER_MAIN, 46);	   
            //pPlayer->ADD_GOSSIP_ITEM(0, "Кто тебя создал ?", GOSSIP_SENDER_MAIN, 25); //кто тебя создал ?		   
          
@@ -1939,7 +1939,7 @@ pPlayer->ADD_GOSSIP_ITEM(0, "Приветствие и основная инфо
 		   }else {
 			  pPlayer->ADD_GOSSIP_ITEM(5, "Телепорт в стартовую локацию"     , GOSSIP_SENDER_MAIN, 9992);
 		   }
-		   pPlayer->ADD_GOSSIP_TEIM(0, "Телепорт в DUEL ZONE", GOSSIP_SENDER_MAIN, 9993);
+		   pPlayer->ADD_GOSSIP_ITEM(0, "Телепорт в DUEL ZONE", GOSSIP_SENDER_MAIN, 9993);
            //pPlayer->ADD_GOSSIP_ITEM(7, "[Меню]Превращений", GOSSIP_SENDER_MAIN, 46);	   
            //pPlayer->ADD_GOSSIP_ITEM(0, "Кто тебя создал ?", GOSSIP_SENDER_MAIN, 25); //кто тебя создал ?		 
 break;
