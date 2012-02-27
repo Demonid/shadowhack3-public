@@ -80,6 +80,7 @@ public:
 		   //pPlayer->ADD_GOSSIP_ITEM(9, "Обучить мои навыки защиты и оружия на максимум", GOSSIP_SENDER_MAIN, 23); //Навык макс.
 	       pPlayer->ADD_GOSSIP_ITEM(7, "[Меню]Телепорта", GOSSIP_SENDER_MAIN, 5); 
            pPlayer->ADD_GOSSIP_ITEM(7, "[Меню]Баффов" , GOSSIP_SENDER_MAIN, 24);//Баффер 
+		   pPlayer->ADD_GOSSIP_ITEM(7, "Изменить персонажа", GOSSIP_SENDER_MAIN, 9994);
 		   if (pPlayer->GetTeam() == ALLIANCE ) {
 			  pPlayer->ADD_GOSSIP_ITEM(5, "Телепорт в стартовую локацию", GOSSIP_SENDER_MAIN, 9991);
 		   }else {
@@ -1048,7 +1049,33 @@ public:
 				pPlayer->CLOSE_GOSSIP_MENU();
 				pPlayer->TeleportTo(1, -3762.168213f, 1095.605103f, 133.408173f, 4.686316f);
 				break;
-
+			case 9994: //Character customize
+				pPlayer->ADD_GOSSIP_ITEM(5, "Сменить ник персонажа", GOSSIP_SENDER_MAIN, 9995);
+				pPlayer->ADD_GOSSIP_ITEM(5, "Сменить фракцию персонажа", GOSSIP_SENDER_MAIN, 9996);
+				pPlayer->ADD_GOSSIP_ITEM(5, "Сменить расу персонажа", GOSSIP_SENDER_MAIN, 9997);
+				pPlayer->ADD_GOSSIP_ITEM(5, "Сменить вид персонажа", GOSSIP_SENDER_MAIN, 9998);
+				pPlayer->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,pCreature->GetGUID());
+				break;
+			case 9995:
+				pPlayer->CLOSE_GOSSIP_MENU();
+				pPlayer->SetAtLoginFlag(AT_LOGIN_RENAME);
+				pCreature->MonsterWhisper("Перезайдите - чтобы сменить ник.", pPlayer->GetGUID(), true);
+				break;
+			case 9996:
+				pPlayer->CLOSE_GOSSIP_MENU();
+				pPlayer->SetAtLoginFlag(AT_LOGIN_CHANGE_FACTION);
+				pCreature->MonsterWhisper("Перезайдите - чтобы сменить фракцию.", pPlayer->GetGUID(), true);
+				break;
+			case 9997:
+				pPlayer->CLOSE_GOSSIP_MENU();
+				pPlayer->SetAtLoginFlag(AT_LOGIN_CHANGE_RACE);
+				pCreature->MonsterWhisper("Перезайдите - чтобы сменить расу.", pPlayer->GetGUID(), true);
+				break;
+			case 9998:
+				pPlayer->CLOSE_GOSSIP_MENU();
+				pPlayer->SetAtLoginFlag(AT_LOGIN_CUSTOMIZE);
+				pCreature->MonsterWhisper("Перезайдите - чтобы сменить вид.", pPlayer->GetGUID(), true);
+				break;
             case 1203: // Teleport to Darnassus
                 pPlayer->CLOSE_GOSSIP_MENU();
                 pPlayer->TeleportTo(1, 9947.52f, 2482.73f, 1316.21f, 0.0f);
@@ -1972,7 +1999,8 @@ pPlayer->ADD_GOSSIP_ITEM(0, "Приветствие и основная инфо
 		   //pPlayer->ADD_GOSSIP_ITEM(5, "Обучить верховую езду на максимум", GOSSIP_SENDER_MAIN, 21); //Верховая езда
 		   //pPlayer->ADD_GOSSIP_ITEM(9, "Обучить мои навыки защиты и оружия на максимум", GOSSIP_SENDER_MAIN, 23); //Навык макс.
 	       pPlayer->ADD_GOSSIP_ITEM(7, "[Меню]Телепорта", GOSSIP_SENDER_MAIN, 5); 
-           pPlayer->ADD_GOSSIP_ITEM(7, "[Меню]Баффов" , GOSSIP_SENDER_MAIN, 24); //Баффер  
+           pPlayer->ADD_GOSSIP_ITEM(7, "[Меню]Баффов" , GOSSIP_SENDER_MAIN, 24); //Баффер 
+		   pPlayer->ADD_GOSSIP_ITEM(7, "Изменить персонажа", GOSSIP_SENDER_MAIN, 9994);
 		   if (pPlayer->GetTeam() == ALLIANCE ) {
 			  pPlayer->ADD_GOSSIP_ITEM(5, "Телепорт в стартовую локацию", GOSSIP_SENDER_MAIN, 9991);
 		   }else {
