@@ -85,7 +85,7 @@ public:
 		   }else {
 			  pPlayer->ADD_GOSSIP_ITEM(5, "Телепорт в стартовую локацию"     , GOSSIP_SENDER_MAIN, 9992);
 		   }
-		   pPlayer->ADD_GOSSIP_ITEM(0, "Телепорт в DUEL ZONE", GOSSIP_SENDER_MAIN, 9993);
+		   pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_BATTLE, "Телепорт в DUEL ZONE", GOSSIP_SENDER_MAIN, 9993);
            //pPlayer->ADD_GOSSIP_ITEM(7, "[Меню]Превращений", GOSSIP_SENDER_MAIN, 46);	   
            //pPlayer->ADD_GOSSIP_ITEM(0, "Кто тебя создал ?", GOSSIP_SENDER_MAIN, 25); //кто тебя создал ?		   
          
@@ -682,6 +682,8 @@ public:
 	pPlayer->AddItem(41910, 1);
 	pPlayer->AddItem(41899, 1);
 	pPlayer->AddItem(41904, 1);
+	pPlayer->AddItem(42043, 1);  //crit spd
+	pPlayer->AddItem(42076, 1);
 	break;
 	
 	case 1026://Маг скорость
@@ -689,6 +691,9 @@ public:
 	pPlayer->AddItem(49181, 1);
 	pPlayer->AddItem(49179, 1);
 	pPlayer->AddItem(49183, 1);
+	pPlayer->AddItem(42045, 1); //hast spd
+	pPlayer->AddItem(42077, 1);
+
 	break;
 	
 	case 1028://Пал возмездие
@@ -696,6 +701,8 @@ public:
 	pPlayer->AddItem(40890, 1);
 	pPlayer->AddItem(40883, 1);
 	pPlayer->AddItem(40884, 1);
+	pPlayer->AddItem(42041, 1);
+	pPlayer->AddItem(42082, 1);
 	break;
 	
 	case 1029://Пал хилл
@@ -703,6 +710,8 @@ public:
 	pPlayer->AddItem(40984, 1);
 	pPlayer->AddItem(40978, 1);
 	pPlayer->AddItem(40979, 1);
+	pPlayer->AddItem(42047, 1); //mp5 spd
+	pPlayer->AddItem(42079, 1);
 	break;
 	
 	case 1030://хант
@@ -710,6 +719,8 @@ public:
 	pPlayer->AddItem(41226, 1);
 	pPlayer->AddItem(41236, 1);
 	pPlayer->AddItem(41231, 1);
+	pPlayer->AddItem(42041, 1);
+	pPlayer->AddItem(42082, 1);
 	break;
 	
 	case 1031://дру хилл
@@ -717,6 +728,8 @@ public:
 	pPlayer->AddItem(41626, 1);
 	pPlayer->AddItem(41618, 1);
 	pPlayer->AddItem(41622, 1);
+	pPlayer->AddItem(42046, 1); //spirit spd
+	pPlayer->AddItem(42080, 1);
 	break;
 	
 	case 1032://дру дд
@@ -724,6 +737,8 @@ public:
 	pPlayer->AddItem(41841, 1);
 	pPlayer->AddItem(41833, 1);
 	pPlayer->AddItem(41837, 1);
+	pPlayer->AddItem(46374, 1);
+	pPlayer->AddItem(42082, 1);
 	break;
 	
 	case 1033://дру рдд
@@ -731,6 +746,8 @@ public:
 	pPlayer->AddItem(41641, 1);
 	pPlayer->AddItem(41631, 1);
 	pPlayer->AddItem(41636, 1);
+	pPlayer->AddItem(42045, 1); //hast spd
+	pPlayer->AddItem(42077, 1);
 	break;
 	
 	case 1034://вар
@@ -738,6 +755,8 @@ public:
 	pPlayer->AddItem(40890, 1);
 	pPlayer->AddItem(40883, 1);
 	pPlayer->AddItem(40884, 1);
+	pPlayer->AddItem(46374, 1);
+	pPlayer->AddItem(42082, 1);
 	break;
 	
 	case 1035://лок крита
@@ -745,6 +764,8 @@ public:
 	pPlayer->AddItem(41910, 1);
 	pPlayer->AddItem(41899, 1);
 	pPlayer->AddItem(41904, 1);
+	pPlayer->AddItem(42043, 1);  //crit spd
+	pPlayer->AddItem(42076, 1);
 	break;
 	
 	case 1036://лок скорость
@@ -752,6 +773,8 @@ public:
 	pPlayer->AddItem(49181, 1);
 	pPlayer->AddItem(49179, 1);
 	pPlayer->AddItem(49183, 1);
+	pPlayer->AddItem(42045, 1); //hast spd
+	pPlayer->AddItem(42077, 1);
 	break;
 	
 	case 1037://Шаман хил
@@ -759,6 +782,8 @@ public:
 	pPlayer->AddItem(41061, 1);
 	pPlayer->AddItem(41052, 1);
 	pPlayer->AddItem(41056, 1);
+	pPlayer->AddItem(42047, 1); //mp5 spd
+	pPlayer->AddItem(42079, 1);
 	break;
 	
 	case 1038://шаман дд
@@ -766,6 +791,8 @@ public:
 	pPlayer->AddItem(41226, 1);
 	pPlayer->AddItem(41236, 1);
 	pPlayer->AddItem(41231, 1);
+	pPlayer->AddItem(46374, 1);
+	pPlayer->AddItem(42082, 1);
 	break;
 	
 	case 1039://шаман рдд
@@ -773,6 +800,8 @@ public:
 	pPlayer->AddItem(41066, 1);
 	pPlayer->AddItem(41071, 1);
 	pPlayer->AddItem(41076, 1);
+	pPlayer->AddItem(42045, 1); //hast spd
+	pPlayer->AddItem(42077, 1);
 	break;
 	
 	case 1040://рога
@@ -780,6 +809,8 @@ public:
 	pPlayer->AddItem(41841, 1);
 	pPlayer->AddItem(41833, 1);
 	pPlayer->AddItem(41837, 1);
+	pPlayer->AddItem(46374, 1);
+	pPlayer->AddItem(42082, 1);
 	break;
 	
 	case 1041://прист крита
@@ -787,6 +818,8 @@ public:
 	pPlayer->AddItem(41910, 1);
 	pPlayer->AddItem(41899, 1);
 	pPlayer->AddItem(41904, 1);
+	pPlayer->AddItem(42043, 1);  //crit spd
+	pPlayer->AddItem(42076, 1);
 	break;
 	
 	case 1042://прист скорость
@@ -794,6 +827,8 @@ public:
 	pPlayer->AddItem(49181, 1);
 	pPlayer->AddItem(49179, 1);
 	pPlayer->AddItem(49183, 1);
+	pPlayer->AddItem(42045, 1); //hast spd
+	pPlayer->AddItem(42077, 1);
 	break;
 	
 	case 1043://прист хилл
@@ -801,6 +836,8 @@ public:
 	pPlayer->AddItem(41894, 1);
 	pPlayer->AddItem(41882, 1);
 	pPlayer->AddItem(41886, 1);
+	pPlayer->AddItem(42046, 1); //spirit spd
+	pPlayer->AddItem(42080, 1);
 	break;
 	
 	case 1044://дк
@@ -808,6 +845,8 @@ public:
 	pPlayer->AddItem(40890, 1);
 	pPlayer->AddItem(40883, 1);
 	pPlayer->AddItem(40884, 1);
+	pPlayer->AddItem(42041, 1);
+	pPlayer->AddItem(42082, 1);
 	break;
 	
 	case 4000:
@@ -1939,7 +1978,7 @@ pPlayer->ADD_GOSSIP_ITEM(0, "Приветствие и основная инфо
 		   }else {
 			  pPlayer->ADD_GOSSIP_ITEM(5, "Телепорт в стартовую локацию"     , GOSSIP_SENDER_MAIN, 9992);
 		   }
-		   pPlayer->ADD_GOSSIP_ITEM(0, "Телепорт в DUEL ZONE", GOSSIP_SENDER_MAIN, 9993);
+		   pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_BATTLE, "Телепорт в DUEL ZONE", GOSSIP_SENDER_MAIN, 9993);
            //pPlayer->ADD_GOSSIP_ITEM(7, "[Меню]Превращений", GOSSIP_SENDER_MAIN, 46);	   
            //pPlayer->ADD_GOSSIP_ITEM(0, "Кто тебя создал ?", GOSSIP_SENDER_MAIN, 25); //кто тебя создал ?		 
 break;
