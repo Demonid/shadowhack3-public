@@ -85,6 +85,7 @@ public:
 		   }else {
 			  pPlayer->ADD_GOSSIP_ITEM(5, "Телепорт в стартовую локацию"     , GOSSIP_SENDER_MAIN, 9992);
 		   }
+		   pPlayer->ADD_GOSSIP_TEIM(0, "Телепорт в DUEL ZONE", GOSSIP_SENDER_MAIN, 9993);
            //pPlayer->ADD_GOSSIP_ITEM(7, "[Меню]Превращений", GOSSIP_SENDER_MAIN, 46);	   
            //pPlayer->ADD_GOSSIP_ITEM(0, "Кто тебя создал ?", GOSSIP_SENDER_MAIN, 25); //кто тебя создал ?		   
          
@@ -1002,6 +1003,11 @@ public:
 			case 9992: //Teleport to HORDE start location
 				pPlayer->CLOSE_GOSSIP_MENU();
 				pPlayer->TeleportTo(1, -2265.1008f, -305.5836f, -8.4028f, 4.0881f);
+				break;
+
+			case 9993: //Teleport to DUEL ZONE
+				pPlayer->CLOSE_GOSSIP_MENU();
+				pPlayer->TeleportTo(1, -3762.168213f, 1095.605103f, 133.408173f, 4.686316f);
 				break;
 
             case 1203: // Teleport to Darnassus
@@ -1933,6 +1939,7 @@ pPlayer->ADD_GOSSIP_ITEM(0, "Приветствие и основная инфо
 		   }else {
 			  pPlayer->ADD_GOSSIP_ITEM(5, "Телепорт в стартовую локацию"     , GOSSIP_SENDER_MAIN, 9992);
 		   }
+		   pPlayer->ADD_GOSSIP_TEIM(0, "Телепорт в DUEL ZONE", GOSSIP_SENDER_MAIN, 9993);
            //pPlayer->ADD_GOSSIP_ITEM(7, "[Меню]Превращений", GOSSIP_SENDER_MAIN, 46);	   
            //pPlayer->ADD_GOSSIP_ITEM(0, "Кто тебя создал ?", GOSSIP_SENDER_MAIN, 25); //кто тебя создал ?		 
 break;
