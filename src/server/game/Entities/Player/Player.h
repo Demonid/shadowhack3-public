@@ -2294,7 +2294,7 @@ class Player : public Unit, public GridObject<Player>
 
         void SetMover(Unit* target)
         {
-            m_mover->m_movedPlayer = NULL;
+            m_mover->m_movedPlayer = m_mover->ToPlayer();
             m_mover = target;
             m_mover->m_movedPlayer = this;
         }
