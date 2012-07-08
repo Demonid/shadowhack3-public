@@ -1109,7 +1109,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                     m_modAttackSpeedPct[RANGED_ATTACK]=m_owner->m_modAttackSpeedPct[BASE_ATTACK];
                     SetFloatValue(UNIT_MOD_CAST_SPEED, m_modAttackSpeedPct[RANGED_ATTACK]);
                     break;
-				case 26125: //восставший вурдалак
+				case 26125: //Risen Ghoul
 					m_modAttackSpeedPct[BASE_ATTACK]=m_owner->m_modAttackSpeedPct[BASE_ATTACK];
 					break;
                 }
