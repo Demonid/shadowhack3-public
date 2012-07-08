@@ -2789,7 +2789,7 @@ void AuraEffect::HandleShapeshiftBoosts(Unit * target, bool apply) const
                     // Heart of the Wild
                     if ((*i)->GetSpellProto()->SpellIconID == 240 && (*i)->GetMiscValue() == 3)
                     {
-                        int32 HotWMod = (*i)->GetAmount() / 2; // For each 2% Intelligence, you get 1% stamina and 1% attack power.
+                        int32 HotWMod = HotWSpellId == 24900 ? (*i)->GetAmount()/2 : (*i)->GetAmount(); //fix x2 attack power bonus by Heart of the Wild
 
                         target->CastCustomSpell(target, HotWSpellId, &HotWMod, NULL, NULL, true, NULL, this);
                         break;
