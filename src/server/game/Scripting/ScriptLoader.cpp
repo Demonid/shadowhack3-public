@@ -33,6 +33,8 @@ void AddSC_npc_renaissance();
 void AddSC_npc_amegawow();
 void AddSC_bosses_instance();
 void AddSC_DuelReset();
+void AddSC_challenge_script();
+void AddSC_fast_arena_start();
 
 // exaile temple
 void AddSC_instance_my_instance();
@@ -1277,6 +1279,8 @@ void AddCustomScripts()
 	AddSC_npc_amegawow();
 	AddSC_bosses_instance();
 	AddSC_DuelReset();
+    AddSC_challenge_script();
+    AddSC_fast_arena_start();
 	
     // exaile temple
     AddSC_instance_my_instance();

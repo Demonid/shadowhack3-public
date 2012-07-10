@@ -43,6 +43,7 @@
 #include<vector>
 
 struct Mail;
+struct GroupQueueInfo;
 class Channel;
 class Creature;
 class DynamicObject;
@@ -53,6 +54,7 @@ class PlayerMenu;
 class PlayerSocial;
 class SpellCastTargets;
 class UpdateMask;
+class BGQueueRemoveEvent;
 
 typedef std::deque<Mail*> PlayerMails;
 
@@ -108,6 +110,12 @@ struct PlayerTalent
 {
     PlayerSpellState state : 8;
     uint8 spec             : 8;
+};
+
+struct ChallengeData {
+    GroupQueueInfo *ginfo;
+    Battleground   *bg;
+    BGQueueRemoveEvent *removeEvent;
 };
 
 // Spell modifier (used for modify other spells)
@@ -2502,7 +2510,7 @@ class Player : public Unit, public GridObject<Player>
 
         bool sendItemViaMail(const std::string subject, const std::string message, uint32 itemEntry, uint32 itemCount = 1);
         
-
+        ChallengeData *challengeData;
     protected:
         uint32 m_regenTimerCount;
         float m_powerFraction[MAX_POWERS];

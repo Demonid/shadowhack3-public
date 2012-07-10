@@ -71,6 +71,9 @@ class BattlegroundMgr
         void DeleteAllBattlegrounds();
 
         void SendToBattleground(Player *pl, uint32 InstanceID, BattlegroundTypeId bgTypeId);
+        void SendToBattleground(Player* player, Battleground* bg);
+
+        bool HasBattleground(Battleground *_bg);
 
         /* Battleground queues */
         //these queues are instantiated when creating BattlegroundMrg

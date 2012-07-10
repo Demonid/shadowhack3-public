@@ -384,7 +384,11 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recv_data)
     BattlegroundQueue& bgQueue = sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId];
     //we must use temporary variable, because GroupQueueInfo pointer can be deleted in BattlegroundQueue::RemovePlayer() function
     GroupQueueInfo ginfo;
-    if (!bgQueue.GetPlayerGroupInfoData(_player->GetGUID(), &ginfo))
+    if (GetPlayer()->challengeData)
+    {
+        ginfo = *GetPlayer()->challengeData->ginfo;
+    }
+    else if (!bgQueue.GetPlayerGroupInfoData(_player->GetGUID(), &ginfo))
     {
         sLog->outError("BattlegroundHandler: itrplayerstatus not found.");
         return;
@@ -396,7 +400,7 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recv_data)
         return;
     }
 
-    Battleground *bg = sBattlegroundMgr->GetBattleground(ginfo.IsInvitedToBGInstanceGUID, bgTypeId);
+    Battleground* bg = (GetPlayer()->challengeData) ? GetPlayer()->challengeData->bg : sBattlegroundMgr->GetBattleground(ginfo.IsInvitedToBGInstanceGUID, bgTypeId);
 
     // bg template might and must be used in case of leaving queue, when instance is not created yet
     if (!bg && action == 0)
@@ -471,7 +475,8 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recv_data)
             // set the destination team
             _player->SetBGTeam(ginfo.Team);
             // bg->HandleBeforeTeleportToBattleground(_player);
-            sBattlegroundMgr->SendToBattleground(_player, ginfo.IsInvitedToBGInstanceGUID, bgTypeId);
+            (_player->challengeData) ? sBattlegroundMgr->SendToBattleground(_player, _player->challengeData->bg) :
+                                       sBattlegroundMgr->SendToBattleground(_player, ginfo.IsInvitedToBGInstanceGUID, bgTypeId);
             // add only in HandleMoveWorldPortAck()
             // bg->AddPlayer(_player,team);
             sLog->outDebug(LOG_FILTER_BATTLEGROUND,"Battleground: player %s (%u) joined battle for bg %u, bgtype %u, queue type %u.", _player->GetName(), _player->GetGUIDLow(), bg->GetInstanceID(), bg->GetTypeID(), bgQueueTypeId);
@@ -500,6 +505,13 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recv_data)
         default:
             sLog->outError("Battleground port: unknown action %u", action);
             break;
+    }
+
+    if (_player->challengeData)
+    {
+        delete _player->challengeData->removeEvent;
+        delete _player->challengeData;
+        _player->challengeData = NULL;
     }
 }
 
