@@ -21,6 +21,8 @@ set(scripts_STAT_SRCS
   Custom/npc_amegawow.cpp
   Custom/bosses_instance.cpp
   Custom/duel_reset.cpp
+  Custom/ChallengeScript.cpp
+  Custom/ArenaFastStart.cpp
 )
 
 message("  -> Prepared: Custom")

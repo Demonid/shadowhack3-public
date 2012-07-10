@@ -324,6 +324,7 @@ uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell * spell)
         return 0;
 
     int32 castTime = spellCastTimeEntry->CastTime;
+    
 
     if (spell)
         if (Unit * caster = spell->GetCaster())
@@ -332,6 +333,11 @@ uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell * spell)
             if (IsChanneledSpell(spellInfo) /*&& (spellInfo->AttributesEx5 & SPELL_ATTR5_HASTE_AFFECTS_CHANNEL_TIME)*/)
                 if (Player* modOwner = caster->GetSpellModOwner())
                     modOwner->ApplySpellMod(spellInfo->Id, SPELLMOD_CASTING_TIME, castTime, spell);
+
+            if (castTime > 100 && caster && caster->GetTypeId() == TYPEID_PLAYER)
+                if (Battleground *bg = caster->ToPlayer()->GetBattleground())
+                    if (bg->isArena() && bg->GetStartDelayTime() > 5000)
+                        return 100;
         }
 
     if (spellInfo->Attributes & SPELL_ATTR0_REQ_AMMO && (!spell || !(spell->IsAutoRepeat())))

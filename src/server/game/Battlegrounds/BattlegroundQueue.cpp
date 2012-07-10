@@ -416,6 +416,10 @@ void BattlegroundQueue::RemovePlayer(const uint64& guid, bool decreaseInvitedCou
 //returns true when player pl_guid is in queue and is invited to bgInstanceGuid
 bool BattlegroundQueue::IsPlayerInvited(const uint64& pl_guid, const uint32 bgInstanceGuid, const uint32 removeTime)
 {
+    if (Player *player = ObjectAccessor::FindPlayer(pl_guid))
+        if (player->challengeData)
+        return true;
+
     QueuedPlayersMap::const_iterator qItr = m_QueuedPlayers.find(pl_guid);
     return (qItr != m_QueuedPlayers.end()
         && qItr->second.GroupInfo->IsInvitedToBGInstanceGUID == bgInstanceGuid
