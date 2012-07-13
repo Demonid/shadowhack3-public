@@ -384,7 +384,7 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recv_data)
     BattlegroundQueue& bgQueue = sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId];
     //we must use temporary variable, because GroupQueueInfo pointer can be deleted in BattlegroundQueue::RemovePlayer() function
     GroupQueueInfo ginfo;
-    if (GetPlayer()->challengeData)
+    if (GetPlayer()->challengeData->ginfo)
     {
         ginfo = *GetPlayer()->challengeData->ginfo;
     }
@@ -400,7 +400,7 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recv_data)
         return;
     }
 
-    Battleground* bg = (GetPlayer()->challengeData) ? GetPlayer()->challengeData->bg : sBattlegroundMgr->GetBattleground(ginfo.IsInvitedToBGInstanceGUID, bgTypeId);
+    Battleground* bg = (GetPlayer()->challengeData->bg) ? GetPlayer()->challengeData->bg : sBattlegroundMgr->GetBattleground(ginfo.IsInvitedToBGInstanceGUID, bgTypeId);
 
     // bg template might and must be used in case of leaving queue, when instance is not created yet
     if (!bg && action == 0)
@@ -475,7 +475,7 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recv_data)
             // set the destination team
             _player->SetBGTeam(ginfo.Team);
             // bg->HandleBeforeTeleportToBattleground(_player);
-            (_player->challengeData) ? sBattlegroundMgr->SendToBattleground(_player, _player->challengeData->bg) :
+            (_player->challengeData->bg) ? sBattlegroundMgr->SendToBattleground(_player, _player->challengeData->bg) :
                                        sBattlegroundMgr->SendToBattleground(_player, ginfo.IsInvitedToBGInstanceGUID, bgTypeId);
             // add only in HandleMoveWorldPortAck()
             // bg->AddPlayer(_player,team);
@@ -507,12 +507,8 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recv_data)
             break;
     }
 
-    if (_player->challengeData)
-    {
-        delete _player->challengeData->removeEvent;
-        delete _player->challengeData;
-        _player->challengeData = NULL;
-    }
+    if (_player->challengeData->bg)
+        _player->CleanChallengeData();
 }
 
 void WorldSession::HandleLeaveBattlefieldOpcode(WorldPacket& recv_data)

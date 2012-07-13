@@ -861,8 +861,6 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
     Petmana = 0;
 
     isDebugAreaTriggers = false;
-    
-    challengeData = NULL;
 
     SetPendingBind(NULL, 0);
     UpdateArenaItemEquiped();
@@ -901,6 +899,9 @@ Player::~Player ()
 
     delete m_declinedname;
     delete m_runes;
+    
+    CleanChallengeData();
+    delete challengeData;
 
     sWorld->DecreasePlayerCount();
     
@@ -1512,15 +1513,6 @@ void Player::Update(uint32 p_time)
 {
     if (!IsInWorld())
         return;
-        
-    if (challengeData)
-        if (getMSTimeDiff(challengeData->ginfo->JoinTime, getMSTime()) > 36000)
-        {
-            challengeData->removeEvent->Execute(0, 0);
-            delete (challengeData->removeEvent);
-            delete challengeData;
-            challengeData = NULL;
-        }
 
     // undelivered mail
     if (m_nextMailDelivereTime && m_nextMailDelivereTime <= time(NULL))
@@ -17280,6 +17272,14 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     m_achievementMgr.CheckAllAchievementCriteria();
 
     _LoadEquipmentSets(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADEQUIPMENTSETS));
+    
+    challengeData = new ChallengeData;
+    challengeData->bg            = NULL;
+    challengeData->ginfo         = NULL;
+    challengeData->options       = sChallengeMgr->GetChallengeOption(GetGUID());
+    challengeData->challengeType = 0;
+    challengeData->challengeTo   = 0;
+    challengeData->challenger    = 0;
 
     return true;
 }
@@ -18618,6 +18618,12 @@ void Player::SaveToDB()
     // save pet (hunter pet level and experience and all type pets health/mana).
     if (Pet* pet = GetPet())
         pet->SavePetToDB(PET_SAVE_AS_CURRENT);
+        
+    if (challengeData->options->changed)
+    {
+        CharacterDatabase.PExecute("REPLACE INTO challenge_options(`guid`, `mode`, `enable`) VALUES(%llu, %u, %u)", GetGUID(), challengeData->options->mode, challengeData->options->enable);
+        challengeData->options->changed = false;
+    }
 
 }
 
@@ -25043,3 +25049,16 @@ bool Player::sendItemViaMail(const std::string subject, const std::string messag
     return true;
 }
 
+void Player::CleanChallengeData()
+{
+    if (challengeData->ginfo)
+    {
+        delete challengeData->ginfo;
+        challengeData->ginfo = NULL;
+    }
+
+   challengeData->bg = NULL;
+   challengeData->challenger    = 0;
+   challengeData->challengeTo   = 0;
+   challengeData->challengeType = 0;
+}

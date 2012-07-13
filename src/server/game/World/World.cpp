@@ -1707,6 +1707,9 @@ void World::SetInitialWorldSettings()
     sLog->outString("Loading GM surveys...");
     sTicketMgr->LoadGMSurveys();
 
+    sLog->outString("Loading challenge options...");
+    sChallengeMgr->LoadOptions();
+
     sLog->outString("Loading client addons...");
     sAddonMgr->LoadFromDB();
 
@@ -2163,6 +2166,8 @@ void World::Update(uint32 diff)
     ProcessCliCommands();
 
     sScriptMgr->OnWorldUpdate(diff);
+    
+    sChallengeMgr->Update(diff);
 }
 
 void World::ForceGameEventUpdate()

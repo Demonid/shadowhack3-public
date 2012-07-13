@@ -203,7 +203,7 @@ Battleground::Battleground()
     m_StartMessageIds[BG_STARTING_EVENT_THIRD]  = LANG_BG_WS_START_HALF_MINUTE;
     m_StartMessageIds[BG_STARTING_EVENT_FOURTH] = LANG_BG_WS_HAS_BEGUN;
     
-    isChallenge = false;
+    is1vs1 = false;
 }
 
 Battleground::~Battleground()
@@ -2064,7 +2064,7 @@ uint8 Battleground::ClickFastStart(Player *player, GameObject *go)
             break;
     }
 
-    if (IsChallenge())
+    if (Is1vs1())
         playersNeeded = 2;
 
     if (m_playersWantsFastStart.size() == playersNeeded)
