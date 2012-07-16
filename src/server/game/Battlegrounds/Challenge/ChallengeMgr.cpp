@@ -97,7 +97,9 @@ bool ChallengeMgr::InviteGroupsToArena(Player *leader1, Player *leader2, ArenaCh
 
     Battleground *arena = sBattlegroundMgr->CreateNewBattleground(bgTypeId, bracketEntry, arenatype, true);
     arena->SetRated(false);
-    arena->Set1vs1(true);
+  	
+    if (type == ARENA_CHALLENGE_TYPE_1v1)
+        arena->Set1vs1(true);
 
     for (std::map<uint64, PlayerQueueInfo*>::iterator itr = group1->Players.begin(); itr != group1->Players.end(); ++itr)
     {
@@ -113,7 +115,9 @@ bool ChallengeMgr::InviteGroupsToArena(Player *leader1, Player *leader2, ArenaCh
         player->GetSession()->SendPacket(&data);
 
         player->challengeData->bg = arena;
-        player->challengeData->ginfo = group1;
+        player->challengeData->ginfo = CreateGroupQueueInfo(player, bgTypeId, arenatype);
+        player->challengeData->ginfo->IsInvitedToBGInstanceGUID = arena->GetInstanceID();
+        player->challengeData->ginfo->Team = ALLIANCE;
     }
 
     for (std::map<uint64, PlayerQueueInfo*>::iterator itr = group2->Players.begin(); itr != group2->Players.end(); ++itr)
@@ -130,7 +134,9 @@ bool ChallengeMgr::InviteGroupsToArena(Player *leader1, Player *leader2, ArenaCh
         player->GetSession()->SendPacket(&data);
 
         player->challengeData->bg = arena;
-        player->challengeData->ginfo = group2;
+        player->challengeData->ginfo = CreateGroupQueueInfo(player, bgTypeId, arenatype);
+        player->challengeData->ginfo->IsInvitedToBGInstanceGUID = arena->GetInstanceID();
+        player->challengeData->ginfo->Team = HORDE;
     }
 
     InviteGroupToArena(group1, arena, ALLIANCE);
