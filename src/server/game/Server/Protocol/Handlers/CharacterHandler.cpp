@@ -570,7 +570,9 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
         pNewChar->setCinematic(1);                          // not show intro
 
     pNewChar->SetAtLoginFlag(AT_LOGIN_FIRST);               // First login
+	pNewChar->challengeData->options = sChallengeMgr->GetChallengeOption(pNewChar->GetGUID());
 
+			
     // Player created, save it now
     pNewChar->SaveToDB();
     charcount+=1;

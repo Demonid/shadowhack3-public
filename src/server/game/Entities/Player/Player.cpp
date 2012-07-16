@@ -861,7 +861,15 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
     Petmana = 0;
 
     isDebugAreaTriggers = false;
-
+	
+    challengeData = new ChallengeData;
+    challengeData->bg            = NULL;
+    challengeData->ginfo         = NULL;
+    challengeData->options       = sChallengeMgr->GetChallengeOption(GetGUID());
+    challengeData->challengeType = 0;
+    challengeData->challengeTo   = 0;
+    challengeData->challenger    = 0;
+	
     SetPendingBind(NULL, 0);
     UpdateArenaItemEquiped();
 }
@@ -17273,13 +17281,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     _LoadEquipmentSets(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADEQUIPMENTSETS));
     
-    challengeData = new ChallengeData;
-    challengeData->bg            = NULL;
-    challengeData->ginfo         = NULL;
-    challengeData->options       = sChallengeMgr->GetChallengeOption(GetGUID());
-    challengeData->challengeType = 0;
-    challengeData->challengeTo   = 0;
-    challengeData->challenger    = 0;
+    challengeData->options = sChallengeMgr->GetChallengeOption(GetGUID());
 
     return true;
 }
