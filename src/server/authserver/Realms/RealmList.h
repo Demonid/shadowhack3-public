@@ -22,6 +22,7 @@
 #include <ace/Singleton.h>
 #include <ace/Null_Mutex.h>
 #include "Common.h"
+#include "AuthSocket.h"
 
 // Storage object for a realm
 struct Realm
@@ -29,7 +30,7 @@ struct Realm
     std::string address;
     std::string name;
     uint8 icon;
-    uint8 color;
+    RealmFlags flag;
     uint8 timezone;
     uint32 m_ID;
     AccountTypes allowedSecurityLevel;
@@ -58,7 +59,7 @@ public:
 
 private:
     void UpdateRealms(bool init=false);
-    void UpdateRealm(uint32 ID, const std::string& name, const std::string& address, uint32 port, uint8 icon, uint8 color, uint8 timezone, AccountTypes allowedSecurityLevel, float popu, uint32 build);
+    void UpdateRealm(uint32 ID, const std::string& name, const std::string& address, uint32 port, uint8 icon, RealmFlags flag, uint8 timezone, AccountTypes allowedSecurityLevel, float popu, uint32 build);
 
     RealmMap m_realms;
     uint32   m_UpdateInterval;
