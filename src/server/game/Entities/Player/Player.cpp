@@ -865,7 +865,6 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
     challengeData = new ChallengeData;
     challengeData->bg            = NULL;
     challengeData->ginfo         = NULL;
-    challengeData->options       = sChallengeMgr->GetChallengeOption(GetGUID());
     challengeData->challengeType = 0;
     challengeData->challengeTo   = 0;
     challengeData->challenger    = 0;
