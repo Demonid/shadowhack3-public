@@ -443,6 +443,11 @@ class DatabaseWorkerPool
                 return 0;
 
             T* t = GetFreeConnection();
+            if (!t->GetHandle())
+            {
+                sLog->outError("FreeConnection handle is nill.");
+                return 0;
+            }
             unsigned long ret = mysql_real_escape_string(t->GetHandle(), to, from, length);
             t->Unlock();
             return ret;
