@@ -14,9 +14,9 @@ public:
         if (pCreature->isQuestGiver())
             pPlayer->PrepareQuestMenu(pCreature->GetGUID());
 
-        pCreature->MonsterWhisper("Добро пожаловать на WoW-Circle!", pPlayer->GetGUID(), true);
+        pCreature->MonsterWhisper("Добро пожаловать на Just-World!", pPlayer->GetGUID(), true);
 		
-		pPlayer->ADD_GOSSIP_ITEM(0, "Приветствие и основная информация", GOSSIP_SENDER_MAIN, 6); //как начать
+		//pPlayer->ADD_GOSSIP_ITEM(0, "Приветствие и основная информация", GOSSIP_SENDER_MAIN, 6); //как начать
 		//pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Покупка Сумок"   , GOSSIP_SENDER_MAIN, 2); //Сумки
 		
 		if ((pPlayer->getClass() == CLASS_MAGE)){
@@ -48,8 +48,8 @@ public:
 		   }else if ((pPlayer->getClass() == CLASS_WARLOCK))
            {
 	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 на Чернокнижника", GOSSIP_SENDER_MAIN, 13); //Сет на лока a7
-			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Чернокнижника(На крит)", GOSSIP_SENDER_MAIN, 35); //Нонсет на лока a7
-			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Чернокнижника(На скорость)", GOSSIP_SENDER_MAIN, 36); //Нонсет на лока a7
+			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Чернокнижника(Крит)", GOSSIP_SENDER_MAIN, 35); //Нонсет на лока a7
+			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Чернокнижника(Скорость)", GOSSIP_SENDER_MAIN, 36); //Нонсет на лока a7
 		   }else if ((pPlayer->getClass() == CLASS_SHAMAN))
            {
 	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 на Шамана (Исцеление)", GOSSIP_SENDER_MAIN, 14); //Сет на шамана хила a7
@@ -66,9 +66,9 @@ public:
            {
 	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 на Жреца (Темная магия)", GOSSIP_SENDER_MAIN, 18); //Сет на приста ШП a7
 	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 на Жреца (Свет)", GOSSIP_SENDER_MAIN, 19); //Сет на приста свет a7
-			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Жреца (На крит)", GOSSIP_SENDER_MAIN, 41); //Нонсет на приста ШП a7
-	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Жреца (На скорость)", GOSSIP_SENDER_MAIN, 42); //Нонсет на приста свет a7
-			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Жреца (Свет)", GOSSIP_SENDER_MAIN, 43); //Нонсет на приста свет a7
+			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Жреца (Крит)", GOSSIP_SENDER_MAIN, 41); //Нонсет на приста ШП a7
+	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Жреца (Скорость)", GOSSIP_SENDER_MAIN, 42); //Нонсет на приста свет a7
+			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Жреца (Дух)", GOSSIP_SENDER_MAIN, 43); //Нонсет на приста свет a7
 		   }else if ((pPlayer->getClass() == CLASS_DEATH_KNIGHT))
            {
 	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 на Рыцаря смерти", GOSSIP_SENDER_MAIN, 20); //Сет на дк a7
@@ -81,11 +81,11 @@ public:
 	       pPlayer->ADD_GOSSIP_ITEM(7, "[Меню]Телепорта", GOSSIP_SENDER_MAIN, 5); 
            pPlayer->ADD_GOSSIP_ITEM(7, "[Меню]Баффов" , GOSSIP_SENDER_MAIN, 24);//Баффер 
 		   pPlayer->ADD_GOSSIP_ITEM(7, "Изменить персонажа", GOSSIP_SENDER_MAIN, 9994);
-		   if (pPlayer->GetTeam() == ALLIANCE ) {
+		   /*if (pPlayer->GetTeam() == ALLIANCE ) {
 			  pPlayer->ADD_GOSSIP_ITEM(5, "Телепорт в стартовую локацию", GOSSIP_SENDER_MAIN, 9991);
 		   }else {
 			  pPlayer->ADD_GOSSIP_ITEM(5, "Телепорт в стартовую локацию"     , GOSSIP_SENDER_MAIN, 9992);
-		   }
+		   }*/
 		  // pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_BATTLE, "Телепорт в DUEL ZONE", GOSSIP_SENDER_MAIN, 9993);
            //pPlayer->ADD_GOSSIP_ITEM(7, "[Меню]Превращений", GOSSIP_SENDER_MAIN, 46);	   
            //pPlayer->ADD_GOSSIP_ITEM(0, "Кто тебя создал ?", GOSSIP_SENDER_MAIN, 25); //кто тебя создал ?		   
@@ -171,7 +171,7 @@ public:
 	   
 	   case 6:
 		pPlayer->CLOSE_GOSSIP_MENU();
-		pCreature->MonsterWhisper("Приветствую тебя, странник, на нашем сервере WoW-Circle: WoTLK Battle. Только у нас ты сможешь понять, что такое настоящая и качественная игра! У тебя в рюкзаке есть небольшая инструкция, прочитай её - она тебе поможет. Приятной игры!", pPlayer->GetGUID(), true);
+		pCreature->MonsterWhisper("Приветствую тебя, странник, на нашем сервере Just-World: WoTLK Battle. Только у нас ты сможешь понять, что такое настоящая и качественная игра! У тебя в рюкзаке есть небольшая инструкция, прочитай её - она тебе поможет. Приятной игры!", pPlayer->GetGUID(), true);
        break;
 /*	   case 6:
 		pPlayer->ADD_GOSSIP_ITEM(0, "Приветствие и основная информация"   , GOSSIP_SENDER_MAIN, 1003); //Сумки
@@ -1936,7 +1936,7 @@ case 723:
 break;
 
 case 724:
-pPlayer->ADD_GOSSIP_ITEM(0, "Приветствие и основная информация", GOSSIP_SENDER_MAIN, 6); //как начать
+		//pPlayer->ADD_GOSSIP_ITEM(0, "Приветствие и основная информация", GOSSIP_SENDER_MAIN, 6); //как начать
 		//pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Покупка Сумок"   , GOSSIP_SENDER_MAIN, 2); //Сумки
 		
 		if ((pPlayer->getClass() == CLASS_MAGE)){
@@ -1968,8 +1968,8 @@ pPlayer->ADD_GOSSIP_ITEM(0, "Приветствие и основная инфо
 		   }else if ((pPlayer->getClass() == CLASS_WARLOCK))
            {
 	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 на Чернокнижника", GOSSIP_SENDER_MAIN, 13); //Сет на лока a7
-			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Чернокнижника(На крит)", GOSSIP_SENDER_MAIN, 35); //Нонсет на лока a7
-			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Чернокнижника(На скорость)", GOSSIP_SENDER_MAIN, 36); //Нонсет на лока a7
+			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Чернокнижника(Крит)", GOSSIP_SENDER_MAIN, 35); //Нонсет на лока a7
+			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Чернокнижника(Скорость)", GOSSIP_SENDER_MAIN, 36); //Нонсет на лока a7
 		   }else if ((pPlayer->getClass() == CLASS_SHAMAN))
            {
 	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 на Шамана (Исцеление)", GOSSIP_SENDER_MAIN, 14); //Сет на шамана хила a7
@@ -1986,8 +1986,8 @@ pPlayer->ADD_GOSSIP_ITEM(0, "Приветствие и основная инфо
            {
 	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 на Жреца (Темная магия)", GOSSIP_SENDER_MAIN, 18); //Сет на приста ШП a7
 	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Сет а7 на Жреца (Свет)", GOSSIP_SENDER_MAIN, 19); //Сет на приста свет a7
-			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Жреца (На крит)", GOSSIP_SENDER_MAIN, 41); //Нонсет на приста ШП a7
-	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Жреца (На скорость)", GOSSIP_SENDER_MAIN, 42); //Нонсет на приста свет a7
+			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Жреца (Крит)", GOSSIP_SENDER_MAIN, 41); //Нонсет на приста ШП a7
+	          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Жреца (Скорость)", GOSSIP_SENDER_MAIN, 42); //Нонсет на приста свет a7
 			  pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Купить бесплатно Нонсет а7 на Жреца (Свет)", GOSSIP_SENDER_MAIN, 43); //Нонсет на приста свет a7
 		   }else if ((pPlayer->getClass() == CLASS_DEATH_KNIGHT))
            {
@@ -2001,11 +2001,11 @@ pPlayer->ADD_GOSSIP_ITEM(0, "Приветствие и основная инфо
 	       pPlayer->ADD_GOSSIP_ITEM(7, "[Меню]Телепорта", GOSSIP_SENDER_MAIN, 5); 
            pPlayer->ADD_GOSSIP_ITEM(7, "[Меню]Баффов" , GOSSIP_SENDER_MAIN, 24); //Баффер 
 		   pPlayer->ADD_GOSSIP_ITEM(7, "Изменить персонажа", GOSSIP_SENDER_MAIN, 9994);
-		   if (pPlayer->GetTeam() == ALLIANCE ) {
+		  /* if (pPlayer->GetTeam() == ALLIANCE ) {
 			  pPlayer->ADD_GOSSIP_ITEM(5, "Телепорт в стартовую локацию", GOSSIP_SENDER_MAIN, 9991);
 		   }else {
 			  pPlayer->ADD_GOSSIP_ITEM(5, "Телепорт в стартовую локацию"     , GOSSIP_SENDER_MAIN, 9992);
-		   }
+		   }*/
 		   //pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_BATTLE, "Телепорт в DUEL ZONE", GOSSIP_SENDER_MAIN, 9993);
            //pPlayer->ADD_GOSSIP_ITEM(7, "[Меню]Превращений", GOSSIP_SENDER_MAIN, 46);	   
            //pPlayer->ADD_GOSSIP_ITEM(0, "Кто тебя создал ?", GOSSIP_SENDER_MAIN, 25); //кто тебя создал ?		 

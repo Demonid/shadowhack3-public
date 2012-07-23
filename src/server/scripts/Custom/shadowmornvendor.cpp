@@ -15,7 +15,7 @@ class shadowmorn_vendor : public CreatureScript
                     pPlayer->SEND_GOSSIP_MENU(pCreature->GetEntry(), pCreature->GetGUID());
                 else 
                 {
-                    pCreature->MonsterWhisper("You need 2500 3x3 rating to have shadowmourne", pPlayer->GetGUID(), true); 
+                    pCreature->MonsterWhisper("You need 2200 3x3 rating to have shadowmourne", pPlayer->GetGUID(), true); 
                     return true;
                 }
                 break;
