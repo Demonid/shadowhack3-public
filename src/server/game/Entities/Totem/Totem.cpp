@@ -172,6 +172,12 @@ bool Totem::IsImmunedToSpellEffect(SpellEntry const* spellInfo, uint32 index) co
     // TODO: possibly all negative auras immune?
     if (GetEntry() == 5925)
         return false;
+
+    // dots with damage aka holyfire and fireball    
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        if (spellInfo->Effect[i] == SPELL_EFFECT_SCHOOL_DAMAGE)
+            return false;
+
     switch(spellInfo->EffectApplyAuraName[index])
     {
         case SPELL_AURA_PERIODIC_DAMAGE:
