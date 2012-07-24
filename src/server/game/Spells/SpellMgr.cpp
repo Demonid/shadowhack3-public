@@ -4945,6 +4945,18 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->AuraInterruptFlags = 0;
             count++;
             break;
+		case 53323:    //Death Knight runeforging don't need to be near runeforge
+        case 53331:
+        case 53341:
+        case 53343:
+        case 53344:
+        case 55342:
+        case 54446:
+        case 54447:
+        case 62158:
+        case 70164:
+            spellInfo->RequiresSpellFocus = 0;
+            break;
         default:
             break;
         }
