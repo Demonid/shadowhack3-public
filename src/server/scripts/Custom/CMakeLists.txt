@@ -23,6 +23,7 @@ set(scripts_STAT_SRCS
   Custom/duel_reset.cpp
   Custom/ChallengeScript.cpp
   Custom/ArenaFastStart.cpp
+  Custom/npc_helper.cpp
 )
 
 message("  -> Prepared: Custom")

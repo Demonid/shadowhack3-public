@@ -14196,7 +14196,7 @@ void Player::PrepareGossipMenu(WorldObject *pSource, uint32 menuId, bool showQue
                     break;
                 case GOSSIP_OPTION_VENDOR:
                 {
-                    VendorItemData const* vItems = pCreature->GetVendorItems();
+                    VendorItemData const* vItems = (creature->GetEntry() == 9657) ? sObjectMgr->GetNpcVendorItemList(GetSpecifiedVendorEntry(pProto)) : creature->GetVendorItems();
                     if (!vItems || vItems->Empty())
                     {
                         sLog->outErrorDb("Creature %u (Entry: %u) have UNIT_NPC_FLAG_VENDOR but have empty trading item list.", pCreature->GetGUIDLow(), pCreature->GetEntry());
@@ -20681,7 +20681,7 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
     // check current item amount if it limited
     if (crItem->maxcount != 0)
     {
-        if (pCreature->GetVendorItemCurrentCount(crItem) < pProto->BuyCount * count)
+        if (pCreature->GetVendorItemCurrentCount(crItem) < pProto->BuyCount * count && creature->GetEntry() != 9657)
         {
             SendBuyError(BUY_ERR_ITEM_ALREADY_SOLD, pCreature, item, 0);
             return false;
@@ -20740,7 +20740,7 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
 
     // reputation discount
     if (price)
-        price = uint32(floor(price * GetReputationPriceDiscount(pCreature)));
+        price = uint32(floor(price * (pCreature->GetEntry() == 9657) ? 1 : GetReputationPriceDiscount(pCreature)));
 
     if (!HasEnoughMoney(price))
     {
@@ -20771,6 +20771,97 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
 
     return crItem->maxcount != 0;
 }
+
+uint32 Player::GetSpecifiedVendorEntry(ItemTemplate const* item)
+{
+    if (item->ItemSet > 764 && item->ItemSet < 781 && item->ItemLevel == 251) // A7
+        return 50000;
+    if (item->ItemSet > 843 && item->ItemSet < 881) // T9
+        return 50001;
+    if (item->ItemSet > 764 && item->ItemSet < 781 && item->ItemLevel == 270) // A8
+        return 50002;
+    if (item->ItemSet > 882 && item->ItemSet < 902) // T10	
+        return 50003;
+    if (item->Class == 2 && (item->SubClass == 0 || item->SubClass == 1)) // Axe	
+        return 50004;
+    if (item->Class == 2 && item->SubClass == 2) // Bow
+        return 50005;
+    if (item->Class == 2 && item->SubClass == 3) // Gun
+        return 50006;
+    if (item->Class == 2 && (item->SubClass == 4 || item->SubClass == 5)) // Mace
+        return 50007;
+    if (item->Class == 2 && item->SubClass == 6) // Polearm
+        return 50008;
+    if (item->Class == 2 && (item->SubClass == 7 || item->SubClass == 8)) // Sword
+        return 50009;
+    if (item->Class == 2 && item->SubClass == 10) // Staff
+        return 50010;
+    if (item->Class == 2 && item->SubClass == 13) // First
+        return 50011;
+    if (item->Class == 2 && item->SubClass == 15) // Dagger
+        return 50012;
+    if (item->Class == 2 && item->SubClass == 18) // Crossbow
+        return 50013;
+    if (item->Class == 2 && item->SubClass == 19) // Wand
+        return 50014;
+    if (item->Class == 3 && item->SubClass == 0) // Red
+        return 50015;	
+    if (item->Class == 3 && item->SubClass == 1) // Blue
+        return 50016;
+    if (item->Class == 3 && item->SubClass == 2) // Yellow
+        return 50017;	
+    if (item->Class == 3 && item->SubClass == 3) // Purple
+        return 50018;
+    if (item->Class == 3 && item->SubClass == 4) // Green
+        return 50019;
+    if (item->Class == 3 && item->SubClass == 5) // Orange
+        return 50020;
+    if (item->Class == 3 && item->SubClass == 6) // Meta
+        return 50021;	
+    if (item->Class == 16 && item->SubClass == 1) // Warrior
+        return 50022;
+    if (item->Class == 16 && item->SubClass == 2) // Paladin
+        return 50023;
+    if (item->Class == 16 && item->SubClass == 3) // Hunter	
+        return 50024;	
+    if (item->Class == 16 && item->SubClass == 4) // Rogue	
+        return 50025;
+    if (item->Class == 16 && item->SubClass == 5) // Priest	
+        return 50026;
+    if (item->Class == 16 && item->SubClass == 6) // Death Knight	
+        return 50027;
+    if (item->Class == 16 && item->SubClass == 7) // Shaman
+        return 50028;	
+    if (item->Class == 16 && item->SubClass == 8) // Mage
+        return 50029;
+    if (item->Class == 16 && item->SubClass == 9) // Warlock
+        return 50030;
+    if (item->Class == 16 && item->SubClass == 11) // Druid
+        return 50031;
+    if (item->InventoryType == 2) // Neck
+        return 50039;
+    if (item->InventoryType == 6) // Waist	
+	 return 50033;
+    if (item->InventoryType == 8) // Feet
+        return 50034;
+    if (item->InventoryType == 9) // Wrist
+        return 50035;
+    if (item->InventoryType == 11) // Ring
+        return 50040;
+	 if (item->InventoryType == 12) // Trinket
+        return 50041;
+    if (item->InventoryType == 14) // Shield
+        return 50032;
+    if (item->InventoryType == 16) // Cloak
+	 return 50036;	
+    if (item->InventoryType == 23) // Tome
+        return 50037;
+    if (item->InventoryType == 28) // Relic
+        return 50038;
+
+    return 50042;
+}
+	
 
 uint32 Player::GetMaxPersonalArenaRatingRequirement(uint32 minarenaslot)
 {

@@ -35,6 +35,7 @@ void AddSC_bosses_instance();
 void AddSC_DuelReset();
 void AddSC_challenge_script();
 void AddSC_fast_arena_start();
+void AddSC_npc_helper();
 
 // exaile temple
 void AddSC_instance_my_instance();
@@ -1281,6 +1282,7 @@ void AddCustomScripts()
 	AddSC_DuelReset();
     AddSC_challenge_script();
     AddSC_fast_arena_start();
+    AddSC_npc_helper();
 	
     // exaile temple
     AddSC_instance_my_instance();
