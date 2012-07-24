@@ -6640,6 +6640,10 @@ void Spell::EffectKnockBack(SpellEffIndex effIndex)
 {
     if (!unitTarget)
         return;
+		
+    // Bladestorm
+    if (unitTarget->HasAura(46924))
+        return;
 
     // Instantly interrupt non melee spells being casted
     if (unitTarget->IsNonMeleeSpellCasted(false))
