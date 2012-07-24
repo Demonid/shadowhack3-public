@@ -835,7 +835,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
             {
                 case 200006:
                 {
-                    if (!m_caster->GetAuraEffect(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE, SPELLFAMILYFLAG_ROGUE_VANISH, 0, 0))
+                    if (!m_caster->HasAuraType(SPELL_AURA_MOD_STEALTH))
                         m_caster->CombatStart(unitTarget);
                     return;
                 }
