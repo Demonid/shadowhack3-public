@@ -10263,12 +10263,12 @@ Unit* Unit::SelectMagnetTarget(Unit *victim, SpellEntry const *spellInfo, bool t
     // Magic case
     if (spellInfo && ( isdeathgrip || // deathgrip as exeption http://www.wow-europe.com/ru/patchnotes/patch-322.html
         (spellInfo->SchoolMask != SPELL_SCHOOL_MASK_NORMAL && spellInfo->Dispel !=DISPEL_POISON && 
-        GetSpellSpecific(spellInfo) != SPELL_SPECIFIC_JUDGEMENT && 
-        !sSpellMgr->_isPositiveSpell(spellInfo->Id, true) && !IsAreaOfEffectSpell(spellInfo) && IsHostileTo(victim))))
+        GetSpellSpecific(spellInfo) != SPELL_SPECIFIC_JUDGEMENT && !IsAreaOfEffectSpell(spellInfo) && IsHostileTo(victim))))
+
     {
         if (triggered && spellInfo->SpellIconID != 180)
             return victim;
-        bool cont=IsHostileTo(victim);
+        bool cont=true;
         switch(spellInfo->SpellIconID)
         {
             case 180:   // freezing trap
@@ -10285,6 +10285,11 @@ Unit* Unit::SelectMagnetTarget(Unit *victim, SpellEntry const *spellInfo, bool t
                 break;
             default:break;
         }
+
+        // Our aggro spell
+        if (spellInfo->Id == 200006)
+            cont = false;
+
         if(cont)
         {
             AuraEffectList const& magnetAuras = victim->GetAuraEffectsByType(SPELL_AURA_SPELL_MAGNET);
@@ -10317,8 +10322,8 @@ void Unit::UpdateMagnet(Unit *victim, SpellEntry const *spellInfo, int32 time)
     // Magic case
     if (spellInfo && ( spellInfo->Id == 49560 || // deathgrip as exeption http://www.wow-europe.com/ru/patchnotes/patch-322.html
         (spellInfo->SchoolMask != SPELL_SCHOOL_MASK_NORMAL && spellInfo->Dispel !=DISPEL_POISON && 
-        GetSpellSpecific(spellInfo) != SPELL_SPECIFIC_JUDGEMENT &&
-        !sSpellMgr->_isPositiveSpell(spellInfo->Id, true) && !IsAreaOfEffectSpell(spellInfo))))
+        GetSpellSpecific(spellInfo) != SPELL_SPECIFIC_JUDGEMENT && !IsAreaOfEffectSpell(spellInfo))))
+
     {
         if(!victim->isTotem())
             return;
@@ -10339,6 +10344,11 @@ void Unit::UpdateMagnet(Unit *victim, SpellEntry const *spellInfo, int32 time)
                 break;
             default:break;
         }
+
+        // Our aggro spell
+        if (spellInfo->Id == 200006)
+            cont = false;
+
         if(cont)
         {
             AuraEffectList const& magnetAuras = victim->GetAuraEffectsByType(SPELL_AURA_SPELL_MAGNET);
@@ -10346,9 +10356,15 @@ void Unit::UpdateMagnet(Unit *victim, SpellEntry const *spellInfo, int32 time)
             {
                 Aura * aur = (*itr)->GetBase();
                 if(!time)
+				{
                     aur->DropCharge();
+                    Kill(victim);
+                }
                 else if(aur->GetDuration() > time)
+				{
                     aur->SetAuraTimer(time, victim->GetGUID());
+                    victim->ToTotem()->InitStats(time);
+                }
                 break;
             }
         }

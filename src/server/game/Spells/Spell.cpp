@@ -2239,7 +2239,7 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                     pushType = PUSH_CHAIN;
                     break;
                 case TARGET_UNIT_TARGET_ANY:
-                    if (!IsPositiveSpell(m_spellInfo->Id))
+                    if (!m_caster->IsFriendlyTo(target))
                         if (Unit *magnet = m_caster->SelectMagnetTarget(target, m_spellInfo, m_triggeredByAuraSpell!= 0))
                             if (magnet != target)
                                 m_targets.setUnitTarget(magnet);
@@ -7162,6 +7162,10 @@ void Spell::UpdatePointers()
 
 bool Spell::CheckTargetCreatureType(Unit* target) const
 {
+    // Grownding totem & Mind control
+    if (target->HasAuraType(SPELL_AURA_SPELL_MAGNET))
+        return true;
+
     uint32 spellCreatureTargetMask = m_spellInfo->TargetCreatureType;
 
     // Curse of Doom & Exorcism: not find another way to fix spell target check :/

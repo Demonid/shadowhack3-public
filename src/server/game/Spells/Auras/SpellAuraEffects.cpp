@@ -4352,6 +4352,9 @@ void AuraEffect::HandleModPossess(AuraApplication const * aurApp, uint8 mode, bo
         return;
 
     Unit * target = aurApp->GetTarget();
+	
+    if (target->HasAuraType(SPELL_AURA_SPELL_MAGNET))
+        return;
 
     Unit * caster = GetCaster();
     if (caster && caster->GetTypeId() == TYPEID_UNIT)
