@@ -5,12 +5,12 @@ public:
 
     bool OnGossipHello(Player* player, Creature* creature)
     {
-        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Магазин", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "РњР°РіР°Р·РёРЅ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
 
         if (player->getPowerType() == POWER_MANA)
-            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "Восстановить здоровье и ману", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+36);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "Р’РѕСЃСЃС‚Р°РЅРѕРІРёС‚СЊ Р·РґРѕСЂРѕРІСЊРµ Рё РјР°РЅСѓ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+36);
         else
-            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "Восстановить здоровье", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+36);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "Р’РѕСЃСЃС‚Р°РЅРѕРІРёС‚СЊ Р·РґРѕСЂРѕРІСЊРµ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+36);
 
         player->SEND_GOSSIP_MENU(68, creature->GetGUID());
         return true;
@@ -26,34 +26,34 @@ public:
                 OnGossipHello(player, creature);
                 break;
             case GOSSIP_ACTION_INFO_DEF+2:
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "<- Назад", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Броня", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Оружие", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+10);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Самоцветы", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+22);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Символы", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+30);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Полезное", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+42);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "<- РќР°Р·Р°Рґ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Р‘СЂРѕРЅСЏ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "РћСЂСѓР¶РёРµ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+10);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "РЎР°РјРѕС†РІРµС‚С‹", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+22);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "РЎРёРјРІРѕР»С‹", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+30);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "РџРѕР»РµР·РЅРѕРµ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+42);
                 player->SEND_GOSSIP_MENU(68, creature->GetGUID());
                 break;
             case GOSSIP_ACTION_INFO_DEF+3:
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "<- Назад", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "PvE Комплекты", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+4);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "PvP Комплекты", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+7);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Браслеты", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+31);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Обувь", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+32);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Пояса", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+33);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Ожерелья", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+39);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Кольца", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+40);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Аксессуары", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+41);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Плащи", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+34);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Щиты", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+35);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "В правую руку", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+37);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Реликты", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+38);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "<- РќР°Р·Р°Рґ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "PvE РљРѕРјРїР»РµРєС‚С‹", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+4);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "PvP РљРѕРјРїР»РµРєС‚С‹", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+7);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Р‘СЂР°СЃР»РµС‚С‹", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+31);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "РћР±СѓРІСЊ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+32);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "РџРѕСЏСЃР°", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+33);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "РћР¶РµСЂРµР»СЊСЏ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+39);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "РљРѕР»СЊС†Р°", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+40);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "РђРєСЃРµСЃСЃСѓР°СЂС‹", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+41);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "РџР»Р°С‰Рё", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+34);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Р©РёС‚С‹", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+35);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Р’ РїСЂР°РІСѓСЋ СЂСѓРєСѓ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+37);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Р РµР»РёРєС‚С‹", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+38);
                 player->SEND_GOSSIP_MENU(68, creature->GetGUID());
                 break;
             case GOSSIP_ACTION_INFO_DEF+4:
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "<- Назад", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Комплект Tier 9", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Комплект Tier 10", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+6);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "<- РќР°Р·Р°Рґ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "РљРѕРјРїР»РµРєС‚ Tier 9", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "РљРѕРјРїР»РµРєС‚ Tier 10", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+6);
                 player->SEND_GOSSIP_MENU(68, creature->GetGUID());
                 break;
             case GOSSIP_ACTION_INFO_DEF+5:
@@ -63,9 +63,9 @@ public:
                 player->GetSession()->sSendListInventory(50003, creature->GetGUID());
                 break;
             case GOSSIP_ACTION_INFO_DEF+7:
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "<- Назад", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Комплект 7 сезона арены", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+8);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Комплект 8 сезона арены", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+9);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "<- РќР°Р·Р°Рґ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "РљРѕРјРїР»РµРєС‚ 7 СЃРµР·РѕРЅР° Р°СЂРµРЅС‹", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+8);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "РљРѕРјРїР»РµРєС‚ 8 СЃРµР·РѕРЅР° Р°СЂРµРЅС‹", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+9);
                 player->SEND_GOSSIP_MENU(68, creature->GetGUID());
                 break;
             case GOSSIP_ACTION_INFO_DEF+8:
@@ -75,18 +75,18 @@ public:
                 player->GetSession()->sSendListInventory(50002, creature->GetGUID());
                 break;
             case GOSSIP_ACTION_INFO_DEF+10:
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "<- Назад", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Арбалеты", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+11);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Древковое", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+12);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Дробящее", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+13);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Кинжалы", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+14);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Кулачное", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+15);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Луки", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+16);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Мечи", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+17);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Посохи", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+18);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Огнестрельное", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+19);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Топоры", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+20);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Жезлы", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+21);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "<- РќР°Р·Р°Рґ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "РђСЂР±Р°Р»РµС‚С‹", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+11);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Р”СЂРµРІРєРѕРІРѕРµ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+12);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Р”СЂРѕР±СЏС‰РµРµ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+13);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "РљРёРЅР¶Р°Р»С‹", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+14);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "РљСѓР»Р°С‡РЅРѕРµ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+15);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Р›СѓРєРё", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+16);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "РњРµС‡Рё", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+17);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "РџРѕСЃРѕС…Рё", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+18);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "РћРіРЅРµСЃС‚СЂРµР»СЊРЅРѕРµ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+19);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "РўРѕРїРѕСЂС‹", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+20);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Р–РµР·Р»С‹", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+21);
                 player->SEND_GOSSIP_MENU(68, creature->GetGUID());
                 break;
             case GOSSIP_ACTION_INFO_DEF+11:
@@ -123,14 +123,14 @@ public:
                 player->GetSession()->sSendListInventory(50014, creature->GetGUID());
                 break;
              case GOSSIP_ACTION_INFO_DEF+22:
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "<- Назад", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Жёлтые", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+23);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Зелёные", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+24);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Красные", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+25);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Синие", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+26);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Оранжевые", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+27);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Особые", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+28);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Пурпурные", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+29);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "<- РќР°Р·Р°Рґ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Р–С‘Р»С‚С‹Рµ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+23);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Р—РµР»С‘РЅС‹Рµ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+24);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "РљСЂР°СЃРЅС‹Рµ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+25);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "РЎРёРЅРёРµ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+26);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "РћСЂР°РЅР¶РµРІС‹Рµ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+27);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "РћСЃРѕР±С‹Рµ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+28);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "РџСѓСЂРїСѓСЂРЅС‹Рµ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+29);
                 player->SEND_GOSSIP_MENU(68, creature->GetGUID());
                 break;
             case GOSSIP_ACTION_INFO_DEF+23:
@@ -208,17 +208,17 @@ public:
                 player->CLOSE_GOSSIP_MENU();
                 if (player->isInCombat())
                 {
-                    ChatHandler(player).PSendSysMessage("|cfff4b25eПомошник шепчет:|r |cfffcedbbВы в бою и не можете использовать этот сервис.|r");
+                    ChatHandler(player).PSendSysMessage("|cfff4b25eРџРѕРјРѕС€РЅРёРє С€РµРїС‡РµС‚:|r |cfffcedbbР’С‹ РІ Р±РѕСЋ Рё РЅРµ РјРѕР¶РµС‚Рµ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ СЌС‚РѕС‚ СЃРµСЂРІРёСЃ.|r");
                     return true;
                 }
                 if (player->getPowerType() == POWER_MANA && player->GetHealth() == player->GetMaxHealth() && player->GetPower(POWER_MANA) == player->GetMaxPower(POWER_MANA))
                 {
-                    ChatHandler(player).PSendSysMessage("|cfff4b25eПомошник шепчет:|r |cfffcedbbВаше здоровье и мана - полные.|r");
+                    ChatHandler(player).PSendSysMessage("|cfff4b25eРџРѕРјРѕС€РЅРёРє С€РµРїС‡РµС‚:|r |cfffcedbbР’Р°С€Рµ Р·РґРѕСЂРѕРІСЊРµ Рё РјР°РЅР° - РїРѕР»РЅС‹Рµ.|r");
                     return true;
                 }
                 if (player->GetHealth() == player->GetMaxHealth())
                 {
-                    ChatHandler(player).PSendSysMessage("|cfff4b25eПомошник шепчет:|r |cfffcedbbВаше здоровье - полное.|r");
+                    ChatHandler(player).PSendSysMessage("|cfff4b25eРџРѕРјРѕС€РЅРёРє С€РµРїС‡РµС‚:|r |cfffcedbbР’Р°С€Рµ Р·РґРѕСЂРѕРІСЊРµ - РїРѕР»РЅРѕРµ.|r");
                     return true;
                 }
 
