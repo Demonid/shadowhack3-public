@@ -20778,10 +20778,6 @@ uint32 Player::GetSpecifiedVendorEntry(ItemPrototype const* item)
         return 50000;
     if (item->ItemSet > 843 && item->ItemSet < 881) // T9
         return 50001;
-    if (item->ItemSet > 764 && item->ItemSet < 781 && item->ItemLevel == 270) // A8
-        return 50002;
-    if (item->ItemSet > 882 && item->ItemSet < 902) // T10	
-        return 50003;
     if (item->Class == 2 && (item->SubClass == 0 || item->SubClass == 1)) // Axe	
         return 50004;
     if (item->Class == 2 && item->SubClass == 2) // Bow
@@ -20838,25 +20834,23 @@ uint32 Player::GetSpecifiedVendorEntry(ItemPrototype const* item)
         return 50030;
     if (item->Class == 16 && item->SubClass == 11) // Druid
         return 50031;
-    if (item->InventoryType == 2) // Neck
+    if (item->Class == 3 && item->SubClass == 8) // Simple/Prismatic
         return 50039;
-    if (item->InventoryType == 6) // Waist	
+    if (item->InventoryType == 11 || InventoryType == 2) // Ring/Neck	
 	 return 50033;
-    if (item->InventoryType == 8) // Feet
+	if (item->InventoryType == 8 || InventoryType == 6 || InventoryType == 9 && ItemLevel == 264) // Offset pve
         return 50034;
-    if (item->InventoryType == 9) // Wrist
+    if (item->InventoryType == 8 || InventoryType == 6 || InventoryType == 9) // Offset pvp
         return 50035;
-    if (item->InventoryType == 11) // Ring
-        return 50040;
 	 if (item->InventoryType == 12) // Trinket
         return 50041;
     if (item->InventoryType == 14) // Shield
         return 50032;
     if (item->InventoryType == 16) // Cloak
 	 return 50036;	
-    if (item->InventoryType == 23) // Tome
+    if (item->InventoryType == 23) // Offhand
         return 50037;
-    if (item->InventoryType == 28) // Relic
+    if (item->InventoryType == 28) // Libram/Idol/Totem/Sigils
         return 50038;
 
     return 50042;
