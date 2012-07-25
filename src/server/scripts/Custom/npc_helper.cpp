@@ -229,9 +229,6 @@ public:
             case GOSSIP_ACTION_INFO_DEF+39:
                 player->GetSession()->sSendListInventory(50039, creature->GetGUID());
                 break;
-            case GOSSIP_ACTION_INFO_DEF+40:
-                player->GetSession()->sSendListInventory(50040, creature->GetGUID());
-                break;
             case GOSSIP_ACTION_INFO_DEF+41:
                 player->GetSession()->sSendListInventory(50041, creature->GetGUID());
                 break;
