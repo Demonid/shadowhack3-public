@@ -20836,11 +20836,11 @@ uint32 Player::GetSpecifiedVendorEntry(ItemPrototype const* item)
         return 50031;
     if (item->Class == 3 && item->SubClass == 8) // Simple/Prismatic
         return 50039;
-    if (item->InventoryType == 11 || InventoryType == 2) // Ring/Neck	
+    if (item->InventoryType == 11 || item->InventoryType == 2) // Ring/Neck	
 	 return 50033;
-	if (item->InventoryType == 8 || InventoryType == 6 || InventoryType == 9 && ItemLevel == 264) // Offset pve
+	if (item->InventoryType == 8 || item->InventoryType == 6 || item->InventoryType == 9) && item->ItemLevel == 264 // Offset pve
         return 50034;
-    if (item->InventoryType == 8 || InventoryType == 6 || InventoryType == 9) // Offset pvp
+    if (item->InventoryType == 8 || item->InventoryType == 6 || item->InventoryType == 9) // Offset pvp
         return 50035;
 	 if (item->InventoryType == 12) // Trinket
         return 50041;
