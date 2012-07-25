@@ -1672,7 +1672,7 @@ void World::SetInitialWorldSettings()
     sObjectMgr->LoadGossipMenuItems();
 
     sLog->outString("Loading Vendors...");
-    sObjectMgr->LoadVendors();                                   // must be after load CreatureTemplate and ItemTemplate
+    sObjectMgr->LoadVendors();                                   // must be after load CreatureTemplate and ItemPrototype
 
     sLog->outString("Loading Trainers...");
     sObjectMgr->LoadTrainerSpell();                              // must be after load CreatureTemplate

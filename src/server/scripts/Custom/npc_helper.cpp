@@ -5,18 +5,6 @@ public:
 
     bool OnGossipHello(Player* player, Creature* creature)
     {
-        if (creature->GetOwnerGUID() != player->GetGUID())
-        {
-            player->CLOSE_GOSSIP_MENU();
-
-            player->TextEmote("получает урон при попытке использовать чужого помошника.");
-
-            creature->HandleEmoteCommand(EMOTE_ONESHOT_ATTACK_UNARMED);
-            creature->DealDamage(player, urand(1000, 2000), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-            player->HandleEmoteCommand(EMOTE_ONESHOT_WOUND_CRITICAL);
-            return true;
-        }
-
         player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Магазин", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
 
         if (player->getPowerType() == POWER_MANA)
@@ -234,20 +222,11 @@ public:
                     return true;
                 }
 
-                if (player->GetNonInCombatTimer() > 29000)
-                {
-                    creature->CastSpell(player, 24208, true);
+                creature->CastSpell(player, 24208, true);
 
-                    if (player->getPowerType() == POWER_MANA)
-                        player->SetPower(POWER_MANA, player->GetMaxPower(POWER_MANA));
-                }
-                else
-                {
-                    uint32 nonCombatTime = (30000 - player->GetNonInCombatTimer()) / 1000;
-                    std::string end;
-                    end = ending(nonCombatTime, "секунд.", "секунду.", "секунды.");
-                    ChatHandler(player).PSendSysMessage("|cfff4b25eПомошник шепчет:|r |cfffcedbbВы недавно были в бою. Я смогу исцелить вас только через %i %s|r", nonCombatTime, end);
-                }
+                if (player->getPowerType() == POWER_MANA)
+                    player->SetPower(POWER_MANA, player->GetMaxPower(POWER_MANA));
+
                 break;
             case GOSSIP_ACTION_INFO_DEF+37:
                 player->GetSession()->sSendListInventory(50037, creature->GetGUID());

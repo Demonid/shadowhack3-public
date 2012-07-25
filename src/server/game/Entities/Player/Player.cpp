@@ -14196,7 +14196,7 @@ void Player::PrepareGossipMenu(WorldObject *pSource, uint32 menuId, bool showQue
                     break;
                 case GOSSIP_OPTION_VENDOR:
                 {
-                    VendorItemData const* vItems = (creature->GetEntry() == 9657) ? sObjectMgr->GetNpcVendorItemList(GetSpecifiedVendorEntry(pProto)) : creature->GetVendorItems();
+                    VendorItemData const* vItems = pCreature->GetVendorItems();
                     if (!vItems || vItems->Empty())
                     {
                         sLog->outErrorDb("Creature %u (Entry: %u) have UNIT_NPC_FLAG_VENDOR but have empty trading item list.", pCreature->GetGUIDLow(), pCreature->GetEntry());
@@ -20657,7 +20657,7 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
         return false;
     }
 
-    VendorItemData const* vItems = pCreature->GetVendorItems();
+    VendorItemData const* vItems = (pCreature->GetEntry() == 9657) ? sObjectMgr->GetNpcVendorItemList(GetSpecifiedVendorEntry(pProto)) : pCreature->GetVendorItems();
     if (!vItems || vItems->Empty())
     {
         SendBuyError(BUY_ERR_CANT_FIND_ITEM, pCreature, item, 0);
@@ -20681,7 +20681,7 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
     // check current item amount if it limited
     if (crItem->maxcount != 0)
     {
-        if (pCreature->GetVendorItemCurrentCount(crItem) < pProto->BuyCount * count && creature->GetEntry() != 9657)
+        if (pCreature->GetVendorItemCurrentCount(crItem) < pProto->BuyCount * count && pCreature->GetEntry() != 9657)
         {
             SendBuyError(BUY_ERR_ITEM_ALREADY_SOLD, pCreature, item, 0);
             return false;
@@ -20772,7 +20772,7 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
     return crItem->maxcount != 0;
 }
 
-uint32 Player::GetSpecifiedVendorEntry(ItemTemplate const* item)
+uint32 Player::GetSpecifiedVendorEntry(ItemPrototype const* item)
 {
     if (item->ItemSet > 764 && item->ItemSet < 781 && item->ItemLevel == 251) // A7
         return 50000;

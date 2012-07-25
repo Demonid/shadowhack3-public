@@ -723,7 +723,7 @@ void WorldSession::sSendListInventory(uint64 vendorEntry, uint64 guid)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_LIST_INVENTORY");
 
     // remove fake death
-    if (GetPlayer()->HasUnitState(UNIT_STATE_DIED))
+    if (GetPlayer()->HasUnitState(UNIT_STAT_DIED))
         GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
 
     VendorItemData const* items = sObjectMgr->GetNpcVendorItemList(vendorEntry);
@@ -750,7 +750,7 @@ void WorldSession::sSendListInventory(uint64 vendorEntry, uint64 guid)
     {
         if (VendorItem const* item = items->GetItem(slot))
         {
-            if (ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate(item->item))
+            if (ItemPrototype const* itemTemplate = sObjectMgr->GetItemPrototype(item->item))
             {
                 if (!(itemTemplate->AllowableClass & _player->getClassMask()) && !_player->isGameMaster())
                     continue;
