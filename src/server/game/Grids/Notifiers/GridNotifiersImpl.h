@@ -42,12 +42,21 @@ inline void
 Trinity::ObjectUpdater::Visit(CreatureMapType &m)
 {
     for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+    {
+        if (!iter->getSource())
+        {
+            sLog->outString("Yep, null pointer in list");
+            continue;
+        }
+
+        // crash here, object already deleted?
         if (iter->getSource()->IsInWorld())
         {
             if(iter->getSource()->isGuardian())
                 ((TempSummon*)iter->getSource())->Update(i_timeDiff);
             else iter->getSource()->Update(i_timeDiff);
         }
+    }
 }
 
 // SEARCHERS & LIST SEARCHERS & WORKERS
