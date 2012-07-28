@@ -20657,7 +20657,7 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
         return false;
     }
 
-    VendorItemData const* vItems = (pCreature->GetEntry() == 9657) ? sObjectMgr->GetNpcVendorItemList(GetSpecifiedVendorEntry(pProto)) : pCreature->GetVendorItems();
+    VendorItemData const* vItems = (pCreature->GetEntry() == 99005) ? sObjectMgr->GetNpcVendorItemList(GetSpecifiedVendorEntry(pProto)) : pCreature->GetVendorItems();
     if (!vItems || vItems->Empty())
     {
         SendBuyError(BUY_ERR_CANT_FIND_ITEM, pCreature, item, 0);
@@ -20681,7 +20681,7 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
     // check current item amount if it limited
     if (crItem->maxcount != 0)
     {
-        if (pCreature->GetVendorItemCurrentCount(crItem) < pProto->BuyCount * count && pCreature->GetEntry() != 9657)
+        if (pCreature->GetVendorItemCurrentCount(crItem) < pProto->BuyCount * count && pCreature->GetEntry() != 99005)
         {
             SendBuyError(BUY_ERR_ITEM_ALREADY_SOLD, pCreature, item, 0);
             return false;
@@ -20740,7 +20740,7 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
 
     // reputation discount
     if (price)
-        price = uint32(floor(price * (pCreature->GetEntry() == 9657) ? 1 : GetReputationPriceDiscount(pCreature)));
+        price = uint32(floor(price * (pCreature->GetEntry() == 99005) ? 1 : GetReputationPriceDiscount(pCreature)));
 
     if (!HasEnoughMoney(price))
     {
