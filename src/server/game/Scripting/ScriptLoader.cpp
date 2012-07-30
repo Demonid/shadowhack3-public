@@ -53,6 +53,9 @@ void AddSC_example_gossip_codebox();
 void AddSC_example_misc();
 void AddSC_example_commandscript();
 
+// Transmogrify
+void AddSC_transmogrify_script();
+
 // spells
 void AddSC_deathknight_spell_scripts();
 void AddSC_druid_spell_scripts();
@@ -1259,7 +1262,6 @@ void AddBattlegroundScripts()
 
 #ifdef SCRIPTS
 /* This is where custom scripts' loading functions should be declared. */
-
 #endif
 
 void AddCustomScripts()
@@ -1283,6 +1285,7 @@ void AddCustomScripts()
     AddSC_challenge_script();
     AddSC_fast_arena_start();
     AddSC_npc_helper();
+    AddSC_transmogrify_script();
 	
     // exaile temple
     AddSC_instance_my_instance();
