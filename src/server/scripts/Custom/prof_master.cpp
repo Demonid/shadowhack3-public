@@ -4,6 +4,7 @@
 #include "World.h"
 #include "Chat.h"
 #include "Language.h"
+
 struct prof
 {
     uint32 id;
@@ -86,12 +87,19 @@ class prof_master : public CreatureScript
                     creature->MonsterWhisper("Ата-та по рукам! Нельзя так много проф юзать!", player->GetGUID(), true);
                     player->CLOSE_GOSSIP_MENU();
                 }
-        
-                player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());    
+
+                player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
                 break;
             }
             case 110:
             {
+                if(player->HasSpellCooldown(56575))
+                {
+                    creature->MonsterWhisper("Недавно вы уже изучали профессию, подождите 10 секунд.", player->GetGUID(), true);
+                    player->CLOSE_GOSSIP_MENU();
+                    return true;
+                }
+
                 for (uint8 i=1; i<MAXPROF; ++i)
                 {
                     char text[255];
@@ -116,6 +124,8 @@ class prof_master : public CreatureScript
                     char text[255];
                     snprintf( text, 255,     "Операция выполнена успешно, %s изучен", profs[action].name);
                     creature->MonsterWhisper(text, player->GetGUID(), true);
+                    player->CastSpell(player, 56663, false);
+                    player->AddSpellCooldown(56663, NULL, time(NULL) + 10);
                     player->ADD_GOSSIP_ITEM( GOSSIP_ICON_DOT, "Вернуться в главное меню!", GOSSIP_SENDER_MAIN, 19);
                     player->ADD_GOSSIP_ITEM( GOSSIP_ICON_DOT, "Закрыть меню!", GOSSIP_SENDER_MAIN, 130);
                     player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,creature->GetGUID());
@@ -124,7 +134,7 @@ class prof_master : public CreatureScript
         }
         return true;
     }
-    
+
     bool GossipSelect_prof_master(Player *player, Creature *_Creature, uint32 sender, uint32 action )
     {
         if (sender == GOSSIP_SENDER_MAIN)
