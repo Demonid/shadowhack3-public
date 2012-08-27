@@ -167,11 +167,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
         "FROM creature_ai_scripts");
 
     if (!result)
-    {
-        sLog->outString(">> Loaded 0 CreatureEventAI scripts. DB table `creature_ai_scripts` is empty.");
-        sLog->outString();
         return;
-    }
 
     uint32 count = 0;
 

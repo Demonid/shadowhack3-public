@@ -32,11 +32,7 @@ void CreatureTextMgr::LoadCreatureTexts()
     PreparedQueryResult result = WorldDatabase.Query(stmt);
 
     if (!result)
-    {
-        sLog->outString(">> Loaded 0 ceature texts. DB table `creature_texts` is empty.");
-        sLog->outString();
         return;
-    }
 
     uint32 textCount = 0;
     uint32 creatureCount = 0;
