@@ -908,301 +908,192 @@ DELETE FROM `npc_vendor` WHERE `entry`='50036';
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 40883, 0, 0, 0);
+   (50036, 0, 46971, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 40884, 0, 0, 0);
+   (50036, 0, 46977, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 40890, 0, 0, 0);
+   (50036, 0, 47063, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 40978, 0, 0, 0);
+   (50036, 0, 47095, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 40979, 0, 0, 0);
+   (50036, 0, 47192, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 40984, 0, 0, 0);
+   (50036, 0, 47238, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 41052, 0, 0, 0);
+   (50036, 0, 47417, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 41056, 0, 0, 0);
+   (50036, 0, 47418, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 41061, 0, 0, 0);
+   (50036, 0, 47436, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 41066, 0, 0, 0);
+   (50036, 0, 47452, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 41071, 0, 0, 0);
+   (50036, 0, 47481, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 41076, 0, 0, 0);
+   (50036, 0, 47490, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 41226, 0, 0, 0);
+   (50036, 0, 48666, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 41231, 0, 0, 0);
+   (50036, 0, 48667, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 41236, 0, 0, 0);
+   (50036, 0, 48668, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 41618, 0, 0, 0);
+   (50036, 0, 48669, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 41622, 0, 0, 0);
+   (50036, 0, 48670, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 41626, 0, 0, 0);
+   (50036, 0, 48671, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 41631, 0, 0, 0);
+   (50036, 0, 48672, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 41636, 0, 0, 0);
+   (50036, 0, 48673, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 41641, 0, 0, 0);
+   (50036, 0, 48674, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 41833, 0, 0, 0);
+   (50036, 0, 48675, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 41837, 0, 0, 0);
+   (50036, 0, 49998, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 41841, 0, 0, 0);
+   (50036, 0, 50014, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 41882, 0, 0, 0);
+   (50036, 0, 50019, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 41886, 0, 0, 0);
+   (50036, 0, 50074, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 41894, 0, 0, 0);
+   (50036, 0, 50205, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 41899, 0, 0, 0);
+   (50036, 0, 50466, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 41904, 0, 0, 0);
+   (50036, 0, 50467, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 41910, 0, 0, 0);
+   (50036, 0, 50468, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 42041, 0, 0, 0);
+   (50036, 0, 50469, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 42042, 0, 0, 0);
+   (50036, 0, 50470, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 42043, 0, 0, 0);
+   (50036, 0, 51826, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 42044, 0, 0, 0);
+   (50036, 0, 51848, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 42045, 0, 0, 0);
+   (50036, 0, 51888, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 42046, 0, 0, 0);
+   (50036, 0, 51912, 0, 0, 0);
 
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES
-   (50036, 0, 42047, 0, 0, 0);
-
-INSERT INTO npc_vendor
-   (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
-VALUES
-   (50036, 0, 42076, 0, 0, 0);
-
-INSERT INTO npc_vendor
-   (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
-VALUES
-   (50036, 0, 42077, 0, 0, 0);
-
-INSERT INTO npc_vendor
-   (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
-VALUES
-   (50036, 0, 42078, 0, 0, 0);
-
-INSERT INTO npc_vendor
-   (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
-VALUES
-   (50036, 0, 42079, 0, 0, 0);
-
-INSERT INTO npc_vendor
-   (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
-VALUES
-   (50036, 0, 42080, 0, 0, 0);
-
-INSERT INTO npc_vendor
-   (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
-VALUES
-   (50036, 0, 42081, 0, 0, 0);
-
-INSERT INTO npc_vendor
-   (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
-VALUES
-   (50036, 0, 42082, 0, 0, 0);
-
-INSERT INTO npc_vendor
-   (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
-VALUES
-   (50036, 0, 42116, 0, 0, 0);
-
-INSERT INTO npc_vendor
-   (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
-VALUES
-   (50036, 0, 42117, 0, 0, 0);
-
-INSERT INTO npc_vendor
-   (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
-VALUES
-   (50036, 0, 42118, 0, 0, 0);
-
-INSERT INTO npc_vendor
-   (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
-VALUES
-   (50036, 0, 42119, 0, 0, 0);
-
-INSERT INTO npc_vendor
-   (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
-VALUES
-   (50036, 0, 42133, 0, 0, 0);
-
-INSERT INTO npc_vendor
-   (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
-VALUES
-   (50036, 0, 42134, 0, 0, 0);
-
-INSERT INTO npc_vendor
-   (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
-VALUES
-   (50036, 0, 42135, 0, 0, 0);
-
-INSERT INTO npc_vendor
-   (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
-VALUES
-   (50036, 0, 42136, 0, 0, 0);
-
-INSERT INTO npc_vendor
-   (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
-VALUES
-   (50036, 0, 42137, 0, 0, 0);
-
-INSERT INTO npc_vendor
-   (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
-VALUES
-   (50036, 0, 46374, 0, 0, 0);
-
-INSERT INTO npc_vendor
-   (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
-VALUES
-   (50036, 0, 49179, 0, 0, 0);
-
-INSERT INTO npc_vendor
-   (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
-VALUES
-   (50036, 0, 49181, 0, 0, 0);
-
-INSERT INTO npc_vendor
-   (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
-VALUES
-   (50036, 0, 49183, 0, 0, 0);
-
-INSERT INTO npc_vendor
-   (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
-VALUES
-   (50036, 0, 51377, 0, 0, 0);
-
-INSERT INTO npc_vendor
-   (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
-VALUES
-   (50036, 0, 51378, 0, 0, 0);
+   (50036, 0, 51933, 0, 0, 0);
 
 
 ##Simple/Prismatic
 UPDATE `creature_template` SET `name`='Simple/Prismatic' WHERE `entry`='50039';
+DELETE FROM `npc_vendor` WHERE `entry`='50039';
 INSERT INTO npc_vendor
    (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`)
 VALUES

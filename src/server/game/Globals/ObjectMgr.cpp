@@ -8668,7 +8668,7 @@ void ObjectMgr::LoadMailLevelRewards()
 
     m_mailLevelRewardMap.clear();                           // for reload case
 
-    QueryResult result = WorldDatabase.Query("SELECT level, raceMask, mailTemplateId, senderEntry, subject, message, money, item, item_count FROM mail_level_reward");
+    QueryResult result = WorldDatabase.Query("SELECT level, raceMask, mailTemplateId, senderEntry FROM mail_level_reward");
 
     if (!result)
     {
