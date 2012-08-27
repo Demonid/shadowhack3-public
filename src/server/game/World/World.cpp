@@ -1472,6 +1472,9 @@ void World::SetInitialWorldSettings()
     sLog->outString("Loading Equipment templates...");
     sObjectMgr->LoadEquipmentTemplates();
 
+    sLog->outString("Loading fake items...");
+    sObjectMgr->LoadFakeItems();
+
     sLog->outString("Loading Creature templates...");
     sObjectMgr->LoadCreatureTemplates();
 
@@ -1766,12 +1769,9 @@ void World::SetInitialWorldSettings()
     time_t curr;
     time(&curr);
     local=*(localtime(&curr));                              // dereference and assign
-    char isoDate[128];
-    sprintf(isoDate, "%04d-%02d-%02d %02d:%02d:%02d",
-        local.tm_year+1900, local.tm_mon+1, local.tm_mday, local.tm_hour, local.tm_min, local.tm_sec);
 
-    LoginDatabase.PExecute("INSERT INTO uptime (realmid, starttime, startstring, uptime, revision) VALUES('%u', " UI64FMTD ", '%s', 0, '%s')",
-        realmID, uint64(m_startTime), isoDate, _FULLVERSION);
+    LoginDatabase.PExecute("INSERT INTO uptime (realmid, starttime, uptime, revision) VALUES('%u', " UI64FMTD ", 0, '%s')",
+        realmID, uint64(m_startTime), _FULLVERSION);
 
     m_timers[WUPDATE_OBJECTS].SetInterval(IN_MILLISECONDS/2);
     m_timers[WUPDATE_SESSIONS].SetInterval(0);

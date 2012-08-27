@@ -24,6 +24,7 @@ set(scripts_STAT_SRCS
   Custom/ChallengeScript.cpp
   Custom/ArenaFastStart.cpp
   Custom/npc_helper.cpp
+  Custom/npc_transmogrify.cpp
 )
 
 message("  -> Prepared: Custom")

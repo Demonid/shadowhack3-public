@@ -2606,6 +2606,27 @@ void ObjectMgr::LoadItemPrototypes()
     sLog->outString();
 }
 
+uint32 ObjectMgr::GetFakeItemEntry(uint32 itemGuid)
+{
+    FakeItemsContainer::const_iterator itr = _fakeItemsStore.find(itemGuid);
+    if (itr != _fakeItemsStore.end())
+        return itr->second;
+
+    return 0;
+}
+
+void ObjectMgr::SetFekeItem(uint32 itemGuid, uint32 fakeEntry)
+{
+    _fakeItemsStore[itemGuid] = fakeEntry;
+}
+
+void ObjectMgr::RemoveFakeItem(uint32 itemGuid)
+{
+    FakeItemsContainer::iterator itr = _fakeItemsStore.find(itemGuid);
+    if (itr != _fakeItemsStore.end())
+        _fakeItemsStore.erase(itr);
+}
+
 void ObjectMgr::LoadItemSetNameLocales()
 {
     uint32 oldMSTime = getMSTime();
@@ -2715,6 +2736,32 @@ void ObjectMgr::LoadItemSetNames()
     }
 
     sLog->outString(">> Loaded %u item set names in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    sLog->outString();
+}
+
+void ObjectMgr::LoadFakeItems()
+{
+    QueryResult result = CharacterDatabase.Query("SELECT `guid`, `fakeEntry` FROM `fake_items`");
+
+    if (!result)
+    {
+        sLog->outErrorDb(">> Loaded 0 fake items. DB table `fake_items` is empty.");
+        sLog->outString();
+        return;
+    }
+
+    do
+    {
+        Field* fields    = result->Fetch();
+
+        uint32 guid      = fields[0].GetUInt32();
+        uint32 fakeEntry = fields[1].GetUInt32();
+
+        _fakeItemsStore[guid] = fakeEntry;
+    }
+    while (result->NextRow());
+
+    sLog->outString(">> Loaded %u fake items.", _fakeItemsStore.size());
     sLog->outString();
 }
 
@@ -8668,7 +8715,7 @@ void ObjectMgr::LoadMailLevelRewards()
 
     m_mailLevelRewardMap.clear();                           // for reload case
 
-    QueryResult result = WorldDatabase.Query("SELECT level, raceMask, mailTemplateId, senderEntry FROM mail_level_reward");
+    QueryResult result = WorldDatabase.Query("SELECT level, raceMask, mailTemplateId, senderEntry, subject, message, money, item, item_count FROM mail_level_reward");
 
     if (!result)
     {
