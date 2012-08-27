@@ -7230,41 +7230,6 @@ void ObjectMgr::LoadGameobjectInfo()
     sLog->outString();
 }
 
-void ObjectMgr::LoadExplorationBaseXP()
-{
-    uint32 oldMSTime = getMSTime();
-
-    QueryResult result = WorldDatabase.Query("SELECT level, basexp FROM exploration_basexp");
-
-    if (!result)
-    {
-        sLog->outErrorDb(">> Loaded 0 BaseXP definitions. DB table `exploration_basexp` is empty.");
-        sLog->outString();
-        return;
-    }
-
-    uint32 count = 0;
-
-    do
-    {
-
-        Field *fields = result->Fetch();
-        uint8 level  = fields[0].GetUInt8();
-        uint32 basexp = fields[1].GetUInt32();
-        mBaseXPTable[level] = basexp;
-        ++count;
-    }
-    while (result->NextRow());
-
-    sLog->outString(">> Loaded %u BaseXP definitions in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
-    sLog->outString();
-}
-
-uint32 ObjectMgr::GetBaseXP(uint8 level)
-{
-    return mBaseXPTable[level] ? mBaseXPTable[level] : 0;
-}
-
 uint32 ObjectMgr::GetXPForLevel(uint8 level)
 {
     if (level < mPlayerXPperLevel.size())
@@ -7465,11 +7430,7 @@ void ObjectMgr::LoadReputationOnKill()
         "FROM creature_onkill_reputation");
 
     if (!result)
-    {
-        sLog->outErrorDb(">> Loaded 0 creature award reputation definitions. DB table `creature_onkill_reputation` is empty.");
-        sLog->outString();
         return;
-    }
 
     do
     {
@@ -7695,11 +7656,7 @@ void ObjectMgr::LoadQuestPOI()
     QueryResult result = WorldDatabase.Query("SELECT questId, id, objIndex, mapid, WorldMapAreaId, FloorId, unk3, unk4 FROM quest_poi order by questId");
 
     if (!result)
-    {
-        sLog->outErrorDb(">> Loaded 0 quest POI definitions. DB table `quest_poi` is empty.");
-        sLog->outString();
         return;
-    }
 
     //                                                0        1   2  3
     QueryResult points = WorldDatabase.PQuery("SELECT questId, id, x, y FROM quest_poi_points ORDER BY questId DESC, idx");
@@ -8032,11 +7989,7 @@ void ObjectMgr::LoadQuestRelationsHelper(QuestRelations& map, std::string table,
     QueryResult result = WorldDatabase.PQuery("SELECT id, quest, pool_entry FROM %s qr LEFT JOIN pool_quest pq ON qr.quest = pq.entry", table.c_str());
 
     if (!result)
-    {
-        sLog->outErrorDb(">> Loaded 0 quest relations from `%s`, table is empty.", table.c_str());
-        sLog->outString();
         return;
-    }
 
     PooledQuestRelation* poolRelationMap = go ? &sPoolMgr->mQuestGORelation : &sPoolMgr->mQuestCreatureRelation;
     if (starter)

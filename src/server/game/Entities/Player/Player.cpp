@@ -6886,58 +6886,7 @@ void Player::CheckAreaExploreAndOutdoor()
     uint32 currFields = GetUInt32Value(PLAYER_EXPLORED_ZONES_1 + offset);
 
     if (!(currFields & val))
-    {
         SetUInt32Value(PLAYER_EXPLORED_ZONES_1 + offset, (uint32)(currFields | val));
-
-        GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EXPLORE_AREA);
-
-        AreaTableEntry const *p = GetAreaEntryByAreaFlagAndMap(areaFlag,GetMapId());
-        if (!p)
-        {
-            sLog->outError("PLAYER: Player %u discovered unknown area (x: %f y: %f map: %u", GetGUIDLow(), GetPositionX(),GetPositionY(),GetMapId());
-        }
-        else if (p->area_level > 0)
-        {
-            uint32 area = p->ID;
-            if (getLevel() >= sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
-            {
-                SendExplorationExperience(area,0);
-            }
-            else
-            {
-                int32 diff = int32(getLevel()) - p->area_level;
-                uint32 XP = 0;
-
-                float rate_multiplier = (GetSession()->HasPremiumByType(PREMIUM_TYPE_XP_EXPLORE) && CanGainPremiumXP()) ? sWorld->getRate(RATE_PREMIUM_XP_EXPLORE) :  sWorld->getRate(RATE_XP_EXPLORE);
-
-                if (GetsRecruitAFriendBonus(true))
-                    rate_multiplier = rate_multiplier + 3.0f;
-
-                if (diff < -5)
-                {
-                    XP = uint32(sObjectMgr->GetBaseXP(getLevel()+5)*rate_multiplier);
-                }
-                else if (diff > 5)
-                {
-                    int32 exploration_percent = (100-((diff-5)*5));
-                    if (exploration_percent > 100)
-                        exploration_percent = 100;
-                    else if (exploration_percent < 0)
-                        exploration_percent = 0;
-
-                    XP = uint32(sObjectMgr->GetBaseXP(p->area_level)*exploration_percent*0.01*rate_multiplier);
-                }
-                else
-                {
-                    XP = uint32(sObjectMgr->GetBaseXP(p->area_level)*rate_multiplier);
-                }
-
-                GiveXP(XP, NULL);
-                SendExplorationExperience(area,XP);
-            }
-            sLog->outDetail("PLAYER: Player %u discovered a new area: %u", GetGUIDLow(), area);
-        }
-    }
 }
 
 uint32 Player::TeamForRace(uint8 race)
@@ -19247,14 +19196,6 @@ void Player::SendAutoRepeatCancel(Unit *target)
 {
     WorldPacket data(SMSG_CANCEL_AUTO_REPEAT, target->GetPackGUID().size());
     data.append(target->GetPackGUID());                     // may be it's target guid
-    GetSession()->SendPacket(&data);
-}
-
-void Player::SendExplorationExperience(uint32 Area, uint32 Experience)
-{
-    WorldPacket data(SMSG_EXPLORATION_EXPERIENCE, 8);
-    data << uint32(Area);
-    data << uint32(Experience);
     GetSession()->SendPacket(&data);
 }
 
