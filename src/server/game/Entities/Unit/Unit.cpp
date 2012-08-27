@@ -8910,6 +8910,12 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
             target = pVictim;
             break;
         }
+        case 52008:
+        {
+            if (procSpell && !IsSpellHaveEffect(procSpell, SPELL_EFFECT_HEAL))
+                return false;
+            break;
+        }
         default:
             break;
     }

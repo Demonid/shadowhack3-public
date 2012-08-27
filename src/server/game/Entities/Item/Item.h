@@ -152,6 +152,16 @@ enum SellFailure
     SELL_ERR_ONLY_EMPTY_BAG                      = 6        // can only do with empty bags
 };
 
+enum FakeResult
+{
+    FAKE_ERR_CANT_FIND_OWNER,
+    FAKE_ERR_CANT_FIND_ITEM,
+    FAKE_ERR_WRONG_QUALITY,
+    FAKE_ERR_DIFF_SLOTS,
+    FAKE_ERR_SUBCLASS,
+    FAKE_ERR_OK
+};
+
 // -1 from client enchantment slot number
 enum EnchantmentSlot
 {
@@ -358,6 +368,11 @@ class Item : public Object
         void BuildUpdate(UpdateDataMapType&);
 
         uint32 GetScriptId() const { return GetProto()->ScriptId; }
+		
+         FakeResult SetFakeDisplay(uint32 iEntry);
+         uint32 GetFakeDisplayEntry() { return m_fakeDisplayEntry; }
+         void RemoveFakeDisplay();
+
     private:
         std::string m_text;
         uint8 m_slot;
@@ -370,5 +385,7 @@ class Item : public Object
         uint32 m_paidMoney;
         uint32 m_paidExtendedCost;
         AllowedLooterSet allowedGUIDs;
+
+        uint32 m_fakeDisplayEntry;
 };
 #endif
