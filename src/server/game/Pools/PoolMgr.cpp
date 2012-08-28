@@ -602,12 +602,7 @@ void PoolMgr::LoadFromDB()
         //                                                 1     2           3
         QueryResult result = WorldDatabase.Query("SELECT guid, pool_entry, chance FROM pool_creature");
 
-        if (!result)
-        {
-            sLog->outString(">> Loaded 0 creatures in  pools. DB table `pool_creature` is empty.");
-            sLog->outString();
-        }
-        else
+        if (result)
         {
             uint32 count = 0;
             do
@@ -660,12 +655,7 @@ void PoolMgr::LoadFromDB()
         //                                                 1        2         3
         QueryResult result = WorldDatabase.Query("SELECT guid, pool_entry, chance FROM pool_gameobject");
 
-        if (!result)
-        {
-            sLog->outString(">> Loaded 0 gameobjects in  pools. DB table `pool_gameobject` is empty.");
-            sLog->outString();
-        }
-        else
+        if (result)
         {
             uint32 count = 0;
             do

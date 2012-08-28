@@ -1190,11 +1190,7 @@ void ObjectMgr::LoadLinkedRespawn()
     QueryResult result = WorldDatabase.Query("SELECT guid, linkedGuid, linkType FROM linked_respawn ORDER BY guid ASC");
 
     if (!result)
-    {
-        sLog->outErrorDb(">> Loaded 0 linked respawns. DB table `linked_respawn` is empty.");
-        sLog->outString();
         return;
-    }
 
     do
     {
@@ -5656,11 +5652,7 @@ void ObjectMgr::LoadInstanceEncounters()
 
     QueryResult result = WorldDatabase.Query("SELECT entry, creditType, creditEntry, lastEncounterDungeon FROM instance_encounters");
     if (!result)
-    {
-        sLog->outErrorDb(">> Loaded 0 instance encounters, table is empty!");
-        sLog->outString();
         return;
-    }
 
     uint32 count = 0;
     std::map<uint32, DungeonEncounterEntry const*> dungeonLastBosses;
