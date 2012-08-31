@@ -185,67 +185,67 @@ class npc_transmogrify : public CreatureScript
             switch (action)
             {
                 case ACTION_TIER_1:
-                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(sAchievementStore.LookupEntry(403)))
+                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(GetAchievementStore()->LookupEntry(403)))
                         TransmogrifyItems(player, creature, ACTION_TIER_1);
                     else
                         creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
                     break;
                 case ACTION_TIER_2:
-                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(sAchievementStore.LookupEntry(405)))
+                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(GetAchievementStore()->LookupEntry(405)))
                         TransmogrifyItems(player, creature, ACTION_TIER_2);
                     else
                         creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
                     break;
                 case ACTION_TIER_25:
-                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(sAchievementStore.LookupEntry(1160)))
+                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(GetAchievementStore()->LookupEntry(1160)))
                         TransmogrifyItems(player, creature, ACTION_TIER_25);
                     else
                         creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
                     break;
                 case ACTION_TIER_3:
-                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(sAchievementStore.LookupEntry(5266)))
+                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(GetAchievementStore()->LookupEntry(5266)))
                         TransmogrifyItems(player, creature, ACTION_TIER_3);
                     else
                         creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
                     break;
                 case ACTION_TIER_4:
-                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(sAchievementStore.LookupEntry(403)))
+                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(GetAchievementStore()->LookupEntry(403)))
                         TransmogrifyItems(player, creature, ACTION_TIER_4);
                     else
                         creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
                     break;
                 case ACTION_TIER_5:
-                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(sAchievementStore.LookupEntry(405)))
+                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(GetAchievementStore()->LookupEntry(405)))
                         TransmogrifyItems(player, creature, ACTION_TIER_5);
                     else
                         creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
                     break;
                 case ACTION_TIER_6:
-                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(sAchievementStore.LookupEntry(5266)))
+                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(GetAchievementStore()->LookupEntry(5266)))
                         TransmogrifyItems(player, creature, ACTION_TIER_6);
                     else
                         creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
                     break;
                 case ACTION_ARENA_1:
-                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(sAchievementStore.LookupEntry(399)))
+                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(GetAchievementStore()->LookupEntry(399)))
                         TransmogrifyItems(player, creature, ACTION_ARENA_1);
                     else
                         creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
                     break;
                 case ACTION_ARENA_2:
-                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(sAchievementStore.LookupEntry(400)))
+                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(GetAchievementStore()->LookupEntry(400)))
                         TransmogrifyItems(player, creature, ACTION_ARENA_2);
                     else
                         creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
                     break;
                 case ACTION_ARENA_3:
-                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(sAchievementStore.LookupEntry(401)))
+                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(GetAchievementStore()->LookupEntry(401)))
                         TransmogrifyItems(player, creature, ACTION_ARENA_3);
                     else
                         creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
                     break;
                 case ACTION_ARENA_4:
-                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(sAchievementStore.LookupEntry(1159)))
+                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(GetAchievementStore()->LookupEntry(1159)))
                         TransmogrifyItems(player, creature, ACTION_ARENA_4);
                     else
                         creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
