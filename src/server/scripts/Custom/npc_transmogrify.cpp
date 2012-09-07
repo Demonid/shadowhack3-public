@@ -209,7 +209,7 @@ class npc_transmogrify : public CreatureScript
                         creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
                     break;
                 case ACTION_TIER_4:
-                    if (player->isGameMaster()))
+                    if (player->isGameMaster())
                         TransmogrifyItems(player, creature, ACTION_TIER_4);
                     else
                         creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
