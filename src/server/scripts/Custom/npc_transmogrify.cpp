@@ -185,70 +185,59 @@ class npc_transmogrify : public CreatureScript
             switch (action)
             {
                 case ACTION_TIER_1:
-                    if (player->isGameMaster())
+                    
                         TransmogrifyItems(player, creature, ACTION_TIER_1);
-                    else
-                        creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
+                    
                     break;
                 case ACTION_TIER_2:
-                    if (player->isGameMaster())
+                    
                         TransmogrifyItems(player, creature, ACTION_TIER_2);
-                    else
-                        creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
+                    
                     break;
                 case ACTION_TIER_25:
-                    if (player->isGameMaster())
+                    
                         TransmogrifyItems(player, creature, ACTION_TIER_25);
-                    else
-                        creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
+                    
                     break;
                 case ACTION_TIER_3:
-                    if (player->isGameMaster())
+                    
                         TransmogrifyItems(player, creature, ACTION_TIER_3);
-                    else
-                        creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
+                    
                     break;
                 case ACTION_TIER_4:
-                    if (player->isGameMaster())
+                    
                         TransmogrifyItems(player, creature, ACTION_TIER_4);
-                    else
-                        creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
+                    
                     break;
                 case ACTION_TIER_5:
-                    if (player->isGameMaster())
+                    
                         TransmogrifyItems(player, creature, ACTION_TIER_5);
-                    else
-                        creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
+                    
                     break;
                 case ACTION_TIER_6:
-                    if (player->isGameMaster())
+                    
                         TransmogrifyItems(player, creature, ACTION_TIER_6);
-                    else
-                        creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
+                    
                     break;
                 case ACTION_ARENA_1:
-                    if (player->isGameMaster())
+                    
                         TransmogrifyItems(player, creature, ACTION_ARENA_1);
-                    else
-                        creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
+                    
                     break;
                 case ACTION_ARENA_2:
-                    if (player->isGameMaster())
+                    
                         TransmogrifyItems(player, creature, ACTION_ARENA_2);
-                    else
-                        creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
+                    
                     break;
                 case ACTION_ARENA_3:
-                    if (player->isGameMaster())
+                    
                         TransmogrifyItems(player, creature, ACTION_ARENA_3);
-                    else
-                        creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
+                    
                     break;
                 case ACTION_ARENA_4:
-                    if (player->isGameMaster())
+                    
                         TransmogrifyItems(player, creature, ACTION_ARENA_4);
-                    else
-                        creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
+                    
                     break;
                 case ACTION_REMOVE:
                     for (uint8 i=0; i<10; i++)
