@@ -43,134 +43,134 @@ class npc_transmogrify : public CreatureScript
             switch (player->getClass())
             {
                 case CLASS_WARRIOR:
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warrior Tier 1 (1750 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_1);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warrior Tier 2 (2000 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_2);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warrior Ahn'Qiraj tier (2200 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_25);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warrior Tier 3 (2400 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_3);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warrior Tier 4 (1750 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_4);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warrior Tier 5 (2000 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_5);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warrior Tier 6 (2400 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_6);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warrior Season 1 (1550 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_1);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warrior Season 2 (1750 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_2);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warrior Season 3 (2000 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_3);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warrior Season 4 (2200 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_4);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warrior Tier 1", GOSSIP_SENDER_MAIN, ACTION_TIER_1);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warrior Tier 2", GOSSIP_SENDER_MAIN, ACTION_TIER_2);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warrior Ahn'Qiraj tier", GOSSIP_SENDER_MAIN, ACTION_TIER_25);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warrior Tier 3", GOSSIP_SENDER_MAIN, ACTION_TIER_3);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warrior Tier 4", GOSSIP_SENDER_MAIN, ACTION_TIER_4);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warrior Tier 5", GOSSIP_SENDER_MAIN, ACTION_TIER_5);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warrior Tier 6", GOSSIP_SENDER_MAIN, ACTION_TIER_6);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warrior Season 1", GOSSIP_SENDER_MAIN, ACTION_ARENA_1);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warrior Season 2", GOSSIP_SENDER_MAIN, ACTION_ARENA_2);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warrior Season 3", GOSSIP_SENDER_MAIN, ACTION_ARENA_3);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warrior Season 4", GOSSIP_SENDER_MAIN, ACTION_ARENA_4);
                     break;
                 case CLASS_PALADIN:
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Paladin Tier 1 (1750 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_1);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Paladin Tier 2 (2000 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_2);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Paladin Ahn'Qiraj tier (2200 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_25);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Paladin Tier 3 (2400 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_3);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Paladin Tier 4 (1750 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_4);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Paladin Tier 5 (2000 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_5);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Paladin Tier 6 (2400 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_6);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Paladin Season 1 (1550 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_1);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Paladin Season 2 (1750 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_2);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Paladin Season 3 (2000 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_3);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Paladin Season 4 (2200 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_4);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Paladin Tier 1", GOSSIP_SENDER_MAIN, ACTION_TIER_1);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Paladin Tier 2", GOSSIP_SENDER_MAIN, ACTION_TIER_2);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Paladin Ahn'Qiraj tier", GOSSIP_SENDER_MAIN, ACTION_TIER_25);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Paladin Tier 3", GOSSIP_SENDER_MAIN, ACTION_TIER_3);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Paladin Tier 4", GOSSIP_SENDER_MAIN, ACTION_TIER_4);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Paladin Tier 5", GOSSIP_SENDER_MAIN, ACTION_TIER_5);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Paladin Tier 6", GOSSIP_SENDER_MAIN, ACTION_TIER_6);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Paladin Season 1", GOSSIP_SENDER_MAIN, ACTION_ARENA_1);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Paladin Season 2", GOSSIP_SENDER_MAIN, ACTION_ARENA_2);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Paladin Season 3", GOSSIP_SENDER_MAIN, ACTION_ARENA_3);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Paladin Season 4", GOSSIP_SENDER_MAIN, ACTION_ARENA_4);
                     break;
                 case CLASS_HUNTER:
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Hunter Tier 1 (1750 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_1);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Hunter Tier 2 (2000 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_2);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Hunter Ahn'Qiraj tier (2200 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_25);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Hunter Tier 3 (2400 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_3);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Hunter Tier 4 (1750 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_4);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Hunter Tier 5 (2000 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_5);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Hunter Tier 6 (2400 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_6);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Hunter Season 1 (1550 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_1);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Hunter Season 2 (1750 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_2);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Hunter Season 3 (2000 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_3);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Hunter Season 4 (2200 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_4);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Hunter Tier 1", GOSSIP_SENDER_MAIN, ACTION_TIER_1);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Hunter Tier 2", GOSSIP_SENDER_MAIN, ACTION_TIER_2);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Hunter Ahn'Qiraj tier", GOSSIP_SENDER_MAIN, ACTION_TIER_25);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Hunter Tier 3", GOSSIP_SENDER_MAIN, ACTION_TIER_3);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Hunter Tier 4", GOSSIP_SENDER_MAIN, ACTION_TIER_4);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Hunter Tier 5", GOSSIP_SENDER_MAIN, ACTION_TIER_5);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Hunter Tier 6", GOSSIP_SENDER_MAIN, ACTION_TIER_6);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Hunter Season 1", GOSSIP_SENDER_MAIN, ACTION_ARENA_1);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Hunter Season 2", GOSSIP_SENDER_MAIN, ACTION_ARENA_2);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Hunter Season 3", GOSSIP_SENDER_MAIN, ACTION_ARENA_3);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Hunter Season 4", GOSSIP_SENDER_MAIN, ACTION_ARENA_4);
                     break;
                 case CLASS_ROGUE:
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Rogue Tier 1 (1750 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_1);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Rogue Tier 2 (2000 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_2);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Rogue Ahn'Qiraj tier (2200 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_25);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Rogue Tier 3 (2400 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_3);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Rogue Tier 4 (1750 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_4);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Rogue Tier 5 (2000 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_5);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Rogue Tier 6 (2400 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_6);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Rogue Season 1 (1550 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_1);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Rogue Season 2 (1750 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_2);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Rogue Season 3 (2000 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_3);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Rogue Season 4 (2200 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_4);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Rogue Tier 1", GOSSIP_SENDER_MAIN, ACTION_TIER_1);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Rogue Tier 2", GOSSIP_SENDER_MAIN, ACTION_TIER_2);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Rogue Ahn'Qiraj tier", GOSSIP_SENDER_MAIN, ACTION_TIER_25);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Rogue Tier 3", GOSSIP_SENDER_MAIN, ACTION_TIER_3);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Rogue Tier 4", GOSSIP_SENDER_MAIN, ACTION_TIER_4);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Rogue Tier 5", GOSSIP_SENDER_MAIN, ACTION_TIER_5);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Rogue Tier 6", GOSSIP_SENDER_MAIN, ACTION_TIER_6);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Rogue Season 1", GOSSIP_SENDER_MAIN, ACTION_ARENA_1);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Rogue Season 2", GOSSIP_SENDER_MAIN, ACTION_ARENA_2);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Rogue Season 3", GOSSIP_SENDER_MAIN, ACTION_ARENA_3);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Rogue Season 4", GOSSIP_SENDER_MAIN, ACTION_ARENA_4);
                     break;
                 case CLASS_PRIEST:
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Priest Tier 1 (1750 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_1);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Priest Tier 2 (2000 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_2);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Priest Ahn'Qiraj tier (2200 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_25);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Priest Tier 3 (2400 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_3);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Priest Tier 4 (1750 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_4);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Priest Tier 5 (2000 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_5);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Priest Tier 6 (2400 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_6);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Priest Season 1 (1550 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_1);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Priest Season 2 (1750 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_2);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Priest Season 3 (2000 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_3);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Priest Season 4 (2200 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_4);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Priest Tier 1", GOSSIP_SENDER_MAIN, ACTION_TIER_1);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Priest Tier 2", GOSSIP_SENDER_MAIN, ACTION_TIER_2);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Priest Ahn'Qiraj tier", GOSSIP_SENDER_MAIN, ACTION_TIER_25);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Priest Tier 3", GOSSIP_SENDER_MAIN, ACTION_TIER_3);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Priest Tier 4", GOSSIP_SENDER_MAIN, ACTION_TIER_4);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Priest Tier 5", GOSSIP_SENDER_MAIN, ACTION_TIER_5);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Priest Tier 6", GOSSIP_SENDER_MAIN, ACTION_TIER_6);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Priest Season 1", GOSSIP_SENDER_MAIN, ACTION_ARENA_1);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Priest Season 2", GOSSIP_SENDER_MAIN, ACTION_ARENA_2);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Priest Season 3", GOSSIP_SENDER_MAIN, ACTION_ARENA_3);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Priest Season 4", GOSSIP_SENDER_MAIN, ACTION_ARENA_4);
                     break;
                 case CLASS_DEATH_KNIGHT:
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Death Knight Tier 1 (1750 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_1);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Death Knight Tier 2 (2000 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_2);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Death Knight Ahn'Qiraj tier (2200 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_25);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Death Knight Tier 3 (2400 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_3);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Death Knight Tier 4 (1750 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_4);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Death Knight Tier 5 (2000 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_5);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Death Knight Tier 6 (2400 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_6);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Death Knight Season 1 (1550 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_1);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Death Knight Season 2 (1750 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_2);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Death Knight Season 3 (2000 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_3);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Death Knight Season 4 (2200 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_4);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Death Knight Tier 1", GOSSIP_SENDER_MAIN, ACTION_TIER_1);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Death Knight Tier 2", GOSSIP_SENDER_MAIN, ACTION_TIER_2);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Death Knight Ahn'Qiraj tier", GOSSIP_SENDER_MAIN, ACTION_TIER_25);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Death Knight Tier 3", GOSSIP_SENDER_MAIN, ACTION_TIER_3);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Death Knight Tier 4", GOSSIP_SENDER_MAIN, ACTION_TIER_4);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Death Knight Tier 5", GOSSIP_SENDER_MAIN, ACTION_TIER_5);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Death Knight Tier 6", GOSSIP_SENDER_MAIN, ACTION_TIER_6);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Death Knight Season 1", GOSSIP_SENDER_MAIN, ACTION_ARENA_1);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Death Knight Season 2", GOSSIP_SENDER_MAIN, ACTION_ARENA_2);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Death Knight Season 3", GOSSIP_SENDER_MAIN, ACTION_ARENA_3);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Death Knight Season 4", GOSSIP_SENDER_MAIN, ACTION_ARENA_4);
                     break;
                 case CLASS_SHAMAN:
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Shaman Tier 1 (1750 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_1);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Shaman Tier 2 (2000 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_2);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Shaman Tier Ahn'Qiraj tier (2200 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_25);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Shaman Tier 3 (2400 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_3);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Shaman Tier 4 (1750 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_4);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Shaman Tier 5 (2000 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_5);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Shaman Tier 6 (2400 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_6);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Shaman Season 1 (1550 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_1);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Shaman Season 2 (1750 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_2);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Shaman Season 3 (2000 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_3);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Shaman Season 4 (2200 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_4);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Shaman Tier 1", GOSSIP_SENDER_MAIN, ACTION_TIER_1);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Shaman Tier 2", GOSSIP_SENDER_MAIN, ACTION_TIER_2);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Shaman Tier Ahn'Qiraj tier", GOSSIP_SENDER_MAIN, ACTION_TIER_25);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Shaman Tier 3", GOSSIP_SENDER_MAIN, ACTION_TIER_3);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Shaman Tier 4", GOSSIP_SENDER_MAIN, ACTION_TIER_4);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Shaman Tier 5", GOSSIP_SENDER_MAIN, ACTION_TIER_5);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Shaman Tier 6", GOSSIP_SENDER_MAIN, ACTION_TIER_6);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Shaman Season 1", GOSSIP_SENDER_MAIN, ACTION_ARENA_1);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Shaman Season 2", GOSSIP_SENDER_MAIN, ACTION_ARENA_2);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Shaman Season 3", GOSSIP_SENDER_MAIN, ACTION_ARENA_3);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Shaman Season 4", GOSSIP_SENDER_MAIN, ACTION_ARENA_4);
                     break;
                 case CLASS_MAGE:
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Mage Tier 1 (1750 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_1);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Mage Tier 2 (2000 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_2);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Mage Tier Ahn'Qiraj tier (2200 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_25);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Mage Tier 3 (2400 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_3);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Mage Tier 4 (1750 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_4);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Mage Tier 5 (2000 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_5);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Mage Tier 6 (2400 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_6);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Mage Season 1 (1550 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_1);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Mage Season 2 (1750 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_2);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Mage Season 3 (2000 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_3);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Mage Season 4 (2200 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_4);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Mage Tier 1", GOSSIP_SENDER_MAIN, ACTION_TIER_1);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Mage Tier 2", GOSSIP_SENDER_MAIN, ACTION_TIER_2);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Mage Tier Ahn'Qiraj tier", GOSSIP_SENDER_MAIN, ACTION_TIER_25);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Mage Tier 3", GOSSIP_SENDER_MAIN, ACTION_TIER_3);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Mage Tier 4", GOSSIP_SENDER_MAIN, ACTION_TIER_4);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Mage Tier 5", GOSSIP_SENDER_MAIN, ACTION_TIER_5);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Mage Tier 6", GOSSIP_SENDER_MAIN, ACTION_TIER_6);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Mage Season 1", GOSSIP_SENDER_MAIN, ACTION_ARENA_1);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Mage Season 2", GOSSIP_SENDER_MAIN, ACTION_ARENA_2);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Mage Season 3", GOSSIP_SENDER_MAIN, ACTION_ARENA_3);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Mage Season 4", GOSSIP_SENDER_MAIN, ACTION_ARENA_4);
                     break;
                 case CLASS_WARLOCK:
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warlock Tier 1 (1750 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_1);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warlock Tier 2 (2000 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_2);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warlock Tier Ahn'Qiraj tier (2200 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_25);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warlock Tier 3 (2400 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_3);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warlock Tier 4 (1750 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_4);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warlock Tier 5 (2000 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_5);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warlock Tier 6 (2400 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_6);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warlock Season 1 (1550 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_1);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warlock Season 2 (1750 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_2);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warlock Season 3 (2000 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_3);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warlock Season 4 (2200 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_4);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warlock Tier 1", GOSSIP_SENDER_MAIN, ACTION_TIER_1);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warlock Tier 2", GOSSIP_SENDER_MAIN, ACTION_TIER_2);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warlock Tier Ahn'Qiraj tier", GOSSIP_SENDER_MAIN, ACTION_TIER_25);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warlock Tier 3", GOSSIP_SENDER_MAIN, ACTION_TIER_3);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warlock Tier 4", GOSSIP_SENDER_MAIN, ACTION_TIER_4);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warlock Tier 5", GOSSIP_SENDER_MAIN, ACTION_TIER_5);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warlock Tier 6", GOSSIP_SENDER_MAIN, ACTION_TIER_6);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warlock Season 1", GOSSIP_SENDER_MAIN, ACTION_ARENA_1);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warlock Season 2", GOSSIP_SENDER_MAIN, ACTION_ARENA_2);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warlock Season 3", GOSSIP_SENDER_MAIN, ACTION_ARENA_3);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Warlock Season 4", GOSSIP_SENDER_MAIN, ACTION_ARENA_4);
                     break;
                 case CLASS_DRUID:
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Druid Tier 1 (1750 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_1);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Druid Tier 2 (2000 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_2);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Druid Tier Ahn'Qiraj tier (2200 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_25);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Druid Tier 3 (2400 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_3);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Druid Tier 4 (1750 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_4);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Druid Tier 5 (2000 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_5);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Druid Tier 6 (2400 3v3 Rating)", GOSSIP_SENDER_MAIN, ACTION_TIER_6);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Druid Season 1 (1550 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_1);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Druid Season 2 (1750 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_2);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Druid Season 3 (2000 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_3);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Druid Season 4 (2200 2v2 Rating)", GOSSIP_SENDER_MAIN, ACTION_ARENA_4);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Druid Tier 1", GOSSIP_SENDER_MAIN, ACTION_TIER_1);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Druid Tier 2", GOSSIP_SENDER_MAIN, ACTION_TIER_2);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Druid Tier Ahn'Qiraj tier", GOSSIP_SENDER_MAIN, ACTION_TIER_25);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Druid Tier 3", GOSSIP_SENDER_MAIN, ACTION_TIER_3);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Druid Tier 4", GOSSIP_SENDER_MAIN, ACTION_TIER_4);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Druid Tier 5", GOSSIP_SENDER_MAIN, ACTION_TIER_5);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Druid Tier 6", GOSSIP_SENDER_MAIN, ACTION_TIER_6);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Druid Season 1", GOSSIP_SENDER_MAIN, ACTION_ARENA_1);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Druid Season 2", GOSSIP_SENDER_MAIN, ACTION_ARENA_2);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Druid Season 3", GOSSIP_SENDER_MAIN, ACTION_ARENA_3);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Druid Season 4", GOSSIP_SENDER_MAIN, ACTION_ARENA_4);
                     break;
             }
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Remove transmogrification", GOSSIP_SENDER_MAIN, ACTION_REMOVE);
@@ -185,67 +185,67 @@ class npc_transmogrify : public CreatureScript
             switch (action)
             {
                 case ACTION_TIER_1:
-                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(GetAchievementStore()->LookupEntry(403)))
+                    if (player->isGameMaster())
                         TransmogrifyItems(player, creature, ACTION_TIER_1);
                     else
                         creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
                     break;
                 case ACTION_TIER_2:
-                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(GetAchievementStore()->LookupEntry(405)))
+                    if (player->isGameMaster())
                         TransmogrifyItems(player, creature, ACTION_TIER_2);
                     else
                         creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
                     break;
                 case ACTION_TIER_25:
-                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(GetAchievementStore()->LookupEntry(1160)))
+                    if (player->isGameMaster())
                         TransmogrifyItems(player, creature, ACTION_TIER_25);
                     else
                         creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
                     break;
                 case ACTION_TIER_3:
-                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(GetAchievementStore()->LookupEntry(5266)))
+                    if (player->isGameMaster())
                         TransmogrifyItems(player, creature, ACTION_TIER_3);
                     else
                         creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
                     break;
                 case ACTION_TIER_4:
-                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(GetAchievementStore()->LookupEntry(403)))
+                    if (player->isGameMaster()))
                         TransmogrifyItems(player, creature, ACTION_TIER_4);
                     else
                         creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
                     break;
                 case ACTION_TIER_5:
-                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(GetAchievementStore()->LookupEntry(405)))
+                    if (player->isGameMaster())
                         TransmogrifyItems(player, creature, ACTION_TIER_5);
                     else
                         creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
                     break;
                 case ACTION_TIER_6:
-                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(GetAchievementStore()->LookupEntry(5266)))
+                    if (player->isGameMaster())
                         TransmogrifyItems(player, creature, ACTION_TIER_6);
                     else
                         creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
                     break;
                 case ACTION_ARENA_1:
-                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(GetAchievementStore()->LookupEntry(399)))
+                    if (player->isGameMaster())
                         TransmogrifyItems(player, creature, ACTION_ARENA_1);
                     else
                         creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
                     break;
                 case ACTION_ARENA_2:
-                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(GetAchievementStore()->LookupEntry(400)))
+                    if (player->isGameMaster())
                         TransmogrifyItems(player, creature, ACTION_ARENA_2);
                     else
                         creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
                     break;
                 case ACTION_ARENA_3:
-                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(GetAchievementStore()->LookupEntry(401)))
+                    if (player->isGameMaster())
                         TransmogrifyItems(player, creature, ACTION_ARENA_3);
                     else
                         creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
                     break;
                 case ACTION_ARENA_4:
-                    if (player->isGameMaster() || player->GetAchievementMgr().HasAchieved(GetAchievementStore()->LookupEntry(1159)))
+                    if (player->isGameMaster())
                         TransmogrifyItems(player, creature, ACTION_ARENA_4);
                     else
                         creature->MonsterWhisper("You don't have required rating.", player->GetGUID());
