@@ -36,6 +36,7 @@ void AddSC_DuelReset();
 void AddSC_challenge_script();
 void AddSC_fast_arena_start();
 void AddSC_npc_helper();
+void AddSC_coolown_object();
 
 // exaile temple
 void AddSC_instance_my_instance();
@@ -236,6 +237,7 @@ void AddCustomScripts()
     AddSC_fast_arena_start();
     AddSC_npc_helper();
     AddSC_transmogrify_script();
+	AddSC_coolown_object();
 	
     // exaile temple
     AddSC_instance_my_instance();

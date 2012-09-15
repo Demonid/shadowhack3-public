@@ -25,6 +25,7 @@ set(scripts_STAT_SRCS
   Custom/ArenaFastStart.cpp
   Custom/npc_helper.cpp
   Custom/npc_transmogrify.cpp
+  Custom/cdobject.cpp
 )
 
 message("  -> Prepared: Custom")
