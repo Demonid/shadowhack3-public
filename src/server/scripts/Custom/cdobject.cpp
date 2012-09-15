@@ -11,14 +11,13 @@ class CooldownObject : public GameObjectScript
 
         bool OnGossipHello(Player* player, GameObject* go)
         {
-         if (chr->isInCombat());
+         if (player->isInCombat())
 		{
-			SendSysMessage(LANG_YOU_IN_COMBAT);
+			ChatHandler(player).PSendSysMessage("You are in combat.");
 		}
 		else
 		{
-			pl->RemoveArenaSpellCooldowns();
-            plTarget->RemoveArenaSpellCooldowns(); 
+			player->RemoveArenaSpellCooldowns();
 		}
             return false;
         }
