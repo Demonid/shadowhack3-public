@@ -18,6 +18,7 @@ class CooldownObject : public GameObjectScript
 		else
 		{
 			player->RemoveArenaSpellCooldowns();
+			go->SetRespawnTime(300);
 			go->Delete();
 		}
             return false;
