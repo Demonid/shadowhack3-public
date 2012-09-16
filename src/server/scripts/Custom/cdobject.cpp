@@ -18,6 +18,7 @@ class CooldownObject : public GameObjectScript
 		else
 		{
 			player->RemoveArenaSpellCooldowns();
+			go->Delete();
 		}
             return false;
         }
