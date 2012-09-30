@@ -5875,7 +5875,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                 {
                     RemoveAurasByType(SPELL_AURA_MOD_MELEE_HASTE, 0, 0, true, false);
                     RemoveAurasByType(SPELL_AURA_MOD_DECREASE_SPEED);
-					RemoveAuraDueToSpell(11719);
+					RemoveAurasDueToSpell(11719);
                     return true;
                 }
                 // Ignite
